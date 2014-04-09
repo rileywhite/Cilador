@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata minClientVersion="2.8">
+    <id>Bix.Mixers.Fody</id>
+    <version>$version$</version>
+    <title>Bix.Mixers.Fody</title>
+    <authors>Riley White</authors>
+    <owners>Riley White</owners>
+    <developmentDependency>true</developmentDependency>
+    <licenseUrl>https://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
+    <projectUrl>https://github.com/rileywhite/Bix.Mixers.Fody</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <iconUrl/>
+    <description>A Fody add-in for Bix</description>
+    <summary />
+    <language>en-US</language>
+    <tags>Bix, Mixins, ILWeaving, Fody, Cecil</tags>
+    <dependencies>
+      <dependency id="Fody"/>
+    </dependencies>
+  </metadata>
+</package>
