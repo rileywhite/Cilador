@@ -29,7 +29,11 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
             };
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(ModuleWeaverHelper.CreateConfig(config));
             var targetType = assembly.GetType("Bix.Mixers.Fody.TestTarget.EmptyInterfaceTarget");
-            Assert.IsTrue(typeof(Bix.Mixers.Fody.TestInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
+            Assert.That(typeof(Bix.Mixers.Fody.TestInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
+
+            // TODO Removing unused assembly dependencies would be a nice feature, but I'm not sure how to do it, in general (e.g. maybe the source assembly should truly be referenced)
+            //Assert.That(!assembly.GetReferencedAssemblies().Any(referencedAssembly => referencedAssembly.Name == "Bix.Mixers.Fody"));
+            //Assert.That(!assembly.GetReferencedAssemblies().Any(referencedAssembly => referencedAssembly.Name == "Bix.Mixers.Fody.TestSource"));
         }
     }
 }
