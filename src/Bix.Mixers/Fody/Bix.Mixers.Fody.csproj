@@ -95,6 +95,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\MixCommandConfig.cs">
+      <DependentUpon>MixCommandConfig.xsd</DependentUpon>
+    </Compile>
+    <Compile Include="Core\MixCommandConfigTypeBase.cs" />
     <Compile Include="ILCloning\EventImporter.cs" />
     <Compile Include="ILCloning\EventCloner.cs" />
     <Compile Include="ILCloning\EventWithRespectToModule.cs" />
@@ -131,20 +135,23 @@
     <Compile Include="ILCloning\TypeWithRespectToModule.cs" />
     <Compile Include="Core\CoreExtensions.cs" />
     <Compile Include="Core\IMixCommandData.cs" />
-    <Compile Include="InterfaceMixing\InterfaceMixConfigType.cs">
-      <DependentUpon>InterfaceMixConfigType.xsd</DependentUpon>
+    <Compile Include="InterfaceMixing\InterfaceMixConfig.cs">
+      <DependentUpon>InterfaceMixConfig.xsd</DependentUpon>
     </Compile>
+    <Compile Include="InterfaceMixing\InterfaceMixConfigType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="InterfaceMixing\InterfaceMixConfigType.xsd" />
+    <None Include="Core\MixCommandConfig.xsd" />
+    <None Include="InterfaceMixing\InterfaceMixConfig.xsd" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <PropertyGroup>
-    <PreBuildEvent>"$(TargetFrameworkSDKToolsDirectory)xsd.exe" /c /l:cs /n:Bix.Mixers.Fody.InterfaceMixing /o:"$(ProjectDir)InterfaceMixing" "$(ProjectDir)InterfaceMixing\InterfaceMixConfigType.xsd"
+    <PreBuildEvent>"$(TargetFrameworkSDKToolsDirectory)xsd.exe" /c /l:cs /n:Bix.Mixers.Fody.Core /o:"$(ProjectDir)Core" "$(ProjectDir)Core\MixCommandConfig.xsd"
+"$(TargetFrameworkSDKToolsDirectory)xsd.exe" /c /l:cs /n:Bix.Mixers.Fody.InterfaceMixing /o:"$(ProjectDir)InterfaceMixing" "$(ProjectDir)InterfaceMixing\InterfaceMixConfig.xsd"
 </PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

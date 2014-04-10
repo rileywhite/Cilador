@@ -14,7 +14,7 @@ using System.Xml.Serialization;
 
 namespace Bix.Mixers.Fody.Core
 {
-    internal static class CoreExtensions
+    public static class CoreExtensions
     {
         public static T FromXElement<T>(this XElement xElement)
         {

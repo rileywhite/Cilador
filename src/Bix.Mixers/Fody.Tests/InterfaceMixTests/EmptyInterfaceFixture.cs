@@ -16,18 +16,24 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
         [Test]
         public void CanAddInterface()
         {
-            InterfaceMixConfigType config = new InterfaceMixConfigType
+            var config = new BixMixersType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
             {
-                InterfaceMap = new InterfaceMapType[]
+                new InterfaceMixConfigType
                 {
-                    new InterfaceMapType
+                    InterfaceMap = new InterfaceMapType[]
                     {
-                        Interface = "Bix.Mixers.Fody.TestInterfaces.IEmptyInterface, Bix.Mixers.Fody.TestInterfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-                        Template = "Bix.Mixers.Fody.TestSource.EmptyInterfaceTemplate, Bix.Mixers.Fody.TestSource, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+                        new InterfaceMapType
+                        {
+                            Interface = "Bix.Mixers.Fody.TestInterfaces.IEmptyInterface, Bix.Mixers.Fody.TestInterfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+                            Template = "Bix.Mixers.Fody.TestSource.EmptyInterfaceTemplate, Bix.Mixers.Fody.TestSource, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+                        }
                     }
-                }
+                },
             };
-            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(ModuleWeaverHelper.CreateConfig(config));
+
+            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config.ToXElement());
             var targetType = assembly.GetType("Bix.Mixers.Fody.TestTarget.EmptyInterfaceTarget");
             Assert.That(typeof(Bix.Mixers.Fody.TestInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
 

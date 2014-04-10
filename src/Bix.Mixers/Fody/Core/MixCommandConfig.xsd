@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:bmfc="urn:Bix:Mixers:Fody:Core"
+  targetNamespace="urn:Bix:Mixers:Fody:Core">
+
+  <xs:complexType name="MixCommandConfigTypeBase" abstract="true"/>
+
+  <xs:complexType name="Bix.MixersType">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element name="MixCommandConfig" type="bmfc:MixCommandConfigTypeBase" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Bix.Mixers" type="bmfc:Bix.MixersType"/>
+
+</xs:schema>

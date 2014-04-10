@@ -15,7 +15,7 @@ namespace Bix.Mixers.Fody.ILCloning
         AttributeTargets.Event,
         AllowMultiple = false,
         Inherited = false)]
-    internal sealed class SkipAttribute : Attribute
+    public sealed class SkipAttribute : Attribute
     {
     }
 }

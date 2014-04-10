@@ -15,7 +15,6 @@ namespace Bix.Mixers.Fody.InterfaceMixing
         public InterfaceMixAttribute(Type @interface)
         {
             this.Interface = @interface;
-            this.Group = "";
         }
 
         private Type @interface;
@@ -29,12 +28,5 @@ namespace Bix.Mixers.Fody.InterfaceMixing
                 this.@interface = value;
             }
         }
-
-        public string Name
-        {
-            get { return "InterfaceMix"; }
-        }
-
-        public string Group { get; set; }
     }
 }

@@ -8,6 +8,5 @@ namespace Bix.Mixers.Fody.Core
 {
     public interface IMixCommandAttribute
     {
-        string Name { get; }
     }
 }

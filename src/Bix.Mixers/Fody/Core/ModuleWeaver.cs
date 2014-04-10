@@ -68,17 +68,24 @@ namespace Bix.Mixers.Fody.Core
         {
             Contract.Assert(this.MixCommands != null);
 
+            var mixersConfig = this.Config.FromXElement<BixMixersType>();
+            if (mixersConfig == null)
+            {
+                throw new InvalidOperationException("Could not deserialize the Bix.Mixers config XElement into a BixMixers object.");
+            }
+
             foreach (var mixCommand in this.MixCommands)
             {
-                var config = this.Config.Descendants().SingleOrDefault(
-                    element => element.FirstAttribute.Value == mixCommand.Metadata.Name);
-
-                if (config == null || !config.Descendants().Any())
+                var mixCommandConfig = mixersConfig.MixCommandConfig.FirstOrDefault(config => config.GetType() == mixCommand.Metadata.ConfigType);
+                if (mixCommandConfig == null)
                 {
-                    this.LogWarning(string.Format("Ignoring mix command with no configuration: [{0}]", mixCommand.Metadata.Name));
+                    if (this.LogWarning != null)
+                    {
+                        this.LogWarning(string.Format("Ignoring mix command with no configuration: [{0}]", mixCommand.GetType().AssemblyQualifiedName));
+                    }
                     continue;
                 }
-                mixCommand.Value.Initialize(config.Descendants().First());
+                mixCommand.Value.Initialize(mixCommandConfig);
             }
         }
 
@@ -94,7 +101,9 @@ namespace Bix.Mixers.Fody.Core
                 Contract.Requires(this.Config == null);
                 Contract.Requires(value != null);
                 Contract.Ensures(this.Container != null);
+
                 this.config = value;
+
                 this.Container.ComposeParts(this);
             }
         }
@@ -130,7 +139,7 @@ namespace Bix.Mixers.Fody.Core
             var mixCommandAttributeInterfaceType = this.ModuleDefinition.Import(typeof(IMixCommandAttribute)).Resolve();
             var typeTypeDefinition = this.ModuleDefinition.Import(typeof(Type)).Resolve();
 
-            var mixMap = new Dictionary<TypeDefinition, List<Tuple<string, IMixCommandAttribute, CustomAttribute>>>();
+            var mixMap = new Dictionary<TypeDefinition, List<Tuple<IMixCommandAttribute, CustomAttribute>>>();
             foreach (var type in this.ModuleDefinition.Types)
             {
                 foreach(var attribute in type.CustomAttributes)
@@ -141,10 +150,10 @@ namespace Bix.Mixers.Fody.Core
                     {
                         if(attributeInterfaceType.Resolve() == mixCommandAttributeInterfaceType)
                         {
-                            List<Tuple<string, IMixCommandAttribute, CustomAttribute>> mixCommandsForType;
+                            List<Tuple<IMixCommandAttribute, CustomAttribute>> mixCommandsForType;
                             if(!mixMap.TryGetValue(type.Resolve(), out mixCommandsForType))
                             {
-                                mixCommandsForType = new List<Tuple<string, IMixCommandAttribute, CustomAttribute>>();
+                                mixCommandsForType = new List<Tuple<IMixCommandAttribute, CustomAttribute>>();
                                 mixMap[type.Resolve()] = mixCommandsForType;
                             }
 
@@ -203,49 +212,11 @@ namespace Bix.Mixers.Fody.Core
                             var argumentAttribute = (IMixCommandAttribute)attributeConstructor.Invoke(constructorArguments);
                             Contract.Assert(argumentAttribute != null);
 
-                            mixCommandsForType.Add(Tuple.Create(argumentAttribute.Name, argumentAttribute, attribute));
+                            mixCommandsForType.Add(Tuple.Create(argumentAttribute, attribute));
 
                             continue;
                         }
                     }
-                    // this attribute has exactly one argument, which is the inteface type
-                    //Contract.Assert(interfaceMixAttribute.ConstructorArguments.Count == 1);
-                    //Contract.Assert(interfaceMixAttribute.ConstructorArguments[0].Type is TypeReference);
-                    //Contract.Assert(interfaceMixAttribute.ConstructorArguments[0].Value != null);
-
-                    //var interfaceTypeReference = (TypeReference)interfaceMixAttribute.ConstructorArguments[0].Value;
-                    //interfaceTypeReference = interfaceTypeReference.Resolve();
-
-                    //var interfaceType = Type.GetType(interfaceTypeReference.FullName + ", " + interfaceTypeReference.Module.Assembly.FullName); 
-
-                    //if(interfaceType == null)
-                    //{
-                    //    using (var memoryStream = new MemoryStream())
-                    //    {
-                    //        interfaceTypeReference.Module.Assembly.Write(memoryStream);
-                    //        var assembly = AppDomain.CurrentDomain.Load(memoryStream.GetBuffer());
-                    //        interfaceType = assembly.GetType(interfaceTypeReference.FullName);
-                    //    }
-                    //}
-
-                    //if(!interfaceType.IsInterface)
-                    //{
-                    //    throw new InvalidOperationException(string.Format(
-                    //        "InterfaceMix attribute for {0} should specify an interface type. {1} is not an interface type",
-                    //        type.FullName,
-                    //        interfaceType.FullName));
-                    //}
-
-                    //foreach(var xElement in this.Config.Elements())
-                    //{
-                    //    var configType = Type.GetType(xElement.Name.LocalName);
-                    //    var serializer = new XmlSerializer(configType);
-                    //    var config = xElement.Elements().First().FromXElement(configType);
-                    //}
-
-                    //Contract.Assert(mixCommandAttribute.HasProperties);
-                    //var nameProperty = mixCommandAttribute.Properties.SingleOrDefault(property => property.Name == "Name");
-                    //Contract.Assert(!default(CustomAttributeNamedArgument).Equals(nameProperty));
                 }
             }
 
@@ -256,22 +227,22 @@ namespace Bix.Mixers.Fody.Core
 
                 foreach (var mixNameAndAttributes in mixes.Value)
                 {
-                    mixedType.CustomAttributes.Remove(mixNameAndAttributes.Item3);
+                    mixedType.CustomAttributes.Remove(mixNameAndAttributes.Item2);
                 }
 
 
-                foreach(var mixNameAndAttributes in mixes.Value)
+                foreach(var mixAttributes in mixes.Value)
                 {
                     var mixCommand = this.MixCommands.FirstOrDefault(
-                        command => command.Metadata.Name.Equals(mixNameAndAttributes.Item1) && command.Value.IsInitialized);
+                        command => command.Metadata.AttributeType.Equals(mixAttributes.Item1.GetType()) && command.Value.IsInitialized);
 
                     if(mixCommand == null)
                     {
                         throw new InvalidOperationException(
-                            string.Format("Cannot find a configured mix command for type [{0}] and command [{1}]", mixedType.FullName, mixNameAndAttributes.Item1));
+                            string.Format("Cannot find a configured mix command for type [{0}] and command [{1}]", mixedType.FullName, mixAttributes.Item1));
                     }
 
-                    mixCommand.Value.Mix(mixedType, mixNameAndAttributes.Item2);
+                    mixCommand.Value.Mix(mixedType, mixAttributes.Item1);
                 }
             }
         }

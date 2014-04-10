@@ -27,22 +27,5 @@ namespace Bix.Mixers.Fody.Tests.Common
                 return xElement;
             }
         }
-
-        public static T FromXElement<T>(this XElement xElement)
-        {
-            Contract.Requires(xElement != null);
-            return (T)xElement.FromXElement(typeof(T));
-        }
-
-        public static object FromXElement(this XElement xElement, Type objectType)
-        {
-            Contract.Requires(objectType != null);
-
-            using (var reader = xElement.CreateReader())
-            {
-                var xmlSerializer = new XmlSerializer(objectType);
-                return xmlSerializer.Deserialize(reader);
-            }
-        }
     }
 }

@@ -17,7 +17,7 @@ namespace Bix.Mixers.Fody.Core
             get { throw new NotImplementedException(); }
         }
 
-        public void Initialize(XElement config)
+        public void Initialize(MixCommandConfigTypeBase config)
         {
             Contract.Requires(config != null);
             Contract.Requires(!this.IsInitialized);

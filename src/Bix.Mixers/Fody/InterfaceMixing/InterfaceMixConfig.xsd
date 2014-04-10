@@ -11,8 +11,8 @@
   </xs:complexType>
 
   <xs:complexType name="InterfaceMixConfigType">
-    <xs:sequence minOccurs="0" maxOccurs="unbounded">
-      <xs:element name="InterfaceMap" type="bmfim:InterfaceMapType" minOccurs="1" maxOccurs="1"/>
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element name="InterfaceMap" type="bmfim:InterfaceMapType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
   <xs:element name="InterfaceMixConfig" type="bmfim:InterfaceMixConfigType"/>
