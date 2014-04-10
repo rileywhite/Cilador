@@ -162,6 +162,16 @@ namespace Bix.Mixers.Fody.Core
                                 attributeTypeDefinition.FullName,
                                 attributeTypeDefinition.Module.Assembly.FullName));
 
+                            if(attributeType == null)
+                            {
+                                using (var memoryStream = new MemoryStream())
+                                {
+                                    attributeTypeDefinition.Module.Assembly.Write(memoryStream);
+                                    var attributeAssembly = AppDomain.CurrentDomain.Load(memoryStream.GetBuffer());
+                                    attributeType = attributeAssembly.GetType(attributeTypeDefinition.FullName);
+                                }
+                            }
+
                             Type[] constructorParameterTypes;
                             object[] constructorArguments;
                             if (!attribute.HasConstructorArguments)
@@ -191,6 +201,15 @@ namespace Bix.Mixers.Fody.Core
                                             "{0}, {1}",
                                             argumentValue.FullName,
                                             argumentValue.Module.Assembly.FullName));
+                                        if (constructorArguments[i] == null)
+                                        {
+                                            using (var memoryStream = new MemoryStream())
+                                            {
+                                                argumentValue.Module.Assembly.Write(memoryStream);
+                                                var argumentTypeAssembly = AppDomain.CurrentDomain.Load(memoryStream.GetBuffer());
+                                                constructorArguments[i] = argumentTypeAssembly.GetType(argumentValue.FullName);
+                                            }
+                                        }
                                     }
                                     else
                                     {
