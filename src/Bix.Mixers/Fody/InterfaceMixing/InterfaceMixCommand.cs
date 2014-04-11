@@ -15,7 +15,7 @@ namespace Bix.Mixers.Fody.InterfaceMixing
     {
         public bool IsInitialized { get; private set; }
 
-        public void Initialize(MixCommandConfigTypeBase config)
+        public void Initialize(IWeavingContext weavingContext, MixCommandConfigTypeBase config)
         {
             this.Config = config as InterfaceMixConfigType;
             if(this.Config == null)
@@ -27,13 +27,12 @@ namespace Bix.Mixers.Fody.InterfaceMixing
 
         private InterfaceMixConfigType Config { get; set; }
 
-        public void Mix(TypeDefinition target, CustomAttribute mixCommandAttribute)
+        public void Mix(IWeavingContext weavingContext, TypeDefinition target, CustomAttribute mixCommandAttribute)
         {
-            var module = mixCommandAttribute.AttributeType.Module;
-
-            if (mixCommandAttribute.AttributeType.Resolve() != module.Import(typeof(InterfaceMixAttribute)).Resolve())
+            if (mixCommandAttribute.AttributeType.FullName != weavingContext.GetTypeDefinition(typeof(InterfaceMixAttribute)).FullName)
             {
-                throw new ArgumentException("Must be a valid CustomAttribute with AttributeType InterfaceMixAttribute", "mixCommandAttribute");
+                throw new ArgumentException("Must be a valid CustomAttribute with AttributeType InterfaceMixAttribute",
+                    "mixCommandAttribute");
             }
 
             if (mixCommandAttribute.ConstructorArguments.Count != 1)
@@ -56,9 +55,14 @@ namespace Bix.Mixers.Fody.InterfaceMixing
             }
 
             var matchedMap = this.Config.InterfaceMap.SingleOrDefault(
-                map => module.Import(map.InterfaceType).Resolve() == commandInterfaceType);
+                map => map.GetInterfaceType(weavingContext).FullName == commandInterfaceType.FullName);
 
-            new InterfaceMixCommandMixer(commandInterfaceType, module.Import(matchedMap.TemplateType).Resolve(), target).Execute();
+            if(matchedMap == null)
+            {
+                throw new ArgumentException("Could not find the a configuration for the requested interface: " + commandInterfaceType.FullName, "mixCommandAttribute");
+            }
+
+            new InterfaceMixCommandMixer(commandInterfaceType, matchedMap.GetTemplateType(weavingContext), target).Execute();
         }
     }
 }

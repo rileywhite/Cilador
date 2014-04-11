@@ -31,7 +31,7 @@ namespace Bix.Mixers.Fody.InterfaceMixing
             Contract.Ensures(this.TargetModule != null);
             Contract.Ensures(this.Source != null);
 
-            if (!templateType.Interfaces.Any(@interface => @interface.Resolve() == interfaceType))
+            if (!templateType.Interfaces.Any(@interface => @interface.FullName == interfaceType.FullName))
             {
                 throw new ArgumentException("Must implement the interface specified in the interfaceType argmuent", "templateType");
             }

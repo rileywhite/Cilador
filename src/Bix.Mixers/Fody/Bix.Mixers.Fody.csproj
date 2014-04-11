@@ -95,6 +95,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\IWeavingContext.cs" />
     <Compile Include="Core\MixCommandConfig.cs">
       <DependentUpon>MixCommandConfig.xsd</DependentUpon>
     </Compile>

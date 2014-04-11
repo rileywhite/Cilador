@@ -14,7 +14,7 @@ using System.Xml.Serialization;
 
 namespace Bix.Mixers.Fody.Core
 {
-    public class ModuleWeaver : IDisposable, IPartImportsSatisfiedNotification
+    public class ModuleWeaver : IDisposable, IPartImportsSatisfiedNotification, IWeavingContext
     {
         #region Construction and Disposal
 
@@ -85,7 +85,7 @@ namespace Bix.Mixers.Fody.Core
                     }
                     continue;
                 }
-                mixCommand.Value.Initialize(mixCommandConfig);
+                mixCommand.Value.Initialize(this, mixCommandConfig);
             }
         }
 
@@ -188,7 +188,7 @@ namespace Bix.Mixers.Fody.Core
                             string.Format("Cannot find a configured mix command for type [{0}] and command [{1}]", mixedType.FullName, commandAttributeType.FullName));
                     }
 
-                    mixCommand.Value.Mix(mixedType, commandAttribute);
+                    mixCommand.Value.Mix(this, mixedType, commandAttribute);
                 }
             }
         }

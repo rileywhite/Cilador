@@ -13,7 +13,7 @@ namespace Bix.Mixers.Fody.Core
     public interface IMixCommand
     {
         bool IsInitialized { get; }
-        void Initialize(MixCommandConfigTypeBase config);
-        void Mix(TypeDefinition target, CustomAttribute mixCommandAttribute);
+        void Initialize(IWeavingContext weavingContext, MixCommandConfigTypeBase config);
+        void Mix(IWeavingContext weavingContext, TypeDefinition target, CustomAttribute mixCommandAttribute);
     }
 }

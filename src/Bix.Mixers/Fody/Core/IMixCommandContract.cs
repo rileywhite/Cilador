@@ -17,8 +17,9 @@ namespace Bix.Mixers.Fody.Core
             get { throw new NotSupportedException(); }
         }
 
-        public void Initialize(MixCommandConfigTypeBase config)
+        public void Initialize(IWeavingContext weavingContext, MixCommandConfigTypeBase config)
         {
+            Contract.Requires(weavingContext != null);
             Contract.Requires(config != null);
             Contract.Requires(!this.IsInitialized);
             Contract.Ensures(this.IsInitialized);
@@ -26,8 +27,9 @@ namespace Bix.Mixers.Fody.Core
             throw new NotSupportedException();
         }
 
-        public void Mix(TypeDefinition target, CustomAttribute mixCommandAttribute)
+        public void Mix(IWeavingContext weavingContext, TypeDefinition target, CustomAttribute mixCommandAttribute)
         {
+            Contract.Requires(weavingContext != null);
             Contract.Requires(target != null);
             Contract.Requires(mixCommandAttribute != null);
             Contract.Requires(this.IsInitialized);
