@@ -99,12 +99,9 @@
       <DependentUpon>MixCommandConfig.xsd</DependentUpon>
     </Compile>
     <Compile Include="Core\MixCommandConfigTypeBase.cs" />
-    <Compile Include="ILCloning\EventImporter.cs" />
     <Compile Include="ILCloning\EventCloner.cs" />
-    <Compile Include="ILCloning\EventWithRespectToModule.cs" />
-    <Compile Include="ILCloning\FieldImporter.cs" />
+    <Compile Include="ILCloning\EventSourceWithRoot.cs" />
     <Compile Include="ILCloning\ILCloningExtensions.cs" />
-    <Compile Include="ILCloning\IMemberImporter.cs" />
     <Compile Include="ILCloning\IMemberCloner.cs" />
     <Compile Include="ILCloning\IMemberClonerContract.cs" />
     <Compile Include="Core\IMixCommand.cs" />
@@ -114,25 +111,21 @@
     <Compile Include="InterfaceMixing\InterfaceMixCommandMixer.cs" />
     <Compile Include="ILCloning\IRootImportProvider.cs" />
     <Compile Include="ILCloning\IRootImportProviderContract.cs" />
-    <Compile Include="ILCloning\MemberImporterBase.cs" />
-    <Compile Include="ILCloning\MethodImporter.cs" />
     <Compile Include="Core\ModuleWeaver.cs" />
-    <Compile Include="ILCloning\PropertyImporter.cs" />
     <Compile Include="ILCloning\PropertyCloner.cs" />
     <Compile Include="ILCloning\MethodCloner.cs" />
     <Compile Include="ILCloning\FieldCloner.cs" />
-    <Compile Include="ILCloning\PropertyWithRespectToModule.cs" />
-    <Compile Include="ILCloning\MethodWithRespectToModule .cs" />
-    <Compile Include="ILCloning\FieldWithRespectToModule.cs" />
-    <Compile Include="ILCloning\MemberWithRespectToModuleBase.cs" />
+    <Compile Include="ILCloning\PropertySourceWithRoot.cs" />
+    <Compile Include="ILCloning\MethodSourceWithRoot .cs" />
+    <Compile Include="ILCloning\FieldSourceWithRoot.cs" />
+    <Compile Include="ILCloning\MemberSourceWithRootBase.cs" />
     <Compile Include="InterfaceMixing\InterfaceMixCommand.cs" />
     <Compile Include="ILCloning\MemberClonerBase.cs" />
     <Compile Include="ILCloning\RootContext.cs" />
     <Compile Include="InterfaceMixing\InterfaceMixAttribute.cs" />
     <Compile Include="ILCloning\SkipAttribute.cs" />
-    <Compile Include="ILCloning\TypeImporter.cs" />
     <Compile Include="ILCloning\TypeCloner.cs" />
-    <Compile Include="ILCloning\TypeWithRespectToModule.cs" />
+    <Compile Include="ILCloning\TypeSourceWithRoot.cs" />
     <Compile Include="Core\CoreExtensions.cs" />
     <Compile Include="Core\IMixCommandData.cs" />
     <Compile Include="InterfaceMixing\InterfaceMixConfig.cs">

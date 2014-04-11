@@ -5,9 +5,9 @@ using System.Reflection;
 
 namespace Bix.Mixers.Fody.ILCloning
 {
-    internal class EventCloner : MemberClonerBase<EventInfo, EventDefinition, EventWithRespectToModule>
+    internal class EventCloner : MemberClonerBase<EventDefinition, EventSourceWithRoot>
     {
-        public EventCloner(EventDefinition target, EventWithRespectToModule source)
+        public EventCloner(EventDefinition target, EventSourceWithRoot source)
             : base(target, source)
         {
             Contract.Requires(target != null);

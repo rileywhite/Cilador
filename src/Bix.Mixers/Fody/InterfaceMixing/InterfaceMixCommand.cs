@@ -27,16 +27,38 @@ namespace Bix.Mixers.Fody.InterfaceMixing
 
         private InterfaceMixConfigType Config { get; set; }
 
-        public void Mix(TypeDefinition target, IMixCommandAttribute mixCommandAttribute)
+        public void Mix(TypeDefinition target, CustomAttribute mixCommandAttribute)
         {
-            var interfaceMixAttribute = mixCommandAttribute as InterfaceMixAttribute;
+            var module = mixCommandAttribute.AttributeType.Module;
 
-            if (interfaceMixAttribute == null) { throw new ArgumentException("Must be a valid InterfaceMixAttribute", "mixCommandAttribute"); }
+            if (mixCommandAttribute.AttributeType.Resolve() != module.Import(typeof(InterfaceMixAttribute)).Resolve())
+            {
+                throw new ArgumentException("Must be a valid CustomAttribute with AttributeType InterfaceMixAttribute", "mixCommandAttribute");
+            }
+
+            if (mixCommandAttribute.ConstructorArguments.Count != 1)
+            {
+                throw new ArgumentException("Expected a single constructor argument", "mixCommandAttribute");
+            }
+
+            var commandInterfaceTypeReference = mixCommandAttribute.ConstructorArguments[0].Value as TypeReference;
+
+            if (commandInterfaceTypeReference == null)
+            {
+                throw new ArgumentException("Expected constructor argument to be a TypeReference", "mixCommandAttribute");
+            }
+
+            var commandInterfaceType = commandInterfaceTypeReference.Resolve();
+
+            if (!commandInterfaceType.IsInterface)
+            {
+                throw new ArgumentException("Expected the constructor argument to be a TypeDefinition that represents an interface", "mixCommandAttribute");
+            }
 
             var matchedMap = this.Config.InterfaceMap.SingleOrDefault(
-                map => map.InterfaceType.AssemblyQualifiedName == interfaceMixAttribute.Interface.AssemblyQualifiedName);
+                map => module.Import(map.InterfaceType).Resolve() == commandInterfaceType);
 
-            new InterfaceMixCommandMixer(interfaceMixAttribute.Interface, matchedMap.TemplateType, target).Execute();
+            new InterfaceMixCommandMixer(commandInterfaceType, module.Import(matchedMap.TemplateType).Resolve(), target).Execute();
         }
     }
 }

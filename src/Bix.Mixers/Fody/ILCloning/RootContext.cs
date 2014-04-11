@@ -11,7 +11,7 @@ namespace Bix.Mixers.Fody.ILCloning
 {
     internal class RootContext : IRootImportProvider
     {
-        public RootContext(TypeWithRespectToModule rootSource, TypeDefinition rootTarget)
+        public RootContext(TypeDefinition rootSource, TypeDefinition rootTarget)
         {
             Contract.Requires(rootSource != null);
             Contract.Requires(rootTarget != null);
@@ -25,7 +25,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.MethodCache = new Dictionary<string, MethodReference>();
         }
 
-        private TypeWithRespectToModule RootSource { get; set; }
+        private TypeDefinition RootSource { get; set; }
 
         public TypeDefinition RootTarget { get; private set; }
 
@@ -55,7 +55,7 @@ namespace Bix.Mixers.Fody.ILCloning
             }
 
             // if the root source type is being imported, then select the root target type
-            if (type.FullName == this.RootSource.MemberDefinition.FullName) { importedType = this.RootTarget.Module.Import(this.RootTarget); }
+            if (type.FullName == this.RootSource.FullName) { importedType = this.RootTarget.Module.Import(this.RootTarget); }
 
             // otherwise if this is not a nested type, then import the type
             else if (type.DeclaringType == null) { importedType = this.RootTarget.Module.Import(type); }
@@ -147,7 +147,8 @@ namespace Bix.Mixers.Fody.ILCloning
         public PropertyReference RootImport(PropertyReference property)
         {
             if (property == null) { return null; }
-            throw new NotImplementedException();
+            // TODO root importing of property
+            throw new NotImplementedException("Implement root importing of property when needed");
         }
 
         private Dictionary<string, MethodReference> MethodCache { get; set; }
@@ -199,7 +200,8 @@ namespace Bix.Mixers.Fody.ILCloning
         public EventReference RootImport(EventReference @event)
         {
             if (@event == null) { return null; }
-            throw new NotImplementedException();
+            // TODO root import of event
+            throw new NotImplementedException("Implement root import of event when needed");
         }
     }
 }

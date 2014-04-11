@@ -7,9 +7,9 @@ using System.Reflection;
 
 namespace Bix.Mixers.Fody.ILCloning
 {
-    internal class TypeCloner : MemberClonerBase<Type, TypeDefinition, TypeWithRespectToModule>
+    internal class TypeCloner : MemberClonerBase<TypeDefinition, TypeSourceWithRoot>
     {
-        public TypeCloner(TypeDefinition target, TypeWithRespectToModule source)
+        public TypeCloner(TypeDefinition target, TypeSourceWithRoot source)
             : base(target, source)
         {
             Contract.Requires(target != null);
@@ -34,65 +34,65 @@ namespace Bix.Mixers.Fody.ILCloning
         {
             if (this.Target != this.Source.RootContext.RootTarget)
             {
-                this.Target.Attributes = this.Source.MemberDefinition.Attributes;
-                this.Target.HasSecurity = this.Source.MemberDefinition.HasSecurity;
-                this.Target.IsAbstract = this.Source.MemberDefinition.IsAbstract;
-                this.Target.IsAnsiClass = this.Source.MemberDefinition.IsAnsiClass;
-                this.Target.IsAutoClass = this.Source.MemberDefinition.IsAutoClass;
-                this.Target.IsAutoLayout = this.Source.MemberDefinition.IsAutoLayout;
-                this.Target.IsBeforeFieldInit = this.Source.MemberDefinition.IsBeforeFieldInit;
-                this.Target.IsClass = this.Source.MemberDefinition.IsClass;
-                this.Target.IsExplicitLayout = this.Source.MemberDefinition.IsExplicitLayout;
-                this.Target.IsImport = this.Source.MemberDefinition.IsImport;
-                this.Target.IsInterface = this.Source.MemberDefinition.IsInterface;
-                this.Target.IsNestedAssembly = this.Source.MemberDefinition.IsNestedAssembly;
-                this.Target.IsNestedFamily = this.Source.MemberDefinition.IsNestedFamily;
-                this.Target.IsNestedFamilyAndAssembly = this.Source.MemberDefinition.IsNestedFamilyAndAssembly;
-                this.Target.IsNestedFamilyOrAssembly = this.Source.MemberDefinition.IsNestedFamilyOrAssembly;
-                this.Target.IsNestedPrivate = this.Source.MemberDefinition.IsNestedPrivate;
-                this.Target.IsNestedPublic = this.Source.MemberDefinition.IsNestedPublic;
-                this.Target.IsNotPublic = this.Source.MemberDefinition.IsNotPublic;
-                this.Target.IsPublic = this.Source.MemberDefinition.IsPublic;
-                this.Target.IsRuntimeSpecialName = this.Source.MemberDefinition.IsRuntimeSpecialName;
-                this.Target.IsSealed = this.Source.MemberDefinition.IsSealed;
-                this.Target.IsSequentialLayout = this.Source.MemberDefinition.IsSequentialLayout;
-                this.Target.IsSerializable = this.Source.MemberDefinition.IsSerializable;
-                this.Target.IsSpecialName = this.Source.MemberDefinition.IsSpecialName;
-                this.Target.IsUnicodeClass = this.Source.MemberDefinition.IsUnicodeClass;
-                this.Target.IsValueType = this.Source.MemberDefinition.IsValueType;
-                this.Target.IsWindowsRuntime = this.Source.MemberDefinition.IsWindowsRuntime;
+                this.Target.Attributes = this.Source.Source.Attributes;
+                this.Target.HasSecurity = this.Source.Source.HasSecurity;
+                this.Target.IsAbstract = this.Source.Source.IsAbstract;
+                this.Target.IsAnsiClass = this.Source.Source.IsAnsiClass;
+                this.Target.IsAutoClass = this.Source.Source.IsAutoClass;
+                this.Target.IsAutoLayout = this.Source.Source.IsAutoLayout;
+                this.Target.IsBeforeFieldInit = this.Source.Source.IsBeforeFieldInit;
+                this.Target.IsClass = this.Source.Source.IsClass;
+                this.Target.IsExplicitLayout = this.Source.Source.IsExplicitLayout;
+                this.Target.IsImport = this.Source.Source.IsImport;
+                this.Target.IsInterface = this.Source.Source.IsInterface;
+                this.Target.IsNestedAssembly = this.Source.Source.IsNestedAssembly;
+                this.Target.IsNestedFamily = this.Source.Source.IsNestedFamily;
+                this.Target.IsNestedFamilyAndAssembly = this.Source.Source.IsNestedFamilyAndAssembly;
+                this.Target.IsNestedFamilyOrAssembly = this.Source.Source.IsNestedFamilyOrAssembly;
+                this.Target.IsNestedPrivate = this.Source.Source.IsNestedPrivate;
+                this.Target.IsNestedPublic = this.Source.Source.IsNestedPublic;
+                this.Target.IsNotPublic = this.Source.Source.IsNotPublic;
+                this.Target.IsPublic = this.Source.Source.IsPublic;
+                this.Target.IsRuntimeSpecialName = this.Source.Source.IsRuntimeSpecialName;
+                this.Target.IsSealed = this.Source.Source.IsSealed;
+                this.Target.IsSequentialLayout = this.Source.Source.IsSequentialLayout;
+                this.Target.IsSerializable = this.Source.Source.IsSerializable;
+                this.Target.IsSpecialName = this.Source.Source.IsSpecialName;
+                this.Target.IsUnicodeClass = this.Source.Source.IsUnicodeClass;
+                this.Target.IsValueType = this.Source.Source.IsValueType;
+                this.Target.IsWindowsRuntime = this.Source.Source.IsWindowsRuntime;
 
                 // TODO look more closely at type packing size
-                this.Target.PackingSize = this.Source.MemberDefinition.PackingSize;
+                this.Target.PackingSize = this.Source.Source.PackingSize;
 
                 // TODO look more closely at type class size
-                this.Target.ClassSize = this.Source.MemberDefinition.ClassSize;
+                this.Target.ClassSize = this.Source.Source.ClassSize;
 
                 // TODO look more closely at type scope
-                this.Target.Scope = this.Source.MemberDefinition.Scope;
+                this.Target.Scope = this.Source.Source.Scope;
 
-                if (this.Source.MemberDefinition.IsNested)
+                if (this.Source.Source.IsNested)
                 {
-                    this.Target.DeclaringType = this.Source.RootImport(this.Source.MemberDefinition.DeclaringType).Resolve();
+                    this.Target.DeclaringType = this.Source.RootImport(this.Source.Source.DeclaringType).Resolve();
                 }
 
-                this.Target.BaseType = this.Source.RootImport(this.Source.MemberDefinition.BaseType);
+                this.Target.BaseType = this.Source.RootImport(this.Source.Source.BaseType);
 
                 // TODO look more closely at type metadata token
-                this.Target.MetadataToken = this.Source.MemberDefinition.MetadataToken;
+                this.Target.MetadataToken = this.Source.Source.MetadataToken;
             }
 
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around, but only for non-root type
             if (this.Target != this.Source.RootContext.RootTarget) { this.Target.CustomAttributes.Clear(); }
-            this.Target.RootImportAllCustomAttributes(this.Source, this.Source.MemberDefinition.CustomAttributes);
+            this.Target.RootImportAllCustomAttributes(this.Source, this.Source.Source.CustomAttributes);
 
-            if (this.Source.MemberDefinition.HasGenericParameters)
+            if (this.Source.Source.HasGenericParameters)
             {
                 // TODO type generic parameters
                 throw new NotImplementedException("Implement type generic parameters when needed");
             }
 
-            if (this.Source.MemberDefinition.HasSecurityDeclarations)
+            if (this.Source.Source.HasSecurityDeclarations)
             {
                 // TODO type security declarations
                 throw new NotImplementedException("Implement type security declarations when needed");
@@ -105,13 +105,13 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 var voidReference = this.Target.Module.Import(typeof(void));
 
-                foreach (var source in from type in this.Source.MemberInfo.GetNestedTypes()
+                foreach (var source in from type in this.Source.Source.NestedTypes
                                        where !type.IsSkipped()
-                                       select new TypeWithRespectToModule(this.Source.RootContext, type, this.Target.Module))
+                                       select new TypeSourceWithRoot(this.Source.RootContext, type))
                 {
                     var target = new TypeDefinition(
-                        source.MemberDefinition.Namespace,
-                        source.MemberDefinition.Name,
+                        source.Source.Namespace,
+                        source.Source.Name,
                         0);
                     target.Module.Types.Add(target);
                     this.Target.NestedTypes.Add(target);
@@ -121,42 +121,29 @@ namespace Bix.Mixers.Fody.ILCloning
                     this.Cloners.Add(typeCloner);
                 }
 
-                foreach (var source in from field in this.Source.MemberInfo.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                foreach (var source in from field in this.Source.Source.Fields
                                        where !field.IsSkipped()
-                                       select new FieldWithRespectToModule(this.Source.RootContext, field, this.Target.Module))
+                                       select new FieldSourceWithRoot(this.Source.RootContext, field))
                 {
-                    var target = new FieldDefinition(source.MemberInfo.Name, 0, voidReference);
+                    var target = new FieldDefinition(source.Source.Name, 0, voidReference);
                     this.Target.Fields.Add(target);
                     this.Cloners.Add(new FieldCloner(target, source));
                 }
 
-                foreach (var source in (from method in this.Source.MemberInfo.GetConstructors(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-                                        where !method.IsSkipped()
-                                        select new MethodWithRespectToModule(this.Source.RootContext, method, this.Target.Module))
-                                       .Concat
-                                       (from method in this.Source.MemberInfo.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public )
-                                        where !method.IsSkipped()
-                                        select new MethodWithRespectToModule(this.Source.RootContext, method, this.Target.Module)))
-                {
-                    var target = new MethodDefinition(source.MemberDefinition.Name, 0, voidReference);
-                    this.Target.Methods.Add(target);
-                    this.Cloners.Add(new MethodCloner(target, source));
-                }
-
-                foreach (var source in from property in this.Source.MemberInfo.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                foreach (var source in from property in this.Source.Source.Properties
                                        where !property.IsSkipped()
-                                       select new PropertyWithRespectToModule(this.Source.RootContext, property, this.Target.Module))
+                                       select new PropertySourceWithRoot(this.Source.RootContext, property))
                 {
-                    var target = new PropertyDefinition(source.MemberDefinition.Name, 0, voidReference);
+                    var target = new PropertyDefinition(source.Source.Name, 0, voidReference);
                     this.Target.Properties.Add(target);
                     this.Cloners.Add(new PropertyCloner(target, source));
                 }
 
-                foreach (var source in from @event in this.Source.MemberInfo.GetEvents(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                foreach (var source in from @event in this.Source.Source.Events
                                        where !@event.IsSkipped()
-                                       select new EventWithRespectToModule(this.Source.RootContext, @event, this.Target.Module))
+                                       select new EventSourceWithRoot(this.Source.RootContext, @event))
                 {
-                    var target = new EventDefinition(source.MemberDefinition.Name, 0, voidReference);
+                    var target = new EventDefinition(source.Source.Name, 0, voidReference);
                     this.Target.Events.Add(target);
                     this.Cloners.Add(new EventCloner(target, source));
                 }

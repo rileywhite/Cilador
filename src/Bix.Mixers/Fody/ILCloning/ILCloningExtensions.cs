@@ -34,28 +34,41 @@ namespace Bix.Mixers.Fody.ILCloning
             return left.FullName.Replace(left.DeclaringType.FullName + "::", string.Empty) == right.FullName.Replace(right.DeclaringType.FullName + "::", string.Empty);
         }
 
-        public static bool IsSkipped(this System.Reflection.MemberInfo member)
+        public static bool IsSkipped(this IMemberDefinition member)
         {
             Contract.Requires(member != null);
-
-            var method = member as System.Reflection.MethodBase;
+            var method = member as MethodDefinition;
             if (method == null)
             {
-                return Attribute.IsDefined(member, typeof(SkipAttribute));
+                // a name comparison is not ideal, but until I see it break, I'll stick with it
+                var skipAttributeFullName = typeof(SkipAttribute).FullName;
+                foreach (var customAttribute in member.CustomAttributes)
+                {
+                    if (customAttribute.AttributeType.FullName == skipAttributeFullName)
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
             else { return method.IsSkipped(); }
         }
 
-        public static bool IsSkipped(this System.Reflection.MethodBase method)
+        public static bool IsSkipped(this MethodDefinition method)
         {
             Contract.Requires(method != null);
 
-            if (Attribute.IsDefined(method, typeof(SkipAttribute))) { return true; }
+            // a name comparison is not ideal, but until I see it break, I'll stick with it
+            var skipAttributeFullName = typeof(SkipAttribute).FullName;
+            foreach (var customAttribute in method.CustomAttributes)
+            {
+                if (customAttribute.AttributeType.FullName == skipAttributeFullName)
+                {
+                    return true;
+                }
+            }
 
-            return method.DeclaringType.GetProperties(
-                System.Reflection.BindingFlags.Instance |
-                System.Reflection.BindingFlags.Static |
-                System.Reflection.BindingFlags.NonPublic).Any(
+            return method.DeclaringType.Properties.Any(
                 property =>
                     (property.GetMethod == method || property.SetMethod == method) &&
                     property.IsSkipped());

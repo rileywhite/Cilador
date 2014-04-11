@@ -5,10 +5,9 @@ using System.Reflection;
 
 namespace Bix.Mixers.Fody.ILCloning
 {
-    internal abstract class MemberClonerBase<TMemberInfo, TMemberDefinition, TMemberWithRespectToModule> : IMemberCloner
-        where TMemberInfo : MemberInfo
+    internal abstract class MemberClonerBase<TMemberDefinition, TMemberWithRespectToModule> : IMemberCloner
         where TMemberDefinition : MemberReference, IMemberDefinition, Mono.Cecil.ICustomAttributeProvider
-        where TMemberWithRespectToModule : MemberWithRespectToModuleBase<TMemberInfo, TMemberDefinition>
+        where TMemberWithRespectToModule : MemberSourceWithRootBase<TMemberDefinition>
     {
         public MemberClonerBase(TMemberDefinition target, TMemberWithRespectToModule source)
         {
@@ -17,7 +16,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Ensures(this.Target != null);
             Contract.Ensures(this.Source != null);
 
-            if (source.MemberInfo.IsSkipped())
+            if (source.Source.IsSkipped())
             {
                 throw new InvalidOperationException("Cannot clone a skipped member");
             }

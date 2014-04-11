@@ -139,7 +139,7 @@ namespace Bix.Mixers.Fody.Core
             var mixCommandAttributeInterfaceType = this.ModuleDefinition.Import(typeof(IMixCommandAttribute)).Resolve();
             var typeTypeDefinition = this.ModuleDefinition.Import(typeof(Type)).Resolve();
 
-            var mixMap = new Dictionary<TypeDefinition, List<Tuple<IMixCommandAttribute, CustomAttribute>>>();
+            var mixMap = new Dictionary<TypeDefinition, List<CustomAttribute>>();
             foreach (var type in this.ModuleDefinition.Types)
             {
                 foreach(var attribute in type.CustomAttributes)
@@ -150,88 +150,14 @@ namespace Bix.Mixers.Fody.Core
                     {
                         if(attributeInterfaceType.Resolve() == mixCommandAttributeInterfaceType)
                         {
-                            List<Tuple<IMixCommandAttribute, CustomAttribute>> mixCommandsForType;
-                            if(!mixMap.TryGetValue(type.Resolve(), out mixCommandsForType))
+                            List<CustomAttribute> mixAttributesForType;
+                            if(!mixMap.TryGetValue(type.Resolve(), out mixAttributesForType))
                             {
-                                mixCommandsForType = new List<Tuple<IMixCommandAttribute, CustomAttribute>>();
-                                mixMap[type.Resolve()] = mixCommandsForType;
+                                mixAttributesForType = new List<CustomAttribute>();
+                                mixMap[type.Resolve()] = mixAttributesForType;
                             }
 
-                            Type attributeType = Type.GetType(string.Format(
-                                "{0}, {1}",
-                                attributeTypeDefinition.FullName,
-                                attributeTypeDefinition.Module.Assembly.FullName));
-
-                            if(attributeType == null)
-                            {
-                                using (var memoryStream = new MemoryStream())
-                                {
-                                    attributeTypeDefinition.Module.Assembly.Write(memoryStream);
-                                    var attributeAssembly = AppDomain.CurrentDomain.Load(memoryStream.GetBuffer());
-                                    attributeType = attributeAssembly.GetType(attributeTypeDefinition.FullName);
-                                }
-                            }
-
-                            Type[] constructorParameterTypes;
-                            object[] constructorArguments;
-                            if (!attribute.HasConstructorArguments)
-                            {
-                                constructorParameterTypes = new Type[0];
-                                constructorArguments = new object[0];
-                            }
-                            else
-                            {
-                                Contract.Assert(attribute.Constructor.Parameters.Count == attribute.ConstructorArguments.Count);
-
-                                constructorParameterTypes = new Type[attribute.Constructor.Parameters.Count];
-                                constructorArguments = new object[attribute.ConstructorArguments.Count];
-                                for (int i = 0; i < attribute.Constructor.Parameters.Count; i++)
-                                {
-                                    var parameterTypeDefinition = attribute.Constructor.Parameters[i].ParameterType.Resolve();
-                                    constructorParameterTypes[i] = Type.GetType(string.Format(
-                                        "{0}, {1}",
-                                        parameterTypeDefinition.FullName,
-                                        parameterTypeDefinition.Module.Assembly.FullName));
-
-                                    var argument = attribute.ConstructorArguments[i];
-                                    if (argument.Type.Resolve() == typeTypeDefinition)
-                                    {
-                                        var argumentValue = ((TypeReference)argument.Value).Resolve();
-                                        constructorArguments[i] = Type.GetType(string.Format(
-                                            "{0}, {1}",
-                                            argumentValue.FullName,
-                                            argumentValue.Module.Assembly.FullName));
-                                        if (constructorArguments[i] == null)
-                                        {
-                                            using (var memoryStream = new MemoryStream())
-                                            {
-                                                argumentValue.Module.Assembly.Write(memoryStream);
-                                                var argumentTypeAssembly = AppDomain.CurrentDomain.Load(memoryStream.GetBuffer());
-                                                constructorArguments[i] = argumentTypeAssembly.GetType(argumentValue.FullName);
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        constructorArguments[i] = argument.Value;
-                                    }
-                                }
-
-                            }
-
-                            var attributeConstructor = attributeType.GetConstructor(constructorParameterTypes);
-                            if (attributeConstructor == null)
-                            {
-                                throw new InvalidOperationException(string.Format(
-                                    "Unable to find matching constructor for attribute [{0}] on type [{1}]",
-                                    attribute.AttributeType.FullName,
-                                    type.FullName));
-                            }
-
-                            var argumentAttribute = (IMixCommandAttribute)attributeConstructor.Invoke(constructorArguments);
-                            Contract.Assert(argumentAttribute != null);
-
-                            mixCommandsForType.Add(Tuple.Create(argumentAttribute, attribute));
+                            mixAttributesForType.Add(attribute);
 
                             continue;
                         }
@@ -244,24 +170,25 @@ namespace Bix.Mixers.Fody.Core
                 var mixedType = mixes.Key;
                 Contract.Assert(mixedType != null);
 
-                foreach (var mixNameAndAttributes in mixes.Value)
+                foreach (var commandAttribute in mixes.Value)
                 {
-                    mixedType.CustomAttributes.Remove(mixNameAndAttributes.Item2);
+                    mixedType.CustomAttributes.Remove(commandAttribute);
                 }
 
 
-                foreach(var mixAttributes in mixes.Value)
+                foreach(var commandAttribute in mixes.Value)
                 {
+                    var commandAttributeType = commandAttribute.AttributeType.Resolve();
                     var mixCommand = this.MixCommands.FirstOrDefault(
-                        command => command.Metadata.AttributeType.Equals(mixAttributes.Item1.GetType()) && command.Value.IsInitialized);
+                        command => this.ModuleDefinition.Import(command.Metadata.AttributeType).Resolve() == commandAttributeType && command.Value.IsInitialized);
 
                     if(mixCommand == null)
                     {
                         throw new InvalidOperationException(
-                            string.Format("Cannot find a configured mix command for type [{0}] and command [{1}]", mixedType.FullName, mixAttributes.Item1));
+                            string.Format("Cannot find a configured mix command for type [{0}] and command [{1}]", mixedType.FullName, commandAttributeType.FullName));
                     }
 
-                    mixCommand.Value.Mix(mixedType, mixAttributes.Item1);
+                    mixCommand.Value.Mix(mixedType, commandAttribute);
                 }
             }
         }

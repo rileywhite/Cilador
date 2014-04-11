@@ -14,6 +14,6 @@ namespace Bix.Mixers.Fody.Core
     {
         bool IsInitialized { get; }
         void Initialize(MixCommandConfigTypeBase config);
-        void Mix(TypeDefinition target, IMixCommandAttribute mixCommandAttribute);
+        void Mix(TypeDefinition target, CustomAttribute mixCommandAttribute);
     }
 }
