@@ -14,6 +14,7 @@ namespace Bix.Mixers.Fody.InterfaceMixing
     {
         public InterfaceMixAttribute(Type @interface)
         {
+            Contract.Requires(@interface != null);
             this.Interface = @interface;
         }
 

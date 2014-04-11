@@ -103,7 +103,8 @@
     <Compile Include="Common\TestPaths.cs" />
     <Compile Include="Common\ModuleWeaverHelper.cs" />
     <Compile Include="Common\Extensions.cs" />
-    <Compile Include="ConfigTests\ConfigSerializationTests.cs" />
+    <Compile Include="Common\AssemblyVerifier.cs" />
+    <Compile Include="ModuleWeaverGeneralTests\ConfigSerializationTests.cs" />
     <Compile Include="InterfaceMixTests\EmptyInterfaceFixture.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

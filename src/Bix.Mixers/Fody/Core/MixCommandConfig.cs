@@ -20,9 +20,9 @@ namespace Bix.Mixers.Fody.Core {
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(TypeName="Bix.MixersType", Namespace="urn:Bix:Mixers:Fody:Core")]
-    [System.Xml.Serialization.XmlRootAttribute("Bix.Mixers", Namespace="urn:Bix:Mixers:Fody:Core", IsNullable=false)]
-    public partial class BixMixersType {
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="urn:Bix:Mixers:Fody:Core")]
+    [System.Xml.Serialization.XmlRootAttribute("BixMixersConfig", Namespace="urn:Bix:Mixers:Fody:Core", IsNullable=false)]
+    public partial class BixMixersConfigType {
         
         private MixCommandConfigTypeBase[] mixCommandConfigField;
         

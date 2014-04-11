@@ -6,11 +6,11 @@
 
   <xs:complexType name="MixCommandConfigTypeBase" abstract="true"/>
 
-  <xs:complexType name="Bix.MixersType">
+  <xs:complexType name="BixMixersConfigType">
     <xs:sequence minOccurs="1" maxOccurs="1">
       <xs:element name="MixCommandConfig" type="bmfc:MixCommandConfigTypeBase" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="Bix.Mixers" type="bmfc:Bix.MixersType"/>
+  <xs:element name="BixMixersConfig" type="bmfc:BixMixersConfigType"/>
 
 </xs:schema>

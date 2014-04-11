@@ -1,5 +1,6 @@
 ﻿using Bix.Mixers.Fody.Core;
 using Mono.Cecil;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -56,12 +57,12 @@ namespace Bix.Mixers.Fody.Tests.Common
             return moduleWeaver;
         }
 
-        public static Assembly WeaveAndLoadTestTarget(XElement config)
+        public static Assembly WeaveAndLoadTestTarget(BixMixersConfigType config, params Tuple<string, string>[] fodyWeaverTaskProperties)
         {
             Contract.Requires(config != null);
             Contract.Ensures(Contract.Result<Assembly>() != null);
 
-            return AppDomain.CurrentDomain.Load(ModuleWeaverHelper.GetRawWeavedAssembly(config));
+            return AppDomain.CurrentDomain.Load(ModuleWeaverHelper.GetRawWeavedAssembly(BuildXElementConfig(config, fodyWeaverTaskProperties)));
         }
 
         public static byte[] GetRawWeavedAssembly(XElement config)
@@ -82,7 +83,32 @@ namespace Bix.Mixers.Fody.Tests.Common
             Contract.Ensures(Contract.Result<ModuleDefinition>() != null);
 
             var moduleWeaver = GetModuleWeaver(config);
+
+            bool isVerified;
+            string verificationOutput;
+            AssemblyVerifier.RunVerifyProcessAndCollectOutput(moduleWeaver.AssemblyFilePath, out isVerified, out verificationOutput);
+            Assert.That(isVerified, string.Format("Unprocessed assembly could not be verified: \n{0}", verificationOutput));
+
             moduleWeaver.Execute();
+
+            var tempProcessedAssemblyPath = Path.Combine(Path.GetDirectoryName(moduleWeaver.AssemblyFilePath), string.Format("{0}.dll", Path.GetRandomFileName()));
+            try
+            {
+                moduleWeaver.ModuleDefinition.Write(tempProcessedAssemblyPath);
+                AssemblyVerifier.RunVerifyProcessAndCollectOutput(tempProcessedAssemblyPath, out isVerified, out verificationOutput);
+                Assert.That(isVerified, string.Format("Processed assembly could not be verified: \n{0}", verificationOutput));
+            }
+            finally
+            {
+                if (File.Exists(tempProcessedAssemblyPath))
+                {
+                    try
+                    {
+                        File.Delete(tempProcessedAssemblyPath);
+                    }
+                    catch { }
+                }
+            }
 
             return moduleWeaver.ModuleDefinition;
         }
@@ -105,6 +131,22 @@ namespace Bix.Mixers.Fody.Tests.Common
             }
 
             return config;
+        }
+
+        public static XElement BuildXElementConfig(BixMixersConfigType config, params Tuple<string, string>[] fodyWeaverTaskProperties)
+        {
+            Contract.Requires(config != null);
+            Contract.Ensures(Contract.Result<XElement>() != null);
+
+            var xmlConfig = new XElement("Bix.Mixers", config.ToXElement());
+            if(fodyWeaverTaskProperties != null && fodyWeaverTaskProperties.Length > 0)
+            {
+                foreach(var property in fodyWeaverTaskProperties)
+                {
+                    xmlConfig.Add(new XAttribute(property.Item1, property.Item2));
+                }
+            }
+            return xmlConfig;
         }
     }
 }

@@ -66,17 +66,12 @@ namespace Bix.Mixers.Fody.Core
 
         void IPartImportsSatisfiedNotification.OnImportsSatisfied()
         {
+            Contract.Assert(this.BixMixersConfig != null);
             Contract.Assert(this.MixCommands != null);
-
-            var mixersConfig = this.Config.FromXElement<BixMixersType>();
-            if (mixersConfig == null)
-            {
-                throw new InvalidOperationException("Could not deserialize the Bix.Mixers config XElement into a BixMixers object.");
-            }
 
             foreach (var mixCommand in this.MixCommands)
             {
-                var mixCommandConfig = mixersConfig.MixCommandConfig.FirstOrDefault(config => config.GetType() == mixCommand.Metadata.ConfigType);
+                var mixCommandConfig = this.BixMixersConfig.MixCommandConfig.FirstOrDefault(config => config.GetType() == mixCommand.Metadata.ConfigType);
                 if (mixCommandConfig == null)
                 {
                     if (this.LogWarning != null)
@@ -100,13 +95,51 @@ namespace Bix.Mixers.Fody.Core
             {
                 Contract.Requires(this.Config == null);
                 Contract.Requires(value != null);
+                Contract.Ensures(this.Config != null);
+                Contract.Ensures(this.BixMixersConfig != null);
                 Contract.Ensures(this.Container != null);
 
                 this.config = value;
+                this.BixMixersConfig = ReadBixMixersConfig(value);
 
                 this.Container.ComposeParts(this);
             }
         }
+
+        public static BixMixersConfigType ReadBixMixersConfig(XElement config)
+        {
+            Contract.Requires(config != null);
+            Contract.Ensures(Contract.Result<BixMixersConfigType>() != null);
+
+            var children = config.Elements();
+            if (children.Count() != 1)
+            {
+                throw new WeavingException("Bix.Mixers config in FodyWeavers.xml should have exactly one child");
+            }
+
+            var firstChild = children.First();
+            if (firstChild.Name.NamespaceName != "urn:Bix:Mixers:Fody:Core" ||
+                firstChild.Name.LocalName != "BixMixersConfig")
+            {
+                throw new WeavingException("Child of Bix.Mixers config in FodyWeavers.xml should be BixMixersConfig in namespace urn:Bix:Mixers:Fody:Core");
+            }
+
+            BixMixersConfigType deserializedConfig;
+            try
+            {
+                deserializedConfig = firstChild.FromXElement<BixMixersConfigType>();
+            }
+            catch (Exception e)
+            {
+                throw new WeavingException(
+                    "Element urn:Bix:Mixers:Fody:Core:BixMixersConfig in FodyWeavers.xml could not be deserialized into type of BixMixersConfigType",
+                    e);
+            }
+
+            return deserializedConfig;
+        }
+
+        public BixMixersConfigType BixMixersConfig { get; private set; }
         
         public Action<string> LogDebug { get; set; }
         
@@ -123,8 +156,13 @@ namespace Bix.Mixers.Fody.Core
         public IAssemblyResolver AssemblyResolver { get; set; }
         
         public ModuleDefinition ModuleDefinition { get; set; }
-        
+
         public List<string> DefineConstants { get; set; }
+
+        IReadOnlyCollection<string> IWeavingContext.DefineConstants
+        {
+            get { return this.DefineConstants; }
+        }
         
         public string AssemblyFilePath { get; set; }
         

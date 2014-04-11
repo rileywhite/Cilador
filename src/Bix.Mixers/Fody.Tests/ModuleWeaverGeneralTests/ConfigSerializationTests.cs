@@ -12,26 +12,26 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
-namespace Bix.Mixers.Fody.Tests.ConfigTests
+namespace Bix.Mixers.Fody.Tests.ModuleWeaverGeneralTests
 {
     [TestFixture]
-    internal class ConfigSerializationTests
+    internal class ConfigTests
     {
         [TestCase(
-@"<Bix.Mixers xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns=""urn:Bix:Mixers:Fody:Core"">
-</Bix.Mixers>")]
+@"<Bix.Mixers><BixMixersConfig xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns=""urn:Bix:Mixers:Fody:Core"">
+</BixMixersConfig></Bix.Mixers>")]
         [TestCase(
-@"<Bix.Mixers xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns=""urn:Bix:Mixers:Fody:Core"" xmlns:bmfim=""urn:Bix:Mixers:Fody:InterfaceMixing"">
+@"<Bix.Mixers><BixMixersConfig xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns=""urn:Bix:Mixers:Fody:Core"" xmlns:bmfim=""urn:Bix:Mixers:Fody:InterfaceMixing"">
   <MixCommandConfig xsi:type=""bmfim:InterfaceMixConfigType"" xmlns="""">
     <InterfaceMap Interface=""Bix.Mixers.Fody.TestInterfaces.IEmptyInterface, Bix.Mixers.Fody.TestInterfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"" Template=""Bix.Mixers.Fody.TestSource.EmptyInterfaceTemplate, Bix.Mixers.Fody.TestSource, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"" />
   </MixCommandConfig>
-</Bix.Mixers>", typeof(InterfaceMixConfigType))]
-        public void CanDeserialize(string xmlString, params Type[] mixCommandConfigTypes)
+</BixMixersConfig></Bix.Mixers>", typeof(InterfaceMixConfigType))]
+        public void CanReadConfig(string xmlString, params Type[] mixCommandConfigTypes)
         {
             var configXElement = XElement.Parse(xmlString);
             Assert.NotNull(configXElement);
 
-            var config = configXElement.FromXElement<BixMixersType>();
+            var config = ModuleWeaver.ReadBixMixersConfig(configXElement);
 
             Assert.NotNull(config);
 

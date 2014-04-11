@@ -10,29 +10,31 @@ namespace Bix.Mixers.Fody.Core
 {
     public interface IWeavingContext
     {
-        Action<string> LogDebug { get; set; }
+        BixMixersConfigType BixMixersConfig { get; }
+
+        Action<string> LogDebug { get; }
         
-        Action<string> LogInfo { get; set; }
+        Action<string> LogInfo { get; }
         
         Action<string> LogWarning { get; set; }
         
-        Action<string, SequencePoint> LogWarningPoint { get; set; }
+        Action<string, SequencePoint> LogWarningPoint { get; }
         
-        Action<string> LogError { get; set; }
+        Action<string> LogError { get; }
         
-        Action<string, SequencePoint> LogErrorPoint { get; set; }
+        Action<string, SequencePoint> LogErrorPoint { get; }
         
-        IAssemblyResolver AssemblyResolver { get; set; }
+        IAssemblyResolver AssemblyResolver { get; }
         
-        ModuleDefinition ModuleDefinition { get; set; }
+        ModuleDefinition ModuleDefinition { get; }
+
+        IReadOnlyCollection<string> DefineConstants { get; }
         
-        List<string> DefineConstants { get; set; }
+        string AssemblyFilePath { get; }
         
-        string AssemblyFilePath { get; set; }
+        string ProjectDirectoryPath { get; }
         
-        string ProjectDirectoryPath { get; set; }
-        
-        string AddinDirectoryPath { get; set; }
+        string AddinDirectoryPath { get; }
         
         string SolutionDirectoryPath { get; }
     }

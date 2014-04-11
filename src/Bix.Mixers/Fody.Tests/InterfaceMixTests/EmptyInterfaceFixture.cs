@@ -16,7 +16,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
         [Test]
         public void CanAddInterface()
         {
-            var config = new BixMixersType();
+            var config = new BixMixersConfigType();
 
             config.MixCommandConfig = new MixCommandConfigTypeBase[]
             {
@@ -33,7 +33,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
                 },
             };
 
-            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config.ToXElement());
+            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
             var targetType = assembly.GetType("Bix.Mixers.Fody.TestTarget.EmptyInterfaceTarget");
             Assert.That(typeof(Bix.Mixers.Fody.TestInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
 

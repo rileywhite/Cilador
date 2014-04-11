@@ -99,7 +99,7 @@
     <Compile Include="Core\MixCommandConfig.cs">
       <DependentUpon>MixCommandConfig.xsd</DependentUpon>
     </Compile>
-    <Compile Include="Core\MixCommandConfigTypeBase.cs" />
+    <Compile Include="Core\WeavingException.cs" />
     <Compile Include="ILCloning\EventCloner.cs" />
     <Compile Include="ILCloning\EventSourceWithRoot.cs" />
     <Compile Include="ILCloning\ILCloningExtensions.cs" />
