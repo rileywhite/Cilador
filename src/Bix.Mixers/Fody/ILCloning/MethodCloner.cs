@@ -17,133 +17,122 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(source != null);
         }
 
-
         public override void Clone()
         {
             Contract.Assert(this.Target.DeclaringType != null);
-            Contract.Assert(this.Target.Name == this.Source.Source.Name);
+            Contract.Assert(this.Target.Name == this.SourceWithRoot.Source.Name);
 
-            this.Target.Attributes = this.Source.Source.Attributes;
-            this.Target.CallingConvention = this.Source.Source.CallingConvention;
-            this.Target.ExplicitThis = this.Source.Source.ExplicitThis;
-            this.Target.HasSecurity = this.Source.Source.HasSecurity;
-            this.Target.HasThis = this.Source.Source.HasThis;
-            this.Target.ImplAttributes = this.Source.Source.ImplAttributes;
-            this.Target.IsAbstract = this.Source.Source.IsAbstract;
-            this.Target.IsAddOn = this.Source.Source.IsAddOn;
-            this.Target.IsAssembly = this.Source.Source.IsAssembly;
-            this.Target.IsCheckAccessOnOverride = this.Source.Source.IsCheckAccessOnOverride;
-            this.Target.IsCompilerControlled = this.Source.Source.IsCompilerControlled;
-            this.Target.IsFamily = this.Source.Source.IsFamily;
-            this.Target.IsFamilyAndAssembly = this.Source.Source.IsFamilyAndAssembly;
-            this.Target.IsFamilyOrAssembly = this.Source.Source.IsFamilyOrAssembly;
-            this.Target.IsFinal = this.Source.Source.IsFinal;
-            this.Target.IsFire = this.Source.Source.IsFire;
-            this.Target.IsForwardRef = this.Source.Source.IsForwardRef;
-            this.Target.IsGetter = this.Source.Source.IsGetter;
-            this.Target.IsHideBySig = this.Source.Source.IsHideBySig;
-            this.Target.IsIL = this.Source.Source.IsIL;
-            this.Target.IsInternalCall = this.Source.Source.IsInternalCall;
-            this.Target.IsManaged = this.Source.Source.IsManaged;
-            this.Target.IsNative = this.Source.Source.IsNative;
-            this.Target.IsNewSlot = this.Source.Source.IsNewSlot;
-            this.Target.IsOther = this.Source.Source.IsOther;
-            this.Target.IsPInvokeImpl = this.Source.Source.IsPInvokeImpl;
-            this.Target.IsPreserveSig = this.Source.Source.IsPreserveSig;
-            this.Target.IsPrivate = this.Source.Source.IsPrivate;
-            this.Target.IsPublic = this.Source.Source.IsPublic;
-            this.Target.IsRemoveOn = this.Source.Source.IsRemoveOn;
-            this.Target.IsReuseSlot = this.Source.Source.IsReuseSlot;
-            this.Target.IsRuntime = this.Source.Source.IsRuntime;
-            this.Target.IsRuntimeSpecialName = this.Source.Source.IsRuntimeSpecialName;
-            this.Target.IsSetter = this.Source.Source.IsSetter;
-            this.Target.IsSpecialName = this.Source.Source.IsSpecialName;
-            this.Target.IsStatic = this.Source.Source.IsStatic;
-            this.Target.IsSynchronized = this.Source.Source.IsSynchronized;
-            this.Target.IsUnmanaged = this.Source.Source.IsUnmanaged;
-            this.Target.IsUnmanagedExport = this.Source.Source.IsUnmanagedExport;
-            this.Target.IsVirtual = this.Source.Source.IsVirtual;
-            this.Target.NoInlining = this.Source.Source.NoInlining;
-            this.Target.NoOptimization = this.Source.Source.NoOptimization;
-            this.Target.SemanticsAttributes = this.Source.Source.SemanticsAttributes;
+            this.Target.Attributes = this.SourceWithRoot.Source.Attributes;
+            this.Target.CallingConvention = this.SourceWithRoot.Source.CallingConvention;
+            this.Target.ExplicitThis = this.SourceWithRoot.Source.ExplicitThis;
+            this.Target.HasSecurity = this.SourceWithRoot.Source.HasSecurity;
+            this.Target.HasThis = this.SourceWithRoot.Source.HasThis;
+            this.Target.ImplAttributes = this.SourceWithRoot.Source.ImplAttributes;
+            this.Target.IsAbstract = this.SourceWithRoot.Source.IsAbstract;
+            this.Target.IsAddOn = this.SourceWithRoot.Source.IsAddOn;
+            this.Target.IsAssembly = this.SourceWithRoot.Source.IsAssembly;
+            this.Target.IsCheckAccessOnOverride = this.SourceWithRoot.Source.IsCheckAccessOnOverride;
+            this.Target.IsCompilerControlled = this.SourceWithRoot.Source.IsCompilerControlled;
+            this.Target.IsFamily = this.SourceWithRoot.Source.IsFamily;
+            this.Target.IsFamilyAndAssembly = this.SourceWithRoot.Source.IsFamilyAndAssembly;
+            this.Target.IsFamilyOrAssembly = this.SourceWithRoot.Source.IsFamilyOrAssembly;
+            this.Target.IsFinal = this.SourceWithRoot.Source.IsFinal;
+            this.Target.IsFire = this.SourceWithRoot.Source.IsFire;
+            this.Target.IsForwardRef = this.SourceWithRoot.Source.IsForwardRef;
+            this.Target.IsGetter = this.SourceWithRoot.Source.IsGetter;
+            this.Target.IsHideBySig = this.SourceWithRoot.Source.IsHideBySig;
+            this.Target.IsIL = this.SourceWithRoot.Source.IsIL;
+            this.Target.IsInternalCall = this.SourceWithRoot.Source.IsInternalCall;
+            this.Target.IsManaged = this.SourceWithRoot.Source.IsManaged;
+            this.Target.IsNative = this.SourceWithRoot.Source.IsNative;
+            this.Target.IsNewSlot = this.SourceWithRoot.Source.IsNewSlot;
+            this.Target.IsOther = this.SourceWithRoot.Source.IsOther;
+            this.Target.IsPInvokeImpl = this.SourceWithRoot.Source.IsPInvokeImpl;
+            this.Target.IsPreserveSig = this.SourceWithRoot.Source.IsPreserveSig;
+            this.Target.IsPrivate = this.SourceWithRoot.Source.IsPrivate;
+            this.Target.IsPublic = this.SourceWithRoot.Source.IsPublic;
+            this.Target.IsRemoveOn = this.SourceWithRoot.Source.IsRemoveOn;
+            this.Target.IsReuseSlot = this.SourceWithRoot.Source.IsReuseSlot;
+            this.Target.IsRuntime = this.SourceWithRoot.Source.IsRuntime;
+            this.Target.IsRuntimeSpecialName = this.SourceWithRoot.Source.IsRuntimeSpecialName;
+            this.Target.IsSetter = this.SourceWithRoot.Source.IsSetter;
+            this.Target.IsSpecialName = this.SourceWithRoot.Source.IsSpecialName;
+            this.Target.IsStatic = this.SourceWithRoot.Source.IsStatic;
+            this.Target.IsSynchronized = this.SourceWithRoot.Source.IsSynchronized;
+            this.Target.IsUnmanaged = this.SourceWithRoot.Source.IsUnmanaged;
+            this.Target.IsUnmanagedExport = this.SourceWithRoot.Source.IsUnmanagedExport;
+            this.Target.IsVirtual = this.SourceWithRoot.Source.IsVirtual;
+            this.Target.NoInlining = this.SourceWithRoot.Source.NoInlining;
+            this.Target.NoOptimization = this.SourceWithRoot.Source.NoOptimization;
+            this.Target.SemanticsAttributes = this.SourceWithRoot.Source.SemanticsAttributes;
 
-            // TODO look more closely
-            this.Target.MetadataToken = this.Source.Source.MetadataToken;
-            if (this.Source.Source.PInvokeInfo != null)
+            // TODO look more closely, e.g. need to do anything with this.Target.MethodReturnType?
+            this.Target.MetadataToken = this.SourceWithRoot.Source.MetadataToken;
+            if (this.SourceWithRoot.Source.PInvokeInfo != null)
             {
                 this.Target.PInvokeInfo = new PInvokeInfo(
-                    this.Source.Source.PInvokeInfo.Attributes,
-                    this.Source.Source.PInvokeInfo.EntryPoint,
-                    this.Source.Source.PInvokeInfo.Module);
+                    this.SourceWithRoot.Source.PInvokeInfo.Attributes,
+                    this.SourceWithRoot.Source.PInvokeInfo.EntryPoint,
+                    this.SourceWithRoot.Source.PInvokeInfo.Module);
             }
-            //this.Target.MethodReturnType = new MethodReturnType(this.Target)
-            //{
-            //    Attributes = this.Source.MemberDefinition.MethodReturnType.Attributes,
-            //    Constant = this.Source.MemberDefinition.MethodReturnType.Constant,
-            //    // CustomAttributes
-            //    HasConstant = this.Source.MemberDefinition.MethodReturnType.HasConstant,
-            //    HasDefault = this.Source.MemberDefinition.MethodReturnType.HasDefault,
-            //    HasFieldMarshal = this.Source.MemberDefinition.MethodReturnType.HasFieldMarshal,
-            //    MarshalInfo = this.Source.MemberDefinition.MethodReturnType.MarshalInfo,
-            //    MetadataToken = this.Source.MemberDefinition.MethodReturnType.MetadataToken,
-            //    ReturnType = this.Source.ReferencingModule.Import(this.Source.MemberDefinition.MethodReturnType.ReturnType)
-            //};
-            this.Target.ReturnType = this.Source.RootImport(this.Source.Source.ReturnType);
 
-            if (this.Source.Source.HasOverrides)
+            this.Target.ReturnType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.ReturnType);
+
+            if (this.SourceWithRoot.Source.HasOverrides)
             {
-                foreach (var sourceOverride in this.Source.Source.Overrides)
+                foreach (var sourceOverride in this.SourceWithRoot.Source.Overrides)
                 {
-                    this.Target.Overrides.Add(this.Source.RootImport(sourceOverride));
+                    this.Target.Overrides.Add(this.SourceWithRoot.RootImport(sourceOverride));
                 }
             }
 
-            var parameterOperandReplacementMap = new Dictionary<ParameterDefinition, ParameterDefinition>(this.Source.Source.Parameters.Count);
-            if (this.Source.Source.HasParameters)
+            this.ParameterOperandReplacementMap = new Dictionary<ParameterDefinition, ParameterDefinition>(this.SourceWithRoot.Source.Parameters.Count);
+            if (this.SourceWithRoot.Source.HasParameters)
             {
-                foreach (var sourceParameter in this.Source.Source.Parameters)
+                foreach (var sourceParameter in this.SourceWithRoot.Source.Parameters)
                 {
                     var targetParameter =
-                        new ParameterDefinition(sourceParameter.Name, sourceParameter.Attributes, this.Source.RootImport(sourceParameter.ParameterType));
+                        new ParameterDefinition(sourceParameter.Name, sourceParameter.Attributes, this.SourceWithRoot.RootImport(sourceParameter.ParameterType));
                     this.Target.Parameters.Add(targetParameter);
-                    parameterOperandReplacementMap.Add(sourceParameter, targetParameter);
+                    this.ParameterOperandReplacementMap.Add(sourceParameter, targetParameter);
                 }
             }
-            Contract.Assert(this.Target.Parameters.Count == this.Source.Source.Parameters.Count);
-
-            if (this.Source.Source.HasBody)
-            {
-                this.CloneBody(this.Source.Source.Body, this.Target.Body, parameterOperandReplacementMap);
-            }
+            Contract.Assert(this.Target.Parameters.Count == this.SourceWithRoot.Source.Parameters.Count);
 
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around
             this.Target.CustomAttributes.Clear();
-            this.Target.RootImportAllCustomAttributes(this.Source, this.Source.Source.CustomAttributes);
+            this.Target.RootImportAllCustomAttributes(this.SourceWithRoot, this.SourceWithRoot.Source.CustomAttributes);
 
-            if (this.Source.Source.HasGenericParameters)
+            if (this.SourceWithRoot.Source.HasGenericParameters)
             {
                 // TODO method generic parameters
                 throw new NotImplementedException("Implement method generic parameters when needed");
             }
 
-            if (this.Source.Source.HasSecurityDeclarations)
+            if (this.SourceWithRoot.Source.HasSecurityDeclarations)
             {
                 // TODO method security declarations
                 throw new NotImplementedException("Implement method security declarations when needed");
             }
 
             this.IsCloned = true;
-            Contract.Assert(this.Target.SignatureEquals(this.Source.Source));
+            Contract.Assert(this.Target.SignatureEquals(this.SourceWithRoot.Source));
         }
 
-        private void CloneBody(
-            Mono.Cecil.Cil.MethodBody sourceBody,
-            Mono.Cecil.Cil.MethodBody targetBody,
-            Dictionary<ParameterDefinition, ParameterDefinition> parameterOperandReplacementMap)
+        Dictionary<ParameterDefinition, ParameterDefinition> ParameterOperandReplacementMap { get; set; }
+
+        public bool IsBodyCloned { get; private set; }
+
+        public void CloneBody()
         {
-            Contract.Requires(sourceBody != null);
-            Contract.Requires(targetBody != null);
-            Contract.Requires(parameterOperandReplacementMap != null);
+            Contract.Requires(this.IsCloned);
+            Contract.Requires(!this.IsBodyCloned);
+            Contract.Ensures(this.IsBodyCloned);
+
+            Contract.Assert(this.ParameterOperandReplacementMap != null);
+
+            var sourceBody = this.SourceWithRoot.Source.Body;
+            var targetBody = this.Target.Body;
 
             targetBody.InitLocals = sourceBody.InitLocals;
 
@@ -154,7 +143,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
             targetBody.MaxStackSize = sourceBody.MaxStackSize;
 
-            // TODO this one may be tough to get right
+            // TODO method body scope may be tough to get right
             targetBody.Scope = sourceBody.Scope;
 
             var variableOperandReplacementMap = new Dictionary<VariableDefinition, VariableDefinition>(sourceBody.Variables.Count);
@@ -162,7 +151,7 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 var targetVariable = new VariableDefinition(
                     sourceVariable.Name,
-                    this.Source.RootImport(sourceVariable.VariableType));
+                    this.SourceWithRoot.RootImport(sourceVariable.VariableType));
 
                 variableOperandReplacementMap.Add(sourceVariable, targetVariable);
 
@@ -190,12 +179,14 @@ namespace Bix.Mixers.Fody.ILCloning
 
             foreach (var targetInstruction in targetBody.Instructions.Where(instruction => instruction.Operand != null))
             {
-                if (TryReplaceParameterOperand(parameterOperandReplacementMap, targetInstruction)) { continue; }
+                if (TryReplaceParameterOperand(this.ParameterOperandReplacementMap, targetInstruction)) { continue; }
                 if (TryReplaceThisReferenceOperand(sourceBody.ThisParameter, targetBody.ThisParameter, targetInstruction)) { continue; }
                 if (TryReplaceVariableOperand(variableOperandReplacementMap, targetInstruction)) { continue; }
                 if (TryReplaceInstructionOperand(instructionOperandReplacementMap, targetInstruction)) { continue; }
                 if (TryReplaceInstructionsOperand(instructionOperandReplacementMap, targetInstruction)) { continue; }
             }
+
+            this.IsBodyCloned = true;
         }
 
         private bool TryReplaceParameterOperand(Dictionary<ParameterDefinition, ParameterDefinition> parameterOperandReplacementMap, Instruction targetInstruction)
@@ -318,7 +309,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, FieldReference field)
         {
-            return ilProcessor.Create(opCode, this.Source.RootImport(field));
+            return ilProcessor.Create(opCode, this.SourceWithRoot.RootImport(field));
         }
 
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, float value)
@@ -348,7 +339,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, MethodReference method)
         {
-            return ilProcessor.Create(opCode, this.Source.RootImport(method));
+            return ilProcessor.Create(opCode, this.SourceWithRoot.RootImport(method));
         }
 
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, ParameterDefinition parameter)
@@ -368,7 +359,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, TypeReference type)
         {
-            return ilProcessor.Create(opCode, this.Source.RootImport(type));
+            return ilProcessor.Create(opCode, this.SourceWithRoot.RootImport(type));
         }
 
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, VariableDefinition variable)

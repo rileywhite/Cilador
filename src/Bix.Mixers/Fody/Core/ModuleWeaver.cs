@@ -175,7 +175,6 @@ namespace Bix.Mixers.Fody.Core
         public void Execute()
         {
             var mixCommandAttributeInterfaceType = this.ModuleDefinition.Import(typeof(IMixCommandAttribute)).Resolve();
-            var typeTypeDefinition = this.ModuleDefinition.Import(typeof(Type)).Resolve();
 
             var mixMap = new Dictionary<TypeDefinition, List<CustomAttribute>>();
             foreach (var type in this.ModuleDefinition.Types)

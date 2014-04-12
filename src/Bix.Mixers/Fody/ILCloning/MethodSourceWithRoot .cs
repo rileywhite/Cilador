@@ -9,10 +9,6 @@ namespace Bix.Mixers.Fody.ILCloning
         : MemberSourceWithRootBase<MethodDefinition>
     {
         public MethodSourceWithRoot(RootContext rootContext, MethodDefinition source)
-            : base(rootContext, source)
-        {
-            Contract.Requires(rootContext != null);
-            Contract.Ensures(this.RootContext != null);
-        }
+            : base(rootContext, source) { }
     }
 }

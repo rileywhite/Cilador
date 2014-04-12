@@ -6,19 +6,20 @@ namespace Bix.Mixers.Fody.ILCloning
 {
     internal class TypeSourceWithRoot : MemberSourceWithRootBase<TypeDefinition>
     {
-        public TypeSourceWithRoot(TypeDefinition source, TypeDefinition target)
-            : base(null, source)
+        public static TypeSourceWithRoot CreateWithRootSourceAndTarget(TypeDefinition source, TypeDefinition target)
         {
-            Contract.Ensures(this.RootContext != null);
+            Contract.Requires(source != null);
+            Contract.Requires(target != null);
+            Contract.Requires(source != target);
+            Contract.Ensures(Contract.Result<TypeSourceWithRoot>() != null);
 
-            this.RootContext = new RootContext(source, target);
+            return new TypeSourceWithRoot(
+                new RootContext(source, target),
+                source);
+
         }
 
         public TypeSourceWithRoot(RootContext rootContext, TypeDefinition source)
-            : base(rootContext, source)
-        {
-            Contract.Requires(rootContext != null);
-            Contract.Ensures(this.RootContext != null);
-        }
+            : base(rootContext, source) { }
     }
 }

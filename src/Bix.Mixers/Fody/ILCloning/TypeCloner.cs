@@ -14,11 +14,18 @@ namespace Bix.Mixers.Fody.ILCloning
         {
             Contract.Requires(target != null);
             Contract.Requires(source != null);
-            Contract.Ensures(this.Cloners != null);
-            this.Cloners = new List<IMemberCloner>();
+            this.TypeCloners = new List<TypeCloner>();
+            this.FieldCloners = new List<FieldCloner>();
+            this.MethodCloners = new List<MethodCloner>();
+            this.PropertyCloners = new List<PropertyCloner>();
+            this.EventCloners = new List<EventCloner>();
         }
 
-        private List<IMemberCloner> Cloners { get; set; }
+        private List<TypeCloner> TypeCloners { get; set; }
+        private List<FieldCloner> FieldCloners { get; set; }
+        private List<MethodCloner> MethodCloners { get; set; }
+        private List<PropertyCloner> PropertyCloners { get; set; }
+        private List<EventCloner> EventCloners { get; set; }
 
         private bool IsScaffoldingCompleted { get; set; }
 
@@ -26,73 +33,83 @@ namespace Bix.Mixers.Fody.ILCloning
         {
             this.PopulateClonersWithScaffolding();
             this.CopyTypeData();
-            this.Cloners.Clone();
+            this.TypeCloners.Clone();
+            this.FieldCloners.Clone();
+            this.MethodCloners.Clone();
+            this.PropertyCloners.Clone();
+            this.EventCloners.Clone();
             this.IsCloned = true;
+        }
+
+        public void CloneMethodBodies()
+        {
+            foreach (var methodCloner in this.MethodCloners) { methodCloner.CloneBody(); }
+            foreach (var typeCloner in this.TypeCloners) { typeCloner.CloneMethodBodies(); }
         }
 
         private void CopyTypeData()
         {
-            if (this.Target != this.Source.RootContext.RootTarget)
+            if (this.Target != this.SourceWithRoot.RootContext.RootTarget)
             {
-                this.Target.Attributes = this.Source.Source.Attributes;
-                this.Target.HasSecurity = this.Source.Source.HasSecurity;
-                this.Target.IsAbstract = this.Source.Source.IsAbstract;
-                this.Target.IsAnsiClass = this.Source.Source.IsAnsiClass;
-                this.Target.IsAutoClass = this.Source.Source.IsAutoClass;
-                this.Target.IsAutoLayout = this.Source.Source.IsAutoLayout;
-                this.Target.IsBeforeFieldInit = this.Source.Source.IsBeforeFieldInit;
-                this.Target.IsClass = this.Source.Source.IsClass;
-                this.Target.IsExplicitLayout = this.Source.Source.IsExplicitLayout;
-                this.Target.IsImport = this.Source.Source.IsImport;
-                this.Target.IsInterface = this.Source.Source.IsInterface;
-                this.Target.IsNestedAssembly = this.Source.Source.IsNestedAssembly;
-                this.Target.IsNestedFamily = this.Source.Source.IsNestedFamily;
-                this.Target.IsNestedFamilyAndAssembly = this.Source.Source.IsNestedFamilyAndAssembly;
-                this.Target.IsNestedFamilyOrAssembly = this.Source.Source.IsNestedFamilyOrAssembly;
-                this.Target.IsNestedPrivate = this.Source.Source.IsNestedPrivate;
-                this.Target.IsNestedPublic = this.Source.Source.IsNestedPublic;
-                this.Target.IsNotPublic = this.Source.Source.IsNotPublic;
-                this.Target.IsPublic = this.Source.Source.IsPublic;
-                this.Target.IsRuntimeSpecialName = this.Source.Source.IsRuntimeSpecialName;
-                this.Target.IsSealed = this.Source.Source.IsSealed;
-                this.Target.IsSequentialLayout = this.Source.Source.IsSequentialLayout;
-                this.Target.IsSerializable = this.Source.Source.IsSerializable;
-                this.Target.IsSpecialName = this.Source.Source.IsSpecialName;
-                this.Target.IsUnicodeClass = this.Source.Source.IsUnicodeClass;
-                this.Target.IsValueType = this.Source.Source.IsValueType;
-                this.Target.IsWindowsRuntime = this.Source.Source.IsWindowsRuntime;
+                this.Target.Attributes = this.SourceWithRoot.Source.Attributes;
+                this.Target.HasSecurity = this.SourceWithRoot.Source.HasSecurity;
+                this.Target.IsAbstract = this.SourceWithRoot.Source.IsAbstract;
+                this.Target.IsAnsiClass = this.SourceWithRoot.Source.IsAnsiClass;
+                this.Target.IsAutoClass = this.SourceWithRoot.Source.IsAutoClass;
+                this.Target.IsAutoLayout = this.SourceWithRoot.Source.IsAutoLayout;
+                this.Target.IsBeforeFieldInit = this.SourceWithRoot.Source.IsBeforeFieldInit;
+                this.Target.IsClass = this.SourceWithRoot.Source.IsClass;
+                this.Target.IsExplicitLayout = this.SourceWithRoot.Source.IsExplicitLayout;
+                this.Target.IsImport = this.SourceWithRoot.Source.IsImport;
+                this.Target.IsInterface = this.SourceWithRoot.Source.IsInterface;
+                this.Target.IsNestedAssembly = this.SourceWithRoot.Source.IsNestedAssembly;
+                this.Target.IsNestedFamily = this.SourceWithRoot.Source.IsNestedFamily;
+                this.Target.IsNestedFamilyAndAssembly = this.SourceWithRoot.Source.IsNestedFamilyAndAssembly;
+                this.Target.IsNestedFamilyOrAssembly = this.SourceWithRoot.Source.IsNestedFamilyOrAssembly;
+                this.Target.IsNestedPrivate = this.SourceWithRoot.Source.IsNestedPrivate;
+                this.Target.IsNestedPublic = this.SourceWithRoot.Source.IsNestedPublic;
+                this.Target.IsNotPublic = this.SourceWithRoot.Source.IsNotPublic;
+                this.Target.IsPublic = this.SourceWithRoot.Source.IsPublic;
+                this.Target.IsRuntimeSpecialName = this.SourceWithRoot.Source.IsRuntimeSpecialName;
+                this.Target.IsSealed = this.SourceWithRoot.Source.IsSealed;
+                this.Target.IsSequentialLayout = this.SourceWithRoot.Source.IsSequentialLayout;
+                this.Target.IsSerializable = this.SourceWithRoot.Source.IsSerializable;
+                this.Target.IsSpecialName = this.SourceWithRoot.Source.IsSpecialName;
+                this.Target.IsUnicodeClass = this.SourceWithRoot.Source.IsUnicodeClass;
+                this.Target.IsValueType = this.SourceWithRoot.Source.IsValueType;
+                this.Target.IsWindowsRuntime = this.SourceWithRoot.Source.IsWindowsRuntime;
 
                 // TODO look more closely at type packing size
-                this.Target.PackingSize = this.Source.Source.PackingSize;
+                this.Target.PackingSize = this.SourceWithRoot.Source.PackingSize;
 
                 // TODO look more closely at type class size
-                this.Target.ClassSize = this.Source.Source.ClassSize;
+                this.Target.ClassSize = this.SourceWithRoot.Source.ClassSize;
 
                 // TODO look more closely at type scope
-                this.Target.Scope = this.Source.Source.Scope;
+                this.Target.Scope = this.SourceWithRoot.Source.Scope;
 
-                if (this.Source.Source.IsNested)
+                if (this.SourceWithRoot.Source.IsNested)
                 {
-                    this.Target.DeclaringType = this.Source.RootImport(this.Source.Source.DeclaringType).Resolve();
+                    this.Target.DeclaringType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.DeclaringType).Resolve();
                 }
 
-                this.Target.BaseType = this.Source.RootImport(this.Source.Source.BaseType);
+                this.Target.BaseType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.BaseType);
 
                 // TODO look more closely at type metadata token
-                this.Target.MetadataToken = this.Source.Source.MetadataToken;
+                this.Target.MetadataToken = this.SourceWithRoot.Source.MetadataToken;
             }
 
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around, but only for non-root type
-            if (this.Target != this.Source.RootContext.RootTarget) { this.Target.CustomAttributes.Clear(); }
-            this.Target.RootImportAllCustomAttributes(this.Source, this.Source.Source.CustomAttributes);
+            if (this.Target != this.SourceWithRoot.RootContext.RootTarget) { this.Target.CustomAttributes.Clear(); }
+            this.Target.RootImportAllCustomAttributes(this.SourceWithRoot, this.SourceWithRoot.Source.CustomAttributes);
 
-            if (this.Source.Source.HasGenericParameters)
+            if (this.SourceWithRoot.Source.HasGenericParameters)
             {
                 // TODO type generic parameters
                 throw new NotImplementedException("Implement type generic parameters when needed");
             }
 
-            if (this.Source.Source.HasSecurityDeclarations)
+            if (this.SourceWithRoot.Source.HasSecurityDeclarations)
             {
                 // TODO type security declarations
                 throw new NotImplementedException("Implement type security declarations when needed");
@@ -105,47 +122,56 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 var voidReference = this.Target.Module.Import(typeof(void));
 
-                foreach (var source in from type in this.Source.Source.NestedTypes
+                foreach (var sourceWithRoot in from type in this.SourceWithRoot.Source.NestedTypes
                                        where !type.IsSkipped()
-                                       select new TypeSourceWithRoot(this.Source.RootContext, type))
+                                       select new TypeSourceWithRoot(this.SourceWithRoot.RootContext, type))
                 {
                     var target = new TypeDefinition(
-                        source.Source.Namespace,
-                        source.Source.Name,
+                        sourceWithRoot.Source.Namespace,
+                        sourceWithRoot.Source.Name,
                         0);
                     target.Module.Types.Add(target);
                     this.Target.NestedTypes.Add(target);
 
-                    var typeCloner = new TypeCloner(target, source);
+                    var typeCloner = new TypeCloner(target, sourceWithRoot);
                     typeCloner.PopulateClonersWithScaffolding();
-                    this.Cloners.Add(typeCloner);
+                    this.TypeCloners.Add(typeCloner);
                 }
 
-                foreach (var source in from field in this.Source.Source.Fields
+                foreach (var sourceWithRoot in from field in this.SourceWithRoot.Source.Fields
                                        where !field.IsSkipped()
-                                       select new FieldSourceWithRoot(this.Source.RootContext, field))
+                                       select new FieldSourceWithRoot(this.SourceWithRoot.RootContext, field))
                 {
-                    var target = new FieldDefinition(source.Source.Name, 0, voidReference);
+                    var target = new FieldDefinition(sourceWithRoot.Source.Name, 0, voidReference);
                     this.Target.Fields.Add(target);
-                    this.Cloners.Add(new FieldCloner(target, source));
+                    this.FieldCloners.Add(new FieldCloner(target, sourceWithRoot));
                 }
 
-                foreach (var source in from property in this.Source.Source.Properties
+                foreach (var sourceWithRoot in from method in this.SourceWithRoot.Source.Methods
+                                       where !method.IsSkipped()
+                                       select new MethodSourceWithRoot(this.SourceWithRoot.RootContext, method))
+                {
+                    var target = new MethodDefinition(sourceWithRoot.Source.Name, 0, voidReference);
+                    this.Target.Methods.Add(target);
+                    this.MethodCloners.Add(new MethodCloner(target, sourceWithRoot));
+                }
+
+                foreach (var sourceWithRoot in from property in this.SourceWithRoot.Source.Properties
                                        where !property.IsSkipped()
-                                       select new PropertySourceWithRoot(this.Source.RootContext, property))
+                                       select new PropertySourceWithRoot(this.SourceWithRoot.RootContext, property))
                 {
-                    var target = new PropertyDefinition(source.Source.Name, 0, voidReference);
+                    var target = new PropertyDefinition(sourceWithRoot.Source.Name, 0, voidReference);
                     this.Target.Properties.Add(target);
-                    this.Cloners.Add(new PropertyCloner(target, source));
+                    this.PropertyCloners.Add(new PropertyCloner(target, sourceWithRoot));
                 }
 
-                foreach (var source in from @event in this.Source.Source.Events
+                foreach (var sourceWithRoot in from @event in this.SourceWithRoot.Source.Events
                                        where !@event.IsSkipped()
-                                       select new EventSourceWithRoot(this.Source.RootContext, @event))
+                                       select new EventSourceWithRoot(this.SourceWithRoot.RootContext, @event))
                 {
-                    var target = new EventDefinition(source.Source.Name, 0, voidReference);
+                    var target = new EventDefinition(sourceWithRoot.Source.Name, 0, voidReference);
                     this.Target.Events.Add(target);
-                    this.Cloners.Add(new EventCloner(target, source));
+                    this.EventCloners.Add(new EventCloner(target, sourceWithRoot));
                 }
             }
             this.IsScaffoldingCompleted = true;

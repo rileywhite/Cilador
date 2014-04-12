@@ -12,7 +12,9 @@ namespace Bix.Mixers.Fody.ILCloning
             RootContext rootContext,
             TMemberDefinition source)
         {
+            Contract.Requires(rootContext != null);
             Contract.Requires(source != null);
+            Contract.Ensures(this.RootContext != null);
             Contract.Ensures(this.Source != null);
 
             this.RootContext = rootContext;

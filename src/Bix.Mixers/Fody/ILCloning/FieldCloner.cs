@@ -12,49 +12,49 @@ namespace Bix.Mixers.Fody.ILCloning
 
         public override void Clone()
         {
-            Contract.Requires(this.Target.Name == this.Source.Source.Name);
+            Contract.Requires(this.Target.Name == this.SourceWithRoot.Source.Name);
 
-            this.Target.Attributes = this.Source.Source.Attributes;
-            this.Target.Constant = this.Source.Source.Constant;
-            this.Target.HasConstant = this.Source.Source.HasConstant;
-            this.Target.HasDefault = this.Source.Source.HasDefault;
-            this.Target.IsAssembly = this.Source.Source.IsAssembly;
-            this.Target.IsCompilerControlled = this.Source.Source.IsCompilerControlled;
-            this.Target.IsFamily = this.Source.Source.IsFamily;
-            this.Target.IsFamilyAndAssembly = this.Source.Source.IsFamilyAndAssembly;
-            this.Target.IsFamilyOrAssembly = this.Source.Source.IsFamilyOrAssembly;
-            this.Target.IsInitOnly = this.Source.Source.IsInitOnly;
-            this.Target.IsLiteral = this.Source.Source.IsLiteral;
-            this.Target.IsNotSerialized = this.Source.Source.IsNotSerialized;
-            this.Target.IsPInvokeImpl = this.Source.Source.IsPInvokeImpl;
-            this.Target.IsPrivate = this.Source.Source.IsPrivate;
-            this.Target.IsPublic = this.Source.Source.IsPublic;
-            this.Target.IsRuntimeSpecialName = this.Source.Source.IsRuntimeSpecialName;
-            this.Target.IsSpecialName = this.Source.Source.IsSpecialName;
-            this.Target.IsStatic = this.Source.Source.IsStatic;
-            this.Target.Offset = this.Source.Source.Offset;
+            this.Target.Attributes = this.SourceWithRoot.Source.Attributes;
+            this.Target.Constant = this.SourceWithRoot.Source.Constant;
+            this.Target.HasConstant = this.SourceWithRoot.Source.HasConstant;
+            this.Target.HasDefault = this.SourceWithRoot.Source.HasDefault;
+            this.Target.IsAssembly = this.SourceWithRoot.Source.IsAssembly;
+            this.Target.IsCompilerControlled = this.SourceWithRoot.Source.IsCompilerControlled;
+            this.Target.IsFamily = this.SourceWithRoot.Source.IsFamily;
+            this.Target.IsFamilyAndAssembly = this.SourceWithRoot.Source.IsFamilyAndAssembly;
+            this.Target.IsFamilyOrAssembly = this.SourceWithRoot.Source.IsFamilyOrAssembly;
+            this.Target.IsInitOnly = this.SourceWithRoot.Source.IsInitOnly;
+            this.Target.IsLiteral = this.SourceWithRoot.Source.IsLiteral;
+            this.Target.IsNotSerialized = this.SourceWithRoot.Source.IsNotSerialized;
+            this.Target.IsPInvokeImpl = this.SourceWithRoot.Source.IsPInvokeImpl;
+            this.Target.IsPrivate = this.SourceWithRoot.Source.IsPrivate;
+            this.Target.IsPublic = this.SourceWithRoot.Source.IsPublic;
+            this.Target.IsRuntimeSpecialName = this.SourceWithRoot.Source.IsRuntimeSpecialName;
+            this.Target.IsSpecialName = this.SourceWithRoot.Source.IsSpecialName;
+            this.Target.IsStatic = this.SourceWithRoot.Source.IsStatic;
+            this.Target.Offset = this.SourceWithRoot.Source.Offset;
 
-            if (this.Source.Source.MarshalInfo == null)
+            if (this.SourceWithRoot.Source.MarshalInfo == null)
             {
                 this.Target.MarshalInfo = null;
             }
             else
             {
-                this.Target.MarshalInfo = new MarshalInfo(this.Source.Source.MarshalInfo.NativeType);
+                this.Target.MarshalInfo = new MarshalInfo(this.SourceWithRoot.Source.MarshalInfo.NativeType);
             }
 
-            if (this.Source.Source.InitialValue != null)
+            if (this.SourceWithRoot.Source.InitialValue != null)
             {
-                var initialValue = new byte[this.Source.Source.InitialValue.LongLength];
-                this.Source.Source.InitialValue.CopyTo(initialValue, 0);
+                var initialValue = new byte[this.SourceWithRoot.Source.InitialValue.LongLength];
+                this.SourceWithRoot.Source.InitialValue.CopyTo(initialValue, 0);
                 this.Target.InitialValue = initialValue;
             }
 
             this.Target.MetadataToken = new MetadataToken(
-                this.Source.Source.MetadataToken.TokenType,
-                this.Source.Source.MetadataToken.RID);
+                this.SourceWithRoot.Source.MetadataToken.TokenType,
+                this.SourceWithRoot.Source.MetadataToken.RID);
 
-            this.Target.FieldType = this.Source.RootImport(this.Source.Source.FieldType);
+            this.Target.FieldType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.FieldType);
 
             // for some reason, I'm seeing duplicate custom attributes if I don't clear first
             // adding a console output line line like this makes it go away: Console.WriteLine(this.Target.CustomAttributes.Count);
@@ -62,7 +62,7 @@ namespace Bix.Mixers.Fody.ILCloning
             // (breaking anywhere before the RootImportAll call in the debugger keeps it from happening, too)
             this.Target.CustomAttributes.Clear();
             Contract.Assert(this.Target.CustomAttributes.Count == 0);
-            this.Target.RootImportAllCustomAttributes(this.Source, this.Source.Source.CustomAttributes);
+            this.Target.RootImportAllCustomAttributes(this.SourceWithRoot, this.SourceWithRoot.Source.CustomAttributes);
 
             this.IsCloned = true;
         }
