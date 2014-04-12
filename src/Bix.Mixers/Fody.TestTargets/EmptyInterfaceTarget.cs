@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bix.Mixers.Fody.TestTarget
+namespace Bix.Mixers.Fody.TestTargets
 {
     [InterfaceMix(typeof(IEmptyInterface))]
     public class EmptyInterfaceTarget

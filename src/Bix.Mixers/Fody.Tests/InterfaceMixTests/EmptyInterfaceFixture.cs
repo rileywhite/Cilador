@@ -27,15 +27,15 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
                     {
                         new InterfaceMapType
                         {
-                            Interface = "Bix.Mixers.Fody.TestInterfaces.IEmptyInterface, Bix.Mixers.Fody.TestInterfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-                            Template = "Bix.Mixers.Fody.TestSource.EmptyInterfaceTemplate, Bix.Mixers.Fody.TestSource, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+                            Interface = "Bix.Mixers.Fody.TestInterfaces.IEmptyInterface, Bix.Mixers.Fody.TestInterfaces",
+                            Template = "Bix.Mixers.Fody.TestSources.EmptyInterfaceTemplate, Bix.Mixers.Fody.TestSources"
                         }
                     }
                 },
             };
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-            var targetType = assembly.GetType("Bix.Mixers.Fody.TestTarget.EmptyInterfaceTarget");
+            var targetType = assembly.GetType("Bix.Mixers.Fody.TestTargets.EmptyInterfaceTarget");
             Assert.That(typeof(Bix.Mixers.Fody.TestInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
         }
 
@@ -52,15 +52,15 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
                     {
                         new InterfaceMapType
                         {
-                            Interface = "Bix.Mixers.Fody.TestInterfaces.IEmptyInterface, Bix.Mixers.Fody.TestInterfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
-                            Template = "Bix.Mixers.Fody.TestSource.EmptyInterfaceTemplateWithContent, Bix.Mixers.Fody.TestSource, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+                            Interface = "Bix.Mixers.Fody.TestInterfaces.IEmptyInterface, Bix.Mixers.Fody.TestInterfaces",
+                            Template = "Bix.Mixers.Fody.TestSources.EmptyInterfaceTemplateWithContent, Bix.Mixers.Fody.TestSources"
                         }
                     }
                 },
             };
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-            var targetType = assembly.GetType("Bix.Mixers.Fody.TestTarget.EmptyInterfaceTarget");
+            var targetType = assembly.GetType("Bix.Mixers.Fody.TestTargets.EmptyInterfaceTarget");
 
             Assert.That(typeof(Bix.Mixers.Fody.TestInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
 

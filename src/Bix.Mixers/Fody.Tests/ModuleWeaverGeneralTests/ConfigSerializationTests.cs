@@ -23,7 +23,7 @@ namespace Bix.Mixers.Fody.Tests.ModuleWeaverGeneralTests
         [TestCase(
 @"<Bix.Mixers><BixMixersConfig xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns=""urn:Bix:Mixers:Fody:Core"" xmlns:bmfim=""urn:Bix:Mixers:Fody:InterfaceMixing"">
   <MixCommandConfig xsi:type=""bmfim:InterfaceMixConfigType"" xmlns="""">
-    <InterfaceMap Interface=""Bix.Mixers.Fody.TestInterfaces.IEmptyInterface, Bix.Mixers.Fody.TestInterfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"" Template=""Bix.Mixers.Fody.TestSource.EmptyInterfaceTemplate, Bix.Mixers.Fody.TestSource, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"" />
+    <InterfaceMap Interface=""My.Interface.Assembly.Type, My.Interface.Assembly"" Template=""My.Template.Assembly.Type, My.Template.Assembly"" />
   </MixCommandConfig>
 </BixMixersConfig></Bix.Mixers>", typeof(InterfaceMixConfigType))]
         public void CanReadConfig(string xmlString, params Type[] mixCommandConfigTypes)

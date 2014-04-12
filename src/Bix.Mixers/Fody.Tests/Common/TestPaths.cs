@@ -18,7 +18,7 @@ namespace Bix.Mixers.Fody.Tests.Common
 
         public static string GetTestProjectDirectory()
         {
-            return Path.GetFullPath(string.Format(TestProjectDirectoryRelativeToExecutingAssemblyFormat, "Target"));
+            return Path.GetFullPath(string.Format(TestProjectDirectoryRelativeToExecutingAssemblyFormat, "Targets"));
         }
 
         private static readonly string TestAssemblyPathRelativeToExecutingAssemblyFormat =
@@ -26,12 +26,12 @@ namespace Bix.Mixers.Fody.Tests.Common
 
         public static string GetTestTargetPath()
         {
-            return GetTestPath("Target");
+            return GetTestPath("Targets");
         }
 
         public static string GetTestSourcePath()
         {
-            return GetTestPath("Source");
+            return GetTestPath("Sources");
         }
 
         private static string GetTestPath(string name)

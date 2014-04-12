@@ -20,5 +20,10 @@ using System.Reflection;
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Bix.Mixers.Fody")]
 [assembly: AssemblyCopyright("Copyright © Riley White 2014")]
-[assembly: AssemblyVersion("0.0.1.0")]
-[assembly: AssemblyFileVersion("0.0.1.0")]
+[assembly: AssemblyVersion(CommonAssemblyInfo.Version)]
+[assembly: AssemblyFileVersion(CommonAssemblyInfo.Version)]
+
+internal static class CommonAssemblyInfo
+{
+    public const string Version = "0.0.1.0";
+}

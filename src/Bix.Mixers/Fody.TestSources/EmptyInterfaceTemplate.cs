@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bix.Mixers.Fody.TestSource
+namespace Bix.Mixers.Fody.TestSources
 {
     public class EmptyInterfaceTemplate : IEmptyInterface
     {
