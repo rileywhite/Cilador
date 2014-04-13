@@ -107,7 +107,7 @@
     <Compile Include="Common\ModuleWeaverHelper.cs" />
     <Compile Include="Common\Extensions.cs" />
     <Compile Include="Common\AssemblyVerifier.cs" />
-    <Compile Include="InterfaceMixTests\InterfaceWithOnlyPrimitiveTypes.cs" />
+    <Compile Include="InterfaceMixTests\InterfaceWithOnlyPrimitiveTypesFixture.cs" />
     <Compile Include="ModuleWeaverGeneralTests\ConfigSerializationTests.cs" />
     <Compile Include="InterfaceMixTests\EmptyInterfaceFixture.cs" />
     <Compile Include="Program.cs" />

@@ -45,6 +45,7 @@
     </Compile>
     <Compile Include="EmptyInterfaceTemplateWithContent.cs" />
     <Compile Include="EmptyInterfaceTemplate.cs" />
+    <Compile Include="InterfaceWithOnlyPrimitiveTypesImplicitTemplate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

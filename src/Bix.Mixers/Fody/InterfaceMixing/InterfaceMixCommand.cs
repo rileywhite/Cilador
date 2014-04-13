@@ -25,7 +25,19 @@ namespace Bix.Mixers.Fody.InterfaceMixing
             this.IsInitialized = true;
         }
 
-        private InterfaceMixConfigType Config { get; set; }
+        private InterfaceMixConfigType config;
+        private InterfaceMixConfigType Config
+        {
+            get { return this.config; }
+            set
+            {
+                Contract.Requires(value != null);
+                Contract.Ensures(this.Config != null);
+
+                value.InterfaceMap = value.InterfaceMap ?? new InterfaceMapType[0];
+                this.config = value;
+            }
+        }
 
         public void Mix(IWeavingContext weavingContext, TypeDefinition target, CustomAttribute mixCommandAttribute)
         {
@@ -59,7 +71,8 @@ namespace Bix.Mixers.Fody.InterfaceMixing
 
             if(matchedMap == null)
             {
-                throw new ArgumentException("Could not find the a configuration for the requested interface: " + commandInterfaceType.FullName, "mixCommandAttribute");
+                weavingContext.LogWarning("Could not find the a configuration for the requested interface: " + commandInterfaceType.FullName);
+                return;
             }
 
             new InterfaceMixCommandMixer(commandInterfaceType, matchedMap.GetTemplateType(weavingContext), target).Execute();
