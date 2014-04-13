@@ -27,27 +27,27 @@ namespace Bix.Mixers.Fody.ILCloning
         private List<PropertyCloner> PropertyCloners { get; set; }
         private List<EventCloner> EventCloners { get; set; }
 
-        private bool IsScaffoldingCompleted { get; set; }
+        private bool IsWireframeCompleted { get; set; }
 
-        public override void Clone()
+        public override void CloneStructure()
         {
-            this.PopulateClonersWithScaffolding();
-            this.CopyTypeData();
-            this.TypeCloners.Clone();
-            this.FieldCloners.Clone();
-            this.MethodCloners.Clone();
-            this.PropertyCloners.Clone();
-            this.EventCloners.Clone();
-            this.IsCloned = true;
+            this.CreateWireframeAndCloners();
+            this.CloneTypeData();
+            this.TypeCloners.CloneStructure();
+            this.FieldCloners.CloneStructure();
+            this.MethodCloners.CloneStructure();
+            this.PropertyCloners.CloneStructure();
+            this.EventCloners.CloneStructure();
+            this.IsStructureCloned = true;
         }
 
-        public void CloneMethodBodies()
+        public void CloneLogic()
         {
-            foreach (var methodCloner in this.MethodCloners) { methodCloner.CloneBody(); }
-            foreach (var typeCloner in this.TypeCloners) { typeCloner.CloneMethodBodies(); }
+            foreach (var methodCloner in this.MethodCloners) { methodCloner.CloneLogic(); }
+            foreach (var typeCloner in this.TypeCloners) { typeCloner.CloneLogic(); }
         }
 
-        private void CopyTypeData()
+        private void CloneTypeData()
         {
             if (this.Target != this.SourceWithRoot.RootContext.RootTarget)
             {
@@ -116,9 +116,9 @@ namespace Bix.Mixers.Fody.ILCloning
             }
         }
 
-        private void PopulateClonersWithScaffolding()
+        private void CreateWireframeAndCloners()
         {
-            if (!this.IsScaffoldingCompleted)
+            if (!this.IsWireframeCompleted)
             {
                 var voidReference = this.Target.Module.Import(typeof(void));
 
@@ -134,7 +134,7 @@ namespace Bix.Mixers.Fody.ILCloning
                     this.Target.NestedTypes.Add(target);
 
                     var typeCloner = new TypeCloner(target, sourceWithRoot);
-                    typeCloner.PopulateClonersWithScaffolding();
+                    typeCloner.CreateWireframeAndCloners();
                     this.TypeCloners.Add(typeCloner);
                 }
 
@@ -174,7 +174,7 @@ namespace Bix.Mixers.Fody.ILCloning
                     this.EventCloners.Add(new EventCloner(target, sourceWithRoot));
                 }
             }
-            this.IsScaffoldingCompleted = true;
+            this.IsWireframeCompleted = true;
         }
     }
 }

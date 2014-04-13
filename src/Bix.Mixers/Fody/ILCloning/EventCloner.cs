@@ -14,7 +14,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(source != null);
         }
 
-        public override void Clone()
+        public override void CloneStructure()
         {
             // TODO event cloning
             throw new NotImplementedException("Implement event cloning when needed");

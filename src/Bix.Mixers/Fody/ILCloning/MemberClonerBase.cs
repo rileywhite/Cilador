@@ -29,8 +29,8 @@ namespace Bix.Mixers.Fody.ILCloning
 
         public TMemberWithRoot SourceWithRoot { get; private set; }
 
-        public bool IsCloned { get; protected set; }
+        public bool IsStructureCloned { get; protected set; }
 
-        public abstract void Clone();
+        public abstract void CloneStructure();
     }
 }

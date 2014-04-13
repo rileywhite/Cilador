@@ -10,7 +10,7 @@ namespace Bix.Mixers.Fody.ILCloning
         public FieldCloner(FieldDefinition target, FieldSourceWithRoot source)
             : base(target, source) { }
 
-        public override void Clone()
+        public override void CloneStructure()
         {
             Contract.Requires(this.Target.Name == this.SourceWithRoot.Source.Name);
 
@@ -64,7 +64,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Assert(this.Target.CustomAttributes.Count == 0);
             this.Target.RootImportAllCustomAttributes(this.SourceWithRoot, this.SourceWithRoot.Source.CustomAttributes);
 
-            this.IsCloned = true;
+            this.IsStructureCloned = true;
         }
     }
 }

@@ -11,13 +11,13 @@ namespace Bix.Mixers.Fody.ILCloning
 {
     internal static class ILCloningExtensions
     {
-        public static void Clone(this IEnumerable<IMemberCloner> cloners)
+        public static void CloneStructure(this IEnumerable<IMemberCloner> cloners)
         {
             Contract.Requires(cloners != null);
-            Contract.Requires(!cloners.Any(cloner => cloner.IsCloned));
-            Contract.Ensures(cloners.All(cloner => cloner.IsCloned));
+            Contract.Requires(!cloners.Any(cloner => cloner.IsStructureCloned));
+            Contract.Ensures(cloners.All(cloner => cloner.IsStructureCloned));
 
-            foreach (var cloner in cloners) { cloner.Clone(); }
+            foreach (var cloner in cloners) { cloner.CloneStructure(); }
         }
 
         public static bool SignatureEquals(this MethodReference left, MethodReference right)

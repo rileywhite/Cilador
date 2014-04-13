@@ -6,12 +6,12 @@ namespace Bix.Mixers.Fody.ILCloning
     [ContractClassFor(typeof(IMemberCloner))]
     internal abstract class IMemberClonerContract : IMemberCloner
     {
-        public bool IsCloned { get; private set; }
+        public bool IsStructureCloned { get; private set; }
 
-        public void Clone()
+        public void CloneStructure()
         {
-            Contract.Requires(!this.IsCloned);
-            Contract.Ensures(this.IsCloned);
+            Contract.Requires(!this.IsStructureCloned);
+            Contract.Ensures(this.IsStructureCloned);
         }
     }
 }

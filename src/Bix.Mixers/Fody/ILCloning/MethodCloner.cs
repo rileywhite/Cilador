@@ -17,7 +17,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(source != null);
         }
 
-        public override void Clone()
+        public override void CloneStructure()
         {
             Contract.Assert(this.Target.DeclaringType != null);
             Contract.Assert(this.Target.Name == this.SourceWithRoot.Source.Name);
@@ -115,7 +115,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 throw new NotImplementedException("Implement method security declarations when needed");
             }
 
-            this.IsCloned = true;
+            this.IsStructureCloned = true;
             Contract.Assert(this.Target.SignatureEquals(this.SourceWithRoot.Source));
         }
 
@@ -123,9 +123,9 @@ namespace Bix.Mixers.Fody.ILCloning
 
         public bool IsBodyCloned { get; private set; }
 
-        public void CloneBody()
+        public void CloneLogic()
         {
-            Contract.Requires(this.IsCloned);
+            Contract.Requires(this.IsStructureCloned);
             Contract.Requires(!this.IsBodyCloned);
             Contract.Ensures(this.IsBodyCloned);
 

@@ -73,8 +73,8 @@ namespace Bix.Mixers.Fody.InterfaceMixing
         {
             this.Target.Interfaces.Add(this.TargetModule.Import(this.InterfaceType));
             var typeCloner = new TypeCloner(this.Target, this.Source);
-            typeCloner.Clone();
-            typeCloner.CloneMethodBodies();
+            typeCloner.CloneStructure();
+            typeCloner.CloneLogic();
         }
     }
 }
