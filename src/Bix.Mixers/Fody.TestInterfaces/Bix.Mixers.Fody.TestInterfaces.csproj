@@ -44,6 +44,7 @@
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="IEmptyInterface.cs" />
+    <Compile Include="IInterfaceForImplicitExplicitTesting.cs" />
     <Compile Include="IInterfaceWithOnlyPrimitiveTypes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

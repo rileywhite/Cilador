@@ -45,7 +45,10 @@
     </Compile>
     <Compile Include="EmptyInterfaceTemplateWithContent.cs" />
     <Compile Include="EmptyInterfaceTemplate.cs" />
-    <Compile Include="InterfaceWithOnlyPrimitiveTypesImplicitTemplate.cs" />
+    <Compile Include="InterfaceForImplicitExplicitTestingExplicitOnlyTemplate.cs" />
+    <Compile Include="InterfaceForImplicitExplicitTestingMixedTemplate.cs" />
+    <Compile Include="InterfaceForImplicitExplicitTestingImplicitOnlyTemplate.cs" />
+    <Compile Include="InterfaceWithOnlyPrimitiveTypesTemplate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

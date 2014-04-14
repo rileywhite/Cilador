@@ -37,7 +37,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
             var targetType = assembly.GetType("Bix.Mixers.Fody.TestTargets.EmptyInterfaceTarget");
             Assert.That(typeof(Bix.Mixers.Fody.TestInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
-            Assert.That(targetType.GetConstructors(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Length == 1, "Expected 1 constructor");
+            targetType.ValidateMemberCountsAre(1, 0, 0, 0, 0, 0);
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
             var instance = Activator.CreateInstance(targetType, new object[0]);
             Assert.That(instance is Bix.Mixers.Fody.TestInterfaces.IEmptyInterface);
@@ -68,17 +68,14 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
 
             Assert.That(typeof(Bix.Mixers.Fody.TestInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
 
-            Assert.That(targetType.GetConstructors(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Length == 2, "Expected 2 constructors");
+            targetType.ValidateMemberCountsAre(2, 3, 1, 1, 0, 0);
+
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
             Assert.That(targetType.GetConstructor(new Type[] { typeof(int) }) != null, "Couldn't find new constructor");
 
-            Assert.That(targetType.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Length == 1, "Expected 1 field");
-
-            Assert.That(targetType.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Length == 1, "Expected 1 property");
             var property = targetType.GetProperty("SomeValue");
             Assert.That(property != null, "Couldn't find new property SomeValue");
 
-            Assert.That(targetType.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Length == 3, "Expected 3 non-constructor methods");
             var method = targetType.GetMethod("SomeMethod");
             Assert.That(method != null, "Couldn't find new method SomeMethod");
 

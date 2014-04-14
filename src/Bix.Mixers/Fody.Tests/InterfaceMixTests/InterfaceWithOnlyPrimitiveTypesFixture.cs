@@ -16,7 +16,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
     internal class InterfaceWithOnlyPrimitiveTypesFixture
     {
         [Test]
-        public void CanImplementInterfaceImplicitly()
+        public void CanImplementInterface()
         {
             var config = new BixMixersConfigType();
 
@@ -29,7 +29,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
                         new InterfaceMapType
                         {
                             Interface = "Bix.Mixers.Fody.TestInterfaces.IInterfaceWithOnlyPrimitiveTypes, Bix.Mixers.Fody.TestInterfaces",
-                            Template = "Bix.Mixers.Fody.TestSources.InterfaceWithOnlyPrimitiveTypesImplicitTemplate, Bix.Mixers.Fody.TestSources"
+                            Template = "Bix.Mixers.Fody.TestSources.InterfaceWithOnlyPrimitiveTypesTemplate, Bix.Mixers.Fody.TestSources"
                         }
                     }
                 },
@@ -39,13 +39,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
             var targetType = assembly.GetType("Bix.Mixers.Fody.TestTargets.InterfaceWithOnlyPrimitiveTypesTarget");
 
             Assert.That(typeof(IInterfaceWithOnlyPrimitiveTypes).IsAssignableFrom(targetType));
+            targetType.ValidateMemberCountsAre(1, 42, 14, 14, 0, 0);
 
-            Assert.That(targetType.GetConstructors(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Length == 1, "Expected 1 constructor");
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
-
-            Assert.That(targetType.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Length == 14, "Expected 14 fields");
-
-            Assert.That(targetType.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Length == 14, "Expected 14 properties");
 
             var instanceObject = Activator.CreateInstance(targetType, new object[0]);
             Assert.That(instanceObject is IInterfaceWithOnlyPrimitiveTypes);
