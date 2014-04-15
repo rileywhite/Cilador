@@ -1,5 +1,7 @@
 ﻿using Bix.Mixers.Fody.Core;
 using Bix.Mixers.Fody.InterfaceMixins;
+using Bix.Mixers.Fody.TestMixinInterfaces;
+using Bix.Mixers.Fody.TestMixins;
 using Bix.Mixers.Fody.Tests.Common;
 using NUnit.Framework;
 using System;
@@ -12,7 +14,7 @@ using System.Xml.Linq;
 namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
 {
     [TestFixture]
-    internal class EmptyInterfaceFixture
+    internal class BasicInterfaceAndContentFixture
     {
         [Test]
         public void CanAddInterface()
@@ -27,15 +29,15 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                     {
                         new InterfaceMapType
                         {
-                            Interface = "Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface, Bix.Mixers.Fody.TestMixinInterfaces",
-                            Template = "Bix.Mixers.Fody.TestMixins.EmptyInterfaceTemplate, Bix.Mixers.Fody.TestMixins"
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(EmptyMixin).GetShortAssemblyQualifiedName()
                         }
                     }
                 },
             };
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-            var targetType = assembly.GetType("Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget");
+            var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget).FullName);
             Assert.That(typeof(Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
             targetType.ValidateMemberCountsAre(1, 0, 0, 0, 0, 0);
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
@@ -56,15 +58,15 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                     {
                         new InterfaceMapType
                         {
-                            Interface = "Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface, Bix.Mixers.Fody.TestMixinInterfaces",
-                            Template = "Bix.Mixers.Fody.TestMixins.EmptyInterfaceTemplateWithContent, Bix.Mixers.Fody.TestMixins"
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(EmptyInterfaceWithContentMixin).GetShortAssemblyQualifiedName()
                         }
                     }
                 },
             };
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-            var targetType = assembly.GetType("Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget");
+            var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget).FullName);
 
             Assert.That(typeof(Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
 

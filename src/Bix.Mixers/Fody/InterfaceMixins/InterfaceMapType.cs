@@ -17,10 +17,10 @@ namespace Bix.Mixers.Fody.InterfaceMixins
             return weavingContext.GetTypeDefinition(this.Interface);
         }
 
-        public TypeDefinition GetTemplateType(IWeavingContext weavingContext)
+        public TypeDefinition GetMixinType(IWeavingContext weavingContext)
         {
             Contract.Requires(weavingContext != null);
-            return weavingContext.GetTypeDefinition(this.Template);
+            return weavingContext.GetTypeDefinition(this.Mixin);
         }
     }
 }

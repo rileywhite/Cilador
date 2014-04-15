@@ -75,7 +75,7 @@ namespace Bix.Mixers.Fody.InterfaceMixins
                 return;
             }
 
-            new InterfaceMixinCommandMixer(commandInterfaceType, matchedMap.GetTemplateType(weavingContext), target).Execute();
+            new InterfaceMixinCommandMixer(commandInterfaceType, matchedMap.GetMixinType(weavingContext), target).Execute();
         }
     }
 }

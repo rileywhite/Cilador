@@ -17,21 +17,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.Target.Attributes = this.SourceWithRoot.Source.Attributes;
             this.Target.Constant = this.SourceWithRoot.Source.Constant;
             this.Target.HasConstant = this.SourceWithRoot.Source.HasConstant;
-            this.Target.HasDefault = this.SourceWithRoot.Source.HasDefault;
-            this.Target.IsAssembly = this.SourceWithRoot.Source.IsAssembly;
             this.Target.IsCompilerControlled = this.SourceWithRoot.Source.IsCompilerControlled;
-            this.Target.IsFamily = this.SourceWithRoot.Source.IsFamily;
-            this.Target.IsFamilyAndAssembly = this.SourceWithRoot.Source.IsFamilyAndAssembly;
-            this.Target.IsFamilyOrAssembly = this.SourceWithRoot.Source.IsFamilyOrAssembly;
-            this.Target.IsInitOnly = this.SourceWithRoot.Source.IsInitOnly;
-            this.Target.IsLiteral = this.SourceWithRoot.Source.IsLiteral;
-            this.Target.IsNotSerialized = this.SourceWithRoot.Source.IsNotSerialized;
-            this.Target.IsPInvokeImpl = this.SourceWithRoot.Source.IsPInvokeImpl;
-            this.Target.IsPrivate = this.SourceWithRoot.Source.IsPrivate;
-            this.Target.IsPublic = this.SourceWithRoot.Source.IsPublic;
-            this.Target.IsRuntimeSpecialName = this.SourceWithRoot.Source.IsRuntimeSpecialName;
-            this.Target.IsSpecialName = this.SourceWithRoot.Source.IsSpecialName;
-            this.Target.IsStatic = this.SourceWithRoot.Source.IsStatic;
             this.Target.Offset = this.SourceWithRoot.Source.Offset;
 
             if (this.SourceWithRoot.Source.MarshalInfo == null)

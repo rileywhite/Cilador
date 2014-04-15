@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.TestMixins
 {
-    public class EmptyInterfaceTemplate : IEmptyInterface
+    public class EmptyMixin : IEmptyInterface
     {
         [Skip]
-        public EmptyInterfaceTemplate() { }
+        public EmptyMixin() { }
     }
 }

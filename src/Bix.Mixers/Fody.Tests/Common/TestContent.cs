@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.Tests.Common
 {
-    internal static class TestPaths
+    internal static class TestContent
     {
+        public static BindingFlags BindingFlagsForMixedMembers =
+            BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+
         public static string GetTestSolutionDirectory()
         {
             return Path.GetFullPath(@"..\..\..\..\");
@@ -37,7 +42,7 @@ namespace Bix.Mixers.Fody.Tests.Common
         private static string GetTestPath(string name)
         {
             var targetPathFormat = Path.GetFullPath(Path.Combine(
-                Path.GetDirectoryName(new Uri(typeof(TestPaths).Assembly.CodeBase).LocalPath),
+                Path.GetDirectoryName(new Uri(typeof(TestContent).Assembly.CodeBase).LocalPath),
                 string.Format(TestAssemblyPathRelativeToExecutingAssemblyFormat, name, "{0}")));
 #if (DEBUG)
             return string.Format(targetPathFormat, "Debug");

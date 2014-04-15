@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.TestMixins
 {
-    public class InterfaceWithOnlyPrimitiveTypesTemplate : IInterfaceWithOnlyPrimitiveTypes
+    public class PropertiesAndMethodsWithPrimitiveTypesMixin : IInterfaceWithOnlyPrimitiveTypes
     {
         [Skip]
-        public InterfaceWithOnlyPrimitiveTypesTemplate() { }
+        public PropertiesAndMethodsWithPrimitiveTypesMixin() { }
 
         public bool BooleanProperty { get; set; }
 

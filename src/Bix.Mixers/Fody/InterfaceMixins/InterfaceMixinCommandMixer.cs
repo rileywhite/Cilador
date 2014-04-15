@@ -11,12 +11,12 @@ namespace Bix.Mixers.Fody.InterfaceMixins
 {
     internal class InterfaceMixinCommandMixer
     {
-        public InterfaceMixinCommandMixer(TypeDefinition interfaceType, TypeDefinition templateType, TypeDefinition target)
+        public InterfaceMixinCommandMixer(TypeDefinition interfaceType, TypeDefinition mixinType, TypeDefinition target)
         {
             Contract.Requires(interfaceType != null);
             Contract.Requires(interfaceType.IsInterface);
-            Contract.Requires(templateType != null);
-            Contract.Requires(templateType.IsClass);
+            Contract.Requires(mixinType != null);
+            Contract.Requires(mixinType.IsClass);
             Contract.Requires(target != null);
             Contract.Requires(target.Module != null);
             Contract.Requires(!target.IsValueType);
@@ -24,28 +24,28 @@ namespace Bix.Mixers.Fody.InterfaceMixins
 
             Contract.Ensures(this.InterfaceType != null);
             Contract.Ensures(this.InterfaceType.IsInterface);
-            Contract.Ensures(this.TemplateType != null);
-            Contract.Ensures(this.TemplateType.IsClass);
+            Contract.Ensures(this.MixinType != null);
+            Contract.Ensures(this.MixinType.IsClass);
             Contract.Ensures(this.Target != null);
             Contract.Ensures(this.Target.IsClass);
             Contract.Ensures(this.TargetModule != null);
             Contract.Ensures(this.Source != null);
 
-            if (!templateType.Interfaces.Any(@interface => @interface.FullName == interfaceType.FullName))
+            if (!mixinType.Interfaces.Any(@interface => @interface.FullName == interfaceType.FullName))
             {
-                throw new ArgumentException("Must implement the interface specified in the interfaceType argmuent", "templateType");
+                throw new ArgumentException("Must implement the interface specified in the interfaceType argmuent", "mixinType");
             }
 
             this.InterfaceType = interfaceType;
-            this.TemplateType = templateType;
-            this.Source = TypeSourceWithRoot.CreateWithRootSourceAndTarget(templateType, target);
+            this.MixinType = mixinType;
+            this.Source = TypeSourceWithRoot.CreateWithRootSourceAndTarget(mixinType, target);
             this.TargetModule = target.Module;
             this.Target = target;
         }
 
         public TypeDefinition InterfaceType { get; private set; }
 
-        public TypeDefinition TemplateType { get; private set; }
+        public TypeDefinition MixinType { get; private set; }
 
         private TypeSourceWithRoot Source { get; set; }
 

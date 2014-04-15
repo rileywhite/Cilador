@@ -50,7 +50,7 @@ namespace Bix.Mixers.Fody.InterfaceMixins {
         
         private string configGroupField;
         
-        private string templateField;
+        private string mixinField;
         
         public InterfaceMapType() {
             this.configGroupField = "";
@@ -81,12 +81,12 @@ namespace Bix.Mixers.Fody.InterfaceMixins {
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string Template {
+        public string Mixin {
             get {
-                return this.templateField;
+                return this.mixinField;
             }
             set {
-                this.templateField = value;
+                this.mixinField = value;
             }
         }
     }

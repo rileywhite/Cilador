@@ -8,14 +8,19 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.TestMixins
 {
-    public class InterfaceForImplicitExplicitTestingExplicitOnlyTemplate : IInterfaceForImplicitExplicitTesting
+    public class ImplicitExplicitTestingMixedMixin : IInterfaceForImplicitExplicitTesting
     {
         [Skip]
-        public InterfaceForImplicitExplicitTestingExplicitOnlyTemplate() { }
+        public ImplicitExplicitTestingMixedMixin() { }
 
-        string IInterfaceForImplicitExplicitTesting.Method1()
+        public string Method1()
         {
-            return "Explicit 1";
+            return "Implicit 1";
+        }
+
+        public string Method2()
+        {
+            return "Independent 2";
         }
 
         string IInterfaceForImplicitExplicitTesting.Method2()

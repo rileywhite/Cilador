@@ -1,6 +1,7 @@
 ﻿using Bix.Mixers.Fody.Core;
 using Bix.Mixers.Fody.InterfaceMixins;
 using Bix.Mixers.Fody.TestMixinInterfaces;
+using Bix.Mixers.Fody.TestMixins;
 using Bix.Mixers.Fody.Tests.Common;
 using NUnit.Framework;
 using System;
@@ -28,15 +29,15 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                     {
                         new InterfaceMapType
                         {
-                            Interface = "Bix.Mixers.Fody.TestMixinInterfaces.IInterfaceForImplicitExplicitTesting, Bix.Mixers.Fody.TestMixinInterfaces",
-                            Template = "Bix.Mixers.Fody.TestMixins.InterfaceForImplicitExplicitTestingImplicitOnlyTemplate, Bix.Mixers.Fody.TestMixins"
+                            Interface = typeof(IInterfaceForImplicitExplicitTesting).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(ImplicitExplicitTestingImplicitOnlyMixin).GetShortAssemblyQualifiedName()
                         }
                     }
                 },
             };
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-            var targetType = assembly.GetType("Bix.Mixers.Fody.TestMixinTargets.InterfaceForImplicitExplicitTestingTarget");
+            var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.InterfaceForImplicitExplicitTestingTarget).FullName);
 
             Assert.That(typeof(IInterfaceForImplicitExplicitTesting).IsAssignableFrom(targetType));
             targetType.ValidateMemberCountsAre(1, 3, 0, 0, 0, 0);
@@ -47,11 +48,11 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             Assert.That(instanceObject is IInterfaceForImplicitExplicitTesting);
 
             Assert.That("Implicit 1".Equals(
-                targetType.GetMethod("Method1", CommonExtensions.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
+                targetType.GetMethod("Method1", TestContent.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
             Assert.That("Implicit 2".Equals(
-                targetType.GetMethod("Method2", CommonExtensions.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
+                targetType.GetMethod("Method2", TestContent.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
             Assert.That("Implicit 3".Equals(
-                targetType.GetMethod("Method3", CommonExtensions.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
+                targetType.GetMethod("Method3", TestContent.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
 
             var instance = (IInterfaceForImplicitExplicitTesting)instanceObject;
 
@@ -73,15 +74,15 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                     {
                         new InterfaceMapType
                         {
-                            Interface = "Bix.Mixers.Fody.TestMixinInterfaces.IInterfaceForImplicitExplicitTesting, Bix.Mixers.Fody.TestMixinInterfaces",
-                            Template = "Bix.Mixers.Fody.TestMixins.InterfaceForImplicitExplicitTestingExplicitOnlyTemplate, Bix.Mixers.Fody.TestMixins"
+                            Interface = typeof(IInterfaceForImplicitExplicitTesting).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(ImplicitExplicitTestingExplicitOnlyMixin).GetShortAssemblyQualifiedName()
                         }
                     }
                 },
             };
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-            var targetType = assembly.GetType("Bix.Mixers.Fody.TestMixinTargets.InterfaceForImplicitExplicitTestingTarget");
+            var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.InterfaceForImplicitExplicitTestingTarget).FullName);
 
             Assert.That(typeof(IInterfaceForImplicitExplicitTesting).IsAssignableFrom(targetType));
             targetType.ValidateMemberCountsAre(1, 3, 0, 0, 0, 0);
@@ -91,9 +92,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             var instanceObject = Activator.CreateInstance(targetType, new object[0]);
             Assert.That(instanceObject is IInterfaceForImplicitExplicitTesting);
 
-            Assert.That(targetType.GetMethod("Method1", CommonExtensions.BindingFlagsForMixedMembers) == null);
-            Assert.That(targetType.GetMethod("Method2", CommonExtensions.BindingFlagsForMixedMembers) == null);
-            Assert.That(targetType.GetMethod("Method3", CommonExtensions.BindingFlagsForMixedMembers) == null);
+            Assert.That(targetType.GetMethod("Method1", TestContent.BindingFlagsForMixedMembers) == null);
+            Assert.That(targetType.GetMethod("Method2", TestContent.BindingFlagsForMixedMembers) == null);
+            Assert.That(targetType.GetMethod("Method3", TestContent.BindingFlagsForMixedMembers) == null);
 
             var instance = (IInterfaceForImplicitExplicitTesting)instanceObject;
 
@@ -115,15 +116,15 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                     {
                         new InterfaceMapType
                         {
-                            Interface = "Bix.Mixers.Fody.TestMixinInterfaces.IInterfaceForImplicitExplicitTesting, Bix.Mixers.Fody.TestMixinInterfaces",
-                            Template = "Bix.Mixers.Fody.TestMixins.InterfaceForImplicitExplicitTestingMixedTemplate, Bix.Mixers.Fody.TestMixins"
+                            Interface = typeof(IInterfaceForImplicitExplicitTesting).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(ImplicitExplicitTestingMixedMixin).GetShortAssemblyQualifiedName()
                         }
                     }
                 },
             };
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-            var targetType = assembly.GetType("Bix.Mixers.Fody.TestMixinTargets.InterfaceForImplicitExplicitTestingTarget");
+            var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.InterfaceForImplicitExplicitTestingTarget).FullName);
 
             Assert.That(typeof(IInterfaceForImplicitExplicitTesting).IsAssignableFrom(targetType));
             targetType.ValidateMemberCountsAre(1, 4, 0, 0, 0, 0);
@@ -134,10 +135,10 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             Assert.That(instanceObject is IInterfaceForImplicitExplicitTesting);
 
             Assert.That("Implicit 1".Equals(
-                targetType.GetMethod("Method1", CommonExtensions.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
+                targetType.GetMethod("Method1", TestContent.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
             Assert.That("Independent 2".Equals(
-                targetType.GetMethod("Method2", CommonExtensions.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
-            Assert.That(targetType.GetMethod("Method3", CommonExtensions.BindingFlagsForMixedMembers) == null);
+                targetType.GetMethod("Method2", TestContent.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
+            Assert.That(targetType.GetMethod("Method3", TestContent.BindingFlagsForMixedMembers) == null);
 
             var instance = (IInterfaceForImplicitExplicitTesting)instanceObject;
 

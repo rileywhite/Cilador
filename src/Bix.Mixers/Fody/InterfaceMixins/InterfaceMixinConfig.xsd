@@ -7,7 +7,7 @@
   <xs:complexType name="InterfaceMapType">
     <xs:attribute name="Interface" type="xs:string" use="required"/>
     <xs:attribute name="ConfigGroup" type="xs:string" use="optional" default=""/>
-    <xs:attribute name="Template" type="xs:string" use="required"/>
+    <xs:attribute name="Mixin" type="xs:string" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="InterfaceMixinConfigType">

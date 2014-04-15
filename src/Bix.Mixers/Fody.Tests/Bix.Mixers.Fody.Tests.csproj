@@ -103,14 +103,15 @@
     <Compile Include="..\..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Common\TestPaths.cs" />
+    <Compile Include="Common\TestContent.cs" />
     <Compile Include="Common\ModuleWeaverHelper.cs" />
     <Compile Include="Common\CommonExtensions.cs" />
     <Compile Include="Common\AssemblyVerifier.cs" />
+    <Compile Include="InterfaceMixinTests\FieldsFixture.cs" />
     <Compile Include="InterfaceMixinTests\ImplicitAndExplicitImplementationFixture.cs" />
     <Compile Include="InterfaceMixinTests\InterfaceWithOnlyPrimitiveTypesFixture.cs" />
     <Compile Include="ModuleWeaverGeneralTests\ConfigSerializationTests.cs" />
-    <Compile Include="InterfaceMixinTests\EmptyInterfaceFixture.cs" />
+    <Compile Include="InterfaceMixinTests\BasicInterfaceAndContentFixture.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

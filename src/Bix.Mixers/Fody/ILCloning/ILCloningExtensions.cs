@@ -92,10 +92,23 @@ namespace Bix.Mixers.Fody.ILCloning
                 {
                     foreach (var sourceArgument in sourceAttribute.ConstructorArguments)
                     {
-                        targetAttribute.ConstructorArguments.Add(new CustomAttributeArgument(
-                            rootImporter.RootImport(sourceArgument.Type),
+                        targetAttribute.ConstructorArguments.Add(
+                            new CustomAttributeArgument(
+                                rootImporter.RootImport(sourceArgument.Type),
+                                rootImporter.DynamicRootImport(sourceArgument.Value)));
+                    }
+                }
 
-                            rootImporter.DynamicRootImport(sourceArgument.Value)));
+                if (sourceAttribute.HasProperties)
+                {
+                    foreach (var sourceProperty in sourceAttribute.Properties)
+                    {
+                        targetAttribute.Properties.Add(
+                            new CustomAttributeNamedArgument(
+                                sourceProperty.Name,
+                                new CustomAttributeArgument(
+                                    rootImporter.RootImport(sourceProperty.Argument.Type),
+                                    rootImporter.DynamicRootImport(sourceProperty.Argument.Value))));
                     }
                 }
                 target.CustomAttributes.Add(targetAttribute);

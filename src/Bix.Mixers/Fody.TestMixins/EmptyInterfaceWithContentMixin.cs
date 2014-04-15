@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.TestMixins
 {
-    public class EmptyInterfaceTemplateWithContent : IEmptyInterface
+    public class EmptyInterfaceWithContentMixin : IEmptyInterface
     {
-        public EmptyInterfaceTemplateWithContent(int someValue)
+        public EmptyInterfaceWithContentMixin(int someValue)
         {
             this.SomeValue = someValue;
         }
@@ -18,7 +18,8 @@ namespace Bix.Mixers.Fody.TestMixins
 
         public void SomeMethod()
         {
-            Console.WriteLine("EmptyInterfaceTargetWithContent.SomeMethod() here.");
+            int a = 5;
+            a += 1;
         }
     }
 }

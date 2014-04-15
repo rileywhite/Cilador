@@ -37,9 +37,9 @@ namespace Bix.Mixers.Fody.Tests.Common
             Contract.Ensures(!string.IsNullOrWhiteSpace(Contract.Result<ModuleWeaver>().SolutionDirectoryPath));
 
             var moduleWeaver = new ModuleWeaver();
-            moduleWeaver.AddinDirectoryPath = TestPaths.GetAddinDirectory();
+            moduleWeaver.AddinDirectoryPath = TestContent.GetAddinDirectory();
             Contract.Assert(Directory.Exists(moduleWeaver.AddinDirectoryPath));
-            moduleWeaver.AssemblyFilePath = TestPaths.GetTestTargetsPath();
+            moduleWeaver.AssemblyFilePath = TestContent.GetTestTargetsPath();
             moduleWeaver.AssemblyResolver = new DefaultAssemblyResolver();
             moduleWeaver.Config = config;
             moduleWeaver.DefineConstants = new List<string>();
@@ -50,9 +50,9 @@ namespace Bix.Mixers.Fody.Tests.Common
             moduleWeaver.LogWarning = m => { };
             moduleWeaver.LogWarningPoint = (m, p) => { };
             moduleWeaver.ModuleDefinition = ModuleDefinition.ReadModule(moduleWeaver.AssemblyFilePath);
-            moduleWeaver.ProjectDirectoryPath = TestPaths.GetTestProjectDirectory();
+            moduleWeaver.ProjectDirectoryPath = TestContent.GetTestProjectDirectory();
             Contract.Assert(Directory.Exists(moduleWeaver.ProjectDirectoryPath));
-            moduleWeaver.SolutionDirectoryPath = TestPaths.GetTestSolutionDirectory();
+            moduleWeaver.SolutionDirectoryPath = TestContent.GetTestSolutionDirectory();
             Contract.Assert(Directory.Exists(moduleWeaver.SolutionDirectoryPath));
             return moduleWeaver;
         }
