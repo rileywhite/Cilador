@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bix.Mixers.Fody.TestSources
+namespace Bix.Mixers.Fody.TestMixins
 {
     public class InterfaceForImplicitExplicitTestingImplicitOnlyTemplate : IInterfaceForImplicitExplicitTesting
     {

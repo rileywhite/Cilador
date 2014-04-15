@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <xs:schema
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  xmlns:bmfim="urn:Bix:Mixers:Fody:InterfaceMixing"
-  targetNamespace="urn:Bix:Mixers:Fody:InterfaceMixing">
+  xmlns:bmfim="urn:Bix:Mixers:Fody:InterfaceMixins"
+  targetNamespace="urn:Bix:Mixers:Fody:InterfaceMixins">
 
   <xs:complexType name="InterfaceMapType">
     <xs:attribute name="Interface" type="xs:string" use="required"/>
@@ -10,11 +10,11 @@
     <xs:attribute name="Template" type="xs:string" use="required"/>
   </xs:complexType>
 
-  <xs:complexType name="InterfaceMixConfigType">
+  <xs:complexType name="InterfaceMixinConfigType">
     <xs:sequence minOccurs="1" maxOccurs="1">
       <xs:element name="InterfaceMap" type="bmfim:InterfaceMapType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="InterfaceMixConfig" type="bmfim:InterfaceMixConfigType"/>
+  <xs:element name="InterfaceMixinConfig" type="bmfim:InterfaceMixinConfigType"/>
 
 </xs:schema>

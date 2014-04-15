@@ -7,11 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bix.Mixers.Fody.InterfaceMixing
+namespace Bix.Mixers.Fody.InterfaceMixins
 {
-    internal class InterfaceMixCommandMixer
+    internal class InterfaceMixinCommandMixer
     {
-        public InterfaceMixCommandMixer(TypeDefinition interfaceType, TypeDefinition templateType, TypeDefinition target)
+        public InterfaceMixinCommandMixer(TypeDefinition interfaceType, TypeDefinition templateType, TypeDefinition target)
         {
             Contract.Requires(interfaceType != null);
             Contract.Requires(interfaceType.IsInterface);

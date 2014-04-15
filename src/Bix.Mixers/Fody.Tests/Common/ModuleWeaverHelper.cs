@@ -39,7 +39,7 @@ namespace Bix.Mixers.Fody.Tests.Common
             var moduleWeaver = new ModuleWeaver();
             moduleWeaver.AddinDirectoryPath = TestPaths.GetAddinDirectory();
             Contract.Assert(Directory.Exists(moduleWeaver.AddinDirectoryPath));
-            moduleWeaver.AssemblyFilePath = TestPaths.GetTestTargetPath();
+            moduleWeaver.AssemblyFilePath = TestPaths.GetTestTargetsPath();
             moduleWeaver.AssemblyResolver = new DefaultAssemblyResolver();
             moduleWeaver.Config = config;
             moduleWeaver.DefineConstants = new List<string>();
@@ -125,7 +125,7 @@ namespace Bix.Mixers.Fody.Tests.Common
                 if (entry == null) { continue; }
 
                 var xElement = new XElement("Bix.Mixers", entry.ToXElement());
-                xElement.Add(new XAttribute("MixCommand", "InterfaceMix"));
+                xElement.Add(new XAttribute("MixCommand", "InterfaceMixin"));
 
                 config.Add(xElement);
             }

@@ -1,5 +1,5 @@
 ﻿using Bix.Mixers.Fody.Core;
-using Bix.Mixers.Fody.InterfaceMixing;
+using Bix.Mixers.Fody.InterfaceMixins;
 using Bix.Mixers.Fody.TestInterfaces;
 using Bix.Mixers.Fody.Tests.Common;
 using NUnit.Framework;
@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
+namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
 {
     [TestFixture]
     internal class InterfaceWithOnlyPrimitiveTypesFixture
@@ -22,14 +22,14 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
 
             config.MixCommandConfig = new MixCommandConfigTypeBase[]
             {
-                new InterfaceMixConfigType
+                new InterfaceMixinConfigType
                 {
                     InterfaceMap = new InterfaceMapType[]
                     {
                         new InterfaceMapType
                         {
                             Interface = "Bix.Mixers.Fody.TestInterfaces.IInterfaceWithOnlyPrimitiveTypes, Bix.Mixers.Fody.TestInterfaces",
-                            Template = "Bix.Mixers.Fody.TestSources.InterfaceWithOnlyPrimitiveTypesTemplate, Bix.Mixers.Fody.TestSources"
+                            Template = "Bix.Mixers.Fody.TestMixins.InterfaceWithOnlyPrimitiveTypesTemplate, Bix.Mixers.Fody.TestMixins"
                         }
                     }
                 },

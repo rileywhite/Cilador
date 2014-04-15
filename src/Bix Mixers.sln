@@ -18,7 +18,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers.Fody.Tests", "Bi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nuget", "NuGet\Nuget.csproj", "{63786CE5-D899-43DF-AD4E-C2CA3BAC3FC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers.Fody.TestSources", "Bix.Mixers\Fody.TestSources\Bix.Mixers.Fody.TestSources.csproj", "{CC1F40B0-9E5A-42B9-8C67-5F95D4AB2763}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers.Fody.TestMixins", "Bix.Mixers\Fody.TestMixins\Bix.Mixers.Fody.TestMixins.csproj", "{CC1F40B0-9E5A-42B9-8C67-5F95D4AB2763}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers.Fody.TestTargets", "Bix.Mixers\Fody.TestTargets\Bix.Mixers.Fody.TestTargets.csproj", "{F6E6CFAA-5A36-44E7-B75E-41B656232910}"
 	ProjectSection(ProjectDependencies) = postProject

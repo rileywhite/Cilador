@@ -7,12 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bix.Mixers.Fody.InterfaceMixing
+namespace Bix.Mixers.Fody.InterfaceMixins
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public sealed class InterfaceMixAttribute : Attribute, IMixCommandAttribute
+    public sealed class InterfaceMixinAttribute : Attribute, IMixCommandAttribute
     {
-        public InterfaceMixAttribute(Type @interface)
+        public InterfaceMixinAttribute(Type @interface)
         {
             Contract.Requires(@interface != null);
             this.Interface = @interface;

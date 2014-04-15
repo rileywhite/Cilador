@@ -111,8 +111,8 @@
     <Compile Include="Core\IMixCommand.cs" />
     <Compile Include="Core\IMixCommandAttribute.cs" />
     <Compile Include="Core\IMixCommandContract.cs" />
-    <Compile Include="InterfaceMixing\InterfaceMapType.cs" />
-    <Compile Include="InterfaceMixing\InterfaceMixCommandMixer.cs" />
+    <Compile Include="InterfaceMixins\InterfaceMapType.cs" />
+    <Compile Include="InterfaceMixins\InterfaceMixinCommandMixer.cs" />
     <Compile Include="ILCloning\IRootImportProvider.cs" />
     <Compile Include="ILCloning\IRootImportProviderContract.cs" />
     <Compile Include="Core\ModuleWeaver.cs" />
@@ -123,24 +123,24 @@
     <Compile Include="ILCloning\MethodSourceWithRoot .cs" />
     <Compile Include="ILCloning\FieldSourceWithRoot.cs" />
     <Compile Include="ILCloning\MemberSourceWithRootBase.cs" />
-    <Compile Include="InterfaceMixing\InterfaceMixCommand.cs" />
+    <Compile Include="InterfaceMixins\InterfaceMixinCommand.cs" />
     <Compile Include="ILCloning\MemberClonerBase.cs" />
     <Compile Include="ILCloning\RootContext.cs" />
-    <Compile Include="InterfaceMixing\InterfaceMixAttribute.cs" />
+    <Compile Include="InterfaceMixins\InterfaceMixinAttribute.cs" />
     <Compile Include="ILCloning\SkipAttribute.cs" />
     <Compile Include="ILCloning\TypeCloner.cs" />
     <Compile Include="ILCloning\TypeSourceWithRoot.cs" />
     <Compile Include="Core\CoreExtensions.cs" />
     <Compile Include="Core\IMixCommandData.cs" />
-    <Compile Include="InterfaceMixing\InterfaceMixConfig.cs">
-      <DependentUpon>InterfaceMixConfig.xsd</DependentUpon>
+    <Compile Include="InterfaceMixins\InterfaceMixinConfig.cs">
+      <DependentUpon>InterfaceMixinConfig.xsd</DependentUpon>
     </Compile>
-    <Compile Include="InterfaceMixing\InterfaceMixConfigType.cs" />
+    <Compile Include="InterfaceMixins\InterfaceMixinConfigType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Core\MixCommandConfig.xsd" />
-    <None Include="InterfaceMixing\InterfaceMixConfig.xsd" />
+    <None Include="InterfaceMixins\InterfaceMixinConfig.xsd" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
@@ -148,7 +148,7 @@
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <PropertyGroup>
     <PreBuildEvent>"$(TargetFrameworkSDKToolsDirectory)xsd.exe" /c /l:cs /n:Bix.Mixers.Fody.Core /o:"$(ProjectDir)Core" "$(ProjectDir)Core\MixCommandConfig.xsd"
-"$(TargetFrameworkSDKToolsDirectory)xsd.exe" /c /l:cs /n:Bix.Mixers.Fody.InterfaceMixing /o:"$(ProjectDir)InterfaceMixing" "$(ProjectDir)InterfaceMixing\InterfaceMixConfig.xsd"
+"$(TargetFrameworkSDKToolsDirectory)xsd.exe" /c /l:cs /n:Bix.Mixers.Fody.InterfaceMixins /o:"$(ProjectDir)InterfaceMixins" "$(ProjectDir)InterfaceMixins\InterfaceMixinConfig.xsd"
 </PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

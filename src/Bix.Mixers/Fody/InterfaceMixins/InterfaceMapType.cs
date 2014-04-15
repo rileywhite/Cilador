@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bix.Mixers.Fody.InterfaceMixing
+namespace Bix.Mixers.Fody.InterfaceMixins
 {
     public partial class InterfaceMapType
     {

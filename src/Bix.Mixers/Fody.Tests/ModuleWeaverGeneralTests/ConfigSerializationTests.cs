@@ -1,5 +1,5 @@
 ﻿using Bix.Mixers.Fody.Core;
-using Bix.Mixers.Fody.InterfaceMixing;
+using Bix.Mixers.Fody.InterfaceMixins;
 using Bix.Mixers.Fody.Tests.Common;
 using NUnit.Framework;
 using System;
@@ -21,11 +21,11 @@ namespace Bix.Mixers.Fody.Tests.ModuleWeaverGeneralTests
 @"<Bix.Mixers><BixMixersConfig xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns=""urn:Bix:Mixers:Fody:Core"">
 </BixMixersConfig></Bix.Mixers>")]
         [TestCase(
-@"<Bix.Mixers><BixMixersConfig xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns=""urn:Bix:Mixers:Fody:Core"" xmlns:bmfim=""urn:Bix:Mixers:Fody:InterfaceMixing"">
-  <MixCommandConfig xsi:type=""bmfim:InterfaceMixConfigType"" xmlns="""">
+@"<Bix.Mixers><BixMixersConfig xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns=""urn:Bix:Mixers:Fody:Core"" xmlns:bmfim=""urn:Bix:Mixers:Fody:InterfaceMixins"">
+  <MixCommandConfig xsi:type=""bmfim:InterfaceMixinConfigType"" xmlns="""">
     <InterfaceMap Interface=""My.Interface.Assembly.Type, My.Interface.Assembly"" Template=""My.Template.Assembly.Type, My.Template.Assembly"" />
   </MixCommandConfig>
-</BixMixersConfig></Bix.Mixers>", typeof(InterfaceMixConfigType))]
+</BixMixersConfig></Bix.Mixers>", typeof(InterfaceMixinConfigType))]
         public void CanReadConfig(string xmlString, params Type[] mixCommandConfigTypes)
         {
             var configXElement = XElement.Parse(xmlString);

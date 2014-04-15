@@ -1,5 +1,5 @@
 ﻿using Bix.Mixers.Fody.Core;
-using Bix.Mixers.Fody.InterfaceMixing;
+using Bix.Mixers.Fody.InterfaceMixins;
 using Bix.Mixers.Fody.Tests.Common;
 using NUnit.Framework;
 using System;
@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
 
-namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
+namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
 {
     [TestFixture]
     internal class EmptyInterfaceFixture
@@ -21,14 +21,14 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
 
             config.MixCommandConfig = new MixCommandConfigTypeBase[]
             {
-                new InterfaceMixConfigType
+                new InterfaceMixinConfigType
                 {
                     InterfaceMap = new InterfaceMapType[]
                     {
                         new InterfaceMapType
                         {
                             Interface = "Bix.Mixers.Fody.TestInterfaces.IEmptyInterface, Bix.Mixers.Fody.TestInterfaces",
-                            Template = "Bix.Mixers.Fody.TestSources.EmptyInterfaceTemplate, Bix.Mixers.Fody.TestSources"
+                            Template = "Bix.Mixers.Fody.TestMixins.EmptyInterfaceTemplate, Bix.Mixers.Fody.TestMixins"
                         }
                     }
                 },
@@ -50,14 +50,14 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
 
             config.MixCommandConfig = new MixCommandConfigTypeBase[]
             {
-                new InterfaceMixConfigType
+                new InterfaceMixinConfigType
                 {
                     InterfaceMap = new InterfaceMapType[]
                     {
                         new InterfaceMapType
                         {
                             Interface = "Bix.Mixers.Fody.TestInterfaces.IEmptyInterface, Bix.Mixers.Fody.TestInterfaces",
-                            Template = "Bix.Mixers.Fody.TestSources.EmptyInterfaceTemplateWithContent, Bix.Mixers.Fody.TestSources"
+                            Template = "Bix.Mixers.Fody.TestMixins.EmptyInterfaceTemplateWithContent, Bix.Mixers.Fody.TestMixins"
                         }
                     }
                 },
@@ -97,7 +97,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixTests
 
             config.MixCommandConfig = new MixCommandConfigTypeBase[]
             {
-                new InterfaceMixConfigType
+                new InterfaceMixinConfigType
                 {
                     InterfaceMap = new InterfaceMapType[0]
                 },

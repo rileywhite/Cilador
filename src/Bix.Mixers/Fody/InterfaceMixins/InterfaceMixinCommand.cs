@@ -6,18 +6,18 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Bix.Mixers.Fody.InterfaceMixing
+namespace Bix.Mixers.Fody.InterfaceMixins
 {
     [Export(typeof(IMixCommand))]
-    [ExportMetadata("AttributeType", typeof(InterfaceMixAttribute))]
-    [ExportMetadata("ConfigType", typeof(InterfaceMixConfigType))]
-    internal class InterfaceMixCommand : IMixCommand
+    [ExportMetadata("AttributeType", typeof(InterfaceMixinAttribute))]
+    [ExportMetadata("ConfigType", typeof(InterfaceMixinConfigType))]
+    internal class InterfaceMixinCommand : IMixCommand
     {
         public bool IsInitialized { get; private set; }
 
         public void Initialize(IWeavingContext weavingContext, MixCommandConfigTypeBase config)
         {
-            this.Config = config as InterfaceMixConfigType;
+            this.Config = config as InterfaceMixinConfigType;
             if(this.Config == null)
             {
                 throw new ArgumentException("Must be of type InterfaceMixConfigType", "config");
@@ -25,8 +25,8 @@ namespace Bix.Mixers.Fody.InterfaceMixing
             this.IsInitialized = true;
         }
 
-        private InterfaceMixConfigType config;
-        private InterfaceMixConfigType Config
+        private InterfaceMixinConfigType config;
+        private InterfaceMixinConfigType Config
         {
             get { return this.config; }
             set
@@ -41,7 +41,7 @@ namespace Bix.Mixers.Fody.InterfaceMixing
 
         public void Mix(IWeavingContext weavingContext, TypeDefinition target, CustomAttribute mixCommandAttribute)
         {
-            if (mixCommandAttribute.AttributeType.FullName != weavingContext.GetTypeDefinition(typeof(InterfaceMixAttribute)).FullName)
+            if (mixCommandAttribute.AttributeType.FullName != weavingContext.GetTypeDefinition(typeof(InterfaceMixinAttribute)).FullName)
             {
                 throw new ArgumentException("Must be a valid CustomAttribute with AttributeType InterfaceMixAttribute",
                     "mixCommandAttribute");
@@ -75,7 +75,7 @@ namespace Bix.Mixers.Fody.InterfaceMixing
                 return;
             }
 
-            new InterfaceMixCommandMixer(commandInterfaceType, matchedMap.GetTemplateType(weavingContext), target).Execute();
+            new InterfaceMixinCommandMixer(commandInterfaceType, matchedMap.GetTemplateType(weavingContext), target).Execute();
         }
     }
 }

@@ -6,21 +6,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bix.Mixers.Fody.TestSources
+namespace Bix.Mixers.Fody.TestMixins
 {
-    public class InterfaceForImplicitExplicitTestingMixedTemplate : IInterfaceForImplicitExplicitTesting
+    public class InterfaceForImplicitExplicitTestingExplicitOnlyTemplate : IInterfaceForImplicitExplicitTesting
     {
         [Skip]
-        public InterfaceForImplicitExplicitTestingMixedTemplate() { }
+        public InterfaceForImplicitExplicitTestingExplicitOnlyTemplate() { }
 
-        public string Method1()
+        string IInterfaceForImplicitExplicitTesting.Method1()
         {
-            return "Implicit 1";
-        }
-
-        public string Method2()
-        {
-            return "Independent 2";
+            return "Explicit 1";
         }
 
         string IInterfaceForImplicitExplicitTesting.Method2()

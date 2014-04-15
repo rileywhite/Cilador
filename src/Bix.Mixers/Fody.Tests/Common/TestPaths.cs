@@ -24,14 +24,14 @@ namespace Bix.Mixers.Fody.Tests.Common
         private static readonly string TestAssemblyPathRelativeToExecutingAssemblyFormat =
             TestProjectDirectoryRelativeToExecutingAssemblyFormat + @"\bin\{1}\Bix.Mixers.Fody.Test{0}.dll";
 
-        public static string GetTestTargetPath()
+        public static string GetTestTargetsPath()
         {
             return GetTestPath("Targets");
         }
 
-        public static string GetTestSourcePath()
+        public static string GetTestMixinsPath()
         {
-            return GetTestPath("Sources");
+            return GetTestPath("Mixins");
         }
 
         private static string GetTestPath(string name)
@@ -48,7 +48,7 @@ namespace Bix.Mixers.Fody.Tests.Common
 
         public static string GetAddinDirectory()
         {
-            return Path.GetDirectoryName(GetTestSourcePath());
+            return Path.GetDirectoryName(GetTestMixinsPath());
         }
     }
 }

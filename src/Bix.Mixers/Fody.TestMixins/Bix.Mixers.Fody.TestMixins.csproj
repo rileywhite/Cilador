@@ -7,8 +7,8 @@
     <ProjectGuid>{CC1F40B0-9E5A-42B9-8C67-5F95D4AB2763}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Bix.Mixers.Fody.TestSources</RootNamespace>
-    <AssemblyName>Bix.Mixers.Fody.TestSources</AssemblyName>
+    <RootNamespace>Bix.Mixers.Fody.TestMixins</RootNamespace>
+    <AssemblyName>Bix.Mixers.Fody.TestMixins</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <CodeContractsReferenceAssembly>DoNotBuild</CodeContractsReferenceAssembly>
@@ -61,6 +61,7 @@
       <Name>Bix.Mixers.Fody</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

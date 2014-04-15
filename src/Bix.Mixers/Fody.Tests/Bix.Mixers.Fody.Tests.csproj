@@ -107,10 +107,10 @@
     <Compile Include="Common\ModuleWeaverHelper.cs" />
     <Compile Include="Common\CommonExtensions.cs" />
     <Compile Include="Common\AssemblyVerifier.cs" />
-    <Compile Include="InterfaceMixTests\ImplicitAndExplicitImplementationFixture.cs" />
-    <Compile Include="InterfaceMixTests\InterfaceWithOnlyPrimitiveTypesFixture.cs" />
+    <Compile Include="InterfaceMixinTests\ImplicitAndExplicitImplementationFixture.cs" />
+    <Compile Include="InterfaceMixinTests\InterfaceWithOnlyPrimitiveTypesFixture.cs" />
     <Compile Include="ModuleWeaverGeneralTests\ConfigSerializationTests.cs" />
-    <Compile Include="InterfaceMixTests\EmptyInterfaceFixture.cs" />
+    <Compile Include="InterfaceMixinTests\EmptyInterfaceFixture.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -122,9 +122,9 @@
       <Project>{bf49324e-601f-4d8d-b520-0cd561d11bb4}</Project>
       <Name>Bix.Mixers.Fody.TestInterfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Fody.TestSources\Bix.Mixers.Fody.TestSources.csproj">
+    <ProjectReference Include="..\Fody.TestMixins\Bix.Mixers.Fody.TestMixins.csproj">
       <Project>{cc1f40b0-9e5a-42b9-8c67-5f95d4ab2763}</Project>
-      <Name>Bix.Mixers.Fody.TestSources</Name>
+      <Name>Bix.Mixers.Fody.TestMixins</Name>
     </ProjectReference>
     <ProjectReference Include="..\Fody.TestTargets\Bix.Mixers.Fody.TestTargets.csproj">
       <Project>{f6e6cfaa-5a36-44e7-b75e-41b656232910}</Project>
