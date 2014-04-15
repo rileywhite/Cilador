@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bix.Mixers.Fody.TestInterfaces
+namespace Bix.Mixers.Fody.TestMixinInterfaces
 {
     public interface IInterfaceForImplicitExplicitTesting
     {

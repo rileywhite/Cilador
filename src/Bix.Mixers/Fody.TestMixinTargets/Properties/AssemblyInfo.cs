@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Bix.Mixers.Fody.TestInterfaces")]
+[assembly: AssemblyTitle("Bix.Mixers.Fody.TestMixinTargets")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyTrademark("")]
@@ -17,4 +17,4 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("e747171f-eb01-49b0-ba0e-98f5cd570c03")]
+[assembly: Guid("29cd1766-ea68-45b8-ba0f-5f20c7b8ea77")]

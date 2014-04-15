@@ -7,8 +7,8 @@
     <ProjectGuid>{BF49324E-601F-4D8D-B520-0CD561D11BB4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Bix.Mixers.Fody.TestInterfaces</RootNamespace>
-    <AssemblyName>Bix.Mixers.Fody.TestInterfaces</AssemblyName>
+    <RootNamespace>Bix.Mixers.Fody.TestMixinInterfaces</RootNamespace>
+    <AssemblyName>Bix.Mixers.Fody.TestMixinInterfaces</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <CodeContractsReferenceAssembly>DoNotBuild</CodeContractsReferenceAssembly>

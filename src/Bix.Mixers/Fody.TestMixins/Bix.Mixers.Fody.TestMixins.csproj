@@ -52,9 +52,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Fody.TestInterfaces\Bix.Mixers.Fody.TestInterfaces.csproj">
+    <ProjectReference Include="..\Fody.TestMixinInterfaces\Bix.Mixers.Fody.TestMixinInterfaces.csproj">
       <Project>{bf49324e-601f-4d8d-b520-0cd561d11bb4}</Project>
-      <Name>Bix.Mixers.Fody.TestInterfaces</Name>
+      <Name>Bix.Mixers.Fody.TestMixinInterfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\Fody\Bix.Mixers.Fody.csproj">
       <Project>{29bb979d-4d47-4e74-9edc-5f3586f1d591}</Project>

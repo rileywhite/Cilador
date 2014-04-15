@@ -27,7 +27,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                     {
                         new InterfaceMapType
                         {
-                            Interface = "Bix.Mixers.Fody.TestInterfaces.IEmptyInterface, Bix.Mixers.Fody.TestInterfaces",
+                            Interface = "Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface, Bix.Mixers.Fody.TestMixinInterfaces",
                             Template = "Bix.Mixers.Fody.TestMixins.EmptyInterfaceTemplate, Bix.Mixers.Fody.TestMixins"
                         }
                     }
@@ -35,12 +35,12 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             };
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-            var targetType = assembly.GetType("Bix.Mixers.Fody.TestTargets.EmptyInterfaceTarget");
-            Assert.That(typeof(Bix.Mixers.Fody.TestInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
+            var targetType = assembly.GetType("Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget");
+            Assert.That(typeof(Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
             targetType.ValidateMemberCountsAre(1, 0, 0, 0, 0, 0);
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
             var instance = Activator.CreateInstance(targetType, new object[0]);
-            Assert.That(instance is Bix.Mixers.Fody.TestInterfaces.IEmptyInterface);
+            Assert.That(instance is Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface);
         }
 
         [Test]
@@ -56,7 +56,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                     {
                         new InterfaceMapType
                         {
-                            Interface = "Bix.Mixers.Fody.TestInterfaces.IEmptyInterface, Bix.Mixers.Fody.TestInterfaces",
+                            Interface = "Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface, Bix.Mixers.Fody.TestMixinInterfaces",
                             Template = "Bix.Mixers.Fody.TestMixins.EmptyInterfaceTemplateWithContent, Bix.Mixers.Fody.TestMixins"
                         }
                     }
@@ -64,9 +64,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             };
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-            var targetType = assembly.GetType("Bix.Mixers.Fody.TestTargets.EmptyInterfaceTarget");
+            var targetType = assembly.GetType("Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget");
 
-            Assert.That(typeof(Bix.Mixers.Fody.TestInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
+            Assert.That(typeof(Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
 
             targetType.ValidateMemberCountsAre(2, 3, 1, 1, 0, 0);
 
@@ -104,12 +104,12 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             };
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-            var targetType = assembly.GetType("Bix.Mixers.Fody.TestTargets.EmptyInterfaceTarget");
-            Assert.That(!typeof(Bix.Mixers.Fody.TestInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
+            var targetType = assembly.GetType("Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget");
+            Assert.That(!typeof(Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
             Assert.That(targetType.GetConstructors(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Length == 1, "Expected 1 constructor");
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
             var instance = Activator.CreateInstance(targetType, new object[0]);
-            Assert.That(!(instance is Bix.Mixers.Fody.TestInterfaces.IEmptyInterface));
+            Assert.That(!(instance is Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface));
         }
     }
 }

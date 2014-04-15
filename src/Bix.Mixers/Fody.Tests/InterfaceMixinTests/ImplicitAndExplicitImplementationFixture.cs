@@ -1,6 +1,6 @@
 ﻿using Bix.Mixers.Fody.Core;
 using Bix.Mixers.Fody.InterfaceMixins;
-using Bix.Mixers.Fody.TestInterfaces;
+using Bix.Mixers.Fody.TestMixinInterfaces;
 using Bix.Mixers.Fody.Tests.Common;
 using NUnit.Framework;
 using System;
@@ -28,7 +28,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                     {
                         new InterfaceMapType
                         {
-                            Interface = "Bix.Mixers.Fody.TestInterfaces.IInterfaceForImplicitExplicitTesting, Bix.Mixers.Fody.TestInterfaces",
+                            Interface = "Bix.Mixers.Fody.TestMixinInterfaces.IInterfaceForImplicitExplicitTesting, Bix.Mixers.Fody.TestMixinInterfaces",
                             Template = "Bix.Mixers.Fody.TestMixins.InterfaceForImplicitExplicitTestingImplicitOnlyTemplate, Bix.Mixers.Fody.TestMixins"
                         }
                     }
@@ -36,7 +36,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             };
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-            var targetType = assembly.GetType("Bix.Mixers.Fody.TestTargets.InterfaceForImplicitExplicitTestingTarget");
+            var targetType = assembly.GetType("Bix.Mixers.Fody.TestMixinTargets.InterfaceForImplicitExplicitTestingTarget");
 
             Assert.That(typeof(IInterfaceForImplicitExplicitTesting).IsAssignableFrom(targetType));
             targetType.ValidateMemberCountsAre(1, 3, 0, 0, 0, 0);
@@ -73,7 +73,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                     {
                         new InterfaceMapType
                         {
-                            Interface = "Bix.Mixers.Fody.TestInterfaces.IInterfaceForImplicitExplicitTesting, Bix.Mixers.Fody.TestInterfaces",
+                            Interface = "Bix.Mixers.Fody.TestMixinInterfaces.IInterfaceForImplicitExplicitTesting, Bix.Mixers.Fody.TestMixinInterfaces",
                             Template = "Bix.Mixers.Fody.TestMixins.InterfaceForImplicitExplicitTestingExplicitOnlyTemplate, Bix.Mixers.Fody.TestMixins"
                         }
                     }
@@ -81,7 +81,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             };
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-            var targetType = assembly.GetType("Bix.Mixers.Fody.TestTargets.InterfaceForImplicitExplicitTestingTarget");
+            var targetType = assembly.GetType("Bix.Mixers.Fody.TestMixinTargets.InterfaceForImplicitExplicitTestingTarget");
 
             Assert.That(typeof(IInterfaceForImplicitExplicitTesting).IsAssignableFrom(targetType));
             targetType.ValidateMemberCountsAre(1, 3, 0, 0, 0, 0);
@@ -115,7 +115,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                     {
                         new InterfaceMapType
                         {
-                            Interface = "Bix.Mixers.Fody.TestInterfaces.IInterfaceForImplicitExplicitTesting, Bix.Mixers.Fody.TestInterfaces",
+                            Interface = "Bix.Mixers.Fody.TestMixinInterfaces.IInterfaceForImplicitExplicitTesting, Bix.Mixers.Fody.TestMixinInterfaces",
                             Template = "Bix.Mixers.Fody.TestMixins.InterfaceForImplicitExplicitTestingMixedTemplate, Bix.Mixers.Fody.TestMixins"
                         }
                     }
@@ -123,7 +123,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             };
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-            var targetType = assembly.GetType("Bix.Mixers.Fody.TestTargets.InterfaceForImplicitExplicitTestingTarget");
+            var targetType = assembly.GetType("Bix.Mixers.Fody.TestMixinTargets.InterfaceForImplicitExplicitTestingTarget");
 
             Assert.That(typeof(IInterfaceForImplicitExplicitTesting).IsAssignableFrom(targetType));
             targetType.ValidateMemberCountsAre(1, 4, 0, 0, 0, 0);

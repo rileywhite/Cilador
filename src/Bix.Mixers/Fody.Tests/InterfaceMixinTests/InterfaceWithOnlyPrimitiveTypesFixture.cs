@@ -1,6 +1,6 @@
 ﻿using Bix.Mixers.Fody.Core;
 using Bix.Mixers.Fody.InterfaceMixins;
-using Bix.Mixers.Fody.TestInterfaces;
+using Bix.Mixers.Fody.TestMixinInterfaces;
 using Bix.Mixers.Fody.Tests.Common;
 using NUnit.Framework;
 using System;
@@ -28,7 +28,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                     {
                         new InterfaceMapType
                         {
-                            Interface = "Bix.Mixers.Fody.TestInterfaces.IInterfaceWithOnlyPrimitiveTypes, Bix.Mixers.Fody.TestInterfaces",
+                            Interface = "Bix.Mixers.Fody.TestMixinInterfaces.IInterfaceWithOnlyPrimitiveTypes, Bix.Mixers.Fody.TestMixinInterfaces",
                             Template = "Bix.Mixers.Fody.TestMixins.InterfaceWithOnlyPrimitiveTypesTemplate, Bix.Mixers.Fody.TestMixins"
                         }
                     }
@@ -36,7 +36,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             };
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-            var targetType = assembly.GetType("Bix.Mixers.Fody.TestTargets.InterfaceWithOnlyPrimitiveTypesTarget");
+            var targetType = assembly.GetType("Bix.Mixers.Fody.TestMixinTargets.InterfaceWithOnlyPrimitiveTypesTarget");
 
             Assert.That(typeof(IInterfaceWithOnlyPrimitiveTypes).IsAssignableFrom(targetType));
             targetType.ValidateMemberCountsAre(1, 42, 14, 14, 0, 0);

@@ -1,4 +1,4 @@
-﻿using Bix.Mixers.Fody.TestInterfaces;
+﻿using Bix.Mixers.Fody.TestMixinInterfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
