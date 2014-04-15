@@ -45,6 +45,7 @@
     </Compile>
     <Compile Include="EmptyInterfaceWithContentMixin.cs" />
     <Compile Include="EmptyMixin.cs" />
+    <Compile Include="MethodsMixin.cs" />
     <Compile Include="FieldsMixin.cs" />
     <Compile Include="ImplicitExplicitTestingExplicitOnlyMixin.cs" />
     <Compile Include="ImplicitExplicitTestingMixedMixin.cs" />

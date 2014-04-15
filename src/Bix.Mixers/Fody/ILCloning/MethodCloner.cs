@@ -25,48 +25,28 @@ namespace Bix.Mixers.Fody.ILCloning
             this.Target.Attributes = this.SourceWithRoot.Source.Attributes;
             this.Target.CallingConvention = this.SourceWithRoot.Source.CallingConvention;
             this.Target.ExplicitThis = this.SourceWithRoot.Source.ExplicitThis;
-            this.Target.HasSecurity = this.SourceWithRoot.Source.HasSecurity;
             this.Target.HasThis = this.SourceWithRoot.Source.HasThis;
             this.Target.ImplAttributes = this.SourceWithRoot.Source.ImplAttributes;
-            this.Target.IsAbstract = this.SourceWithRoot.Source.IsAbstract;
             this.Target.IsAddOn = this.SourceWithRoot.Source.IsAddOn;
-            this.Target.IsAssembly = this.SourceWithRoot.Source.IsAssembly;
             this.Target.IsCheckAccessOnOverride = this.SourceWithRoot.Source.IsCheckAccessOnOverride;
-            this.Target.IsCompilerControlled = this.SourceWithRoot.Source.IsCompilerControlled;
-            this.Target.IsFamily = this.SourceWithRoot.Source.IsFamily;
-            this.Target.IsFamilyAndAssembly = this.SourceWithRoot.Source.IsFamilyAndAssembly;
-            this.Target.IsFamilyOrAssembly = this.SourceWithRoot.Source.IsFamilyOrAssembly;
-            this.Target.IsFinal = this.SourceWithRoot.Source.IsFinal;
             this.Target.IsFire = this.SourceWithRoot.Source.IsFire;
             this.Target.IsForwardRef = this.SourceWithRoot.Source.IsForwardRef;
             this.Target.IsGetter = this.SourceWithRoot.Source.IsGetter;
-            this.Target.IsHideBySig = this.SourceWithRoot.Source.IsHideBySig;
             this.Target.IsIL = this.SourceWithRoot.Source.IsIL;
             this.Target.IsInternalCall = this.SourceWithRoot.Source.IsInternalCall;
             this.Target.IsManaged = this.SourceWithRoot.Source.IsManaged;
             this.Target.IsNative = this.SourceWithRoot.Source.IsNative;
-            this.Target.IsNewSlot = this.SourceWithRoot.Source.IsNewSlot;
             this.Target.IsOther = this.SourceWithRoot.Source.IsOther;
-            this.Target.IsPInvokeImpl = this.SourceWithRoot.Source.IsPInvokeImpl;
             this.Target.IsPreserveSig = this.SourceWithRoot.Source.IsPreserveSig;
-            this.Target.IsPrivate = this.SourceWithRoot.Source.IsPrivate;
-            this.Target.IsPublic = this.SourceWithRoot.Source.IsPublic;
             this.Target.IsRemoveOn = this.SourceWithRoot.Source.IsRemoveOn;
-            this.Target.IsReuseSlot = this.SourceWithRoot.Source.IsReuseSlot;
             this.Target.IsRuntime = this.SourceWithRoot.Source.IsRuntime;
-            this.Target.IsRuntimeSpecialName = this.SourceWithRoot.Source.IsRuntimeSpecialName;
             this.Target.IsSetter = this.SourceWithRoot.Source.IsSetter;
-            this.Target.IsSpecialName = this.SourceWithRoot.Source.IsSpecialName;
-            this.Target.IsStatic = this.SourceWithRoot.Source.IsStatic;
             this.Target.IsSynchronized = this.SourceWithRoot.Source.IsSynchronized;
             this.Target.IsUnmanaged = this.SourceWithRoot.Source.IsUnmanaged;
-            this.Target.IsUnmanagedExport = this.SourceWithRoot.Source.IsUnmanagedExport;
-            this.Target.IsVirtual = this.SourceWithRoot.Source.IsVirtual;
             this.Target.NoInlining = this.SourceWithRoot.Source.NoInlining;
             this.Target.NoOptimization = this.SourceWithRoot.Source.NoOptimization;
             this.Target.SemanticsAttributes = this.SourceWithRoot.Source.SemanticsAttributes;
 
-            // TODO look more closely, e.g. need to do anything with this.Target.MethodReturnType?
             this.Target.MetadataToken = this.SourceWithRoot.Source.MetadataToken;
             if (this.SourceWithRoot.Source.PInvokeInfo != null)
             {
@@ -76,6 +56,7 @@ namespace Bix.Mixers.Fody.ILCloning
                     this.SourceWithRoot.Source.PInvokeInfo.Module);
             }
 
+            // TODO look more closely, e.g. need to do anything with method's MethodReturnType?
             this.Target.ReturnType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.ReturnType);
 
             if (this.SourceWithRoot.Source.HasOverrides)
@@ -93,6 +74,29 @@ namespace Bix.Mixers.Fody.ILCloning
                 {
                     var targetParameter =
                         new ParameterDefinition(sourceParameter.Name, sourceParameter.Attributes, this.SourceWithRoot.RootImport(sourceParameter.ParameterType));
+                    targetParameter.Constant = sourceParameter.Constant;
+                    targetParameter.HasConstant = sourceParameter.HasConstant;
+                    targetParameter.HasDefault = sourceParameter.HasDefault;
+                    targetParameter.HasFieldMarshal = sourceParameter.HasFieldMarshal;
+                    targetParameter.IsIn = sourceParameter.IsIn;
+                    targetParameter.IsLcid = sourceParameter.IsLcid;
+                    targetParameter.IsOptional = sourceParameter.IsOptional;
+                    targetParameter.IsOut = sourceParameter.IsOut;
+                    targetParameter.IsReturnValue = sourceParameter.IsReturnValue;
+
+                    // TODO research correct usage
+                    if (sourceParameter.MarshalInfo != null)
+                    {
+                        targetParameter.MarshalInfo = new MarshalInfo(sourceParameter.MarshalInfo.NativeType);
+                    }
+
+                    // TODO research correct usage
+                    targetParameter.MetadataToken = new MetadataToken(sourceParameter.MetadataToken.TokenType, sourceParameter.MetadataToken.RID);
+
+                    // I did not check whether I get a similar issue here as with the duplication in the FieldCloner...adding a clear line just to make sure, though
+                    targetParameter.CustomAttributes.Clear();
+                    targetParameter.RootImportAllCustomAttributes(this.SourceWithRoot, sourceParameter.CustomAttributes);
+
                     this.Target.Parameters.Add(targetParameter);
                     this.ParameterOperandReplacementMap.Add(sourceParameter, targetParameter);
                 }

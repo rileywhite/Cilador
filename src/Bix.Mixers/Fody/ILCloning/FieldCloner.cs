@@ -17,9 +17,9 @@ namespace Bix.Mixers.Fody.ILCloning
             this.Target.Attributes = this.SourceWithRoot.Source.Attributes;
             this.Target.Constant = this.SourceWithRoot.Source.Constant;
             this.Target.HasConstant = this.SourceWithRoot.Source.HasConstant;
-            this.Target.IsCompilerControlled = this.SourceWithRoot.Source.IsCompilerControlled;
             this.Target.Offset = this.SourceWithRoot.Source.Offset;
 
+            // TODO research correct usage of field MarshalInfo
             if (this.SourceWithRoot.Source.MarshalInfo == null)
             {
                 this.Target.MarshalInfo = null;
@@ -29,6 +29,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 this.Target.MarshalInfo = new MarshalInfo(this.SourceWithRoot.Source.MarshalInfo.NativeType);
             }
 
+            // TODO research correct usage of field InitialValue
             if (this.SourceWithRoot.Source.InitialValue != null)
             {
                 var initialValue = new byte[this.SourceWithRoot.Source.InitialValue.LongLength];
@@ -36,6 +37,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 this.Target.InitialValue = initialValue;
             }
 
+            // TODO research correct usage of field MetadataToken
             this.Target.MetadataToken = new MetadataToken(
                 this.SourceWithRoot.Source.MetadataToken.TokenType,
                 this.SourceWithRoot.Source.MetadataToken.RID);

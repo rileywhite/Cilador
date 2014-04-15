@@ -113,8 +113,9 @@ namespace Bix.Mixers.Fody.Tests.Common
             Contract.Requires(targetField != null);
 
             Assert.That(sourceField != null, "Could not find source type");
+            Assert.That(sourceField != targetField);
             Assert.That(sourceField.Attributes == targetField.Attributes);
-            Assert.That(sourceField.DeclaringType != targetField.DeclaringType);    // should be in different types
+            Assert.That(sourceField.DeclaringType != targetField.DeclaringType);
             Assert.That(sourceField.FieldType == targetField.FieldType);    // this will fail for mixed types (top-level target and inner types)
             Assert.That(sourceField.IsAssembly == targetField.IsAssembly);
             Assert.That(sourceField.IsFamily == targetField.IsFamily);
@@ -132,7 +133,6 @@ namespace Bix.Mixers.Fody.Tests.Common
             Assert.That(sourceField.IsSpecialName == targetField.IsSpecialName);
             Assert.That(sourceField.IsStatic == targetField.IsStatic);
             Assert.That(sourceField.MemberType == targetField.MemberType);
-            Assert.That(sourceField.MetadataToken != targetField.MetadataToken); // should be different fields
             Assert.That(sourceField.Name == targetField.Name);
 
             if (sourceField.IsLiteral)
@@ -147,11 +147,93 @@ namespace Bix.Mixers.Fody.Tests.Common
             Attribute.GetCustomAttributes(targetField, false).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceField, false));
         }
 
+        public static void ValidateSourceEqual(this MethodInfo targetMethod, MethodInfo sourceMethod)
+        {
+            Contract.Requires(targetMethod != null);
+
+            Assert.That(sourceMethod != null, "Could not find source method");
+            Assert.That(sourceMethod != targetMethod);
+            Assert.That(sourceMethod.Attributes == targetMethod.Attributes);
+            Assert.That(sourceMethod.CallingConvention == targetMethod.CallingConvention);
+            Assert.That(sourceMethod.ContainsGenericParameters == targetMethod.ContainsGenericParameters);
+            Assert.That(sourceMethod.DeclaringType != targetMethod.DeclaringType);
+            Assert.That(sourceMethod.IsAbstract == targetMethod.IsAbstract);
+            Assert.That(sourceMethod.IsAssembly == targetMethod.IsAssembly);
+            Assert.That(sourceMethod.IsConstructor == targetMethod.IsConstructor);
+            Assert.That(sourceMethod.IsFamily == targetMethod.IsFamily);
+            Assert.That(sourceMethod.IsFamilyAndAssembly == targetMethod.IsFamilyAndAssembly);
+            Assert.That(sourceMethod.IsFamilyOrAssembly == targetMethod.IsFamilyOrAssembly);
+            Assert.That(sourceMethod.IsFinal == targetMethod.IsFinal);
+            Assert.That(sourceMethod.IsGenericMethod == targetMethod.IsGenericMethod);
+            Assert.That(sourceMethod.IsGenericMethodDefinition == targetMethod.IsGenericMethodDefinition);
+            Assert.That(sourceMethod.IsHideBySig == targetMethod.IsHideBySig);
+            Assert.That(sourceMethod.IsPrivate == targetMethod.IsPrivate);
+            Assert.That(sourceMethod.IsPublic == targetMethod.IsPublic);
+            Assert.That(sourceMethod.IsSecurityCritical == targetMethod.IsSecurityCritical);
+            Assert.That(sourceMethod.IsSecuritySafeCritical == targetMethod.IsSecuritySafeCritical);
+            Assert.That(sourceMethod.IsSecurityTransparent == targetMethod.IsSecurityTransparent);
+            Assert.That(sourceMethod.IsSpecialName == targetMethod.IsSpecialName);
+            Assert.That(sourceMethod.IsStatic == targetMethod.IsStatic);
+            Assert.That(sourceMethod.IsVirtual == targetMethod.IsVirtual);
+            Assert.That(sourceMethod.MemberType == targetMethod.MemberType);
+            Assert.That(sourceMethod.MethodImplementationFlags == targetMethod.MethodImplementationFlags);
+            Assert.That(sourceMethod.Name == targetMethod.Name);
+            Assert.That(sourceMethod.ReturnType == targetMethod.ReturnType);    // this will fail for mixed types (top-level target and inner types)
+
+            targetMethod.ReturnParameter.ValidateSourceEqual(sourceMethod.ReturnParameter);
+            targetMethod.GetParameters().ValidateSourceEqual(sourceMethod.GetParameters());
+            Attribute.GetCustomAttributes(targetMethod).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceMethod));
+        }
+
+        public static void ValidateSourceEqual(this ParameterInfo[] targetParameters, ParameterInfo[] sourceParameters)
+        {
+            Contract.Requires(targetParameters != null);
+
+            Assert.That(sourceParameters != null, "Could not find source parameters");
+            Assert.That(sourceParameters != targetParameters);
+            Assert.That(sourceParameters.Length == targetParameters.Length);
+
+            for (int i = 0; i < sourceParameters.Length && i < targetParameters.Length; i++)
+            {
+                targetParameters[i].ValidateSourceEqual(sourceParameters[i]);
+            }
+        }
+
+        public static void ValidateSourceEqual(this ParameterInfo targetParameter, ParameterInfo sourceParameter)
+        {
+            Contract.Requires(targetParameter != null);
+
+            Assert.That(sourceParameter != null, "Could not find source parameter");
+            Assert.That(sourceParameter != targetParameter);
+            Assert.That(sourceParameter.Attributes == targetParameter.Attributes);
+
+            if (sourceParameter.DefaultValue == null) { Assert.That(targetParameter.DefaultValue == null); }
+            else { Assert.That(sourceParameter.DefaultValue.Equals(targetParameter.DefaultValue)); }
+            
+            Assert.That(sourceParameter.HasDefaultValue == targetParameter.HasDefaultValue);
+            Assert.That(sourceParameter.IsIn == targetParameter.IsIn);
+            Assert.That(sourceParameter.IsLcid == targetParameter.IsLcid);
+            Assert.That(sourceParameter.IsOptional == targetParameter.IsOptional);
+            Assert.That(sourceParameter.IsOut == targetParameter.IsOut);
+            Assert.That(sourceParameter.IsRetval == targetParameter.IsRetval);
+            Assert.That(sourceParameter.Member != targetParameter.Member);
+            Assert.That(sourceParameter.Name == targetParameter.Name);
+            Assert.That(sourceParameter.ParameterType == targetParameter.ParameterType);    // won't work for mixed types
+            Assert.That(sourceParameter.Position == targetParameter.Position);
+
+            if (sourceParameter.RawDefaultValue == null) { Assert.That(targetParameter.RawDefaultValue == null); }
+            else { Assert.That(sourceParameter.RawDefaultValue.Equals(targetParameter.RawDefaultValue)); }
+
+            Attribute.GetCustomAttributes(targetParameter).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceParameter));
+        }
+
         public static void ValidateSourceEqual(this Attribute[] targetAttributes, Attribute[] sourceAttributes)
         {
             Contract.Requires(targetAttributes != null);
 
             Assert.That(sourceAttributes != null, "Could not find source attributes");
+            Assert.That(sourceAttributes != targetAttributes);
+            Assert.That(sourceAttributes.Length == targetAttributes.Length);
 
             var sourceAttributeList = sourceAttributes.ToList();
             var targetAttributeList = targetAttributes.ToList();
@@ -168,7 +250,6 @@ namespace Bix.Mixers.Fody.Tests.Common
 
                     // same type, and non-matching instances
                     // don't really care what "less than" means, just picking something consistent
-                    // (not picking TypeId because that might sort differently for two types with same attributes)
                     return left.ToXElement().ToString().CompareTo(right.ToXElement().ToString());
                 });
 
