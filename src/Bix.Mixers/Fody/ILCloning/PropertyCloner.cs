@@ -29,6 +29,11 @@ namespace Bix.Mixers.Fody.ILCloning
 
             this.Target.PropertyType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.PropertyType);
 
+            if (this.SourceWithRoot.Source.HasParameters)
+            {
+                this.Target.Parameters.CloneAllParameters(this.SourceWithRoot.Source.Parameters, this.SourceWithRoot.RootContext);
+            }
+
             for (int i = 0; i < this.SourceWithRoot.Source.OtherMethods.Count; i++)
             {
                 this.Target.OtherMethods.Add(null);
@@ -65,12 +70,6 @@ namespace Bix.Mixers.Fody.ILCloning
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around
             this.Target.CustomAttributes.Clear();
             this.Target.RootImportAllCustomAttributes(this.SourceWithRoot, this.SourceWithRoot.Source.CustomAttributes);
-
-            if (this.SourceWithRoot.Source.HasParameters)
-            {
-                // TODO property parameter cloning
-                throw new NotImplementedException("Implement property parameters when needed");
-            }
 
             this.IsStructureCloned = true;
 

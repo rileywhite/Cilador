@@ -102,7 +102,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
             var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget).FullName);
             Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
-            targetType.ValidateMemberCountsAre(1, 218, 47, 119, 0, 0);
+            targetType.ValidateMemberCountsAre(1, 226, 47, 123, 0, 0);
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
             foreach (var targetField in targetType.GetFields(TestContent.BindingFlagsForMixedMembers))
@@ -112,12 +112,23 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
 
             foreach (var targetMethod in targetType.GetMethods(TestContent.BindingFlagsForMixedMembers))
             {
-                targetMethod.ValidateSourceEqual(typeof(PropertiesMixin).GetMethod(targetMethod.Name, TestContent.BindingFlagsForMixedMembers));
+                targetMethod.ValidateSourceEqual(typeof(PropertiesMixin).GetMethod(
+                    targetMethod.Name,
+                    TestContent.BindingFlagsForMixedMembers,
+                    null,
+                    targetMethod.GetParameters().Select(each => each.ParameterType).ToArray(),
+                    null));
             }
 
             foreach (var targetProperty in targetType.GetProperties(TestContent.BindingFlagsForMixedMembers))
             {
-                targetProperty.ValidateSourceEqual(typeof(PropertiesMixin).GetProperty(targetProperty.Name, TestContent.BindingFlagsForMixedMembers));
+                targetProperty.ValidateSourceEqual(typeof(PropertiesMixin).GetProperty(
+                    targetProperty.Name,
+                    TestContent.BindingFlagsForMixedMembers,
+                    null,
+                    targetProperty.PropertyType,
+                    targetProperty.GetIndexParameters().Select(each => each.ParameterType).ToArray(),
+                    null));
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Collections.Generic;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -70,36 +71,10 @@ namespace Bix.Mixers.Fody.ILCloning
             this.ParameterOperandReplacementMap = new Dictionary<ParameterDefinition, ParameterDefinition>(this.SourceWithRoot.Source.Parameters.Count);
             if (this.SourceWithRoot.Source.HasParameters)
             {
-                foreach (var sourceParameter in this.SourceWithRoot.Source.Parameters)
-                {
-                    var targetParameter =
-                        new ParameterDefinition(sourceParameter.Name, sourceParameter.Attributes, this.SourceWithRoot.RootImport(sourceParameter.ParameterType));
-                    targetParameter.Constant = sourceParameter.Constant;
-                    targetParameter.HasConstant = sourceParameter.HasConstant;
-                    targetParameter.HasDefault = sourceParameter.HasDefault;
-                    targetParameter.HasFieldMarshal = sourceParameter.HasFieldMarshal;
-                    targetParameter.IsIn = sourceParameter.IsIn;
-                    targetParameter.IsLcid = sourceParameter.IsLcid;
-                    targetParameter.IsOptional = sourceParameter.IsOptional;
-                    targetParameter.IsOut = sourceParameter.IsOut;
-                    targetParameter.IsReturnValue = sourceParameter.IsReturnValue;
-
-                    // TODO research correct usage
-                    if (sourceParameter.MarshalInfo != null)
-                    {
-                        targetParameter.MarshalInfo = new MarshalInfo(sourceParameter.MarshalInfo.NativeType);
-                    }
-
-                    // TODO research correct usage
-                    targetParameter.MetadataToken = new MetadataToken(sourceParameter.MetadataToken.TokenType, sourceParameter.MetadataToken.RID);
-
-                    // I did not check whether I get a similar issue here as with the duplication in the FieldCloner...adding a clear line just to make sure, though
-                    targetParameter.CustomAttributes.Clear();
-                    targetParameter.RootImportAllCustomAttributes(this.SourceWithRoot, sourceParameter.CustomAttributes);
-
-                    this.Target.Parameters.Add(targetParameter);
-                    this.ParameterOperandReplacementMap.Add(sourceParameter, targetParameter);
-                }
+                this.Target.Parameters.CloneAllParameters(
+                    this.SourceWithRoot.Source.Parameters,
+                    this.SourceWithRoot.RootContext,
+                    this.ParameterOperandReplacementMap);
             }
             Contract.Assert(this.Target.Parameters.Count == this.SourceWithRoot.Source.Parameters.Count);
 

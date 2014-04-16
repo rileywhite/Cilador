@@ -74,6 +74,51 @@ namespace Bix.Mixers.Fody.ILCloning
                     property.IsSkipped());
         }
 
+        public static void CloneAllParameters(
+            this Collection<ParameterDefinition> targetParameters,
+            Collection<ParameterDefinition> sourceParameters,
+            IRootImportProvider rootImporter,
+            Dictionary<ParameterDefinition, ParameterDefinition> parameterOperandReplacementMap = null)
+        {
+            Contract.Requires(targetParameters != null);
+            Contract.Requires(sourceParameters != null);
+            Contract.Requires(targetParameters != sourceParameters);
+            Contract.Requires(targetParameters.Count == 0);
+            Contract.Requires(rootImporter != null);
+            Contract.Ensures(targetParameters.Count == sourceParameters.Count);
+
+            foreach (var sourceParameter in sourceParameters)
+            {
+                var targetParameter =
+                    new ParameterDefinition(sourceParameter.Name, sourceParameter.Attributes, rootImporter.RootImport(sourceParameter.ParameterType));
+                targetParameter.Constant = sourceParameter.Constant;
+                targetParameter.HasConstant = sourceParameter.HasConstant;
+                targetParameter.HasDefault = sourceParameter.HasDefault;
+                targetParameter.HasFieldMarshal = sourceParameter.HasFieldMarshal;
+                targetParameter.IsIn = sourceParameter.IsIn;
+                targetParameter.IsLcid = sourceParameter.IsLcid;
+                targetParameter.IsOptional = sourceParameter.IsOptional;
+                targetParameter.IsOut = sourceParameter.IsOut;
+                targetParameter.IsReturnValue = sourceParameter.IsReturnValue;
+
+                // TODO research correct usage
+                if (sourceParameter.MarshalInfo != null)
+                {
+                    targetParameter.MarshalInfo = new MarshalInfo(sourceParameter.MarshalInfo.NativeType);
+                }
+
+                // TODO research correct usage
+                targetParameter.MetadataToken = new MetadataToken(sourceParameter.MetadataToken.TokenType, sourceParameter.MetadataToken.RID);
+
+                // I did not check whether I get a similar issue here as with the duplication in the FieldCloner...adding a clear line just to make sure, though
+                targetParameter.CustomAttributes.Clear();
+                targetParameter.RootImportAllCustomAttributes(rootImporter, sourceParameter.CustomAttributes);
+
+                targetParameters.Add(targetParameter);
+                if (parameterOperandReplacementMap != null) { parameterOperandReplacementMap.Add(sourceParameter, targetParameter); }
+            }
+        }
+
         public static void RootImportAllCustomAttributes(this ICustomAttributeProvider target, IRootImportProvider rootImporter, Collection<CustomAttribute> sourceAttributes)
         {
             Contract.Requires(target != null);

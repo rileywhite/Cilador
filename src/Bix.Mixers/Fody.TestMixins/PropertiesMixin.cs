@@ -191,5 +191,39 @@ namespace Bix.Mixers.Fody.TestMixins
             [TestMixed(12, NamedTypeArgument = typeof(TypeCode))]
             set { }
         }
+
+        public int this[int index] { get { return index; } set { } }
+        public int this[string name] { get { return 0; } set { } }
+        public int this[int @int, long @long, string @string, DictionaryEntry dictionaryEntry, object @object] { get { return 0; } set { } }
+
+        [TestMixed(1, NamedArgument = 1)]
+        [TestMixed(2)]
+        [TestMixed(3, NamedArgument = 2)]
+        [TestMixed(4, NamedTypeArgument = typeof(int))]
+        public int this[
+            [TestMixed(5, NamedArgument = 3)]
+            [TestMixed(6)]
+            [TestMixed(7, NamedArgument = 4)]
+            [TestMixed(8, NamedTypeArgument = typeof(int))]
+            int @int,
+
+            [TestMixed(9, NamedArgument = 5)]
+            [TestMixed(10)]
+            [TestMixed(11, NamedArgument = 6)]
+            [TestMixed(12, NamedTypeArgument = typeof(int))]
+            object @object]
+        {
+            [TestMixed(13, NamedArgument = 7)]
+            [TestMixed(14)]
+            [TestMixed(15, NamedArgument = 8)]
+            [TestMixed(16, NamedTypeArgument = typeof(int))]
+            get { return 0; }
+
+            [TestMixed(17, NamedArgument = 9)]
+            [TestMixed(18)]
+            [TestMixed(19, NamedArgument = 10)]
+            [TestMixed(20, NamedTypeArgument = typeof(int))]
+            set { }
+        }
     }
 }
