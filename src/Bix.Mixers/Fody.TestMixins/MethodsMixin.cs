@@ -107,6 +107,14 @@ namespace Bix.Mixers.Fody.TestMixins
             [TestMixed(0, NamedTypeArgument = typeof(TypeCode))]
             List<int> arg5) { }
 
+        public void OverloadedMethod() { }
+        public void OverloadedMethod(int arg0) { }
+        public void ReferenceReturnTypeMethod(object arg0) { }
+        public void ValueReturnTypeMethod(DictionaryEntry arg0) { }
+        public void EnumReturnTypeMethod(TypeCode arg0) { }
+        public void DelegateReturnTypeMethod(EventHandler arg0) { }
+        public void ClosedGenericReturnTypeMethod(List<int> arg0) { }
+
         // TODO virtual/abstract
     }
 }
