@@ -48,7 +48,9 @@ namespace Bix.Mixers.Fody.ILCloning
             this.Target.NoOptimization = this.SourceWithRoot.Source.NoOptimization;
             this.Target.SemanticsAttributes = this.SourceWithRoot.Source.SemanticsAttributes;
 
-            this.Target.MetadataToken = this.SourceWithRoot.Source.MetadataToken;
+            // TODO research correct usage of method MetadataToken
+            this.Target.MetadataToken = new MetadataToken(this.SourceWithRoot.Source.MetadataToken.TokenType, this.SourceWithRoot.Source.MetadataToken.RID);
+
             if (this.SourceWithRoot.Source.PInvokeInfo != null)
             {
                 this.Target.PInvokeInfo = new PInvokeInfo(

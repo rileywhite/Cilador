@@ -137,5 +137,55 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                     null));
             }
         }
+
+
+        [Test]
+        public void CanMixinEvents()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMap = new InterfaceMapType[]
+                    {
+                        new InterfaceMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(EventsMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+            var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget).FullName);
+            Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
+            targetType.ValidateMemberCountsAre(1, 28, 12, 0, 14, 0);
+            Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
+
+            foreach (var targetField in targetType.GetFields(TestContent.BindingFlagsForMixedMembers))
+            {
+                targetField.ValidateSourceEqual(typeof(EventsMixin).GetField(targetField.Name, TestContent.BindingFlagsForMixedMembers));
+            }
+
+            foreach (var targetMethod in targetType.GetMethods(TestContent.BindingFlagsForMixedMembers))
+            {
+                targetMethod.ValidateSourceEqual(typeof(EventsMixin).GetMethod(
+                    targetMethod.Name,
+                    TestContent.BindingFlagsForMixedMembers,
+                    null,
+                    targetMethod.GetParameters().Select(each => each.ParameterType).ToArray(),
+                    null));
+            }
+
+            foreach (var targetEvent in targetType.GetEvents(TestContent.BindingFlagsForMixedMembers))
+            {
+                targetEvent.ValidateSourceEqual(typeof(EventsMixin).GetEvent(
+                    targetEvent.Name,
+                    TestContent.BindingFlagsForMixedMembers));
+            }
+        }
     }
 }

@@ -45,6 +45,7 @@
     </Compile>
     <Compile Include="EmptyInterfaceWithContentMixin.cs" />
     <Compile Include="EmptyMixin.cs" />
+    <Compile Include="EventsMixin.cs" />
     <Compile Include="PropertiesMixin.cs" />
     <Compile Include="MethodsMixin.cs" />
     <Compile Include="FieldsMixin.cs" />

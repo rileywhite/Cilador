@@ -95,8 +95,8 @@ namespace Bix.Mixers.Fody.ILCloning
 
                 this.Target.BaseType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.BaseType);
 
-                // TODO look more closely at type metadata token
-                this.Target.MetadataToken = this.SourceWithRoot.Source.MetadataToken;
+                // TODO research correct usage of type metadata token
+                this.Target.MetadataToken = new MetadataToken(this.SourceWithRoot.Source.MetadataToken.TokenType, this.SourceWithRoot.Source.MetadataToken.RID);
             }
 
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around, but only for non-root type

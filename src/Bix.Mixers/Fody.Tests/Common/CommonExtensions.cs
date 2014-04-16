@@ -185,7 +185,6 @@ namespace Bix.Mixers.Fody.Tests.Common
             Attribute.GetCustomAttributes(targetMethod).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceMethod));
         }
 
-
         public static void ValidateSourceEqual(this PropertyInfo targetProperty, PropertyInfo sourceProperty)
         {
             Contract.Requires(targetProperty != null);
@@ -211,6 +210,33 @@ namespace Bix.Mixers.Fody.Tests.Common
             Attribute.GetCustomAttributes(targetProperty).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceProperty));
 
             targetProperty.GetIndexParameters().ValidateSourceEqual(sourceProperty.GetIndexParameters());
+        }
+
+        public static void ValidateSourceEqual(this EventInfo targetEvent, EventInfo sourceEvent)
+        {
+            Contract.Requires(targetEvent != null);
+
+            Assert.That(sourceEvent != null, "Could not find source event");
+            Assert.That(sourceEvent != targetEvent);
+            Assert.That(sourceEvent.Attributes == targetEvent.Attributes);
+            Assert.That(sourceEvent.DeclaringType != targetEvent.DeclaringType);
+            Assert.That(sourceEvent.EventHandlerType == targetEvent.EventHandlerType); // won't work for mixed types
+            Assert.That(sourceEvent.IsMulticast == targetEvent.IsMulticast);
+            Assert.That(sourceEvent.IsSpecialName == targetEvent.IsSpecialName);
+            Assert.That(sourceEvent.MemberType == targetEvent.MemberType);
+            Assert.That(sourceEvent.Name == targetEvent.Name);
+
+            // only check names here; full check should be done separately for the methods
+            if (sourceEvent.AddMethod == null) { Assert.That(targetEvent.AddMethod == null); }
+            else { Assert.That(sourceEvent.AddMethod.Name == targetEvent.AddMethod.Name); }
+
+            if (sourceEvent.RemoveMethod == null) { Assert.That(targetEvent.RemoveMethod == null); }
+            else { Assert.That(sourceEvent.RemoveMethod.Name == targetEvent.RemoveMethod.Name); }
+
+            if (sourceEvent.RaiseMethod == null) { Assert.That(targetEvent.RaiseMethod == null); }
+            else { Assert.That(sourceEvent.RaiseMethod.Name == targetEvent.RaiseMethod.Name); }
+
+            Attribute.GetCustomAttributes(targetEvent).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceEvent));
         }
 
         public static void ValidateSourceEqual(this ParameterInfo[] targetParameters, ParameterInfo[] sourceParameters)

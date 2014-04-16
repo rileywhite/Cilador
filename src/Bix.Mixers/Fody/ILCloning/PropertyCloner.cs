@@ -29,6 +29,11 @@ namespace Bix.Mixers.Fody.ILCloning
 
             this.Target.PropertyType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.PropertyType);
 
+            // TODO research correct usage of property MetadataToken
+            this.Target.MetadataToken = new MetadataToken(
+                this.SourceWithRoot.Source.MetadataToken.TokenType,
+                this.SourceWithRoot.Source.MetadataToken.RID);
+
             if (this.SourceWithRoot.Source.HasParameters)
             {
                 this.Target.Parameters.CloneAllParameters(this.SourceWithRoot.Source.Parameters, this.SourceWithRoot.RootContext);
@@ -65,7 +70,6 @@ namespace Bix.Mixers.Fody.ILCloning
                     }
                 }
             }
-            this.Target.MetadataToken = this.SourceWithRoot.Source.MetadataToken;
 
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around
             this.Target.CustomAttributes.Clear();
