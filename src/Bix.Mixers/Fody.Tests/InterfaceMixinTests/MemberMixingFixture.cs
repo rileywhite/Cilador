@@ -78,5 +78,47 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 targetMethod.ValidateSourceEqual(typeof(MethodsMixin).GetMethod(targetMethod.Name, TestContent.BindingFlagsForMixedMembers));
             }
         }
+
+        [Test]
+        public void CanMixinProperties()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMap = new InterfaceMapType[]
+                    {
+                        new InterfaceMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(PropertiesMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+            var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget).FullName);
+            Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
+            targetType.ValidateMemberCountsAre(1, 218, 47, 119, 0, 0);
+            Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
+
+            foreach (var targetField in targetType.GetFields(TestContent.BindingFlagsForMixedMembers))
+            {
+                targetField.ValidateSourceEqual(typeof(PropertiesMixin).GetField(targetField.Name, TestContent.BindingFlagsForMixedMembers));
+            }
+
+            foreach (var targetMethod in targetType.GetMethods(TestContent.BindingFlagsForMixedMembers))
+            {
+                targetMethod.ValidateSourceEqual(typeof(PropertiesMixin).GetMethod(targetMethod.Name, TestContent.BindingFlagsForMixedMembers));
+            }
+
+            foreach (var targetProperty in targetType.GetProperties(TestContent.BindingFlagsForMixedMembers))
+            {
+                targetProperty.ValidateSourceEqual(typeof(PropertiesMixin).GetProperty(targetProperty.Name, TestContent.BindingFlagsForMixedMembers));
+            }
+        }
     }
 }

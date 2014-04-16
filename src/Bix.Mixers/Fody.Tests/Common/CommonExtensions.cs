@@ -185,6 +185,34 @@ namespace Bix.Mixers.Fody.Tests.Common
             Attribute.GetCustomAttributes(targetMethod).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceMethod));
         }
 
+
+        public static void ValidateSourceEqual(this PropertyInfo targetProperty, PropertyInfo sourceProperty)
+        {
+            Contract.Requires(targetProperty != null);
+
+            Assert.That(sourceProperty != null, "Could not find source property");
+            Assert.That(sourceProperty != targetProperty);
+            Assert.That(sourceProperty.Attributes == targetProperty.Attributes);
+            Assert.That(sourceProperty.CanRead == targetProperty.CanRead);
+            Assert.That(sourceProperty.CanWrite == targetProperty.CanWrite);
+            Assert.That(sourceProperty.DeclaringType != targetProperty.DeclaringType);
+            Assert.That(sourceProperty.IsSpecialName == targetProperty.IsSpecialName);
+            Assert.That(sourceProperty.MemberType == targetProperty.MemberType);
+            Assert.That(sourceProperty.Name == targetProperty.Name);
+            Assert.That(sourceProperty.PropertyType == targetProperty.PropertyType); // won't work for mixed types
+
+            // only check names here; full check should be done separately for the methods
+            if (sourceProperty.GetMethod == null) { Assert.That(targetProperty.GetMethod == null); }
+            else { Assert.That(sourceProperty.GetMethod.Name == targetProperty.GetMethod.Name); }
+
+            if (sourceProperty.SetMethod == null) { Assert.That(targetProperty.SetMethod == null); }
+            else { Assert.That(sourceProperty.SetMethod.Name == targetProperty.SetMethod.Name); }
+
+            Attribute.GetCustomAttributes(targetProperty).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceProperty));
+
+            targetProperty.GetIndexParameters().ValidateSourceEqual(sourceProperty.GetIndexParameters());
+        }
+
         public static void ValidateSourceEqual(this ParameterInfo[] targetParameters, ParameterInfo[] sourceParameters)
         {
             Contract.Requires(targetParameters != null);
