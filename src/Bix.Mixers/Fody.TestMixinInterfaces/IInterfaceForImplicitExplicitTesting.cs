@@ -11,5 +11,13 @@ namespace Bix.Mixers.Fody.TestMixinInterfaces
         string Method1();
         string Method2();
         string Method3();
+
+        string Property1 { get; }
+        string Property2 { get; }
+        string Property3 { get; }
+
+        event EventHandler Event1;
+        event EventHandler Event2;
+        event EventHandler Event3;
     }
 }

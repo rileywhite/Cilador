@@ -40,25 +40,109 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.InterfaceForImplicitExplicitTestingTarget).FullName);
 
             Assert.That(typeof(IInterfaceForImplicitExplicitTesting).IsAssignableFrom(targetType));
-            targetType.ValidateMemberCountsAre(1, 3, 0, 0, 0, 0);
+            targetType.ValidateMemberCountsAre(1, 12, 3, 3, 3, 0);
 
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
             var instanceObject = Activator.CreateInstance(targetType, new object[0]);
             Assert.That(instanceObject is IInterfaceForImplicitExplicitTesting);
+            var instanceInterface = (IInterfaceForImplicitExplicitTesting)instanceObject;
 
-            Assert.That("Implicit 1".Equals(
+            Assert.That("Implicit Method 1".Equals(
                 targetType.GetMethod("Method1", TestContent.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
-            Assert.That("Implicit 2".Equals(
+            Assert.That("Implicit Method 2".Equals(
                 targetType.GetMethod("Method2", TestContent.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
-            Assert.That("Implicit 3".Equals(
+            Assert.That("Implicit Method 3".Equals(
                 targetType.GetMethod("Method3", TestContent.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
 
-            var instance = (IInterfaceForImplicitExplicitTesting)instanceObject;
+            Assert.That("Implicit Method 1".Equals(instanceInterface.Method1()));
+            Assert.That("Implicit Method 2".Equals(instanceInterface.Method2()));
+            Assert.That("Implicit Method 3".Equals(instanceInterface.Method3()));
 
-            Assert.That("Implicit 1".Equals(instance.Method1()));
-            Assert.That("Implicit 2".Equals(instance.Method2()));
-            Assert.That("Implicit 3".Equals(instance.Method3()));
+            Assert.That("Implicit Property 1".Equals(
+                targetType.GetProperty("Property1", TestContent.BindingFlagsForMixedMembers).GetValue(instanceObject)));
+            Assert.That("Implicit Property 2".Equals(
+                targetType.GetProperty("Property2", TestContent.BindingFlagsForMixedMembers).GetValue(instanceObject)));
+            Assert.That("Implicit Property 3".Equals(
+                targetType.GetProperty("Property3", TestContent.BindingFlagsForMixedMembers).GetValue(instanceObject)));
+
+            Assert.That("Implicit Property 1".Equals(instanceInterface.Property1));
+            Assert.That("Implicit Property 2".Equals(instanceInterface.Property2));
+            Assert.That("Implicit Property 3".Equals(instanceInterface.Property3));
+
+            EventHandler eventHandler = (sender, eventArgs) => { return; };
+
+            var typeEvent1 = targetType.GetEvent("Event1", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(typeEvent1 != null);
+            var typeEvent2 = targetType.GetEvent("Event2", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(typeEvent2 != null);
+            var typeEvent3 = targetType.GetEvent("Event3", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(typeEvent2 != null);
+
+            var implicitEventHandler1 = targetType.GetField("Event1", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(implicitEventHandler1 != null);
+            var implicitEventHandler2 = targetType.GetField("Event2", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(implicitEventHandler2 != null);
+            var implicitEventHandler3 = targetType.GetField("Event3", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(implicitEventHandler3 != null);
+
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler3.GetValue(instanceObject) == null);
+
+            typeEvent1.AddEventHandler(instanceObject, eventHandler);
+            Assert.That(object.Equals(implicitEventHandler1.GetValue(instanceObject), eventHandler));
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler3.GetValue(instanceObject) == null);
+            typeEvent1.RemoveEventHandler(instanceObject, eventHandler);
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler3.GetValue(instanceObject) == null);
+
+            typeEvent2.AddEventHandler(instanceObject, eventHandler);
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(object.Equals(implicitEventHandler2.GetValue(instanceObject), eventHandler));
+            Assert.That(implicitEventHandler3.GetValue(instanceObject) == null);
+            typeEvent2.RemoveEventHandler(instanceObject, eventHandler);
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler3.GetValue(instanceObject) == null);
+
+            typeEvent3.AddEventHandler(instanceObject, eventHandler);
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(object.Equals(implicitEventHandler3.GetValue(instanceObject), eventHandler));
+            typeEvent3.RemoveEventHandler(instanceObject, eventHandler);
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler3.GetValue(instanceObject) == null);
+
+            instanceInterface.Event1 += eventHandler;
+            Assert.That(object.Equals(implicitEventHandler1.GetValue(instanceObject), eventHandler));
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler3.GetValue(instanceObject) == null);
+            instanceInterface.Event1 -= eventHandler;
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler3.GetValue(instanceObject) == null);
+
+            instanceInterface.Event2 += eventHandler;
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(object.Equals(implicitEventHandler2.GetValue(instanceObject), eventHandler));
+            Assert.That(implicitEventHandler3.GetValue(instanceObject) == null);
+            instanceInterface.Event2 -= eventHandler;
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler3.GetValue(instanceObject) == null);
+
+            instanceInterface.Event3 += eventHandler;
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(object.Equals(implicitEventHandler3.GetValue(instanceObject), eventHandler));
+            instanceInterface.Event3 -= eventHandler;
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler3.GetValue(instanceObject) == null);
         }
 
         [Test]
@@ -85,22 +169,77 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.InterfaceForImplicitExplicitTestingTarget).FullName);
 
             Assert.That(typeof(IInterfaceForImplicitExplicitTesting).IsAssignableFrom(targetType));
-            targetType.ValidateMemberCountsAre(1, 3, 0, 0, 0, 0);
+            targetType.ValidateMemberCountsAre(1, 12, 3, 3, 3, 0);
 
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
             var instanceObject = Activator.CreateInstance(targetType, new object[0]);
             Assert.That(instanceObject is IInterfaceForImplicitExplicitTesting);
+            var instanceInterface = (IInterfaceForImplicitExplicitTesting)instanceObject;
 
             Assert.That(targetType.GetMethod("Method1", TestContent.BindingFlagsForMixedMembers) == null);
             Assert.That(targetType.GetMethod("Method2", TestContent.BindingFlagsForMixedMembers) == null);
             Assert.That(targetType.GetMethod("Method3", TestContent.BindingFlagsForMixedMembers) == null);
 
-            var instance = (IInterfaceForImplicitExplicitTesting)instanceObject;
+            Assert.That("Explicit Method 1".Equals(instanceInterface.Method1()));
+            Assert.That("Explicit Method 2".Equals(instanceInterface.Method2()));
+            Assert.That("Explicit Method 3".Equals(instanceInterface.Method3()));
 
-            Assert.That("Explicit 1".Equals(instance.Method1()));
-            Assert.That("Explicit 2".Equals(instance.Method2()));
-            Assert.That("Explicit 3".Equals(instance.Method3()));
+            Assert.That(targetType.GetProperty("Property1", TestContent.BindingFlagsForMixedMembers) == null);
+            Assert.That(targetType.GetProperty("Property2", TestContent.BindingFlagsForMixedMembers) == null);
+            Assert.That(targetType.GetProperty("Property3", TestContent.BindingFlagsForMixedMembers) == null);
+
+            Assert.That("Explicit Property 1".Equals(instanceInterface.Property1));
+            Assert.That("Explicit Property 2".Equals(instanceInterface.Property2));
+            Assert.That("Explicit Property 3".Equals(instanceInterface.Property3));
+
+            EventHandler eventHandler = (sender, eventArgs) => { return; };
+
+            Assert.That(targetType.GetEvent("Event1", TestContent.BindingFlagsForMixedMembers) == null);
+            Assert.That(targetType.GetEvent("Event2", TestContent.BindingFlagsForMixedMembers) == null);
+            Assert.That(targetType.GetEvent("Event3", TestContent.BindingFlagsForMixedMembers) == null);
+
+            Assert.That(targetType.GetField("Event1", TestContent.BindingFlagsForMixedMembers) == null);
+            Assert.That(targetType.GetField("Event2", TestContent.BindingFlagsForMixedMembers) == null);
+            Assert.That(targetType.GetField("Event3", TestContent.BindingFlagsForMixedMembers) == null);
+
+            var explicitEventHandler1 = targetType.GetField("explicitEventHandler1", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(explicitEventHandler1 != null);
+            var explicitEventHandler2 = targetType.GetField("explicitEventHandler2", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(explicitEventHandler2 != null);
+            var explicitEventHandler3 = targetType.GetField("explicitEventHandler3", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(explicitEventHandler3 != null);
+
+            Assert.That(explicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler3.GetValue(instanceObject) == null);
+
+            instanceInterface.Event1 += eventHandler;
+            Assert.That(object.Equals(explicitEventHandler1.GetValue(instanceObject), eventHandler));
+            Assert.That(explicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler3.GetValue(instanceObject) == null);
+            instanceInterface.Event1 -= eventHandler;
+            Assert.That(explicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler3.GetValue(instanceObject) == null);
+
+            instanceInterface.Event2 += eventHandler;
+            Assert.That(explicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(object.Equals(explicitEventHandler2.GetValue(instanceObject), eventHandler));
+            Assert.That(explicitEventHandler3.GetValue(instanceObject) == null);
+            instanceInterface.Event2 -= eventHandler;
+            Assert.That(explicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler3.GetValue(instanceObject) == null);
+
+            instanceInterface.Event3 += eventHandler;
+            Assert.That(explicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(object.Equals(explicitEventHandler3.GetValue(instanceObject), eventHandler));
+            instanceInterface.Event3 -= eventHandler;
+            Assert.That(explicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler3.GetValue(instanceObject) == null);
         }
 
         [Test]
@@ -127,24 +266,111 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.InterfaceForImplicitExplicitTestingTarget).FullName);
 
             Assert.That(typeof(IInterfaceForImplicitExplicitTesting).IsAssignableFrom(targetType));
-            targetType.ValidateMemberCountsAre(1, 4, 0, 0, 0, 0);
+            targetType.ValidateMemberCountsAre(1, 16, 4, 4, 4, 0);
 
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
             var instanceObject = Activator.CreateInstance(targetType, new object[0]);
             Assert.That(instanceObject is IInterfaceForImplicitExplicitTesting);
+            var instanceInterface = (IInterfaceForImplicitExplicitTesting)instanceObject;
 
-            Assert.That("Implicit 1".Equals(
+            Assert.That("Implicit Method 1".Equals(
                 targetType.GetMethod("Method1", TestContent.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
-            Assert.That("Independent 2".Equals(
+            Assert.That("Independent Method 2".Equals(
                 targetType.GetMethod("Method2", TestContent.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
             Assert.That(targetType.GetMethod("Method3", TestContent.BindingFlagsForMixedMembers) == null);
 
-            var instance = (IInterfaceForImplicitExplicitTesting)instanceObject;
+            Assert.That("Implicit Method 1".Equals(instanceInterface.Method1()));
+            Assert.That("Explicit Method 2".Equals(instanceInterface.Method2()));
+            Assert.That("Explicit Method 3".Equals(instanceInterface.Method3()));
 
-            Assert.That("Implicit 1".Equals(instance.Method1()));
-            Assert.That("Explicit 2".Equals(instance.Method2()));
-            Assert.That("Explicit 3".Equals(instance.Method3()));
+            Assert.That("Implicit Property 1".Equals(
+                targetType.GetProperty("Property1", TestContent.BindingFlagsForMixedMembers).GetValue(instanceObject)));
+            Assert.That("Independent Property 2".Equals(
+                targetType.GetProperty("Property2", TestContent.BindingFlagsForMixedMembers).GetValue(instanceObject)));
+            Assert.That(targetType.GetProperty("Property3", TestContent.BindingFlagsForMixedMembers) == null);
+
+            Assert.That("Implicit Property 1".Equals(instanceInterface.Property1));
+            Assert.That("Explicit Property 2".Equals(instanceInterface.Property2));
+            Assert.That("Explicit Property 3".Equals(instanceInterface.Property3));
+
+            EventHandler eventHandler = (sender, eventArgs) => { return; };
+
+            var typeEvent1 = targetType.GetEvent("Event1", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(typeEvent1 != null);
+            var typeEvent2 = targetType.GetEvent("Event2", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(typeEvent2 != null);
+            Assert.That(targetType.GetEvent("Event3", TestContent.BindingFlagsForMixedMembers) == null);
+
+            var implicitEventHandler1 = targetType.GetField("Event1", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(implicitEventHandler1 != null);
+            var implicitEventHandler2 = targetType.GetField("Event2", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(implicitEventHandler2 != null);
+            Assert.That(targetType.GetField("Event3", TestContent.BindingFlagsForMixedMembers) == null);
+            var explicitEventHandler2 = targetType.GetField("explicitEventHandler2", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(explicitEventHandler2 != null);
+            var explicitEventHandler3 = targetType.GetField("explicitEventHandler3", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(explicitEventHandler3 != null);
+
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler3.GetValue(instanceObject) == null);
+
+            typeEvent1.AddEventHandler(instanceObject, eventHandler);
+            Assert.That(object.Equals(implicitEventHandler1.GetValue(instanceObject), eventHandler));
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler3.GetValue(instanceObject) == null);
+            typeEvent1.RemoveEventHandler(instanceObject, eventHandler);
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler3.GetValue(instanceObject) == null);
+
+            typeEvent2.AddEventHandler(instanceObject, eventHandler);
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(object.Equals(implicitEventHandler2.GetValue(instanceObject), eventHandler));
+            Assert.That(explicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler3.GetValue(instanceObject) == null);
+            typeEvent2.RemoveEventHandler(instanceObject, eventHandler);
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler3.GetValue(instanceObject) == null);
+
+            instanceInterface.Event1 += eventHandler;
+            Assert.That(object.Equals(implicitEventHandler1.GetValue(instanceObject), eventHandler));
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler3.GetValue(instanceObject) == null);
+            instanceInterface.Event1 -= eventHandler;
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler3.GetValue(instanceObject) == null);
+
+            instanceInterface.Event2 += eventHandler;
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(object.Equals(explicitEventHandler2.GetValue(instanceObject), eventHandler));
+            Assert.That(explicitEventHandler3.GetValue(instanceObject) == null);
+            instanceInterface.Event2 -= eventHandler;
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler3.GetValue(instanceObject) == null);
+
+            instanceInterface.Event3 += eventHandler;
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(object.Equals(explicitEventHandler3.GetValue(instanceObject), eventHandler));
+            instanceInterface.Event3 -= eventHandler;
+            Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
+            Assert.That(implicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler2.GetValue(instanceObject) == null);
+            Assert.That(explicitEventHandler3.GetValue(instanceObject) == null);
         }
     }
 }
