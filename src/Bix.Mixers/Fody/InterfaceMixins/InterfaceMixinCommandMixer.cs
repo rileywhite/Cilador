@@ -1,4 +1,5 @@
-﻿using Bix.Mixers.Fody.ILCloning;
+﻿using Bix.Mixers.Fody.Core;
+using Bix.Mixers.Fody.ILCloning;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
@@ -14,26 +15,30 @@ namespace Bix.Mixers.Fody.InterfaceMixins
         public InterfaceMixinCommandMixer(TypeDefinition interfaceType, TypeDefinition mixinType, TypeDefinition target)
         {
             Contract.Requires(interfaceType != null);
-            Contract.Requires(interfaceType.IsInterface);
             Contract.Requires(mixinType != null);
-            Contract.Requires(mixinType.IsClass);
             Contract.Requires(target != null);
             Contract.Requires(target.Module != null);
             Contract.Requires(!target.IsValueType);
             Contract.Requires(!target.IsPrimitive);
 
             Contract.Ensures(this.InterfaceType != null);
-            Contract.Ensures(this.InterfaceType.IsInterface);
             Contract.Ensures(this.MixinType != null);
-            Contract.Ensures(this.MixinType.IsClass);
             Contract.Ensures(this.Target != null);
             Contract.Ensures(this.Target.IsClass);
             Contract.Ensures(this.TargetModule != null);
             Contract.Ensures(this.Source != null);
 
+            if (!interfaceType.IsInterface)
+            {
+                throw new WeavingException(string.Format("Configured mixin interface type is not an interface: [{0}]", interfaceType.FullName));
+            }
+
             if (!mixinType.Interfaces.Any(@interface => @interface.FullName == interfaceType.FullName))
             {
-                throw new ArgumentException("Must implement the interface specified in the interfaceType argmuent", "mixinType");
+                throw new WeavingException(string.Format(
+                    "The mixin source [{0}] must implement the interface specified in the interfaceType argument [{1}]",
+                    mixinType.FullName,
+                    interfaceType.FullName));
             }
 
             this.InterfaceType = interfaceType;

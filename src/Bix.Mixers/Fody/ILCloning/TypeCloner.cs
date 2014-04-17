@@ -56,6 +56,16 @@ namespace Bix.Mixers.Fody.ILCloning
                 {
                     throw new WeavingException(string.Format("Mixin source type cannot be abstract: [{0}]", this.SourceWithRoot.Source.FullName));
                 }
+
+                if (this.SourceWithRoot.Source.HasGenericParameters)
+                {
+                    throw new WeavingException(string.Format("Mixin source type cannot be an open generic type: [{0}]", this.SourceWithRoot.Source.FullName));
+                }
+
+                if (!(this.SourceWithRoot.Source.IsClass && !this.SourceWithRoot.Source.IsValueType))
+                {
+                    throw new WeavingException(string.Format("Mixin source type must be a reference type: [{0}]", this.SourceWithRoot.Source.FullName));
+                }
             }
             else
             {

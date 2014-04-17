@@ -43,6 +43,11 @@
     <Compile Include="..\..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="IncorrectMixinSpecifyingClassInsteadOfInterface.cs" />
+    <Compile Include="InterfacelessMixin.cs" />
+    <Compile Include="ValueTypeMixin.cs" />
+    <Compile Include="InterfaceTypeMixin.cs" />
+    <Compile Include="OpenGenericMixin.cs" />
     <Compile Include="AbstractMixin.cs" />
     <Compile Include="EmptyInterfaceWithContentMixin.cs" />
     <Compile Include="EmptyMixin.cs" />

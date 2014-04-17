@@ -46,6 +46,7 @@
     <Compile Include="IEmptyInterface.cs" />
     <Compile Include="IInterfaceForImplicitExplicitTesting.cs" />
     <Compile Include="IInterfaceWithOnlyPrimitiveTypes.cs" />
+    <Compile Include="NotAValidMixinInterface.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestMixedAttribute.cs" />
   </ItemGroup>

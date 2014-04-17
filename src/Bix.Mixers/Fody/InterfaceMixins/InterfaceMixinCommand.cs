@@ -63,7 +63,8 @@ namespace Bix.Mixers.Fody.InterfaceMixins
 
             if (!commandInterfaceType.IsInterface)
             {
-                throw new ArgumentException("Expected the constructor argument to be a TypeDefinition that represents an interface", "mixCommandAttribute");
+                weavingContext.LogError(string.Format("Configured mixin interface type is not an interface: [{0}]", commandInterfaceType.FullName));
+                // let execution continue...an error will be thrown for this particular command if invocation is attempted
             }
 
             var matchedMap = this.Config.InterfaceMap.SingleOrDefault(
