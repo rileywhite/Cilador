@@ -110,6 +110,7 @@
     <Compile Include="InterfaceMixinTests\MemberMixingFixture.cs" />
     <Compile Include="InterfaceMixinTests\ImplicitAndExplicitImplementationFixture.cs" />
     <Compile Include="InterfaceMixinTests\InterfaceWithOnlyPrimitiveTypesFixture.cs" />
+    <Compile Include="InterfaceMixinTests\UnsupportedFunctionalityFixture.cs" />
     <Compile Include="ModuleWeaverGeneralTests\ConfigSerializationTests.cs" />
     <Compile Include="InterfaceMixinTests\BasicInterfaceAndContentFixture.cs" />
     <Compile Include="Program.cs" />

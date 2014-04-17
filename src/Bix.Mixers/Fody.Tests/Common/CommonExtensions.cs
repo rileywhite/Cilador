@@ -108,6 +108,52 @@ namespace Bix.Mixers.Fody.Tests.Common
             return string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().Name);
         }
 
+        public static void ValidateMemberSources(this Type targetType, Type sourceType)
+        {
+            Contract.Requires(targetType != null);
+            Contract.Requires(sourceType != null);
+            Contract.Requires(targetType != sourceType);
+
+            foreach (var targetField in targetType.GetFields(TestContent.BindingFlagsForMixedMembers))
+            {
+                targetField.ValidateSourceEqual(sourceType.GetField(targetField.Name, TestContent.BindingFlagsForMixedMembers));
+            }
+
+            foreach (var targetMethod in targetType.GetMethods(TestContent.BindingFlagsForMixedMembers))
+            {
+                var targetMethodParameters = targetMethod.GetParameters();
+                targetMethod.ValidateSourceEqual(sourceType.GetMethod(
+                    targetMethod.Name,
+                    TestContent.BindingFlagsForMixedMembers,
+                    null,
+                    targetMethodParameters.Length == 0 ? new Type[0] : targetMethodParameters.Select(each => each.ParameterType).ToArray(),
+                    null));
+            }
+
+            foreach (var targetProperty in targetType.GetProperties(TestContent.BindingFlagsForMixedMembers))
+            {
+                targetProperty.ValidateSourceEqual(sourceType.GetProperty(
+                    targetProperty.Name,
+                    TestContent.BindingFlagsForMixedMembers,
+                    null,
+                    targetProperty.PropertyType,
+                    targetProperty.GetIndexParameters().Select(each => each.ParameterType).ToArray(),
+                    null));
+            }
+
+            foreach (var targetEvent in targetType.GetEvents(TestContent.BindingFlagsForMixedMembers))
+            {
+                targetEvent.ValidateSourceEqual(sourceType.GetEvent(
+                    targetEvent.Name,
+                    TestContent.BindingFlagsForMixedMembers));
+            }
+
+            foreach (var targetNestedType in targetType.GetNestedTypes(TestContent.BindingFlagsForMixedMembers))
+            {
+                targetNestedType.ValidateSourceEqual(sourceType.GetNestedType(targetNestedType.Name, TestContent.BindingFlagsForMixedMembers));
+            }
+        }
+
         public static void ValidateSourceEqual(this FieldInfo targetField, FieldInfo sourceField)
         {
             Contract.Requires(targetField != null);
@@ -237,6 +283,90 @@ namespace Bix.Mixers.Fody.Tests.Common
             else { Assert.That(sourceEvent.RaiseMethod.Name == targetEvent.RaiseMethod.Name); }
 
             Attribute.GetCustomAttributes(targetEvent).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceEvent));
+        }
+
+        public static void ValidateSourceEqual(this Type targetType, Type sourceType)
+        {
+            Contract.Requires(targetType != null);
+
+            Assert.That(sourceType != null, "Could not find source type");
+            Assert.That(sourceType != targetType);
+            Assert.That(sourceType.Attributes == targetType.Attributes);
+            Assert.That(sourceType.BaseType == targetType.BaseType);    // won't work for mixed base types
+            Assert.That(sourceType.ContainsGenericParameters == targetType.ContainsGenericParameters);
+            Assert.That(sourceType.DeclaringType != targetType.DeclaringType);
+            Assert.That(sourceType.GUID != targetType.GUID);
+            Assert.That(sourceType.HasElementType == targetType.HasElementType);
+            Assert.That(sourceType.IsAbstract == targetType.IsAbstract);
+            Assert.That(sourceType.IsAnsiClass == targetType.IsAnsiClass);
+            Assert.That(sourceType.IsArray == targetType.IsArray);
+            Assert.That(sourceType.IsAutoClass == targetType.IsAutoClass);
+            Assert.That(sourceType.IsAutoLayout == targetType.IsAutoLayout);
+            Assert.That(sourceType.IsByRef == targetType.IsByRef);
+            Assert.That(sourceType.IsClass == targetType.IsClass);
+            Assert.That(sourceType.IsCOMObject == targetType.IsCOMObject);
+            Assert.That(sourceType.IsConstructedGenericType == targetType.IsConstructedGenericType);
+            Assert.That(sourceType.IsContextful == targetType.IsContextful);
+            Assert.That(sourceType.IsEnum == targetType.IsEnum);
+            Assert.That(sourceType.IsExplicitLayout == targetType.IsExplicitLayout);
+            Assert.That(sourceType.IsGenericType == targetType.IsGenericType);
+            Assert.That(sourceType.IsGenericTypeDefinition == targetType.IsGenericTypeDefinition);
+            Assert.That(sourceType.IsImport == targetType.IsImport);
+            Assert.That(sourceType.IsInterface == targetType.IsInterface);
+            Assert.That(sourceType.IsLayoutSequential == targetType.IsLayoutSequential);
+            Assert.That(sourceType.IsMarshalByRef == targetType.IsMarshalByRef);
+            Assert.That(sourceType.IsNested == targetType.IsNested);
+            Assert.That(sourceType.IsNestedAssembly == targetType.IsNestedAssembly);
+            Assert.That(sourceType.IsNestedFamANDAssem == targetType.IsNestedFamANDAssem);
+            Assert.That(sourceType.IsNestedFamily == targetType.IsNestedFamily);
+            Assert.That(sourceType.IsNestedFamORAssem == targetType.IsNestedFamORAssem);
+            Assert.That(sourceType.IsNestedPrivate == targetType.IsNestedPrivate);
+            Assert.That(sourceType.IsNestedPublic == targetType.IsNestedPublic);
+            Assert.That(sourceType.IsNotPublic == targetType.IsNotPublic);
+            Assert.That(sourceType.IsPointer == targetType.IsPointer);
+            Assert.That(sourceType.IsPrimitive == targetType.IsPrimitive);
+            Assert.That(sourceType.IsPublic == targetType.IsPublic);
+            Assert.That(sourceType.IsSealed == targetType.IsSealed);
+            Assert.That(sourceType.IsSecurityCritical == targetType.IsSecurityCritical);
+            Assert.That(sourceType.IsSecuritySafeCritical == targetType.IsSecuritySafeCritical);
+            Assert.That(sourceType.IsSecurityTransparent == targetType.IsSecurityTransparent);
+            Assert.That(sourceType.IsSerializable == targetType.IsSerializable);
+            Assert.That(sourceType.IsSpecialName == targetType.IsSpecialName);
+            Assert.That(sourceType.IsUnicodeClass == targetType.IsUnicodeClass);
+            Assert.That(sourceType.IsValueType == targetType.IsValueType);
+            Assert.That(sourceType.IsVisible == targetType.IsVisible);
+            Assert.That(sourceType.MemberType == targetType.MemberType);
+            Assert.That(sourceType.Name == targetType.Name);
+            Assert.That(sourceType.TypeInitializer == targetType.TypeInitializer);
+            Assert.That(sourceType.UnderlyingSystemType != targetType.UnderlyingSystemType);
+
+            Assert.That(targetType.IsGenericParameter == sourceType.IsGenericParameter);
+            if (!sourceType.IsGenericParameter) { Assert.That(!targetType.IsGenericParameter); }
+            else
+            {
+                Assert.That(targetType.IsGenericParameter);
+                Assert.That(sourceType.GenericParameterAttributes == targetType.GenericParameterAttributes);
+                Assert.That(sourceType.GenericParameterPosition == targetType.GenericParameterPosition);
+            }
+
+            if (sourceType.StructLayoutAttribute == null) { Assert.That(targetType.StructLayoutAttribute == null); }
+            else { Assert.That(sourceType.StructLayoutAttribute.Match(targetType.StructLayoutAttribute)); }
+
+            Assert.That(targetType.GenericTypeArguments.Length == sourceType.GenericTypeArguments.Length);
+            for (int i = 0; i < targetType.GenericTypeArguments.Length && i < sourceType.GenericTypeArguments.Length; i++)
+            {
+                targetType.GenericTypeArguments[i].ValidateSourceEqual(sourceType.GenericTypeArguments[i]);
+            }
+
+            targetType.ValidateMemberCountsAre(
+                sourceType.GetConstructors(TestContent.BindingFlagsForMixedMembers).Length,
+                sourceType.GetMethods(TestContent.BindingFlagsForMixedMembers).Length,
+                sourceType.GetFields(TestContent.BindingFlagsForMixedMembers).Length,
+                sourceType.GetProperties(TestContent.BindingFlagsForMixedMembers).Length,
+                sourceType.GetEvents(TestContent.BindingFlagsForMixedMembers).Length,
+                sourceType.GetNestedTypes(TestContent.BindingFlagsForMixedMembers).Length);
+
+            Attribute.GetCustomAttributes(targetType).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceType));
         }
 
         public static void ValidateSourceEqual(this ParameterInfo[] targetParameters, ParameterInfo[] sourceParameters)

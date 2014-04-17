@@ -41,10 +41,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             targetType.ValidateMemberCountsAre(1, 0, 30, 0, 0, 0);
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
-            foreach (var targetField in targetType.GetFields(TestContent.BindingFlagsForMixedMembers))
-            {
-                targetField.ValidateSourceEqual(typeof(FieldsMixin).GetField(targetField.Name, TestContent.BindingFlagsForMixedMembers));
-            }
+            targetType.ValidateMemberSources(typeof(FieldsMixin));
         }
 
         [Test]
@@ -73,16 +70,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             targetType.ValidateMemberCountsAre(1, 30, 0, 0, 0, 0);
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
-            foreach (var targetMethod in targetType.GetMethods(TestContent.BindingFlagsForMixedMembers))
-            {
-                var targetMethodParameters = targetMethod.GetParameters();
-                targetMethod.ValidateSourceEqual(typeof(MethodsMixin).GetMethod(
-                    targetMethod.Name,
-                    TestContent.BindingFlagsForMixedMembers,
-                    null,
-                    targetMethodParameters.Length == 0 ? new Type[0] : targetMethodParameters.Select(each => each.ParameterType).ToArray(),
-                    null));
-            }
+            targetType.ValidateMemberSources(typeof(MethodsMixin));
         }
 
         [Test]
@@ -111,33 +99,8 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             targetType.ValidateMemberCountsAre(1, 226, 47, 123, 0, 0);
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
-            foreach (var targetField in targetType.GetFields(TestContent.BindingFlagsForMixedMembers))
-            {
-                targetField.ValidateSourceEqual(typeof(PropertiesMixin).GetField(targetField.Name, TestContent.BindingFlagsForMixedMembers));
-            }
-
-            foreach (var targetMethod in targetType.GetMethods(TestContent.BindingFlagsForMixedMembers))
-            {
-                targetMethod.ValidateSourceEqual(typeof(PropertiesMixin).GetMethod(
-                    targetMethod.Name,
-                    TestContent.BindingFlagsForMixedMembers,
-                    null,
-                    targetMethod.GetParameters().Select(each => each.ParameterType).ToArray(),
-                    null));
-            }
-
-            foreach (var targetProperty in targetType.GetProperties(TestContent.BindingFlagsForMixedMembers))
-            {
-                targetProperty.ValidateSourceEqual(typeof(PropertiesMixin).GetProperty(
-                    targetProperty.Name,
-                    TestContent.BindingFlagsForMixedMembers,
-                    null,
-                    targetProperty.PropertyType,
-                    targetProperty.GetIndexParameters().Select(each => each.ParameterType).ToArray(),
-                    null));
-            }
+            targetType.ValidateMemberSources(typeof(PropertiesMixin));
         }
-
 
         [Test]
         public void CanMixinEvents()
@@ -165,27 +128,36 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             targetType.ValidateMemberCountsAre(1, 28, 12, 0, 14, 0);
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
-            foreach (var targetField in targetType.GetFields(TestContent.BindingFlagsForMixedMembers))
-            {
-                targetField.ValidateSourceEqual(typeof(EventsMixin).GetField(targetField.Name, TestContent.BindingFlagsForMixedMembers));
-            }
+            targetType.ValidateMemberSources(typeof(EventsMixin));
+        }
 
-            foreach (var targetMethod in targetType.GetMethods(TestContent.BindingFlagsForMixedMembers))
-            {
-                targetMethod.ValidateSourceEqual(typeof(EventsMixin).GetMethod(
-                    targetMethod.Name,
-                    TestContent.BindingFlagsForMixedMembers,
-                    null,
-                    targetMethod.GetParameters().Select(each => each.ParameterType).ToArray(),
-                    null));
-            }
+        [Test]
+        public void CanMixinNestedTypes()
+        {
+            var config = new BixMixersConfigType();
 
-            foreach (var targetEvent in targetType.GetEvents(TestContent.BindingFlagsForMixedMembers))
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
             {
-                targetEvent.ValidateSourceEqual(typeof(EventsMixin).GetEvent(
-                    targetEvent.Name,
-                    TestContent.BindingFlagsForMixedMembers));
-            }
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMap = new InterfaceMapType[]
+                    {
+                        new InterfaceMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(NestedTypesMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+            var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget).FullName);
+            Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
+            targetType.ValidateMemberCountsAre(1, 0, 0, 0, 0, 64);
+            Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
+
+            targetType.ValidateMemberSources(typeof(NestedTypesMixin));
         }
     }
 }

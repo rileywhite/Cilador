@@ -1,4 +1,5 @@
-﻿using Mono.Cecil;
+﻿using Bix.Mixers.Fody.Core;
+using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -49,51 +50,32 @@ namespace Bix.Mixers.Fody.ILCloning
 
         private void CloneTypeData()
         {
-            if (this.Target != this.SourceWithRoot.RootContext.RootTarget)
+            if (this.Target == this.SourceWithRoot.RootContext.RootTarget)
             {
+                if (this.SourceWithRoot.Source.IsAbstract)
+                {
+                    throw new WeavingException(string.Format("Mixin source type cannot be abstract: [{0}]", this.SourceWithRoot.Source.FullName));
+                }
+            }
+            else
+            {
+                Contract.Assert(this.Target.IsNested);
+                Contract.Assert(this.SourceWithRoot.Source.IsNested);
+
                 this.Target.Attributes = this.SourceWithRoot.Source.Attributes;
-                this.Target.HasSecurity = this.SourceWithRoot.Source.HasSecurity;
-                this.Target.IsAbstract = this.SourceWithRoot.Source.IsAbstract;
-                this.Target.IsAnsiClass = this.SourceWithRoot.Source.IsAnsiClass;
-                this.Target.IsAutoClass = this.SourceWithRoot.Source.IsAutoClass;
-                this.Target.IsAutoLayout = this.SourceWithRoot.Source.IsAutoLayout;
-                this.Target.IsBeforeFieldInit = this.SourceWithRoot.Source.IsBeforeFieldInit;
-                this.Target.IsClass = this.SourceWithRoot.Source.IsClass;
-                this.Target.IsExplicitLayout = this.SourceWithRoot.Source.IsExplicitLayout;
-                this.Target.IsImport = this.SourceWithRoot.Source.IsImport;
-                this.Target.IsInterface = this.SourceWithRoot.Source.IsInterface;
-                this.Target.IsNestedAssembly = this.SourceWithRoot.Source.IsNestedAssembly;
-                this.Target.IsNestedFamily = this.SourceWithRoot.Source.IsNestedFamily;
-                this.Target.IsNestedFamilyAndAssembly = this.SourceWithRoot.Source.IsNestedFamilyAndAssembly;
-                this.Target.IsNestedFamilyOrAssembly = this.SourceWithRoot.Source.IsNestedFamilyOrAssembly;
-                this.Target.IsNestedPrivate = this.SourceWithRoot.Source.IsNestedPrivate;
-                this.Target.IsNestedPublic = this.SourceWithRoot.Source.IsNestedPublic;
-                this.Target.IsNotPublic = this.SourceWithRoot.Source.IsNotPublic;
-                this.Target.IsPublic = this.SourceWithRoot.Source.IsPublic;
-                this.Target.IsRuntimeSpecialName = this.SourceWithRoot.Source.IsRuntimeSpecialName;
-                this.Target.IsSealed = this.SourceWithRoot.Source.IsSealed;
-                this.Target.IsSequentialLayout = this.SourceWithRoot.Source.IsSequentialLayout;
-                this.Target.IsSerializable = this.SourceWithRoot.Source.IsSerializable;
-                this.Target.IsSpecialName = this.SourceWithRoot.Source.IsSpecialName;
-                this.Target.IsUnicodeClass = this.SourceWithRoot.Source.IsUnicodeClass;
-                this.Target.IsValueType = this.SourceWithRoot.Source.IsValueType;
-                this.Target.IsWindowsRuntime = this.SourceWithRoot.Source.IsWindowsRuntime;
+                this.Target.DeclaringType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.DeclaringType).Resolve();
+                this.Target.BaseType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.BaseType);
+
+                foreach (var interfaceType in this.SourceWithRoot.Source.Interfaces)
+                {
+                    this.Target.Interfaces.Add(this.SourceWithRoot.RootImport(interfaceType));
+                }
 
                 // TODO look more closely at type packing size
                 this.Target.PackingSize = this.SourceWithRoot.Source.PackingSize;
 
                 // TODO look more closely at type class size
                 this.Target.ClassSize = this.SourceWithRoot.Source.ClassSize;
-
-                // TODO look more closely at type scope
-                this.Target.Scope = this.SourceWithRoot.Source.Scope;
-
-                if (this.SourceWithRoot.Source.IsNested)
-                {
-                    this.Target.DeclaringType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.DeclaringType).Resolve();
-                }
-
-                this.Target.BaseType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.BaseType);
 
                 // TODO research correct usage of type metadata token
                 this.Target.MetadataToken = new MetadataToken(this.SourceWithRoot.Source.MetadataToken.TokenType, this.SourceWithRoot.Source.MetadataToken.RID);
@@ -126,13 +108,8 @@ namespace Bix.Mixers.Fody.ILCloning
                                        where !type.IsSkipped()
                                        select new TypeSourceWithRoot(this.SourceWithRoot.RootContext, type))
                 {
-                    var target = new TypeDefinition(
-                        sourceWithRoot.Source.Namespace,
-                        sourceWithRoot.Source.Name,
-                        0);
-                    target.Module.Types.Add(target);
+                    var target = new TypeDefinition(sourceWithRoot.Source.Namespace, sourceWithRoot.Source.Name, 0);
                     this.Target.NestedTypes.Add(target);
-
                     var typeCloner = new TypeCloner(target, sourceWithRoot);
                     typeCloner.CreateWireframeAndCloners();
                     this.TypeCloners.Add(typeCloner);

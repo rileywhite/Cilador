@@ -113,6 +113,14 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Assert(this.ParameterOperandReplacementMap != null);
 
             var sourceBody = this.SourceWithRoot.Source.Body;
+
+            if(sourceBody == null)
+            {
+                this.Target.Body = null;
+                this.IsBodyCloned = true;
+                return;
+            }
+
             var targetBody = this.Target.Body;
 
             targetBody.InitLocals = sourceBody.InitLocals;
