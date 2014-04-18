@@ -26,6 +26,12 @@ namespace Bix.Mixers.Fody.ILCloning
             throw new NotSupportedException();
         }
 
+        public GenericParameter RootImport(GenericParameter genericParameter)
+        {
+            Contract.Ensures(genericParameter == null || Contract.Result<GenericParameter>() != null);
+            throw new NotSupportedException();
+        }
+
         public TypeReference RootImport(TypeReference type)
         {
             Contract.Ensures(type == null || Contract.Result<TypeReference>() != null);

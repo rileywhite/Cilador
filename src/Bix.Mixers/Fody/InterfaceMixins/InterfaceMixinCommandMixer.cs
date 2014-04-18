@@ -26,7 +26,7 @@ namespace Bix.Mixers.Fody.InterfaceMixins
             Contract.Ensures(this.Target != null);
             Contract.Ensures(this.Target.IsClass);
             Contract.Ensures(this.TargetModule != null);
-            Contract.Ensures(this.Source != null);
+            Contract.Ensures(this.SourceWithRoot != null);
 
             if (!interfaceType.IsInterface)
             {
@@ -43,7 +43,7 @@ namespace Bix.Mixers.Fody.InterfaceMixins
 
             this.InterfaceType = interfaceType;
             this.MixinType = mixinType;
-            this.Source = TypeSourceWithRoot.CreateWithRootSourceAndTarget(mixinType, target);
+            this.SourceWithRoot = TypeSourceWithRoot.CreateWithRootSourceAndTarget(mixinType, target);
             this.TargetModule = target.Module;
             this.Target = target;
         }
@@ -52,7 +52,7 @@ namespace Bix.Mixers.Fody.InterfaceMixins
 
         public TypeDefinition MixinType { get; private set; }
 
-        private TypeSourceWithRoot Source { get; set; }
+        private TypeSourceWithRoot SourceWithRoot { get; set; }
 
         private ModuleDefinition TargetModule { get; set; }
 
@@ -65,7 +65,7 @@ namespace Bix.Mixers.Fody.InterfaceMixins
                 Contract.Requires(value != null);
                 Contract.Ensures(this.Target != null);
 
-                if (value.Interfaces.Any(@interface => @interface.Resolve() == this.Source.Source))
+                if (value.Interfaces.Any(@interface => @interface.Resolve() == this.SourceWithRoot.Source))
                 {
                     throw new ArgumentException("Cannot set a target type that already implements the interface to be mixed", "value");
                 }
@@ -77,7 +77,7 @@ namespace Bix.Mixers.Fody.InterfaceMixins
         public void Execute()
         {
             this.Target.Interfaces.Add(this.TargetModule.Import(this.InterfaceType));
-            var typeCloner = new TypeCloner(this.Target, this.Source);
+            var typeCloner = new TypeCloner(this.Target, this.SourceWithRoot);
             typeCloner.CloneStructure();
             typeCloner.CloneLogic();
         }

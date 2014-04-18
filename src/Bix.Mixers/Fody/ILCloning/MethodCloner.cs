@@ -59,9 +59,6 @@ namespace Bix.Mixers.Fody.ILCloning
                     this.SourceWithRoot.Source.PInvokeInfo.Module);
             }
 
-            // TODO look more closely, e.g. need to do anything with method's MethodReturnType?
-            this.Target.ReturnType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.ReturnType);
-
             if (this.SourceWithRoot.Source.HasOverrides)
             {
                 foreach (var sourceOverride in this.SourceWithRoot.Source.Overrides)
@@ -70,31 +67,40 @@ namespace Bix.Mixers.Fody.ILCloning
                 }
             }
 
-            this.ParameterOperandReplacementMap = new Dictionary<ParameterDefinition, ParameterDefinition>(this.SourceWithRoot.Source.Parameters.Count);
-            if (this.SourceWithRoot.Source.HasParameters)
-            {
-                this.Target.Parameters.CloneAllParameters(
-                    this.SourceWithRoot.Source.Parameters,
-                    this.SourceWithRoot.RootContext,
-                    this.ParameterOperandReplacementMap);
-            }
-            Contract.Assert(this.Target.Parameters.Count == this.SourceWithRoot.Source.Parameters.Count);
-
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around
             this.Target.CustomAttributes.Clear();
-            this.Target.RootImportAllCustomAttributes(this.SourceWithRoot, this.SourceWithRoot.Source.CustomAttributes);
-
-            if (this.SourceWithRoot.Source.HasGenericParameters)
-            {
-                // TODO method generic parameters
-                throw new NotImplementedException("Implement method generic parameters when needed");
-            }
+            this.Target.CloneAllCustomAttributes(this.SourceWithRoot.Source, this.SourceWithRoot.RootContext);
 
             if (this.SourceWithRoot.Source.HasSecurityDeclarations)
             {
                 // TODO method security declarations
                 throw new NotImplementedException("Implement method security declarations when needed");
             }
+
+            // method generic parameters cannot yet be root-imported because the associated method signature is not built to find a match
+            // for the declaring method
+            // that's okay, because we have what would be the result of the root-importing of the declaring method in this.Target
+            this.Target.CloneAllGenericParameters(this.SourceWithRoot.Source, this.SourceWithRoot.RootContext);
+            Contract.Assert(this.Target.GenericParameters.Count == this.SourceWithRoot.Source.GenericParameters.Count);
+
+            // TODO look more closely; need to do anything with method's MethodReturnType property?
+            if (this.SourceWithRoot.Source.ReturnType.IsGenericParameter)
+            {
+                this.Target.ReturnType = ((GenericParameter)this.SourceWithRoot.Source.ReturnType).ImportForDeclaringMethod(this.Target);
+            }
+            else
+            {
+                this.Target.ReturnType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.ReturnType);
+            }
+
+            this.Target.CloneAllParameters(this.SourceWithRoot.Source, this.SourceWithRoot.RootContext);
+            Contract.Assert(this.Target.Parameters.Count == this.SourceWithRoot.Source.Parameters.Count);
+            var parameterOperandReplacementMap = new Dictionary<ParameterDefinition, ParameterDefinition>(this.Target.Parameters.Count);
+            for (int i = 0; i < this.Target.Parameters.Count; i++)
+            {
+                parameterOperandReplacementMap.Add(this.SourceWithRoot.Source.Parameters[i], this.Target.Parameters[i]);
+            }
+            this.ParameterOperandReplacementMap = parameterOperandReplacementMap;
 
             this.IsStructureCloned = true;
             Contract.Assert(this.Target.SignatureEquals(this.SourceWithRoot.Source));

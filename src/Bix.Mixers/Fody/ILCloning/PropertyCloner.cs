@@ -34,16 +34,12 @@ namespace Bix.Mixers.Fody.ILCloning
                 this.SourceWithRoot.Source.MetadataToken.TokenType,
                 this.SourceWithRoot.Source.MetadataToken.RID);
 
-            if (this.SourceWithRoot.Source.HasParameters)
-            {
-                this.Target.Parameters.CloneAllParameters(this.SourceWithRoot.Source.Parameters, this.SourceWithRoot.RootContext);
-            }
-
             for (int i = 0; i < this.SourceWithRoot.Source.OtherMethods.Count; i++)
             {
                 this.Target.OtherMethods.Add(null);
             }
 
+            // setting the get and set methods also sets the property Parameters correctly
             foreach(var method in this.Target.DeclaringType.Methods)
             {
                 if (this.SourceWithRoot.Source.GetMethod != null &&
@@ -73,7 +69,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around
             this.Target.CustomAttributes.Clear();
-            this.Target.RootImportAllCustomAttributes(this.SourceWithRoot, this.SourceWithRoot.Source.CustomAttributes);
+            this.Target.CloneAllCustomAttributes(this.SourceWithRoot.Source, this.SourceWithRoot.RootContext);
 
             this.IsStructureCloned = true;
 
