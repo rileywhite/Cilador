@@ -114,20 +114,24 @@ namespace Bix.Mixers.Fody.Tests.Common
             Contract.Requires(sourceType != null);
             Contract.Requires(targetType != sourceType);
 
+            Tuple<string, string> rootTargetAndSourceFullNames = Tuple.Create(targetType.FullName, sourceType.FullName);
+
             foreach (var targetField in targetType.GetFields(TestContent.BindingFlagsForMixedMembers))
             {
-                targetField.ValidateSourceEqual(sourceType.GetField(targetField.Name, TestContent.BindingFlagsForMixedMembers));
+                targetField.ValidateSourceEqual(sourceType.GetField(targetField.Name, TestContent.BindingFlagsForMixedMembers), rootTargetAndSourceFullNames);
             }
 
             foreach (var targetMethod in targetType.GetMethods(TestContent.BindingFlagsForMixedMembers))
             {
                 var targetMethodParameters = targetMethod.GetParameters();
-                targetMethod.ValidateSourceEqual(sourceType.GetMethod(
-                    targetMethod.Name,
-                    TestContent.BindingFlagsForMixedMembers,
-                    null,
-                    targetMethodParameters.Length == 0 ? new Type[0] : targetMethodParameters.Select(each => each.ParameterType).ToArray(),
-                    null));
+                targetMethod.ValidateSourceEqual(sourceType.GetMethods(TestContent.BindingFlagsForMixedMembers).SingleOrDefault(
+                    method => method.ToString() == targetMethod.ToString()), rootTargetAndSourceFullNames);
+                //targetMethod.ValidateSourceEqual(sourceType.GetMethod(
+                //    targetMethod.Name,
+                //    TestContent.BindingFlagsForMixedMembers,
+                //    null,
+                //    targetMethodParameters.Length == 0 ? new Type[0] : targetMethodParameters.Select(each => each.ParameterType).ToArray(),
+                //    null), rootTargetAndSourceFullNames);
             }
 
             foreach (var targetProperty in targetType.GetProperties(TestContent.BindingFlagsForMixedMembers))
@@ -138,31 +142,33 @@ namespace Bix.Mixers.Fody.Tests.Common
                     null,
                     targetProperty.PropertyType,
                     targetProperty.GetIndexParameters().Select(each => each.ParameterType).ToArray(),
-                    null));
+                    null), rootTargetAndSourceFullNames);
             }
 
             foreach (var targetEvent in targetType.GetEvents(TestContent.BindingFlagsForMixedMembers))
             {
                 targetEvent.ValidateSourceEqual(sourceType.GetEvent(
                     targetEvent.Name,
-                    TestContent.BindingFlagsForMixedMembers));
+                    TestContent.BindingFlagsForMixedMembers), rootTargetAndSourceFullNames);
             }
 
             foreach (var targetNestedType in targetType.GetNestedTypes(TestContent.BindingFlagsForMixedMembers))
             {
-                targetNestedType.ValidateSourceEqual(sourceType.GetNestedType(targetNestedType.Name, TestContent.BindingFlagsForMixedMembers));
+                targetNestedType.ValidateSourceEqual(sourceType.GetNestedType(targetNestedType.Name, TestContent.BindingFlagsForMixedMembers), rootTargetAndSourceFullNames);
             }
         }
 
-        public static void ValidateSourceEqual(this FieldInfo targetField, FieldInfo sourceField)
+        private static void ValidateSourceEqual(this FieldInfo targetField, FieldInfo sourceField, Tuple<string, string> rootTargetAndSourceFullNames)
         {
             Contract.Requires(targetField != null);
+            Contract.Requires(rootTargetAndSourceFullNames != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item1 != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item2 != null);
 
             Assert.That(sourceField != null, "Could not find source type");
             Assert.That(sourceField != targetField);
             Assert.That(sourceField.Attributes == targetField.Attributes);
             Assert.That(sourceField.DeclaringType != targetField.DeclaringType);
-            Assert.That(sourceField.FieldType == targetField.FieldType);    // this will fail for mixed types (top-level target and inner types)
             Assert.That(sourceField.IsAssembly == targetField.IsAssembly);
             Assert.That(sourceField.IsFamily == targetField.IsFamily);
             Assert.That(sourceField.IsFamilyAndAssembly == targetField.IsFamilyAndAssembly);
@@ -181,6 +187,8 @@ namespace Bix.Mixers.Fody.Tests.Common
             Assert.That(sourceField.MemberType == targetField.MemberType);
             Assert.That(sourceField.Name == targetField.Name);
 
+            targetField.FieldType.ValidateSourceNameEqual(sourceField.FieldType, rootTargetAndSourceFullNames);
+
             if (sourceField.IsLiteral)
             {
                 var sourceValue = sourceField.GetRawConstantValue();
@@ -190,19 +198,21 @@ namespace Bix.Mixers.Fody.Tests.Common
                 else { Assert.That(sourceValue.Equals(targetValue)); }
             }
 
-            Attribute.GetCustomAttributes(targetField, false).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceField, false));
+            Attribute.GetCustomAttributes(targetField, false).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceField, false), rootTargetAndSourceFullNames);
         }
 
-        public static void ValidateSourceEqual(this MethodInfo targetMethod, MethodInfo sourceMethod)
+        private static void ValidateSourceEqual(this MethodInfo targetMethod, MethodInfo sourceMethod, Tuple<string, string> rootTargetAndSourceFullNames)
         {
             Contract.Requires(targetMethod != null);
+            Contract.Requires(rootTargetAndSourceFullNames != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item1 != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item2 != null);
 
             Assert.That(sourceMethod != null, "Could not find source method");
             Assert.That(sourceMethod != targetMethod);
             Assert.That(sourceMethod.Attributes == targetMethod.Attributes);
             Assert.That(sourceMethod.CallingConvention == targetMethod.CallingConvention);
             Assert.That(sourceMethod.ContainsGenericParameters == targetMethod.ContainsGenericParameters);
-            Assert.That(sourceMethod.DeclaringType != targetMethod.DeclaringType);
             Assert.That(sourceMethod.IsAbstract == targetMethod.IsAbstract);
             Assert.That(sourceMethod.IsAssembly == targetMethod.IsAssembly);
             Assert.That(sourceMethod.IsConstructor == targetMethod.IsConstructor);
@@ -224,23 +234,27 @@ namespace Bix.Mixers.Fody.Tests.Common
             Assert.That(sourceMethod.MemberType == targetMethod.MemberType);
             Assert.That(sourceMethod.MethodImplementationFlags == targetMethod.MethodImplementationFlags);
             Assert.That(sourceMethod.Name == targetMethod.Name);
-            Assert.That(sourceMethod.ReturnType == targetMethod.ReturnType);    // this will fail for mixed types (top-level target and inner types)
 
-            targetMethod.ReturnParameter.ValidateSourceEqual(sourceMethod.ReturnParameter);
-            targetMethod.GetParameters().ValidateSourceEqual(sourceMethod.GetParameters());
-            Attribute.GetCustomAttributes(targetMethod).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceMethod));
+            targetMethod.DeclaringType.ValidateSourceNameEqual(sourceMethod.DeclaringType, rootTargetAndSourceFullNames);
+            targetMethod.ReturnType.ValidateSourceNameEqual(sourceMethod.ReturnType, rootTargetAndSourceFullNames);
+
+            targetMethod.ReturnParameter.ValidateSourceEqual(sourceMethod.ReturnParameter, rootTargetAndSourceFullNames);
+            targetMethod.GetParameters().ValidateSourceEqual(sourceMethod.GetParameters(), rootTargetAndSourceFullNames);
+            Attribute.GetCustomAttributes(targetMethod).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceMethod), rootTargetAndSourceFullNames);
         }
 
-        public static void ValidateSourceEqual(this PropertyInfo targetProperty, PropertyInfo sourceProperty)
+        private static void ValidateSourceEqual(this PropertyInfo targetProperty, PropertyInfo sourceProperty, Tuple<string, string> rootTargetAndSourceFullNames)
         {
             Contract.Requires(targetProperty != null);
+            Contract.Requires(rootTargetAndSourceFullNames != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item1 != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item2 != null);
 
             Assert.That(sourceProperty != null, "Could not find source property");
             Assert.That(sourceProperty != targetProperty);
             Assert.That(sourceProperty.Attributes == targetProperty.Attributes);
             Assert.That(sourceProperty.CanRead == targetProperty.CanRead);
             Assert.That(sourceProperty.CanWrite == targetProperty.CanWrite);
-            Assert.That(sourceProperty.DeclaringType != targetProperty.DeclaringType);
             Assert.That(sourceProperty.IsSpecialName == targetProperty.IsSpecialName);
             Assert.That(sourceProperty.MemberType == targetProperty.MemberType);
             Assert.That(sourceProperty.Name == targetProperty.Name);
@@ -248,25 +262,29 @@ namespace Bix.Mixers.Fody.Tests.Common
 
             // only check names here; full check should be done separately for the methods
             if (sourceProperty.GetMethod == null) { Assert.That(targetProperty.GetMethod == null); }
-            else { Assert.That(sourceProperty.GetMethod.Name == targetProperty.GetMethod.Name); }
+            else { targetProperty.GetMethod.ValidateSourceNameEqual(sourceProperty.GetMethod, rootTargetAndSourceFullNames); }
 
             if (sourceProperty.SetMethod == null) { Assert.That(targetProperty.SetMethod == null); }
-            else { Assert.That(sourceProperty.SetMethod.Name == targetProperty.SetMethod.Name); }
+            else { targetProperty.SetMethod.ValidateSourceNameEqual(sourceProperty.SetMethod, rootTargetAndSourceFullNames); }
 
-            Attribute.GetCustomAttributes(targetProperty).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceProperty));
+            targetProperty.DeclaringType.ValidateSourceNameEqual(sourceProperty.DeclaringType, rootTargetAndSourceFullNames);
 
-            targetProperty.GetIndexParameters().ValidateSourceEqual(sourceProperty.GetIndexParameters());
+            Attribute.GetCustomAttributes(targetProperty).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceProperty), rootTargetAndSourceFullNames);
+
+            targetProperty.GetIndexParameters().ValidateSourceEqual(sourceProperty.GetIndexParameters(), rootTargetAndSourceFullNames);
         }
 
-        public static void ValidateSourceEqual(this EventInfo targetEvent, EventInfo sourceEvent)
+        private static void ValidateSourceEqual(this EventInfo targetEvent, EventInfo sourceEvent, Tuple<string, string> rootTargetAndSourceFullNames)
         {
             Contract.Requires(targetEvent != null);
+            Contract.Requires(rootTargetAndSourceFullNames != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item1 != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item2 != null);
 
             Assert.That(sourceEvent != null, "Could not find source event");
             Assert.That(sourceEvent != targetEvent);
             Assert.That(sourceEvent.Attributes == targetEvent.Attributes);
             Assert.That(sourceEvent.DeclaringType != targetEvent.DeclaringType);
-            Assert.That(sourceEvent.EventHandlerType == targetEvent.EventHandlerType); // won't work for mixed types
             Assert.That(sourceEvent.IsMulticast == targetEvent.IsMulticast);
             Assert.That(sourceEvent.IsSpecialName == targetEvent.IsSpecialName);
             Assert.That(sourceEvent.MemberType == targetEvent.MemberType);
@@ -274,25 +292,32 @@ namespace Bix.Mixers.Fody.Tests.Common
 
             // only check names here; full check should be done separately for the methods
             if (sourceEvent.AddMethod == null) { Assert.That(targetEvent.AddMethod == null); }
-            else { Assert.That(sourceEvent.AddMethod.Name == targetEvent.AddMethod.Name); }
+            else { targetEvent.AddMethod.ValidateSourceNameEqual(sourceEvent.AddMethod, rootTargetAndSourceFullNames); }
 
             if (sourceEvent.RemoveMethod == null) { Assert.That(targetEvent.RemoveMethod == null); }
-            else { Assert.That(sourceEvent.RemoveMethod.Name == targetEvent.RemoveMethod.Name); }
+            else { targetEvent.RemoveMethod.ValidateSourceNameEqual(sourceEvent.RemoveMethod, rootTargetAndSourceFullNames); }
+
+            targetEvent.EventHandlerType.ValidateSourceNameEqual(sourceEvent.EventHandlerType, rootTargetAndSourceFullNames);
 
             if (sourceEvent.RaiseMethod == null) { Assert.That(targetEvent.RaiseMethod == null); }
             else { Assert.That(sourceEvent.RaiseMethod.Name == targetEvent.RaiseMethod.Name); }
 
-            Attribute.GetCustomAttributes(targetEvent).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceEvent));
+            Attribute.GetCustomAttributes(targetEvent).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceEvent), rootTargetAndSourceFullNames);
         }
 
-        public static void ValidateSourceEqual(this Type targetType, Type sourceType)
+        private static void ValidateSourceEqual(this Type targetType, Type sourceType, Tuple<string, string> rootTargetAndSourceFullNames)
         {
             Contract.Requires(targetType != null);
+            Contract.Requires(rootTargetAndSourceFullNames != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item1 != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item2 != null);
 
             Assert.That(sourceType != null, "Could not find source type");
             Assert.That(sourceType != targetType);
+
+            targetType.ValidateSourceNameEqual(sourceType, rootTargetAndSourceFullNames);
+
             Assert.That(sourceType.Attributes == targetType.Attributes);
-            Assert.That(sourceType.BaseType == targetType.BaseType);    // won't work for mixed base types
             Assert.That(sourceType.ContainsGenericParameters == targetType.ContainsGenericParameters);
             Assert.That(sourceType.DeclaringType != targetType.DeclaringType);
             Assert.That(sourceType.GUID != targetType.GUID);
@@ -338,16 +363,30 @@ namespace Bix.Mixers.Fody.Tests.Common
             Assert.That(sourceType.MemberType == targetType.MemberType);
             Assert.That(sourceType.Name == targetType.Name);
             Assert.That(sourceType.TypeInitializer == targetType.TypeInitializer);
-            Assert.That(sourceType.UnderlyingSystemType != targetType.UnderlyingSystemType);
 
-            Assert.That(targetType.IsGenericParameter == sourceType.IsGenericParameter);
             if (!sourceType.IsGenericParameter) { Assert.That(!targetType.IsGenericParameter); }
             else
             {
                 Assert.That(targetType.IsGenericParameter);
                 Assert.That(sourceType.GenericParameterAttributes == targetType.GenericParameterAttributes);
                 Assert.That(sourceType.GenericParameterPosition == targetType.GenericParameterPosition);
+
+                var sourceConstraints = sourceType.GetGenericParameterConstraints();
+                var targetConstraints = targetType.GetGenericParameterConstraints();
+                Assert.That(sourceConstraints != null);
+                Assert.That(targetConstraints != null);
+                Assert.That(sourceConstraints.Length == targetConstraints.Length);
+
+                for (int i = 0; i < sourceConstraints.Length; i++)
+                {
+                    targetConstraints[i].ValidateSourceNameEqual(sourceConstraints[i], rootTargetAndSourceFullNames);
+                }
             }
+
+            if (sourceType.BaseType == null) { Assert.That(targetType.BaseType == null); }
+            else { targetType.BaseType.ValidateSourceNameEqual(sourceType.BaseType, rootTargetAndSourceFullNames); }
+
+            targetType.UnderlyingSystemType.ValidateSourceNameEqual(sourceType.UnderlyingSystemType, rootTargetAndSourceFullNames);
 
             if (sourceType.StructLayoutAttribute == null) { Assert.That(targetType.StructLayoutAttribute == null); }
             else { Assert.That(sourceType.StructLayoutAttribute.Match(targetType.StructLayoutAttribute)); }
@@ -355,7 +394,7 @@ namespace Bix.Mixers.Fody.Tests.Common
             Assert.That(targetType.GenericTypeArguments.Length == sourceType.GenericTypeArguments.Length);
             for (int i = 0; i < targetType.GenericTypeArguments.Length && i < sourceType.GenericTypeArguments.Length; i++)
             {
-                targetType.GenericTypeArguments[i].ValidateSourceEqual(sourceType.GenericTypeArguments[i]);
+                targetType.GenericTypeArguments[i].ValidateSourceNameEqual(sourceType.GenericTypeArguments[i], rootTargetAndSourceFullNames);
             }
 
             targetType.ValidateMemberCountsAre(
@@ -366,12 +405,15 @@ namespace Bix.Mixers.Fody.Tests.Common
                 sourceType.GetEvents(TestContent.BindingFlagsForMixedMembers).Length,
                 sourceType.GetNestedTypes(TestContent.BindingFlagsForMixedMembers).Length);
 
-            Attribute.GetCustomAttributes(targetType).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceType));
+            Attribute.GetCustomAttributes(targetType).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceType), rootTargetAndSourceFullNames);
         }
 
-        public static void ValidateSourceEqual(this ParameterInfo[] targetParameters, ParameterInfo[] sourceParameters)
+        private static void ValidateSourceEqual(this ParameterInfo[] targetParameters, ParameterInfo[] sourceParameters, Tuple<string, string> rootTargetAndSourceFullNames)
         {
             Contract.Requires(targetParameters != null);
+            Contract.Requires(rootTargetAndSourceFullNames != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item1 != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item2 != null);
 
             Assert.That(sourceParameters != null, "Could not find source parameters");
             Assert.That(sourceParameters != targetParameters);
@@ -379,13 +421,16 @@ namespace Bix.Mixers.Fody.Tests.Common
 
             for (int i = 0; i < sourceParameters.Length && i < targetParameters.Length; i++)
             {
-                targetParameters[i].ValidateSourceEqual(sourceParameters[i]);
+                targetParameters[i].ValidateSourceEqual(sourceParameters[i], rootTargetAndSourceFullNames);
             }
         }
 
-        public static void ValidateSourceEqual(this ParameterInfo targetParameter, ParameterInfo sourceParameter)
+        private static void ValidateSourceEqual(this ParameterInfo targetParameter, ParameterInfo sourceParameter, Tuple<string, string> rootTargetAndSourceFullNames)
         {
             Contract.Requires(targetParameter != null);
+            Contract.Requires(rootTargetAndSourceFullNames != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item1 != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item2 != null);
 
             Assert.That(sourceParameter != null, "Could not find source parameter");
             Assert.That(sourceParameter != targetParameter);
@@ -402,18 +447,22 @@ namespace Bix.Mixers.Fody.Tests.Common
             Assert.That(sourceParameter.IsRetval == targetParameter.IsRetval);
             Assert.That(sourceParameter.Member != targetParameter.Member);
             Assert.That(sourceParameter.Name == targetParameter.Name);
-            Assert.That(sourceParameter.ParameterType == targetParameter.ParameterType);    // won't work for mixed types
             Assert.That(sourceParameter.Position == targetParameter.Position);
+
+            targetParameter.ParameterType.ValidateSourceNameEqual(sourceParameter.ParameterType, rootTargetAndSourceFullNames);
 
             if (sourceParameter.RawDefaultValue == null) { Assert.That(targetParameter.RawDefaultValue == null); }
             else { Assert.That(sourceParameter.RawDefaultValue.Equals(targetParameter.RawDefaultValue)); }
 
-            Attribute.GetCustomAttributes(targetParameter).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceParameter));
+            Attribute.GetCustomAttributes(targetParameter).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceParameter), rootTargetAndSourceFullNames);
         }
 
-        public static void ValidateSourceEqual(this Attribute[] targetAttributes, Attribute[] sourceAttributes)
+        private static void ValidateSourceEqual(this Attribute[] targetAttributes, Attribute[] sourceAttributes, Tuple<string, string> rootTargetAndSourceFullNames)
         {
             Contract.Requires(targetAttributes != null);
+            Contract.Requires(rootTargetAndSourceFullNames != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item1 != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item2 != null);
 
             Assert.That(sourceAttributes != null, "Could not find source attributes");
             Assert.That(sourceAttributes != targetAttributes);
@@ -433,7 +482,7 @@ namespace Bix.Mixers.Fody.Tests.Common
                     if (comparison != 0 || left.Match(right)) { return comparison; }
 
                     // same type, and non-matching instances
-                    // don't really care what "less than" means, just picking something consistent
+                    // just picking something consistent...might break for attributes defined within the mixin implementation
                     return left.ToXElement().ToString().CompareTo(right.ToXElement().ToString());
                 });
 
@@ -444,6 +493,37 @@ namespace Bix.Mixers.Fody.Tests.Common
             {
                 Assert.That(sourceAttributeList[i].Match(targetAttributeList[i]));  // this will fail for mixed type arguments
             }
+        }
+
+        private static void ValidateSourceNameEqual(this Type target, Type source, Tuple<string, string> rootTargetAndSourceFullNames)
+        {
+            Contract.Requires(target != null);
+            Contract.Requires(source != null);
+            Contract.Requires(rootTargetAndSourceFullNames != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item1 != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item2 != null);
+
+            if (target.IsGenericParameter)
+            {
+                Assert.That(source.IsGenericParameter);
+                Assert.That(source.Name == target.Name);
+            }
+            else
+            {
+                Assert.That(source.FullName.Replace(rootTargetAndSourceFullNames.Item2, rootTargetAndSourceFullNames.Item1) == target.FullName);
+            }
+        }
+
+        private static void ValidateSourceNameEqual(this MethodInfo target, MethodInfo source, Tuple<string, string> rootTargetAndSourceFullNames)
+        {
+            Contract.Requires(target != null);
+            Contract.Requires(source != null);
+            Contract.Requires(rootTargetAndSourceFullNames != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item1 != null);
+            Contract.Requires(rootTargetAndSourceFullNames.Item2 != null);
+
+            target.DeclaringType.ValidateSourceNameEqual(source.DeclaringType, rootTargetAndSourceFullNames);
+            Assert.That(source.ToString() == target.ToString());
         }
     }
 }
