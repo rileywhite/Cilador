@@ -67,7 +67,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
             var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget).FullName);
             Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
-            targetType.ValidateMemberCountsAre(1, 32, 0, 0, 0, 0);
+            targetType.ValidateMemberCountsAre(1, 30, 0, 0, 0, 0);
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
             targetType.ValidateMemberSources(typeof(MethodsMixin));
@@ -158,6 +158,35 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
             targetType.ValidateMemberSources(typeof(NestedTypesMixin));
+        }
+
+        [Test]
+        public void CanMixinGenericMethodsAndNestedTypes()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMap = new InterfaceMapType[]
+                    {
+                        new InterfaceMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(GenericsMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+            var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget).FullName);
+            Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
+            targetType.ValidateMemberCountsAre(1, 12, 0, 0, 0, 0);
+            Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
+
+            targetType.ValidateMemberSources(typeof(GenericsMixin));
         }
     }
 }

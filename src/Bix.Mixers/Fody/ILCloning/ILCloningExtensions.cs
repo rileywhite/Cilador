@@ -171,7 +171,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
                     foreach (var sourceConstraint in sourceGenericParameter.Constraints)
                     {
-                        throw new NotImplementedException();
+                        targetGenericParameter.Constraints.Add(rootImporter.RootImport(sourceConstraint));
                     }
 
                     if (sourceGenericParameter.HasCustomAttributes)
