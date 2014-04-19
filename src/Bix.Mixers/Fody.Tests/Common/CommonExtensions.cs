@@ -124,25 +124,17 @@ namespace Bix.Mixers.Fody.Tests.Common
             foreach (var targetMethod in targetType.GetMethods(TestContent.BindingFlagsForMixedMembers))
             {
                 var targetMethodParameters = targetMethod.GetParameters();
+
+                // can't match by parameter types because some of the types may have been redirected during mixing
                 targetMethod.ValidateSourceEqual(sourceType.GetMethods(TestContent.BindingFlagsForMixedMembers).SingleOrDefault(
                     method => method.ToString() == targetMethod.ToString()), rootTargetAndSourceFullNames);
-                //targetMethod.ValidateSourceEqual(sourceType.GetMethod(
-                //    targetMethod.Name,
-                //    TestContent.BindingFlagsForMixedMembers,
-                //    null,
-                //    targetMethodParameters.Length == 0 ? new Type[0] : targetMethodParameters.Select(each => each.ParameterType).ToArray(),
-                //    null), rootTargetAndSourceFullNames);
             }
 
             foreach (var targetProperty in targetType.GetProperties(TestContent.BindingFlagsForMixedMembers))
             {
-                targetProperty.ValidateSourceEqual(sourceType.GetProperty(
-                    targetProperty.Name,
-                    TestContent.BindingFlagsForMixedMembers,
-                    null,
-                    targetProperty.PropertyType,
-                    targetProperty.GetIndexParameters().Select(each => each.ParameterType).ToArray(),
-                    null), rootTargetAndSourceFullNames);
+                // can't match by parameter types because some of the types may have been redirected during mixing
+                targetProperty.ValidateSourceEqual(sourceType.GetProperties(TestContent.BindingFlagsForMixedMembers).SingleOrDefault(
+                    property => property.ToString() == targetProperty.ToString()), rootTargetAndSourceFullNames);
             }
 
             foreach (var targetEvent in targetType.GetEvents(TestContent.BindingFlagsForMixedMembers))
