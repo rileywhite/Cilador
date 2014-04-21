@@ -228,31 +228,6 @@ namespace Bix.Mixers.Fody.Tests.Common
             Assert.That(sourceMethod.Name == targetMethod.Name);
 
             targetMethod.DeclaringType.ValidateSourceNameEqual(sourceMethod.DeclaringType, rootTargetAndSourceFullNames);
-
-            if (sourceMethod.IsGenericMethod)
-            {
-                Assert.That(targetMethod.IsGenericMethod);
-
-                // this is here so that if it's false I can examine the state and correct for it
-                // because I'm not sure what circumstance makes these values different
-                Assert.That(sourceMethod.IsGenericMethodDefinition);
-                Assert.That(targetMethod.IsGenericMethodDefinition);
-
-                if (!sourceMethod.ContainsGenericParameters) { Assert.That(!targetMethod.ContainsGenericParameters); }
-                else
-                {
-                    var sourceGenericArguments = sourceMethod.GetGenericArguments();
-                    var targetGenericArguments = targetMethod.GetGenericArguments();
-
-                    Assert.That(sourceGenericArguments.Length == targetGenericArguments.Length);
-
-                    for (int i = 0; i < sourceGenericArguments.Length; i++)
-                    {
-                        targetGenericArguments[i].ValidateSourceEqual(sourceGenericArguments[i], rootTargetAndSourceFullNames);
-                    }
-                }
-            }
-
             targetMethod.ReturnType.ValidateSourceNameEqual(sourceMethod.ReturnType, rootTargetAndSourceFullNames);
 
             targetMethod.ReturnParameter.ValidateSourceEqual(sourceMethod.ReturnParameter, rootTargetAndSourceFullNames);
@@ -337,6 +312,7 @@ namespace Bix.Mixers.Fody.Tests.Common
             Assert.That(sourceType.Attributes == targetType.Attributes);
             Assert.That(sourceType.ContainsGenericParameters == targetType.ContainsGenericParameters);
             Assert.That(sourceType.DeclaringType != targetType.DeclaringType);
+            Assert.That(sourceType.GUID != targetType.GUID);
             Assert.That(sourceType.HasElementType == targetType.HasElementType);
             Assert.That(sourceType.IsAbstract == targetType.IsAbstract);
             Assert.That(sourceType.IsAnsiClass == targetType.IsAnsiClass);
@@ -378,12 +354,9 @@ namespace Bix.Mixers.Fody.Tests.Common
             Assert.That(sourceType.IsVisible == targetType.IsVisible);
             Assert.That(sourceType.MemberType == targetType.MemberType);
             Assert.That(sourceType.Name == targetType.Name);
+            Assert.That(sourceType.TypeInitializer == targetType.TypeInitializer);
 
-            if (!sourceType.IsGenericParameter)
-            {
-                Assert.That(!targetType.IsGenericParameter);
-                Assert.That(sourceType.GUID != targetType.GUID);
-            }
+            if (!sourceType.IsGenericParameter) { Assert.That(!targetType.IsGenericParameter); }
             else
             {
                 Assert.That(targetType.IsGenericParameter);

@@ -25,16 +25,6 @@ namespace Bix.Mixers.Fody.ILCloning
         {
             if (left == null || right == null) { return left == null && right == null; }
 
-            if (left.HasGenericParameters)
-            {
-                if (!right.HasGenericParameters || left.GenericParameters.Count != right.GenericParameters.Count) { return false; }
-
-                for (int i = 0; i < left.GenericParameters.Count; i++)
-                {
-                    if (left.GenericParameters[i].Name != right.GenericParameters[i].Name) { return false; }
-                }
-            }
-
             return left.FullName.Replace(left.DeclaringType.FullName + "::", string.Empty) == right.FullName.Replace(right.DeclaringType.FullName + "::", string.Empty);
         }
 
@@ -143,126 +133,6 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         public static void CloneAllGenericParameters(
-            this TypeDefinition target,
-            TypeDefinition source,
-            IRootImportProvider rootImporter)
-        {
-            Contract.Requires(target != null);
-            Contract.Requires(target.GenericParameters != null);
-            Contract.Requires(target.GenericParameters.Count == 0);
-            Contract.Requires(source != null);
-            Contract.Requires(source.GenericParameters != null);
-            Contract.Requires(rootImporter != null);
-            Contract.Ensures(target.GenericParameters.Count == source.GenericParameters.Count);
-
-            if (source.HasGenericParameters)
-            {
-                //if (sourceGenericParameter.DeclaringType != null)
-                //{
-                //    targetGenericParameter.DeclaringType = rootImporter.RootImport(sourceGenericParameter.DeclaringType);
-                //}
-
-                //foreach (var sourceConstraint in sourceGenericParameter.Constraints)
-                //{
-                //    targetGenericParameter.Constraints.Add(rootImporter.RootImport(sourceConstraint));
-                //}
-                throw new NotImplementedException();
-            }
-        }
-
-        public static void CloneAllGenericParameters(
-            this MethodDefinition target,
-            MethodDefinition source,
-            IRootImportProvider rootImporter)
-        {
-            Contract.Requires(target != null);
-            Contract.Requires(target.GenericParameters != null);
-            Contract.Requires(target.GenericParameters.Count == 0);
-            Contract.Requires(source != null);
-            Contract.Requires(source.GenericParameters != null);
-            Contract.Requires(rootImporter != null);
-            Contract.Ensures(target.GenericParameters.Count == source.GenericParameters.Count);
-
-            if (source.HasGenericParameters)
-            {
-                target.CloneAllCommonDataForGenericParameters(source, rootImporter);
-                target.CloneAllDataForMethodGenericParameters(source, target, rootImporter);
-            }
-        }
-
-        private static void CloneAllDataForMethodGenericParameters(
-            this IGenericParameterProvider target,
-            IGenericParameterProvider source,
-            MethodDefinition declaringMethod,
-            IRootImportProvider rootImporter)
-        {
-            Contract.Requires(target != null);
-            Contract.Requires(target.HasGenericParameters);
-            Contract.Requires(target.GenericParameters != null);
-            Contract.Requires(source != null);
-            Contract.Requires(source.HasGenericParameters);
-            Contract.Requires(source.GenericParameters != null);
-            Contract.Requires(target.GenericParameters.Count == source.GenericParameters.Count);
-            Contract.Requires(rootImporter != null);
-
-            for (int i = 0; i < source.GenericParameters.Count; i++)
-            {
-                var sourceGenericParameter = source.GenericParameters[i];
-                var targetGenericParameter = target.GenericParameters[i];
-
-                Contract.Assert(sourceGenericParameter.DeclaringType == null);
-                Contract.Assert(sourceGenericParameter.DeclaringMethod != null);
-                Contract.Assert(targetGenericParameter.DeclaringMethod != null);
-
-                targetGenericParameter.CloneAllConstraints(sourceGenericParameter, declaringMethod, rootImporter);
-
-                if (sourceGenericParameter.HasGenericParameters)
-                {
-                    targetGenericParameter.CloneAllDataForMethodGenericParameters(sourceGenericParameter, declaringMethod, rootImporter);
-                }
-            }
-        }
-
-        private static void CloneAllConstraints(
-            this GenericParameter targetGenericParameter,
-            GenericParameter sourceGenericParameter,
-            MethodDefinition declaringMethod,
-            IRootImportProvider rootImporter)
-        {
-            foreach (var sourceConstraint in sourceGenericParameter.Constraints)
-            {
-                targetGenericParameter.Constraints.Add(sourceConstraint.GetClone(declaringMethod, rootImporter));
-            }
-        }
-
-        private static TypeReference GetClone(
-            this TypeReference sourceConstraint,
-            MethodDefinition declaringMethod,
-            IRootImportProvider rootImporter)
-        {
-            if (sourceConstraint.IsGenericParameter)
-            {
-                Contract.Assert(!sourceConstraint.IsGenericInstance);
-                return ((GenericParameter)sourceConstraint).ImportForDeclaringMethod(declaringMethod);
-            }
-            else if (sourceConstraint.IsGenericInstance)
-            {
-                Contract.Assert(!sourceConstraint.IsGenericParameter);
-                var sourceGenericInstance = (GenericInstanceType)sourceConstraint;
-                var targetGenericInstance = new GenericInstanceType(rootImporter.RootImport(sourceGenericInstance.ElementType));
-                foreach (var sourceGenericArgument in sourceGenericInstance.GenericArguments)
-                {
-                    targetGenericInstance.GenericArguments.Add(sourceGenericArgument.GetClone(declaringMethod, rootImporter));
-                }
-                return targetGenericInstance;
-            }
-            else
-            {
-                return rootImporter.RootImport(sourceConstraint);
-            }
-        }
-
-        private static void CloneAllCommonDataForGenericParameters(
             this IGenericParameterProvider target,
             IGenericParameterProvider source,
             IRootImportProvider rootImporter)
@@ -271,41 +141,50 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(target.GenericParameters != null);
             Contract.Requires(target.GenericParameters.Count == 0 || target == rootImporter.RootTarget);
             Contract.Requires(source != null);
-            Contract.Requires(source.HasGenericParameters);
             Contract.Requires(source.GenericParameters != null);
             Contract.Requires(rootImporter != null);
             Contract.Ensures(
                 target.GenericParameters.Count == source.GenericParameters.Count ||
                 (target == rootImporter.RootTarget && target.GenericParameters.Count > source.GenericParameters.Count));
 
-            foreach (var sourceGenericParameter in source.GenericParameters)
+            if (source.HasGenericParameters)
             {
-                var targetGenericParameter = new GenericParameter(sourceGenericParameter.Name, target)
+                foreach (var sourceGenericParameter in source.GenericParameters)
                 {
-                    Attributes = sourceGenericParameter.Attributes,
-                    HasDefaultConstructorConstraint = sourceGenericParameter.HasDefaultConstructorConstraint,
-                    HasNotNullableValueTypeConstraint = sourceGenericParameter.HasNotNullableValueTypeConstraint,
-                    HasReferenceTypeConstraint = sourceGenericParameter.HasReferenceTypeConstraint,
-                    IsContravariant = sourceGenericParameter.IsContravariant,
-                    IsCovariant = sourceGenericParameter.IsCovariant,
-                    IsNonVariant = sourceGenericParameter.IsNonVariant,
-                    IsValueType = sourceGenericParameter.IsValueType,
-                    MetadataToken = new MetadataToken(sourceGenericParameter.MetadataToken.TokenType, sourceGenericParameter.MetadataToken.RID),
-                };
+                    var targetGenericParameter = new GenericParameter(sourceGenericParameter.Name, target)
+                    {
+                        Attributes = sourceGenericParameter.Attributes,
+                        HasDefaultConstructorConstraint = sourceGenericParameter.HasDefaultConstructorConstraint,
+                        HasNotNullableValueTypeConstraint = sourceGenericParameter.HasNotNullableValueTypeConstraint,
+                        HasReferenceTypeConstraint = sourceGenericParameter.HasReferenceTypeConstraint,
+                        IsContravariant = sourceGenericParameter.IsContravariant,
+                        IsCovariant = sourceGenericParameter.IsCovariant,
+                        IsNonVariant = sourceGenericParameter.IsNonVariant,
+                        IsValueType = sourceGenericParameter.IsValueType,
+                        MetadataToken = new MetadataToken(sourceGenericParameter.MetadataToken.TokenType, sourceGenericParameter.MetadataToken.RID),
+                    };
 
-                if (sourceGenericParameter.HasCustomAttributes)
-                {
-                    // I did not check whether I get a similar issue here as with the duplication in the FieldCloner...adding a clear line just to make sure, though
-                    targetGenericParameter.CustomAttributes.Clear();
-                    targetGenericParameter.CloneAllCustomAttributes(sourceGenericParameter, rootImporter);
+                    if(sourceGenericParameter.DeclaringType != null)
+                    {
+                        targetGenericParameter.DeclaringType = rootImporter.RootImport(sourceGenericParameter.DeclaringType);
+                    }
+
+                    foreach (var sourceConstraint in sourceGenericParameter.Constraints)
+                    {
+                        targetGenericParameter.Constraints.Add(rootImporter.RootImport(sourceConstraint));
+                    }
+
+                    if (sourceGenericParameter.HasCustomAttributes)
+                    {
+                        // I did not check whether I get a similar issue here as with the duplication in the FieldCloner...adding a clear line just to make sure, though
+                        targetGenericParameter.CustomAttributes.Clear();
+                        targetGenericParameter.CloneAllCustomAttributes(sourceGenericParameter, rootImporter);
+                    }
+
+                    targetGenericParameter.CloneAllGenericParameters(sourceGenericParameter, rootImporter);
+
+                    target.GenericParameters.Add(targetGenericParameter);
                 }
-
-                if (sourceGenericParameter.HasGenericParameters)
-                {
-                    targetGenericParameter.CloneAllCommonDataForGenericParameters(sourceGenericParameter, rootImporter);
-                }
-
-                target.GenericParameters.Add(targetGenericParameter);
             }
         }
 
