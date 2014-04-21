@@ -52,14 +52,19 @@ namespace Bix.Mixers.Fody.ILCloning
         {
             if (this.Target == this.SourceWithRoot.RootContext.RootTarget)
             {
+                if (!(this.SourceWithRoot.Source.IsClass && !this.SourceWithRoot.Source.IsValueType))
+                {
+                    throw new WeavingException(string.Format("Configured mixin implementation type must be a reference type: [{0}]", this.SourceWithRoot.Source.FullName));
+                }
+
                 if (this.SourceWithRoot.Source.IsAbstract)
                 {
-                    throw new WeavingException(string.Format("Mixin source type cannot be abstract: [{0}]", this.SourceWithRoot.Source.FullName));
+                    throw new WeavingException(string.Format("Configured mixin implementation type cannot be abstract: [{0}]", this.SourceWithRoot.Source.FullName));
                 }
 
                 if (this.SourceWithRoot.Source.HasGenericParameters)
                 {
-                    throw new WeavingException(string.Format("Mixin source type cannot be an open generic type: [{0}]", this.SourceWithRoot.Source.FullName));
+                    throw new WeavingException(string.Format("Configured mixin implementation type cannot be an open generic type: [{0}]", this.SourceWithRoot.Source.FullName));
                 }
 
                 if (this.SourceWithRoot.Source.HasSecurityDeclarations)
@@ -67,11 +72,6 @@ namespace Bix.Mixers.Fody.ILCloning
                     throw new WeavingException(string.Format(
                         "Configured mixin implementation may not be annotated with security attributes: [{0}]",
                         this.SourceWithRoot.Source.FullName));
-                }
-
-                if (!(this.SourceWithRoot.Source.IsClass && !this.SourceWithRoot.Source.IsValueType))
-                {
-                    throw new WeavingException(string.Format("Mixin source type must be a reference type: [{0}]", this.SourceWithRoot.Source.FullName));
                 }
 
                 if (this.SourceWithRoot.Source.BaseType.Resolve() != this.SourceWithRoot.Source.Module.Import(typeof(object)).Resolve())
@@ -91,7 +91,7 @@ namespace Bix.Mixers.Fody.ILCloning
                     // TODO nested type generic parameters
                     throw new WeavingException(string.Format(
                         "Configured mixin implementation may not include any open generic nested types: [{0}]",
-                        this.SourceWithRoot.Source.FullName));
+                        this.SourceWithRoot.RootContext.RootSource.FullName));
                 }
 
                 if (this.SourceWithRoot.Source.HasSecurityDeclarations)
@@ -160,7 +160,7 @@ namespace Bix.Mixers.Fody.ILCloning
                     {
                         throw new WeavingException(string.Format(
                             "Configured mixin implementation cannot have a type initializer (i.e. static constructor): [{0}]",
-                            sourceWithRoot.Source.FullName));
+                            this.SourceWithRoot.RootContext.RootSource.FullName));
                     }
 
                     var target = new MethodDefinition(sourceWithRoot.Source.Name, 0, voidReference);

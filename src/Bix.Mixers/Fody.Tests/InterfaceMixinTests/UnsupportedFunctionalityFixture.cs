@@ -36,9 +36,12 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            Assert.Throws<WeavingException>(
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
-                string.Format("Mixin source type cannot be abstract: [{0}]", typeof(AbstractMixin).FullName));
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin implementation type cannot be abstract: [{0}]",
+                    typeof(AbstractMixin).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
 
         [Test]
@@ -61,9 +64,12 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            Assert.Throws<WeavingException>(
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
-                string.Format("Mixin source type cannot be an open generic type: [{0}]", typeof(AbstractMixin).FullName));
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin implementation type cannot be an open generic type: [{0}]",
+                    typeof(OpenGenericMixin<>).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
 
         [Test]
@@ -86,9 +92,12 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            Assert.Throws<WeavingException>(
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
-                string.Format("Mixin source type must be a reference type: [{0}]", typeof(InterfaceTypeMixin).FullName));
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin implementation type must be a reference type: [{0}]",
+                    typeof(InterfaceTypeMixin).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
 
         [Test]
@@ -111,9 +120,12 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            Assert.Throws<WeavingException>(
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
-                string.Format("Mixin source type must be a reference type: [{0}]", typeof(ValueTypeMixin).FullName));
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin implementation type must be a reference type: [{0}]",
+                    typeof(ValueTypeMixin).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
 
         [Test]
@@ -136,12 +148,13 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            Assert.Throws<WeavingException>(
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
-                string.Format(
-                    "The mixin source [{0}] must implement the interface specified in the interfaceType argument [{1}]",
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin implementation type [{0}] must implement the interface specified mixin interface definition [{1}]",
                     typeof(InterfacelessMixin).FullName,
-                    typeof(IEmptyInterface).FullName));
+                    typeof(IEmptyInterface).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
 
         [Test]
@@ -164,9 +177,12 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            Assert.Throws<WeavingException>(
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
-                string.Format("Configured mixin interface type is not an interface: [{0}]", typeof(NotAValidMixinInterface).FullName));
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin definition interface type is not an interface: [{0}]",
+                    typeof(NotAValidMixinInterface).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
 
         [Test]
@@ -189,9 +205,12 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            Assert.Throws<WeavingException>(
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
-                string.Format("Configured mixin implementation cannot have a type initializer (i.e. static constructor): [{0}]", typeof(TypeInitializerMixin).FullName));
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin implementation cannot have a type initializer (i.e. static constructor): [{0}]",
+                    typeof(TypeInitializerMixin).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
 
         [Test]
@@ -214,9 +233,12 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            Assert.Throws<WeavingException>(
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
-                string.Format("Configured mixin implementation cannot have a base type other than System.Object: [{0}]", typeof(InheritingMixin).FullName));
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin implementation cannot have a base type other than System.Object: [{0}]",
+                    typeof(InheritingMixin).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
 
         [Test]
@@ -239,11 +261,13 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            Assert.Throws<WeavingException>(
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
-                string.Format("Configured mixin implementation [{0}] may implement only the mixin definition interface [{1}]",
-                typeof(ExtraInterfaceMixin).FullName,
-                typeof(IEmptyInterface).FullName));
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin implementation [{0}] may implement only the mixin definition interface [{1}]",
+                    typeof(ExtraInterfaceMixin).FullName,
+                    typeof(IEmptyInterface).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
 
         [Test]
@@ -266,10 +290,12 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            Assert.Throws<WeavingException>(
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
-                string.Format("Configured mixin implementation may not include any generic methods: [{0}]",
-                typeof(GenericMethodMixin).FullName));
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin implementation may not include any generic methods: [{0}]",
+                    typeof(GenericMethodMixin).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
 
         [Test]
@@ -292,10 +318,12 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            Assert.Throws<WeavingException>(
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
-                string.Format("Configured mixin implementation may not include any open generic nested types: [{0}]",
-                typeof(OpenGenericNestedTypeMixin).FullName));
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin implementation may not include any open generic nested types: [{0}]",
+                    typeof(OpenGenericNestedTypeMixin).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
 
         [Test]
@@ -318,17 +346,19 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            Assert.Throws<WeavingException>(
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
-                string.Format("Configured mixin implementation may not contain extern methods: [{0}]",
-                typeof(UnmanagedCallMixin).FullName));
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin implementation may not contain extern methods: [{0}]",
+                    typeof(UnmanagedCallMixin).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
 
         [Test]
         public void CannotHaveSecurityAttributeOnMixinImplementation()
         {
             var config = new BixMixersConfigType();
-
+            ;
             config.MixCommandConfig = new MixCommandConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
@@ -344,10 +374,12 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            Assert.Throws<WeavingException>(
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
-                string.Format("Configured mixin implementation may not be annotated with security attributes: [{0}]",
-                typeof(SecurityDeclarationMixin).FullName));
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin implementation may not be annotated with security attributes: [{0}]",
+                    typeof(SecurityDeclarationMixin).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
 
         [Test]
@@ -397,7 +429,6 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                     }
                 },
             };
-
 
             Assert.Throws(
                 Is.TypeOf((typeof(WeavingException)))

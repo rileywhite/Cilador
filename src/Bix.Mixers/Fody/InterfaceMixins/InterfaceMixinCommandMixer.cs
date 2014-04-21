@@ -30,13 +30,13 @@ namespace Bix.Mixers.Fody.InterfaceMixins
 
             if (!interfaceType.IsInterface)
             {
-                throw new WeavingException(string.Format("Configured mixin interface type is not an interface: [{0}]", interfaceType.FullName));
+                throw new WeavingException(string.Format("Configured mixin definition interface type is not an interface: [{0}]", interfaceType.FullName));
             }
 
             if (!mixinType.Interfaces.Any(@interface => @interface.FullName == interfaceType.FullName))
             {
                 throw new WeavingException(string.Format(
-                    "The mixin source [{0}] must implement the interface specified in the interfaceType argument [{1}]",
+                    "Configured mixin implementation type [{0}] must implement the interface specified mixin interface definition [{1}]",
                     mixinType.FullName,
                     interfaceType.FullName));
             }

@@ -56,7 +56,7 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 throw new WeavingException(string.Format(
                     "Configured mixin implementation may not contain extern methods: [{0}]",
-                    this.SourceWithRoot.Source.FullName));
+                    this.SourceWithRoot.RootContext.RootSource.FullName));
             }
             Contract.Assert(this.SourceWithRoot.Source.PInvokeInfo == null);
 
@@ -87,7 +87,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 // TODO method generic parameters
                 throw new WeavingException(string.Format(
                     "Configured mixin implementation may not include any generic methods: [{0}]",
-                    this.SourceWithRoot.Source.FullName));
+                    this.SourceWithRoot.RootContext.RootSource.FullName));
             }
 
             if (this.SourceWithRoot.Source.HasSecurityDeclarations)
