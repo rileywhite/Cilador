@@ -45,7 +45,9 @@
     </Compile>
     <Compile Include="GenericsMixin.cs" />
     <Compile Include="IncorrectMixinSpecifyingClassInsteadOfInterface.cs" />
+    <Compile Include="InheritingMixin.cs" />
     <Compile Include="InterfacelessMixin.cs" />
+    <Compile Include="TypeInitializerMixin.cs" />
     <Compile Include="ValueTypeMixin.cs" />
     <Compile Include="InterfaceTypeMixin.cs" />
     <Compile Include="OpenGenericMixin.cs" />

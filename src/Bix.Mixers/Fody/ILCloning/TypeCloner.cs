@@ -66,6 +66,13 @@ namespace Bix.Mixers.Fody.ILCloning
                 {
                     throw new WeavingException(string.Format("Mixin source type must be a reference type: [{0}]", this.SourceWithRoot.Source.FullName));
                 }
+
+                if (this.SourceWithRoot.Source.BaseType.Resolve() != this.SourceWithRoot.Source.Module.Import(typeof(object)).Resolve())
+                {
+                    throw new WeavingException(string.Format(
+                        "Configured mixin implementation cannot have a base type other than System.Object: [{0}]",
+                        this.SourceWithRoot.Source.FullName));
+                }
             }
             else
             {
@@ -138,6 +145,13 @@ namespace Bix.Mixers.Fody.ILCloning
                                        where !method.IsSkipped()
                                        select new MethodSourceWithRoot(this.SourceWithRoot.RootContext, method))
                 {
+                    if (sourceWithRoot.Source.Name == ".cctor" && sourceWithRoot.Source.IsStatic)
+                    {
+                        throw new WeavingException(string.Format(
+                            "Configured mixin implementation cannot have a type initializer (i.e. static constructor): [{0}]",
+                            sourceWithRoot.Source.FullName));
+                    }
+
                     var target = new MethodDefinition(sourceWithRoot.Source.Name, 0, voidReference);
                     this.Target.Methods.Add(target);
                     this.MethodCloners.Add(new MethodCloner(target, sourceWithRoot));

@@ -167,5 +167,55 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
                 string.Format("Configured mixin interface type is not an interface: [{0}]", typeof(NotAValidMixinInterface).FullName));
         }
+
+        [Test]
+        public void MixinImplementationCannotHaveTypeInitializer()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMap = new InterfaceMapType[]
+                    {
+                        new InterfaceMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(TypeInitializerMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            Assert.Throws<WeavingException>(
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
+                string.Format("Configured mixin implementation cannot have a type initializer (i.e. static constructor): [{0}]", typeof(TypeInitializerMixin).FullName));
+        }
+
+        [Test]
+        public void MixinImplementationMustInheritDirectlyFromObject()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMap = new InterfaceMapType[]
+                    {
+                        new InterfaceMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(InheritingMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            Assert.Throws<WeavingException>(
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
+                string.Format("Configured mixin implementation cannot have a base type other than System.Object: [{0}]", typeof(InheritingMixin).FullName));
+        }
     }
 }
