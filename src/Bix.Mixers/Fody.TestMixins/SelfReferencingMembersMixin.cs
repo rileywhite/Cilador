@@ -100,5 +100,15 @@ namespace Bix.Mixers.Fody.TestMixins
             InnerAbstractClass.IInnerAbstractClassInnerInterface innerAbstractClassInnerInterface,
             InnerAbstractClass.InnerAbstractClassStruct innerAbstractClassStruct,
             InnerImplementingClass innerImplementingClass) { }
+
+        public void ReferenceAllTypesInClosedGenericParameters(
+            Tuple<IInnerInterface, InnerEventArgs, InnerDelegate> arg0,
+            List<InnerEnum> innerEnums,
+            InnerStruct[] innerStructs,
+            Lazy<InnerStruct.InnerStructInnerEnum> innerStructInnerEnum,
+            IEnumerable<InnerStruct.IInnerStructInnerInterface> innerStructInnerInterface,
+            Dictionary<InnerStruct.InnerStructInnerStruct, InnerStruct.InnerStructInnerClass> innerStructInnerClassByInnerStructInnerStruct,
+            Func<InnerAbstractClass, InnerAbstractClass.InnerAbstractClassInnerEnum, InnerAbstractClass.IInnerAbstractClassInnerInterface> GetInnerAbstractClass,
+            List<Dictionary<InnerAbstractClass.InnerAbstractClassStruct, IEnumerable<InnerImplementingClass[]>>> stuff) { }
     }
 }
