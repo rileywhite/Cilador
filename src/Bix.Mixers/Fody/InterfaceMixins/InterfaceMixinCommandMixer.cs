@@ -41,6 +41,14 @@ namespace Bix.Mixers.Fody.InterfaceMixins
                     interfaceType.FullName));
             }
 
+            if (mixinType.Interfaces.Count != 1)
+            {
+                throw new WeavingException(string.Format(
+                    "Configured mixin implementation [{0}] may implement only the mixin definition interface [{1}]",
+                    mixinType.FullName,
+                    interfaceType.FullName));
+            }
+
             this.InterfaceType = interfaceType;
             this.MixinType = mixinType;
             this.Source = TypeSourceWithRoot.CreateWithRootSourceAndTarget(mixinType, target);

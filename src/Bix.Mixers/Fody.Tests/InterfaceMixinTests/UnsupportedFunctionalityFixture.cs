@@ -217,5 +217,32 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
                 string.Format("Configured mixin implementation cannot have a base type other than System.Object: [{0}]", typeof(InheritingMixin).FullName));
         }
+
+        [Test]
+        public void CannotImplementOtherInterfaces()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMap = new InterfaceMapType[]
+                    {
+                        new InterfaceMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(ExtraInterfaceMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            Assert.Throws<WeavingException>(
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
+                string.Format("Configured mixin implementation [{0}] may implement only the mixin definition interface [{1}]",
+                typeof(ExtraInterfaceMixin).FullName,
+                typeof(IEmptyInterface).FullName));
+        }
     }
 }
