@@ -159,5 +159,34 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
 
             targetType.ValidateMemberSources(typeof(NestedTypesMixin));
         }
+
+        [Test]
+        public void CanRedirectMixedMembers()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMap = new InterfaceMapType[]
+                    {
+                        new InterfaceMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(SelfReferencingMembersMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+            var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget).FullName);
+            Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
+            targetType.ValidateMemberCountsAre(1, 6, 3, 1, 1, 7);
+            Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
+
+            targetType.ValidateMemberSources(typeof(SelfReferencingMembersMixin));
+        }
     }
 }

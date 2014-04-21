@@ -22,7 +22,7 @@ namespace Bix.Mixers.Fody.TestMixins
 
         public class ReferenceType { }
         public sealed class ReferenceSealedType { }
-        public abstract class ReferenceAbstractType { }
+        public abstract class ReferenceAbstractType { public abstract void Method(); public abstract int Property { get; set; } public abstract event EventHandler Event; }
         public class ReferenceTypeWithBase : ArrayList { }
         public class ReferenceTypeWithClosedGenericBase : List<int> { }
         public class ReferenceTypeWithInterface : IDisposable { public void Dispose() { } }

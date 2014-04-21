@@ -120,7 +120,6 @@ namespace Bix.Mixers.Fody.ILCloning
             this.Target.MethodReturnType.CloneAllCustomAttributes(sourceMethodReturnType, this.SourceWithRoot.RootContext);
 
             this.IsStructureCloned = true;
-            Contract.Assert(this.Target.SignatureEquals(this.SourceWithRoot.Source));
         }
 
         Dictionary<ParameterDefinition, ParameterDefinition> ParameterOperandReplacementMap { get; set; }

@@ -57,8 +57,26 @@ namespace Bix.Mixers.Fody.ILCloning
             // if the root source type is being imported, then select the root target type
             if (type.FullName == this.RootSource.FullName) { importedType = this.RootTarget.Module.Import(this.RootTarget); }
 
-            // otherwise if this is not a nested type, then import the type
-            else if (type.DeclaringType == null) { importedType = this.RootTarget.Module.Import(type); }
+            // check if this is not a nested type
+            else if (type.DeclaringType == null)
+            {
+                // if this is not a generic instance, then just import the type
+                if (!type.IsGenericInstance) { importedType = this.RootTarget.Module.Import(type); }
+                else
+                {
+                    // if this is a generic instance, then root import the generic definition and all generic arguments
+                    // (this way of resolving generic instances would break if open generic nested types were allowed)
+                    var genericInstanceType = (GenericInstanceType)type;
+                    var importedGenericInstanceType = new GenericInstanceType(this.RootTarget.Module.Import(genericInstanceType.ElementType));
+
+                    foreach(var genericArgument in genericInstanceType.GenericArguments)
+                    {
+                        importedGenericInstanceType.GenericArguments.Add(this.RootImport(genericArgument));
+                    }
+
+                    importedType = importedGenericInstanceType;
+                }
+            }
 
             // handle nested types
             else
@@ -169,10 +187,25 @@ namespace Bix.Mixers.Fody.ILCloning
             // do a root import of the declaring type
             var importedDeclaringType = this.RootImport(method.DeclaringType);
 
-            // if the declaring type is unchanged, then import the method directly
+            // if the declaring type is unchanged, then this is a non-mixed method
+            // it might be generic instance with a mixed type argument, however
             if (importedDeclaringType.FullName == method.DeclaringType.FullName)
             {
-                importedMethod = this.RootTarget.Module.Import(method);
+                // if this is not a generic instance, then just import the method
+                if (!method.IsGenericInstance) { importedMethod = this.RootTarget.Module.Import(method); }
+                else
+                {
+                    // if this is a generic instance, then root import the generic definition and all generic arguments
+                    var genericInstanceMethod = (GenericInstanceMethod)method;
+                    var importedGenericInstanceMethod = new GenericInstanceMethod(this.RootTarget.Module.Import(genericInstanceMethod.ElementMethod));
+
+                    foreach (var genericArgument in genericInstanceMethod.GenericArguments)
+                    {
+                        importedGenericInstanceMethod.GenericArguments.Add(this.RootImport(genericArgument));
+                    }
+
+                    importedMethod = importedGenericInstanceMethod;
+                }
             }
             else
             {

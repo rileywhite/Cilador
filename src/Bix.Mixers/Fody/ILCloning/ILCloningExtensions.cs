@@ -24,7 +24,7 @@ namespace Bix.Mixers.Fody.ILCloning
         {
             if (left == null || right == null) { return left == null && right == null; }
 
-            return left.FullName.Replace(left.DeclaringType.FullName + "::", string.Empty) == right.FullName.Replace(right.DeclaringType.FullName + "::", string.Empty);
+            return left.FullName.Replace(left.DeclaringType.FullName, right.DeclaringType.FullName) == right.FullName;
         }
 
         public static bool SignatureEquals(this PropertyDefinition left, PropertyDefinition right)
