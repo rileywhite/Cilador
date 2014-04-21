@@ -43,7 +43,6 @@
     <Compile Include="..\..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="GenericsMixin.cs" />
     <Compile Include="IncorrectMixinSpecifyingClassInsteadOfInterface.cs" />
     <Compile Include="InheritingMixin.cs" />
     <Compile Include="InterfacelessMixin.cs" />

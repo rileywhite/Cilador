@@ -33,6 +33,9 @@ namespace Bix.Mixers.Fody.TestMixins
         public EventHandler DelegateReturnTypeMethod() { return null; }
         public List<int> ClosedGenericReturnTypeMethod() { return null; }
 
+        public void VoidGenericMethod<T>() { }
+        public T NonVoidGenericMethod<T>(T arg0) { return arg0; }
+
         public void MethodWithInParameters(int arg0, DictionaryEntry arg1, TypeCode arg2, string arg3, object arg4, List<int> arg5) { }
         public void MethodWithRefParameters(ref int arg0, ref DictionaryEntry arg1, ref TypeCode arg2, ref string arg3, ref object arg4, ref List<int> arg5) { }
         public void MethodWithOutParameters(out int arg0, out DictionaryEntry arg1, out TypeCode arg2, out string arg3, out object arg4, out List<int> arg5)
