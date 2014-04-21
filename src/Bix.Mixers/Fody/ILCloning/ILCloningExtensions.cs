@@ -1,5 +1,4 @@
-﻿using Bix.Mixers.Fody.Core;
-using Mono.Cecil;
+﻿using Mono.Cecil;
 using Mono.Collections.Generic;
 using System;
 using System.Collections.Generic;
@@ -76,197 +75,89 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         public static void CloneAllParameters(
-            this MethodReference target,
-            MethodReference source,
-            IRootImportProvider rootImporter)
+            this Collection<ParameterDefinition> targetParameters,
+            Collection<ParameterDefinition> sourceParameters,
+            IRootImportProvider rootImporter,
+            Dictionary<ParameterDefinition, ParameterDefinition> parameterOperandReplacementMap = null)
         {
-            Contract.Requires(target != null);
-            Contract.Requires(target.Parameters != null);
-            Contract.Requires(source != null);
-            Contract.Requires(source.Parameters != null);
-            Contract.Requires(target != source);
-            Contract.Requires(target.Parameters.Count == 0);
+            Contract.Requires(targetParameters != null);
+            Contract.Requires(sourceParameters != null);
+            Contract.Requires(targetParameters != sourceParameters);
+            Contract.Requires(targetParameters.Count == 0);
             Contract.Requires(rootImporter != null);
-            Contract.Ensures(target.Parameters.Count == source.Parameters.Count);
+            Contract.Ensures(targetParameters.Count == sourceParameters.Count);
 
-            if (source.HasParameters)
+            foreach (var sourceParameter in sourceParameters)
             {
-                foreach (var sourceParameter in source.Parameters)
+                var targetParameter =
+                    new ParameterDefinition(sourceParameter.Name, sourceParameter.Attributes, rootImporter.RootImport(sourceParameter.ParameterType));
+                targetParameter.Constant = sourceParameter.Constant;
+                targetParameter.HasConstant = sourceParameter.HasConstant;
+                targetParameter.HasDefault = sourceParameter.HasDefault;
+                targetParameter.HasFieldMarshal = sourceParameter.HasFieldMarshal;
+                targetParameter.IsIn = sourceParameter.IsIn;
+                targetParameter.IsLcid = sourceParameter.IsLcid;
+                targetParameter.IsOptional = sourceParameter.IsOptional;
+                targetParameter.IsOut = sourceParameter.IsOut;
+                targetParameter.IsReturnValue = sourceParameter.IsReturnValue;
+
+                // TODO research correct usage
+                if (sourceParameter.MarshalInfo != null)
                 {
-                    TypeReference targetParameterType;
-                    if (!sourceParameter.ParameterType.IsGenericParameter) { targetParameterType = rootImporter.RootImport(sourceParameter.ParameterType); }
-                    else
-                    {
-                        targetParameterType = ((GenericParameter)sourceParameter.ParameterType).ImportForDeclaringMethod(target);
-                    }
-
-                    var targetParameter =
-                        new ParameterDefinition(sourceParameter.Name, sourceParameter.Attributes, targetParameterType)
-                        {
-                            Constant = sourceParameter.Constant,
-                            HasConstant = sourceParameter.HasConstant,
-                            HasDefault = sourceParameter.HasDefault,
-                            HasFieldMarshal = sourceParameter.HasFieldMarshal,
-                            IsIn = sourceParameter.IsIn,
-                            IsLcid = sourceParameter.IsLcid,
-                            IsOptional = sourceParameter.IsOptional,
-                            IsOut = sourceParameter.IsOut,
-                            IsReturnValue = sourceParameter.IsReturnValue,
-                        };
-
-                    // TODO research correct usage
-                    if (sourceParameter.MarshalInfo != null)
-                    {
-                        targetParameter.MarshalInfo = new MarshalInfo(sourceParameter.MarshalInfo.NativeType);
-                    }
-
-                    // TODO research correct usage
-                    targetParameter.MetadataToken = new MetadataToken(sourceParameter.MetadataToken.TokenType, sourceParameter.MetadataToken.RID);
-
-                    // I did not check whether I get a similar issue here as with the duplication in the FieldCloner...adding a clear line just to make sure, though
-                    targetParameter.CustomAttributes.Clear();
-                    targetParameter.CloneAllCustomAttributes(sourceParameter, rootImporter);
-
-                    target.Parameters.Add(targetParameter);
+                    targetParameter.MarshalInfo = new MarshalInfo(sourceParameter.MarshalInfo.NativeType);
                 }
+
+                // TODO research correct usage
+                targetParameter.MetadataToken = new MetadataToken(sourceParameter.MetadataToken.TokenType, sourceParameter.MetadataToken.RID);
+
+                // I did not check whether I get a similar issue here as with the duplication in the FieldCloner...adding a clear line just to make sure, though
+                targetParameter.CustomAttributes.Clear();
+                targetParameter.RootImportAllCustomAttributes(rootImporter, sourceParameter.CustomAttributes);
+
+                targetParameters.Add(targetParameter);
+                if (parameterOperandReplacementMap != null) { parameterOperandReplacementMap.Add(sourceParameter, targetParameter); }
             }
         }
 
-        public static void CloneAllGenericParameters(
-            this IGenericParameterProvider target,
-            IGenericParameterProvider source,
-            IRootImportProvider rootImporter)
-        {
-            Contract.Requires(target != null);
-            Contract.Requires(target.GenericParameters != null);
-            Contract.Requires(target.GenericParameters.Count == 0 || target == rootImporter.RootTarget);
-            Contract.Requires(source != null);
-            Contract.Requires(source.GenericParameters != null);
-            Contract.Requires(rootImporter != null);
-            Contract.Ensures(
-                target.GenericParameters.Count == source.GenericParameters.Count ||
-                (target == rootImporter.RootTarget && target.GenericParameters.Count > source.GenericParameters.Count));
-
-            if (source.HasGenericParameters)
-            {
-                foreach (var sourceGenericParameter in source.GenericParameters)
-                {
-                    var targetGenericParameter = new GenericParameter(sourceGenericParameter.Name, target)
-                    {
-                        Attributes = sourceGenericParameter.Attributes,
-                        HasDefaultConstructorConstraint = sourceGenericParameter.HasDefaultConstructorConstraint,
-                        HasNotNullableValueTypeConstraint = sourceGenericParameter.HasNotNullableValueTypeConstraint,
-                        HasReferenceTypeConstraint = sourceGenericParameter.HasReferenceTypeConstraint,
-                        IsContravariant = sourceGenericParameter.IsContravariant,
-                        IsCovariant = sourceGenericParameter.IsCovariant,
-                        IsNonVariant = sourceGenericParameter.IsNonVariant,
-                        IsValueType = sourceGenericParameter.IsValueType,
-                        MetadataToken = new MetadataToken(sourceGenericParameter.MetadataToken.TokenType, sourceGenericParameter.MetadataToken.RID),
-                    };
-
-                    if(sourceGenericParameter.DeclaringType != null)
-                    {
-                        targetGenericParameter.DeclaringType = rootImporter.RootImport(sourceGenericParameter.DeclaringType);
-                    }
-
-                    foreach (var sourceConstraint in sourceGenericParameter.Constraints)
-                    {
-                        throw new NotImplementedException();
-                    }
-
-                    if (sourceGenericParameter.HasCustomAttributes)
-                    {
-                        // I did not check whether I get a similar issue here as with the duplication in the FieldCloner...adding a clear line just to make sure, though
-                        targetGenericParameter.CustomAttributes.Clear();
-                        targetGenericParameter.CloneAllCustomAttributes(sourceGenericParameter, rootImporter);
-                    }
-
-                    targetGenericParameter.CloneAllGenericParameters(sourceGenericParameter, rootImporter);
-
-                    target.GenericParameters.Add(targetGenericParameter);
-                }
-            }
-        }
-
-        public static void CloneAllCustomAttributes(
-            this ICustomAttributeProvider target,
-            ICustomAttributeProvider source,
-            IRootImportProvider rootImporter)
+        public static void RootImportAllCustomAttributes(this ICustomAttributeProvider target, IRootImportProvider rootImporter, Collection<CustomAttribute> sourceAttributes)
         {
             Contract.Requires(target != null);
             Contract.Requires(target.CustomAttributes != null);
             Contract.Requires(target.CustomAttributes.Count == 0 || target == rootImporter.RootTarget);
-            Contract.Requires(source != null);
-            Contract.Requires(source.CustomAttributes != null);
             Contract.Requires(rootImporter != null);
+            Contract.Requires(sourceAttributes != null);
             Contract.Ensures(
-                target.CustomAttributes.Count == source.CustomAttributes.Count ||
-                (target == rootImporter.RootTarget && target.CustomAttributes.Count > source.CustomAttributes.Count));
+                target.CustomAttributes.Count == sourceAttributes.Count ||
+                (target == rootImporter.RootTarget && target.CustomAttributes.Count > sourceAttributes.Count));
 
-            if (source.HasCustomAttributes)
+            foreach (var sourceAttribute in sourceAttributes)
             {
-                foreach (var sourceAttribute in source.CustomAttributes)
+                var targetAttribute = new CustomAttribute(rootImporter.RootImport(sourceAttribute.Constructor));
+                if (sourceAttribute.HasConstructorArguments)
                 {
-                    var targetAttribute = new CustomAttribute(rootImporter.RootImport(sourceAttribute.Constructor));
-                    if (sourceAttribute.HasConstructorArguments)
+                    foreach (var sourceArgument in sourceAttribute.ConstructorArguments)
                     {
-                        foreach (var sourceArgument in sourceAttribute.ConstructorArguments)
-                        {
-                            targetAttribute.ConstructorArguments.Add(
-                                new CustomAttributeArgument(
-                                    rootImporter.RootImport(sourceArgument.Type),
-                                    rootImporter.DynamicRootImport(sourceArgument.Value)));
-                        }
+                        targetAttribute.ConstructorArguments.Add(
+                            new CustomAttributeArgument(
+                                rootImporter.RootImport(sourceArgument.Type),
+                                rootImporter.DynamicRootImport(sourceArgument.Value)));
                     }
-
-                    if (sourceAttribute.HasProperties)
-                    {
-                        foreach (var sourceProperty in sourceAttribute.Properties)
-                        {
-                            targetAttribute.Properties.Add(
-                                new CustomAttributeNamedArgument(
-                                    sourceProperty.Name,
-                                    new CustomAttributeArgument(
-                                        rootImporter.RootImport(sourceProperty.Argument.Type),
-                                        rootImporter.DynamicRootImport(sourceProperty.Argument.Value))));
-                        }
-                    }
-                    target.CustomAttributes.Add(targetAttribute);
                 }
+
+                if (sourceAttribute.HasProperties)
+                {
+                    foreach (var sourceProperty in sourceAttribute.Properties)
+                    {
+                        targetAttribute.Properties.Add(
+                            new CustomAttributeNamedArgument(
+                                sourceProperty.Name,
+                                new CustomAttributeArgument(
+                                    rootImporter.RootImport(sourceProperty.Argument.Type),
+                                    rootImporter.DynamicRootImport(sourceProperty.Argument.Value))));
+                    }
+                }
+                target.CustomAttributes.Add(targetAttribute);
             }
         }
-
-        public static GenericParameter ImportForDeclaringMethod(this GenericParameter sourceGenericParameter, MethodReference rootImportedDeclaringMethod)
-        {
-            Contract.Requires(sourceGenericParameter != null);
-            Contract.Requires(sourceGenericParameter.Type == GenericParameterType.Method);
-            Contract.Requires(sourceGenericParameter.DeclaringMethod != null);
-            Contract.Requires(rootImportedDeclaringMethod != null);
-
-            if (sourceGenericParameter.Position >= rootImportedDeclaringMethod.GenericParameters.Count)
-            {
-                throw new WeavingException(string.Format(
-                    "Could not find generic parameter in position [{0}] of method [{1}]. Expected to find one with name [{2}]",
-                    sourceGenericParameter.Position,
-                    rootImportedDeclaringMethod.FullName,
-                    sourceGenericParameter.Name));
-            }
-
-            var importedGenericParameter = rootImportedDeclaringMethod.GenericParameters[sourceGenericParameter.Position];
-            Contract.Assert(importedGenericParameter != null);
-
-            if (importedGenericParameter.Name != sourceGenericParameter.Name)
-            {
-                throw new WeavingException(string.Format(
-                    "Expected to find generic parameter named [{0}] in position [{1}] of method [{2}]. Instead found one with name [{3}]",
-                    sourceGenericParameter.Name,
-                    sourceGenericParameter.Position,
-                    rootImportedDeclaringMethod.FullName,
-                    importedGenericParameter.Name));
-            }
-
-            return importedGenericParameter;
-        }
-
     }
 }

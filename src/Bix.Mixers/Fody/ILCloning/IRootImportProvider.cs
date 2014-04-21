@@ -15,8 +15,6 @@ namespace Bix.Mixers.Fody.ILCloning
 
         TItem DynamicRootImport<TItem>(TItem item);
 
-        GenericParameter RootImport(GenericParameter genericParameter);
-
         TypeReference RootImport(TypeReference type);
 
         FieldReference RootImport(FieldReference field);

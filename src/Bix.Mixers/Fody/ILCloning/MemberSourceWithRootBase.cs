@@ -35,11 +35,6 @@ namespace Bix.Mixers.Fody.ILCloning
             return this.RootContext.DynamicRootImport<TItem>(sourceItem);
         }
 
-        public GenericParameter RootImport(GenericParameter sourceGenericParameter)
-        {
-            return this.RootContext.RootImport(sourceGenericParameter);
-        }
-
         public TypeReference RootImport(TypeReference sourceType)
         {
             return this.RootContext.RootImport(sourceType);

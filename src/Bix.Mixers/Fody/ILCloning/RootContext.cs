@@ -1,5 +1,4 @@
-﻿using Bix.Mixers.Fody.Core;
-using Mono.Cecil;
+﻿using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -42,35 +41,9 @@ namespace Bix.Mixers.Fody.ILCloning
 
         private Dictionary<string, TypeReference> TypeCache { get; set; }
 
-        public GenericParameter RootImport(GenericParameter genericParameter)
-        {
-            if (genericParameter == null) { return null; }
-
-            switch(genericParameter.Type)
-            {
-                case GenericParameterType.Method:
-                    Contract.Assert(genericParameter.DeclaringMethod != null);
-                    return genericParameter.ImportForDeclaringMethod(this.RootImport(genericParameter.DeclaringMethod));
-
-                case GenericParameterType.Type:
-                    // TODO root import type generic parameter
-                    throw new NotImplementedException("Implement type generic parameter root import when needed");
-
-                default:
-                    throw new ArgumentException(
-                        string.Format("Unknown generic parameter type: [{0}]", genericParameter.Type.ToString()),
-                        "genericParameter");
-            }
-        }
-
         public TypeReference RootImport(TypeReference type)
         {
             if (type == null) { return null; }
-
-            if (type.IsGenericParameter)
-            {
-                return this.RootImport((GenericParameter)type);
-            }
 
             TypeReference importedType;
 
