@@ -11,6 +11,8 @@ namespace Bix.Mixers.Fody.ILCloning
     [ContractClass(typeof(IRootImportProviderContract))]
     internal interface IRootImportProvider
     {
+        TypeDefinition RootSource { get; }
+
         TypeDefinition RootTarget { get; }
 
         TItem DynamicRootImport<TItem>(TItem item);

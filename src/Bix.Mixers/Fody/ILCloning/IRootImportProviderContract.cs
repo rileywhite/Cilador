@@ -11,6 +11,15 @@ namespace Bix.Mixers.Fody.ILCloning
     [ContractClassFor(typeof(IRootImportProvider))]
     internal abstract class IRootImportProviderContract : IRootImportProvider
     {
+        public TypeDefinition RootSource
+        {
+            get
+            {
+                Contract.Ensures(Contract.Result<TypeDefinition>() != null);
+                throw new NotSupportedException();
+            }
+        }
+
         public TypeDefinition RootTarget
         {
             get

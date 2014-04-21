@@ -25,7 +25,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.MethodCache = new Dictionary<string, MethodReference>();
         }
 
-        private TypeDefinition RootSource { get; set; }
+        public TypeDefinition RootSource { get; private set; }
 
         public TypeDefinition RootTarget { get; private set; }
 

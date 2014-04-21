@@ -4,6 +4,7 @@ using Bix.Mixers.Fody.TestMixinInterfaces;
 using Bix.Mixers.Fody.TestMixins;
 using Bix.Mixers.Fody.Tests.Common;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -321,6 +322,89 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
                 string.Format("Configured mixin implementation may not contain extern methods: [{0}]",
                 typeof(UnmanagedCallMixin).FullName));
+        }
+
+        [Test]
+        public void CannotHaveSecurityAttributeOnMixinImplementation()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMap = new InterfaceMapType[]
+                    {
+                        new InterfaceMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(SecurityDeclarationMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            Assert.Throws<WeavingException>(
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
+                string.Format("Configured mixin implementation may not be annotated with security attributes: [{0}]",
+                typeof(SecurityDeclarationMixin).FullName));
+        }
+
+        [Test]
+        public void CannotHaveSecurityAttributeOnNestedType()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMap = new InterfaceMapType[]
+                    {
+                        new InterfaceMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(SecurityDeclarationOnNestedTypeMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin implementation may not contain nested types annotated with security attributes: [{0}]",
+                    typeof(SecurityDeclarationOnNestedTypeMixin).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+        }
+
+        [Test]
+        public void CannotHaveSecurityAttributeOnMethod()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMap = new InterfaceMapType[]
+                    {
+                        new InterfaceMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(SecurityDeclarationOnMethodMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin implementation may not contain methods annotated with security attributes: [{0}]",
+                    typeof(SecurityDeclarationOnMethodMixin).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
     }
 }

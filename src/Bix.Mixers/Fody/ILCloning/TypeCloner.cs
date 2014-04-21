@@ -62,6 +62,13 @@ namespace Bix.Mixers.Fody.ILCloning
                     throw new WeavingException(string.Format("Mixin source type cannot be an open generic type: [{0}]", this.SourceWithRoot.Source.FullName));
                 }
 
+                if (this.SourceWithRoot.Source.HasSecurityDeclarations)
+                {
+                    throw new WeavingException(string.Format(
+                        "Configured mixin implementation may not be annotated with security attributes: [{0}]",
+                        this.SourceWithRoot.Source.FullName));
+                }
+
                 if (!(this.SourceWithRoot.Source.IsClass && !this.SourceWithRoot.Source.IsValueType))
                 {
                     throw new WeavingException(string.Format("Mixin source type must be a reference type: [{0}]", this.SourceWithRoot.Source.FullName));
@@ -87,6 +94,14 @@ namespace Bix.Mixers.Fody.ILCloning
                         this.SourceWithRoot.Source.FullName));
                 }
 
+                if (this.SourceWithRoot.Source.HasSecurityDeclarations)
+                {
+                    // TODO Nested type security declarations
+                    throw new WeavingException(string.Format(
+                        "Configured mixin implementation may not contain nested types annotated with security attributes: [{0}]",
+                        this.SourceWithRoot.RootContext.RootSource.FullName));
+                }
+
                 this.Target.Attributes = this.SourceWithRoot.Source.Attributes;
                 this.Target.DeclaringType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.DeclaringType).Resolve();
                 this.Target.BaseType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.BaseType);
@@ -109,12 +124,6 @@ namespace Bix.Mixers.Fody.ILCloning
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around, but only for non-root type
             if (this.Target != this.SourceWithRoot.RootContext.RootTarget) { this.Target.CustomAttributes.Clear(); }
             this.Target.CloneAllCustomAttributes(this.SourceWithRoot.Source, this.SourceWithRoot.RootContext);
-
-            if (this.SourceWithRoot.Source.HasSecurityDeclarations)
-            {
-                // TODO type security declarations
-                throw new NotImplementedException("Implement type security declarations when needed");
-            }
         }
 
         private void CreateWireframeAndCloners()

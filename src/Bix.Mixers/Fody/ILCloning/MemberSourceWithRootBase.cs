@@ -25,6 +25,11 @@ namespace Bix.Mixers.Fody.ILCloning
 
         public RootContext RootContext { get; protected set; }
 
+        TypeDefinition IRootImportProvider.RootSource
+        {
+            get { return this.RootContext.RootSource; }
+        }
+
         TypeDefinition IRootImportProvider.RootTarget
         {
             get { return this.RootContext.RootTarget; }

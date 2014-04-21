@@ -93,7 +93,9 @@ namespace Bix.Mixers.Fody.ILCloning
             if (this.SourceWithRoot.Source.HasSecurityDeclarations)
             {
                 // TODO method security declarations
-                throw new NotImplementedException("Implement method security declarations when needed");
+                throw new WeavingException(string.Format(
+                    "Configured mixin implementation may not contain methods annotated with security attributes: [{0}]",
+                    this.SourceWithRoot.RootContext.RootSource.FullName));
             }
 
             // TODO look more closely, e.g. need to do anything with method's MethodReturnType?

@@ -50,6 +50,9 @@
     <Compile Include="InheritingMixin.cs" />
     <Compile Include="InterfacelessMixin.cs" />
     <Compile Include="OpenGenericNestedTypeMixin.cs" />
+    <Compile Include="SecurityDeclarationOnMethodMixin.cs" />
+    <Compile Include="SecurityDeclarationOnNestedTypeMixin.cs" />
+    <Compile Include="SecurityDeclarationMixin.cs" />
     <Compile Include="TypeInitializerMixin.cs" />
     <Compile Include="UnmanagedCallMixin.cs" />
     <Compile Include="ValueTypeMixin.cs" />
