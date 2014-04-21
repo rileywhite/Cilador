@@ -50,7 +50,7 @@ namespace Bix.Mixers.Fody.ILCloning
             // (breaking anywhere before the RootImportAll call in the debugger keeps it from happening, too)
             this.Target.CustomAttributes.Clear();
             Contract.Assert(this.Target.CustomAttributes.Count == 0);
-            this.Target.RootImportAllCustomAttributes(this.SourceWithRoot, this.SourceWithRoot.Source.CustomAttributes);
+            this.Target.CloneAllCustomAttributes(this.SourceWithRoot.Source, this.SourceWithRoot.RootContext);
 
             this.IsStructureCloned = true;
         }

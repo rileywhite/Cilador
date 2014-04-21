@@ -296,5 +296,31 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 string.Format("Configured mixin implementation may not include any open generic nested types: [{0}]",
                 typeof(OpenGenericNestedTypeMixin).FullName));
         }
+
+        [Test]
+        public void CannotMakeUnmanagedCall()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMap = new InterfaceMapType[]
+                    {
+                        new InterfaceMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(UnmanagedCallMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            Assert.Throws<WeavingException>(
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
+                string.Format("Configured mixin implementation may not contain extern methods: [{0}]",
+                typeof(UnmanagedCallMixin).FullName));
+        }
     }
 }

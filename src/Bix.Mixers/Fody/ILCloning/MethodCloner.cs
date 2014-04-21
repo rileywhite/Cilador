@@ -52,16 +52,13 @@ namespace Bix.Mixers.Fody.ILCloning
             // TODO research correct usage of method MetadataToken
             this.Target.MetadataToken = new MetadataToken(this.SourceWithRoot.Source.MetadataToken.TokenType, this.SourceWithRoot.Source.MetadataToken.RID);
 
-            if (this.SourceWithRoot.Source.PInvokeInfo != null)
+            if(this.SourceWithRoot.Source.IsPInvokeImpl)
             {
-                this.Target.PInvokeInfo = new PInvokeInfo(
-                    this.SourceWithRoot.Source.PInvokeInfo.Attributes,
-                    this.SourceWithRoot.Source.PInvokeInfo.EntryPoint,
-                    this.SourceWithRoot.Source.PInvokeInfo.Module);
+                throw new WeavingException(string.Format(
+                    "Configured mixin implementation may not contain extern methods: [{0}]",
+                    this.SourceWithRoot.Source.FullName));
             }
-
-            // TODO look more closely, e.g. need to do anything with method's MethodReturnType?
-            this.Target.ReturnType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.ReturnType);
+            Contract.Assert(this.SourceWithRoot.Source.PInvokeInfo == null);
 
             if (this.SourceWithRoot.Source.HasOverrides)
             {
@@ -83,7 +80,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around
             this.Target.CustomAttributes.Clear();
-            this.Target.RootImportAllCustomAttributes(this.SourceWithRoot, this.SourceWithRoot.Source.CustomAttributes);
+            this.Target.CloneAllCustomAttributes(this.SourceWithRoot.Source, this.SourceWithRoot.RootContext);
 
             if (this.SourceWithRoot.Source.HasGenericParameters)
             {
@@ -98,6 +95,27 @@ namespace Bix.Mixers.Fody.ILCloning
                 // TODO method security declarations
                 throw new NotImplementedException("Implement method security declarations when needed");
             }
+
+            // TODO look more closely, e.g. need to do anything with method's MethodReturnType?
+            var sourceMethodReturnType = this.SourceWithRoot.Source.MethodReturnType;
+            Contract.Assert(sourceMethodReturnType != null);
+            this.Target.MethodReturnType = new MethodReturnType(this.Target);
+            this.Target.MethodReturnType.ReturnType = this.SourceWithRoot.RootImport(sourceMethodReturnType.ReturnType);
+            this.Target.MethodReturnType.Attributes = sourceMethodReturnType.Attributes;
+            this.Target.MethodReturnType.Constant = sourceMethodReturnType.Constant;
+            this.Target.MethodReturnType.HasConstant = sourceMethodReturnType.HasConstant;
+
+            // TODO research correct usage of MethodReturnType.MarshalInfo
+            if (sourceMethodReturnType.MarshalInfo != null)
+            {
+                this.Target.MethodReturnType.MarshalInfo = new MarshalInfo(sourceMethodReturnType.MarshalInfo.NativeType);
+            }
+
+            // TODO research correct usage of MethodReturnType.MetadataToken
+            this.Target.MethodReturnType.MetadataToken =
+                new MetadataToken(sourceMethodReturnType.MetadataToken.TokenType, sourceMethodReturnType.MetadataToken.RID);
+
+            this.Target.MethodReturnType.CloneAllCustomAttributes(sourceMethodReturnType, this.SourceWithRoot.RootContext);
 
             this.IsStructureCloned = true;
             Contract.Assert(this.Target.SignatureEquals(this.SourceWithRoot.Source));
@@ -288,10 +306,10 @@ namespace Bix.Mixers.Fody.ILCloning
             return ilProcessor.Create(opCode, value);
         }
 
-        private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, CallSite site)
+        private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, CallSite callSite)
         {
-            // TODO call site operand instruction handling
-            throw new NotImplementedException("Implement creation of CallSite operand instruction when needed");
+            throw new NotSupportedException(
+                "Callsite instruction operands are used with the calli op code to make unmanaged method calls. This is not supported.");
         }
 
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, double value)

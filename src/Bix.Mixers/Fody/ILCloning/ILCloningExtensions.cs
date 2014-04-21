@@ -112,25 +112,30 @@ namespace Bix.Mixers.Fody.ILCloning
 
                 // I did not check whether I get a similar issue here as with the duplication in the FieldCloner...adding a clear line just to make sure, though
                 targetParameter.CustomAttributes.Clear();
-                targetParameter.RootImportAllCustomAttributes(rootImporter, sourceParameter.CustomAttributes);
+                targetParameter.CloneAllCustomAttributes(sourceParameter, rootImporter);
 
                 targetParameters.Add(targetParameter);
                 if (parameterOperandReplacementMap != null) { parameterOperandReplacementMap.Add(sourceParameter, targetParameter); }
             }
         }
 
-        public static void RootImportAllCustomAttributes(this ICustomAttributeProvider target, IRootImportProvider rootImporter, Collection<CustomAttribute> sourceAttributes)
+        public static void CloneAllCustomAttributes(
+            this ICustomAttributeProvider target,
+            ICustomAttributeProvider source,
+            IRootImportProvider rootImporter)
         {
             Contract.Requires(target != null);
             Contract.Requires(target.CustomAttributes != null);
             Contract.Requires(target.CustomAttributes.Count == 0 || target == rootImporter.RootTarget);
+            Contract.Requires(source != null);
+            Contract.Requires(source.CustomAttributes != null);
+            Contract.Requires(target != source);
             Contract.Requires(rootImporter != null);
-            Contract.Requires(sourceAttributes != null);
             Contract.Ensures(
-                target.CustomAttributes.Count == sourceAttributes.Count ||
-                (target == rootImporter.RootTarget && target.CustomAttributes.Count > sourceAttributes.Count));
+                target.CustomAttributes.Count == source.CustomAttributes.Count ||
+                (target == rootImporter.RootTarget && target.CustomAttributes.Count > source.CustomAttributes.Count));
 
-            foreach (var sourceAttribute in sourceAttributes)
+            foreach (var sourceAttribute in source.CustomAttributes)
             {
                 var targetAttribute = new CustomAttribute(rootImporter.RootImport(sourceAttribute.Constructor));
                 if (sourceAttribute.HasConstructorArguments)

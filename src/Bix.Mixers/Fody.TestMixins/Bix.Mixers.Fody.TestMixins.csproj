@@ -43,6 +43,7 @@
     <Compile Include="..\..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="DynamicMixin.cs" />
     <Compile Include="ExtraInterfaceMixin.cs" />
     <Compile Include="GenericMethodMixin.cs" />
     <Compile Include="IncorrectMixinSpecifyingClassInsteadOfInterface.cs" />
@@ -50,6 +51,7 @@
     <Compile Include="InterfacelessMixin.cs" />
     <Compile Include="OpenGenericNestedTypeMixin.cs" />
     <Compile Include="TypeInitializerMixin.cs" />
+    <Compile Include="UnmanagedCallMixin.cs" />
     <Compile Include="ValueTypeMixin.cs" />
     <Compile Include="InterfaceTypeMixin.cs" />
     <Compile Include="OpenGenericMixin.cs" />
