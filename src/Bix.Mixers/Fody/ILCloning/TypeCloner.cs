@@ -81,6 +81,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
                 if(this.SourceWithRoot.Source.HasGenericParameters)
                 {
+                    // TODO nested type generic parameters
                     throw new WeavingException(string.Format(
                         "Configured mixin implementation may not include any open generic nested types: [{0}]",
                         this.SourceWithRoot.Source.FullName));
@@ -108,12 +109,6 @@ namespace Bix.Mixers.Fody.ILCloning
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around, but only for non-root type
             if (this.Target != this.SourceWithRoot.RootContext.RootTarget) { this.Target.CustomAttributes.Clear(); }
             this.Target.RootImportAllCustomAttributes(this.SourceWithRoot, this.SourceWithRoot.Source.CustomAttributes);
-
-            if (this.SourceWithRoot.Source.HasGenericParameters)
-            {
-                // TODO type generic parameters
-                throw new NotImplementedException("Implement type generic parameters when needed");
-            }
 
             if (this.SourceWithRoot.Source.HasSecurityDeclarations)
             {
