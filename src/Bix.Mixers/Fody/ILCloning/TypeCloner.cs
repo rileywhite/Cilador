@@ -79,6 +79,13 @@ namespace Bix.Mixers.Fody.ILCloning
                 Contract.Assert(this.Target.IsNested);
                 Contract.Assert(this.SourceWithRoot.Source.IsNested);
 
+                if(this.SourceWithRoot.Source.HasGenericParameters)
+                {
+                    throw new WeavingException(string.Format(
+                        "Configured mixin implementation may not include any open generic nested types: [{0}]",
+                        this.SourceWithRoot.Source.FullName));
+                }
+
                 this.Target.Attributes = this.SourceWithRoot.Source.Attributes;
                 this.Target.DeclaringType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.DeclaringType).Resolve();
                 this.Target.BaseType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.BaseType);

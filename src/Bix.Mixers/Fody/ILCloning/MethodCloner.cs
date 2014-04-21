@@ -1,4 +1,5 @@
-﻿using Mono.Cecil;
+﻿using Bix.Mixers.Fody.Core;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 using System;
@@ -87,7 +88,9 @@ namespace Bix.Mixers.Fody.ILCloning
             if (this.SourceWithRoot.Source.HasGenericParameters)
             {
                 // TODO method generic parameters
-                throw new NotImplementedException("Implement method generic parameters when needed");
+                throw new WeavingException(string.Format(
+                    "Configured mixin implementation may not include any generic methods: [{0}]",
+                    this.SourceWithRoot.Source.FullName));
             }
 
             if (this.SourceWithRoot.Source.HasSecurityDeclarations)

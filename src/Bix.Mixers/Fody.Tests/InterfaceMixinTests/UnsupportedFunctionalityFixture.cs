@@ -244,5 +244,57 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 typeof(ExtraInterfaceMixin).FullName,
                 typeof(IEmptyInterface).FullName));
         }
+
+        [Test]
+        public void CannotMixGenericMethod()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMap = new InterfaceMapType[]
+                    {
+                        new InterfaceMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(GenericMethodMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            Assert.Throws<WeavingException>(
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
+                string.Format("Configured mixin implementation may not include any generic methods: [{0}]",
+                typeof(GenericMethodMixin).FullName));
+        }
+
+        [Test]
+        public void CannotMixOpenGenericNestedType()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMap = new InterfaceMapType[]
+                    {
+                        new InterfaceMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(OpenGenericNestedTypeMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            Assert.Throws<WeavingException>(
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config),
+                string.Format("Configured mixin implementation may not include any open generic nested types: [{0}]",
+                typeof(OpenGenericNestedTypeMixin).FullName));
+        }
     }
 }
