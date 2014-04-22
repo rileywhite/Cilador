@@ -63,7 +63,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 // if this is not an array or a generic instance, then just import the type
                 if (type.IsArray)
                 {
-                    // TODO array importing may need to be more thorough (e.g. dimensions, etc)
+                    // TODO this seems to work for C#...research whether array importing may need to be more thorough (e.g. dimensions, etc)
                     var arrayType = (ArrayType)type;
                     importedType = new ArrayType(this.RootImport(arrayType.ElementType), arrayType.Rank);
                 }

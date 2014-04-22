@@ -43,6 +43,8 @@
     <Compile Include="..\..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ArraysOfMixedTypeMixin.cs" />
+    <Compile Include="ArraysMixin.cs" />
     <Compile Include="DynamicMixin.cs" />
     <Compile Include="ExtraInterfaceMixin.cs" />
     <Compile Include="GenericMethodMixin.cs" />
