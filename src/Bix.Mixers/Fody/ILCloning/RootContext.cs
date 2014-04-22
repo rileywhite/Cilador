@@ -44,6 +44,7 @@ namespace Bix.Mixers.Fody.ILCloning
         public TypeReference RootImport(TypeReference type)
         {
             if (type == null) { return null; }
+            if (type.IsGenericParameter) { return type; }
 
             TypeReference importedType;
 
@@ -57,8 +58,8 @@ namespace Bix.Mixers.Fody.ILCloning
             // if the root source type is being imported, then select the root target type
             if (type.FullName == this.RootSource.FullName) { importedType = this.RootTarget.Module.Import(this.RootTarget); }
 
-            // check if this is not a nested type
-            else if (type.DeclaringType == null)
+            // check if this is not nested within the mixin type
+            else if (!type.IsNestedWithin(this.RootSource))
             {
                 // if this is not an array or a generic instance, then just import the type
                 if (type.IsArray)
@@ -194,7 +195,8 @@ namespace Bix.Mixers.Fody.ILCloning
             var importedDeclaringType = this.RootImport(method.DeclaringType);
 
             // if the declaring type is unchanged, then this is a non-mixed method
-            // it might be generic instance with a mixed type argument, however
+            // it might be generic method with a mixin redirected type argument, however,
+            // or it might be attached to a closed generic type with a mixin redirected argument
             if (importedDeclaringType.FullName == method.DeclaringType.FullName)
             {
                 // if this is not a generic instance, then just import the method
@@ -216,7 +218,8 @@ namespace Bix.Mixers.Fody.ILCloning
             else
             {
                 // if there was a change, then find the local method with a matching signature
-                var localMethod = importedDeclaringType.Resolve().Methods.FirstOrDefault(possibleMethod => possibleMethod.SignatureEquals(method));
+                var resolvedMethod = method.Resolve();  // this clears any generic data in case the change was due to a generic type closed with mixin redirected types
+                var localMethod = importedDeclaringType.Resolve().Methods.FirstOrDefault(possibleMethod => resolvedMethod.SignatureEquals(possibleMethod));
 
                 if (localMethod == null)
                 {
@@ -227,7 +230,36 @@ namespace Bix.Mixers.Fody.ILCloning
                         this.RootTarget.FullName));
                 }
 
-                importedMethod = this.RootTarget.Module.Import(localMethod);
+                if (!method.DeclaringType.IsGenericInstance) { importedMethod = this.RootTarget.Module.Import(localMethod); }
+                else
+                {
+                    var importedGenericTypeMethod = new MethodReference(
+                        localMethod.Name,
+                        this.RootImport(localMethod.ReturnType),
+                        importedDeclaringType)
+                    {
+                        CallingConvention = localMethod.CallingConvention,
+                        ExplicitThis = localMethod.ExplicitThis,
+                        HasThis = localMethod.HasThis
+                    };
+
+                    foreach (var parameter in localMethod.Parameters)
+                    {
+                        importedGenericTypeMethod.Parameters.Add(new ParameterDefinition(this.RootImport(parameter.ParameterType)));
+                    }
+
+                    importedMethod = this.RootTarget.Module.Import(importedGenericTypeMethod);
+
+                    if (method.IsGenericInstance)
+                    {
+                        var importedGenericMethod = new GenericInstanceMethod(importedMethod);
+                        foreach(var genericArgument in ((GenericInstanceMethod)method).GenericArguments)
+                        {
+                            importedGenericMethod.GenericArguments.Add(this.RootImport(genericArgument));
+                        }
+                        importedMethod = importedGenericMethod;
+                    }
+                }
             }
 
             Contract.Assert(importedMethod != null);

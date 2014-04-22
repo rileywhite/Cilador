@@ -98,7 +98,6 @@ namespace Bix.Mixers.Fody.ILCloning
                     this.SourceWithRoot.RootContext.RootSource.FullName));
             }
 
-            // TODO look more closely, e.g. need to do anything with method's MethodReturnType?
             var sourceMethodReturnType = this.SourceWithRoot.Source.MethodReturnType;
             Contract.Assert(sourceMethodReturnType != null);
             this.Target.MethodReturnType = new MethodReturnType(this.Target);

@@ -217,7 +217,42 @@ namespace Bix.Mixers.Fody.TestMixins
             Lazy<InnerStruct.InnerStructInnerEnum> innerStructInnerEnum,
             IEnumerable<InnerStruct.IInnerStructInnerInterface> innerStructInnerInterface,
             Dictionary<InnerStruct.InnerStructInnerStruct, InnerStruct.InnerStructInnerClass> innerStructInnerClassByInnerStructInnerStruct,
-            Func<InnerAbstractClass, InnerAbstractClass.InnerAbstractClassInnerEnum, InnerAbstractClass.IInnerAbstractClassInnerInterface> GetInnerAbstractClass,
+            Func<InnerAbstractClass, InnerAbstractClass.InnerAbstractClassInnerEnum, InnerAbstractClass.IInnerAbstractClassInnerInterface> getInnerAbstractClass,
             List<Dictionary<InnerAbstractClass.InnerAbstractClassStruct, IEnumerable<InnerImplementingClass[]>>> stuff) { }
+
+        public void ReferenceAllTypesInClosedGenericParametersWithReferences(
+            Tuple<IInnerInterface, InnerEventArgs, InnerDelegate> arg0,
+            List<InnerEnum> innerEnums,
+            InnerStruct[] innerStructs,
+            Lazy<InnerStruct.InnerStructInnerEnum> innerStructInnerEnum,
+            IEnumerable<InnerStruct.IInnerStructInnerInterface> innerStructInnerInterface,
+            Dictionary<InnerStruct.InnerStructInnerStruct, InnerStruct.InnerStructInnerClass> innerStructInnerClassByInnerStructInnerStruct,
+            Func<InnerAbstractClass, InnerAbstractClass.InnerAbstractClassInnerEnum, InnerAbstractClass.IInnerAbstractClassInnerInterface> getInnerAbstractClass,
+            List<Dictionary<InnerAbstractClass.InnerAbstractClassStruct, IEnumerable<InnerImplementingClass[]>>> stuff)
+        {
+            string toStringHolder;
+
+            toStringHolder = arg0.ToString();
+            toStringHolder = arg0.Item1.ToString();
+            toStringHolder = arg0.Item2.ToString();
+            toStringHolder = arg0.Item3.ToString();
+            toStringHolder = innerEnums.ToString();
+            toStringHolder = innerEnums.First().ToString();
+            toStringHolder = innerStructs.ToString();
+            toStringHolder = innerStructs[0].ToString();
+            toStringHolder = innerStructInnerEnum.ToString();
+            toStringHolder = innerStructInnerEnum.Value.ToString();
+            toStringHolder = innerStructInnerInterface.ToString();
+            toStringHolder = innerStructInnerInterface.ToString();
+            toStringHolder = innerStructInnerClassByInnerStructInnerStruct.ToString();
+            toStringHolder = innerStructInnerClassByInnerStructInnerStruct.Keys.First().ToString();
+            toStringHolder = innerStructInnerClassByInnerStructInnerStruct.Values.First().ToString();
+            toStringHolder = getInnerAbstractClass.ToString();
+            toStringHolder = stuff.ToString();
+            toStringHolder = stuff[0].ToString();
+            toStringHolder = stuff[0].Keys.First().ToString();
+            toStringHolder = stuff[0].Values.First().ToString();
+            toStringHolder = stuff[0].Values.First().First().ToString();
+        }
     }
 }

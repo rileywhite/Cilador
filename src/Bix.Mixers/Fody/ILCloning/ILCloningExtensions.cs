@@ -20,6 +20,13 @@ namespace Bix.Mixers.Fody.ILCloning
             foreach (var cloner in cloners) { cloner.CloneStructure(); }
         }
 
+        public static bool IsNestedWithin(this TypeReference type, TypeDefinition possibleAncestorType)
+        {
+            if (type == null || type.DeclaringType == null) { return false; }
+            else if (type.DeclaringType.Resolve().FullName == possibleAncestorType.FullName) { return true; }
+            else { return type.DeclaringType.IsNestedWithin(possibleAncestorType); }
+        }
+
         public static bool SignatureEquals(this MethodReference left, MethodReference right)
         {
             if (left == null || right == null) { return left == null && right == null; }
