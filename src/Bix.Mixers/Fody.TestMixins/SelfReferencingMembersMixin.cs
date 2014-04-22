@@ -29,7 +29,7 @@ namespace Bix.Mixers.Fody.TestMixins
 
         public class InnerEventArgs : EventArgs { }
 
-        public delegate void InnerDelegate();
+        public delegate void InnerDelegate(string arg0);
 
         public struct InnerStruct
         {
@@ -100,6 +100,115 @@ namespace Bix.Mixers.Fody.TestMixins
             InnerAbstractClass.IInnerAbstractClassInnerInterface innerAbstractClassInnerInterface,
             InnerAbstractClass.InnerAbstractClassStruct innerAbstractClassStruct,
             InnerImplementingClass innerImplementingClass) { }
+
+        public void ReferenceAllTypesInParametersWithReferences(
+            IInnerInterface innerInterface,
+            InnerEventArgs innerEventArgs,
+            InnerDelegate innerDelegate,
+            InnerEnum innerEnum,
+            InnerStruct innerStruct,
+            InnerStruct.InnerStructInnerEnum innerStructInnerEnum,
+            InnerStruct.IInnerStructInnerInterface innerStructInnerInterface,
+            InnerStruct.InnerStructInnerStruct innerStructInnerStruct,
+            InnerStruct.InnerStructInnerClass innerStructInnerClass,
+            InnerAbstractClass innerAbstractClass,
+            InnerAbstractClass.InnerAbstractClassInnerEnum innerAbstractClassInnerEnum,
+            InnerAbstractClass.IInnerAbstractClassInnerInterface innerAbstractClassInnerInterface,
+            InnerAbstractClass.InnerAbstractClassStruct innerAbstractClassStruct,
+            InnerImplementingClass innerImplementingClass)
+        {
+            string toStringHolder;
+
+            toStringHolder = innerInterface.ToString();
+            toStringHolder = innerEventArgs.ToString();
+            toStringHolder = innerDelegate.ToString();
+            toStringHolder = innerEnum.ToString();
+            toStringHolder = innerStruct.ToString();
+            toStringHolder = innerStructInnerEnum.ToString();
+            toStringHolder = innerStructInnerInterface.ToString();
+            toStringHolder = innerStructInnerStruct.ToString();
+            toStringHolder = innerStructInnerClass.ToString();
+            toStringHolder = innerAbstractClass.ToString();
+            toStringHolder = innerAbstractClassInnerEnum.ToString();
+            toStringHolder = innerAbstractClassInnerInterface.ToString();
+            toStringHolder = innerAbstractClassStruct.ToString();
+            toStringHolder = innerImplementingClass.ToString();
+        }
+
+        public void ReferenceAllTypesInLocalVariables()
+        {
+#pragma warning disable 168
+            IInnerInterface innerInterface;
+            InnerEventArgs innerEventArgs;
+            InnerDelegate innerDelegate;
+            InnerEnum innerEnum;
+            InnerStruct innerStruct;
+            InnerStruct.InnerStructInnerEnum innerStructInnerEnum;
+            InnerStruct.IInnerStructInnerInterface innerStructInnerInterface;
+            InnerStruct.InnerStructInnerStruct innerStructInnerStruct;
+            InnerStruct.InnerStructInnerClass innerStructInnerClass;
+            InnerAbstractClass innerAbstractClass;
+            InnerAbstractClass.InnerAbstractClassInnerEnum innerAbstractClassInnerEnum;
+            InnerAbstractClass.IInnerAbstractClassInnerInterface innerAbstractClassInnerInterface;
+            InnerAbstractClass.InnerAbstractClassStruct innerAbstractClassStruct;
+            InnerImplementingClass innerImplementingClass;
+#pragma warning restore 168
+        }
+
+        public void ReferenceAllTypesInLocalVariablesWithInitialization()
+        {
+#pragma warning disable 219
+            IInnerInterface innerInterface = new InnerImplementingClass();
+            InnerEventArgs innerEventArgs = new InnerEventArgs();
+            InnerDelegate innerDelegate = Console.WriteLine;
+            InnerEnum innerEnum = InnerEnum.Two;
+            InnerStruct innerStruct = new InnerStruct();
+            InnerStruct.InnerStructInnerEnum innerStructInnerEnum = InnerStruct.InnerStructInnerEnum.Two;
+            InnerStruct.IInnerStructInnerInterface innerStructInnerInterface = new InnerImplementingClass();
+            InnerStruct.InnerStructInnerStruct innerStructInnerStruct = new InnerStruct.InnerStructInnerStruct();
+            InnerStruct.InnerStructInnerClass innerStructInnerClass = new InnerStruct.InnerStructInnerClass();
+            InnerAbstractClass innerAbstractClass = new InnerImplementingClass();
+            InnerAbstractClass.InnerAbstractClassInnerEnum innerAbstractClassInnerEnum = InnerAbstractClass.InnerAbstractClassInnerEnum.Two;
+            InnerAbstractClass.IInnerAbstractClassInnerInterface innerAbstractClassInnerInterface = new InnerImplementingClass();
+            InnerAbstractClass.InnerAbstractClassStruct innerAbstractClassStruct = new InnerAbstractClass.InnerAbstractClassStruct();
+            InnerImplementingClass innerImplementingClass = new InnerImplementingClass();
+#pragma warning restore 219
+        }
+
+        public void ReferenceAllTypesInLocalVariablesWithInitializationWithReferences()
+        {
+            IInnerInterface innerInterface = new InnerImplementingClass();
+            InnerEventArgs innerEventArgs = new InnerEventArgs();
+            InnerDelegate innerDelegate = Console.WriteLine;
+            InnerEnum innerEnum = InnerEnum.Two;
+            InnerStruct innerStruct = new InnerStruct();
+            InnerStruct.InnerStructInnerEnum innerStructInnerEnum = InnerStruct.InnerStructInnerEnum.Two;
+            InnerStruct.IInnerStructInnerInterface innerStructInnerInterface = new InnerImplementingClass();
+            InnerStruct.InnerStructInnerStruct innerStructInnerStruct = new InnerStruct.InnerStructInnerStruct();
+            InnerStruct.InnerStructInnerClass innerStructInnerClass = new InnerStruct.InnerStructInnerClass();
+            InnerAbstractClass innerAbstractClass = new InnerImplementingClass();
+            InnerAbstractClass.InnerAbstractClassInnerEnum innerAbstractClassInnerEnum = InnerAbstractClass.InnerAbstractClassInnerEnum.Two;
+            InnerAbstractClass.IInnerAbstractClassInnerInterface innerAbstractClassInnerInterface = new InnerImplementingClass();
+            InnerAbstractClass.InnerAbstractClassStruct innerAbstractClassStruct = new InnerAbstractClass.InnerAbstractClassStruct();
+            InnerImplementingClass innerImplementingClass = new InnerImplementingClass();
+
+            string toStringHolder;
+
+            toStringHolder = innerInterface.ToString();
+            toStringHolder = innerEventArgs.ToString();
+            toStringHolder = innerDelegate.ToString();
+            toStringHolder = innerEnum.ToString();
+            toStringHolder = innerStruct.ToString();
+            toStringHolder = innerStructInnerEnum.ToString();
+            toStringHolder = innerStructInnerInterface.ToString();
+            toStringHolder = innerStructInnerStruct.ToString();
+            toStringHolder = innerStructInnerClass.ToString();
+            toStringHolder = innerAbstractClass.ToString();
+            toStringHolder = innerAbstractClassInnerEnum.ToString();
+            toStringHolder = innerAbstractClassInnerInterface.ToString();
+            toStringHolder = innerAbstractClassStruct.ToString();
+            toStringHolder = innerImplementingClass.ToString();
+        }
 
         public void ReferenceAllTypesInClosedGenericParameters(
             Tuple<IInnerInterface, InnerEventArgs, InnerDelegate> arg0,
