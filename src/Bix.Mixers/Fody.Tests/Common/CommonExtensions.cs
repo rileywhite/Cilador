@@ -499,14 +499,21 @@ namespace Bix.Mixers.Fody.Tests.Common
             Contract.Requires(rootTargetAndSourceFullNames.Item2 != null);
             Contract.Requires(rootTargetAndSourceFullNames.Item1 != rootTargetAndSourceFullNames.Item2);
 
-            if (source.GenericTypeArguments.Length == 0)
+            if (source.GenericTypeArguments.Length != target.GenericTypeArguments.Length) { return false; }
+            if (source.IsArray != target.IsArray) { return false; }
+
+            if (source.IsArray)
+            {
+                return
+                    source.GetArrayRank() == target.GetArrayRank() &&
+                    target.GetElementType().IsSourceNameEqual(source.GetElementType(), rootTargetAndSourceFullNames);
+            }
+            else if (source.GenericTypeArguments.Length == 0)
             {
                 return source.FullName.Replace(rootTargetAndSourceFullNames.Item2, rootTargetAndSourceFullNames.Item1) == target.FullName;
             }
             else
             {
-                if (source.GenericTypeArguments.Length != target.GenericTypeArguments.Length) { return false; }
-
                 if (!target.GetGenericTypeDefinition().IsSourceNameEqual(source.GetGenericTypeDefinition(), rootTargetAndSourceFullNames)) { return false; }
 
                 for (int i = 0; i < source.GenericTypeArguments.Length; i++)

@@ -20,6 +20,7 @@ namespace Bix.Mixers.Fody.ILCloning
             foreach (var cloner in cloners) { cloner.CloneStructure(); }
         }
 
+        [Pure]
         public static bool IsNestedWithin(this TypeReference type, TypeDefinition possibleAncestorType)
         {
             if (type == null || type.DeclaringType == null) { return false; }
@@ -27,6 +28,28 @@ namespace Bix.Mixers.Fody.ILCloning
             else { return type.DeclaringType.IsNestedWithin(possibleAncestorType); }
         }
 
+        [Pure]
+        public static bool IsAnyAncestorAGenericInstanceWithArgumentsIn(this TypeReference type, TypeDefinition argumentsSearchType)
+        {
+            if (type == null || type.DeclaringType == null)
+            {
+                return false;
+            }
+            else if (type.DeclaringType.IsGenericInstance &&
+                     ((GenericInstanceType)type.DeclaringType).GenericArguments.Any(
+                        genericArgument => genericArgument.IsNestedWithin(argumentsSearchType)))
+            {
+                return true;
+            }
+            else
+            {
+                return
+                    type.DeclaringType != null &&
+                    type.DeclaringType.IsAnyAncestorAGenericInstanceWithArgumentsIn(argumentsSearchType);
+            }
+        }
+
+        [Pure]
         public static bool SignatureEquals(this MethodReference left, MethodReference right)
         {
             if (left == null || right == null) { return left == null && right == null; }
@@ -34,6 +57,7 @@ namespace Bix.Mixers.Fody.ILCloning
             return left.FullName.Replace(left.DeclaringType.FullName, right.DeclaringType.FullName) == right.FullName;
         }
 
+        [Pure]
         public static bool SignatureEquals(this PropertyDefinition left, PropertyDefinition right)
         {
             if (left == null || right == null) { return left == null && right == null; }
@@ -41,6 +65,7 @@ namespace Bix.Mixers.Fody.ILCloning
             return left.FullName.Replace(left.DeclaringType.FullName + "::", string.Empty) == right.FullName.Replace(right.DeclaringType.FullName + "::", string.Empty);
         }
 
+        [Pure]
         public static bool IsSkipped(this IMemberDefinition member)
         {
             Contract.Requires(member != null);
@@ -61,6 +86,7 @@ namespace Bix.Mixers.Fody.ILCloning
             else { return method.IsSkipped(); }
         }
 
+        [Pure]
         public static bool IsSkipped(this MethodDefinition method)
         {
             Contract.Requires(method != null);

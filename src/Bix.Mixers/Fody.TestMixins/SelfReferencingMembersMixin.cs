@@ -254,5 +254,11 @@ namespace Bix.Mixers.Fody.TestMixins
             toStringHolder = stuff[0].Values.First().ToString();
             toStringHolder = stuff[0].Values.First().First().ToString();
         }
+
+        public void CallGenericMethodsOnGenericClosedType(List<int> ints, List<IInnerInterface> innerInterfaces)
+        {
+            ints.ConvertAll<InnerStruct>(new Converter<int,InnerStruct>(i => new InnerStruct()));
+            innerInterfaces.ConvertAll<InnerImplementingClass>(new Converter<IInnerInterface,InnerImplementingClass>(x => new InnerImplementingClass()));
+        }
     }
 }

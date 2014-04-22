@@ -9,6 +9,16 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.ILCloning
 {
+    /// <summary>
+    /// Handles importing referenced types into the mixin target module. Also handles
+    /// mixin type redirection, where referenced members of a mixin implementation
+    /// are replaced with the target's versions of those members.
+    /// </summary>
+    /// <remarks>
+    /// The way generics for non-mixin implementation types are handled in this file
+    /// is certainly in need of change. For now it works, but it will be rewritten when full
+    /// mixin implementation generic support is added.
+    /// </remarks>
     internal class RootContext : IRootImportProvider
     {
         public RootContext(TypeDefinition rootSource, TypeDefinition rootTarget)
@@ -47,79 +57,114 @@ namespace Bix.Mixers.Fody.ILCloning
             if (type.IsGenericParameter) { return type; }
 
             TypeReference importedType;
-
-            // if root import has already occurred, then return the previous result
-            if (this.TypeCache.TryGetValue(type.FullName, out importedType))
+            if (!this.TypeCache.TryGetValue(type.FullName, out importedType))
             {
-                Contract.Assert(importedType != null);
-                return importedType;
-            }
+                // if root import has already occurred, then return the previous result
 
-            // if the root source type is being imported, then select the root target type
-            if (type.FullName == this.RootSource.FullName) { importedType = this.RootTarget.Module.Import(this.RootTarget); }
+                importedType =
+                    type.FullName == this.RootSource.FullName || type.IsNestedWithin(this.RootSource) ?
+                    this.RootImportTypeWithinSource(type) :
+                    this.RootImportTypeOutsideOfSource(type);
 
-            // check if this is not nested within the mixin type
-            else if (!type.IsNestedWithin(this.RootSource))
-            {
-                // if this is not an array or a generic instance, then just import the type
-                if (type.IsArray)
-                {
-                    // TODO this seems to work for C#...research whether array importing may need to be more thorough (e.g. dimensions, etc)
-                    var arrayType = (ArrayType)type;
-                    importedType = new ArrayType(this.RootImport(arrayType.ElementType), arrayType.Rank);
-                }
-                else if (!type.IsGenericInstance) { importedType = this.RootTarget.Module.Import(type); }
-                else
-                {
-                    // if this is a generic instance, then root import the generic definition and all generic arguments
-                    // (this way of resolving generic instances would break if open generic nested types were allowed)
-                    var genericInstanceType = (GenericInstanceType)type;
-                    var importedGenericInstanceType = new GenericInstanceType(this.RootTarget.Module.Import(genericInstanceType.ElementType));
-
-                    foreach(var genericArgument in genericInstanceType.GenericArguments)
-                    {
-                        importedGenericInstanceType.GenericArguments.Add(this.RootImport(genericArgument));
-                    }
-
-                    importedType = importedGenericInstanceType;
-                }
-            }
-
-            // handle nested types
-            else
-            {
-                // first doing a root import on the declaring type
-                var importedDeclaringType = this.RootImport(type.DeclaringType);
-                Contract.Assert(importedDeclaringType != null);
-
-                // if the imported declaring type is unchanged, then import the type
-                if (type.DeclaringType.FullName == importedDeclaringType.FullName)
-                {
-                    importedType = this.RootTarget.Module.Import(type);
-                }
-                else
-                {
-                    // if the declaring type was imported, then find the nested type with the same local name as the type being imported
-                    var localType = importedDeclaringType.Resolve().NestedTypes.FirstOrDefault(nestedType => nestedType.Name == type.Name);
-
-                    if (localType == null)
-                    {
-                        throw new InvalidOperationException(string.Format(
-                            "Could not find expected type [{0}] inside of imported declaring type [{1}] for root import of [{2}] to root target [{3}]",
-                            type.Name,
-                            importedDeclaringType.FullName,
-                            type.FullName,
-                            this.RootTarget.FullName));
-                    }
-
-                    importedType = this.RootTarget.Module.Import(localType);
-                }
+                this.TypeCache[type.FullName] = importedType;
             }
 
             Contract.Assert(importedType != null);
             Contract.Assert(!(importedType is IMemberDefinition) || importedType.Module == this.RootTarget.Module);
-            this.TypeCache[type.FullName] = importedType;
             return importedType;
+        }
+
+        private TypeReference RootImportTypeWithinSource(TypeReference type)
+        {
+            Contract.Requires(type != null);
+            Contract.Requires(!type.IsGenericParameter);
+            Contract.Requires(type.FullName == this.RootSource.FullName || type.IsNestedWithin(this.RootSource));
+            Contract.Ensures(Contract.Result<TypeReference>() != null);
+
+            // if the root source type is being imported, then select the root target type
+            if (type.FullName == this.RootSource.FullName) { return this.RootTarget; }
+
+            // because generic types are not supported within mixins, we do not have to worry about generic types or arguments in this method
+
+            // first doing a root import on the declaring type
+            Contract.Assert(type.DeclaringType != null);
+            var importedDeclaringType = this.RootImport(type.DeclaringType);
+            Contract.Assert(importedDeclaringType != null);
+
+            // find the nested type with the same local name as the type being imported
+            var localType = importedDeclaringType.Resolve().NestedTypes.FirstOrDefault(nestedType => nestedType.Name == type.Name);
+
+            if (localType == null)
+            {
+                throw new InvalidOperationException(string.Format(
+                    "Could not find expected type [{0}] inside of imported declaring type [{1}] for root import of [{2}] to root target [{3}]",
+                    type.Name,
+                    importedDeclaringType.FullName,
+                    type.FullName,
+                    this.RootTarget.FullName));
+            }
+
+            return this.RootTarget.Module.Import(localType);
+        }
+
+        private TypeReference RootImportTypeOutsideOfSource(TypeReference type)
+        {
+            Contract.Requires(type != null);
+            Contract.Requires(!type.IsGenericParameter);
+            Contract.Requires(type.FullName != this.RootSource.FullName && !type.IsNestedWithin(this.RootSource));
+            Contract.Ensures(Contract.Result<TypeReference>() != null);
+
+            // because non-mixin types may be closed generic types, we have to make sure that we the type is imported
+            // with the correct generic arguments for an arbitrary list of declaring type ancestors
+            bool isDeclaringTypeReplaced;
+            TypeReference newDeclaringType;
+            if (type.IsAnyAncestorAGenericInstanceWithArgumentsIn(this.RootSource))
+            {
+                isDeclaringTypeReplaced = true;
+                newDeclaringType = this.RootImportTypeOutsideOfSource(type.DeclaringType);
+            }
+            else
+            {
+                isDeclaringTypeReplaced = false;
+                newDeclaringType = null;
+            }
+
+            if (type.IsArray)
+            {
+                Contract.Assert(!isDeclaringTypeReplaced);
+
+                // TODO this seems to work for C#...research whether array importing may need to be more thorough (e.g. dimensions, etc)
+                var arrayType = (ArrayType)type;
+                return new ArrayType(this.RootImport(arrayType.ElementType), arrayType.Rank);
+            }
+            else if (type.IsGenericInstance)
+            {
+                // root import the generic definition and all generic arguments
+                // (I believe that this way of resolving generic instances would break if open generic nested types were allowed)
+                var genericInstanceType = (GenericInstanceType)type;
+                var importedGenericInstanceType = new GenericInstanceType(this.RootTarget.Module.Import(genericInstanceType.ElementType));
+
+                if (isDeclaringTypeReplaced) { importedGenericInstanceType.DeclaringType = newDeclaringType; }
+
+                foreach (var genericArgument in genericInstanceType.GenericArguments)
+                {
+                    importedGenericInstanceType.GenericArguments.Add(this.RootImport(genericArgument));
+                }
+
+                return importedGenericInstanceType;
+            }
+            else
+            {
+                if (isDeclaringTypeReplaced)
+                {
+                    return this.RootTarget.Module.Import(
+                        new TypeReference(type.Namespace, type.Name, type.Module, type.Module)
+                        {
+                            DeclaringType = newDeclaringType,
+                        });
+                }
+                else { return this.RootTarget.Module.Import(type); }
+            }
         }
 
         private Dictionary<string, FieldReference> FieldCache { get; set; }
