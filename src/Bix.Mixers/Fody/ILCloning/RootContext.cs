@@ -60,8 +60,14 @@ namespace Bix.Mixers.Fody.ILCloning
             // check if this is not a nested type
             else if (type.DeclaringType == null)
             {
-                // if this is not a generic instance, then just import the type
-                if (!type.IsGenericInstance) { importedType = this.RootTarget.Module.Import(type); }
+                // if this is not an array or a generic instance, then just import the type
+                if (type.IsArray)
+                {
+                    // TODO array importing may need to be more thorough (e.g. dimensions, etc)
+                    var arrayType = (ArrayType)type;
+                    importedType = new ArrayType(this.RootImport(arrayType.ElementType), arrayType.Rank);
+                }
+                else if (!type.IsGenericInstance) { importedType = this.RootTarget.Module.Import(type); }
                 else
                 {
                     // if this is a generic instance, then root import the generic definition and all generic arguments
