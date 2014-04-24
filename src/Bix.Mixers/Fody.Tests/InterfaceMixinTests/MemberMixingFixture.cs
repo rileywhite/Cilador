@@ -154,10 +154,25 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
             var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget).FullName);
             Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
-            targetType.ValidateMemberCountsAre(1, 0, 0, 0, 0, 64);
+            targetType.ValidateMemberCountsAre(1, 1, 0, 0, 0, 64);
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
             targetType.ValidateMemberSources(typeof(NestedTypesMixin));
+
+            var instanceObject = Activator.CreateInstance(targetType, new object[0]);
+            Assert.That(instanceObject, Is.Not.Null);
+            
+            var getTypesMethod = targetType.GetMethod("GetTypes", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(getTypesMethod, Is.Not.Null);
+            
+            var typesObject = getTypesMethod.Invoke(instanceObject, new object[0]);
+            Assert.That(getTypesMethod, Is.Not.Null);
+            
+            var types = (Type[])typesObject;
+            foreach(var type in types)
+            {
+                Assert.That(type.FullName.StartsWith(typeof(Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget).FullName));
+            }
         }
 
         [Test]

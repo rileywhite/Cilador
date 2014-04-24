@@ -189,5 +189,19 @@ namespace Bix.Mixers.Fody.TestMixins
             [TestMixed(18, NamedArgument = 12)]
             [TestMixed(0, NamedTypeArgument = typeof(TypeCode))]
             List<int> arg5);
+
+        public Type[] GetTypes()
+        {
+            return new Type[]
+            {
+                typeof(NestedTypesMixin),
+                typeof(PublicType),
+                typeof(ReferenceType),
+                typeof(ValueType),
+                typeof(EnumTypeInt),
+                typeof(VoidReturnTypeDelegate),
+                typeof(ReferenceTypeWithInnerTypes.InnerType.InnerInnerType)
+            };
+        }
     }
 }
