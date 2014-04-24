@@ -29,14 +29,14 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         [Pure]
-        public static bool IsAnyAncestorAGenericInstanceWithArgumentsIn(this TypeReference type, TypeDefinition argumentsSearchType)
+        public static bool IsAnyTypeAncestorAGenericInstanceWithArgumentsIn(this MemberReference member, TypeDefinition argumentsSearchType)
         {
-            if (type == null || type.DeclaringType == null)
+            if (member == null || member.DeclaringType == null)
             {
                 return false;
             }
-            else if (type.DeclaringType.IsGenericInstance &&
-                     ((GenericInstanceType)type.DeclaringType).GenericArguments.Any(
+            else if (member.DeclaringType.IsGenericInstance &&
+                     ((GenericInstanceType)member.DeclaringType).GenericArguments.Any(
                         genericArgument => genericArgument.IsNestedWithin(argumentsSearchType)))
             {
                 return true;
@@ -44,8 +44,8 @@ namespace Bix.Mixers.Fody.ILCloning
             else
             {
                 return
-                    type.DeclaringType != null &&
-                    type.DeclaringType.IsAnyAncestorAGenericInstanceWithArgumentsIn(argumentsSearchType);
+                    member.DeclaringType != null &&
+                    member.DeclaringType.IsAnyTypeAncestorAGenericInstanceWithArgumentsIn(argumentsSearchType);
             }
         }
 

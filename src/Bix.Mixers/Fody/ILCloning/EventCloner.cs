@@ -34,21 +34,21 @@ namespace Bix.Mixers.Fody.ILCloning
                     this.Target.AddMethod == null &&
                     method.SignatureEquals(this.SourceWithRoot.Source.AddMethod))
                 {
-                    this.Target.AddMethod = this.SourceWithRoot.RootImport(method).Resolve();
+                    this.Target.AddMethod = method;
                 }
 
                 if (this.SourceWithRoot.Source.RemoveMethod != null &&
                     this.Target.RemoveMethod == null &&
                     method.SignatureEquals(this.SourceWithRoot.Source.RemoveMethod))
                 {
-                    this.Target.RemoveMethod = this.SourceWithRoot.RootImport(method).Resolve();
+                    this.Target.RemoveMethod = method;
                 }
 
                 if (this.SourceWithRoot.Source.InvokeMethod != null &&
                     this.Target.InvokeMethod == null &&
                     method.SignatureEquals(this.SourceWithRoot.Source.InvokeMethod))
                 {
-                    this.Target.InvokeMethod = this.SourceWithRoot.RootImport(method).Resolve();
+                    this.Target.InvokeMethod = method;
                 }
 
                 for (int i = 0; i < this.SourceWithRoot.Source.OtherMethods.Count; i++)
@@ -57,7 +57,7 @@ namespace Bix.Mixers.Fody.ILCloning
                         this.Target.OtherMethods[i] == null &&
                         method.SignatureEquals(this.SourceWithRoot.Source.OtherMethods[i]))
                     {
-                        this.Target.OtherMethods[i] = this.SourceWithRoot.RootImport(method).Resolve();
+                        this.Target.OtherMethods[i] = method;
                     }
                 }
             }
