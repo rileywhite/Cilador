@@ -1,6 +1,5 @@
 ﻿/***************************************************************************/
-// AssemblyInfo.cs
-// Copyright 2014 Riley White
+// Copyright 2013-2014 Riley White
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 /***************************************************************************/
+
 
 using System.Reflection;
 using System.Runtime.CompilerServices;

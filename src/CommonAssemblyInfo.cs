@@ -1,6 +1,5 @@
 ﻿/***************************************************************************/
-// CommonAssemblyInfo.cs
-// Copyright 2014 Riley White
+// Copyright 2013-2014 Riley White
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +18,7 @@ using System.Reflection;
 
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Bix.Mixers.Fody")]
-[assembly: AssemblyCopyright("Copyright © Riley White 2014")]
+[assembly: AssemblyCopyright("Copyright © Riley White 2013-2014")]
 [assembly: AssemblyVersion(CommonAssemblyInfo.Version)]
 [assembly: AssemblyFileVersion(CommonAssemblyInfo.Version)]
 
