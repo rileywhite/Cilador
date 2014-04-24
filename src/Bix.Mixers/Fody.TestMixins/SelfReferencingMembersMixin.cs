@@ -255,6 +255,64 @@ namespace Bix.Mixers.Fody.TestMixins
             toStringHolder = stuff[0].Values.First().First().ToString();
         }
 
+        public void ReferenceAllTypesInClosedGenericVariables()
+        {
+#pragma warning disable 219
+            Tuple<IInnerInterface, InnerEventArgs, InnerDelegate> tuple =
+                new Tuple<IInnerInterface, InnerEventArgs, InnerDelegate>(new InnerImplementingClass(), new InnerEventArgs(), Console.WriteLine);
+            List<InnerEnum> innerEnums = new List<InnerEnum>();
+            InnerStruct[] innerStructs = new InnerStruct[10];
+            Lazy<InnerStruct.InnerStructInnerEnum> innerStructInnerEnum = new Lazy<InnerStruct.InnerStructInnerEnum>();
+            IEnumerable<InnerStruct.IInnerStructInnerInterface> innerStructInnerInterface = new List<InnerStruct.IInnerStructInnerInterface>();
+            Dictionary<InnerStruct.InnerStructInnerStruct, InnerStruct.InnerStructInnerClass> innerStructInnerClassByInnerStructInnerStruct =
+                new Dictionary<InnerStruct.InnerStructInnerStruct, InnerStruct.InnerStructInnerClass>();
+            Func<InnerAbstractClass, InnerAbstractClass.InnerAbstractClassInnerEnum, InnerAbstractClass.IInnerAbstractClassInnerInterface> getInnerAbstractClass =
+                (InnerAbstractClass @class, InnerAbstractClass.InnerAbstractClassInnerEnum @enum) => new InnerImplementingClass();
+            List<Dictionary<InnerAbstractClass.InnerAbstractClassStruct, IEnumerable<InnerImplementingClass[]>>> stuff =
+                new List<Dictionary<InnerAbstractClass.InnerAbstractClassStruct, IEnumerable<InnerImplementingClass[]>>>();
+#pragma warning restore 219
+        }
+
+        public void ReferenceAllTypesInClosedGenericVariablesWithReferences()
+        {
+            Tuple<IInnerInterface, InnerEventArgs, InnerDelegate> tuple =
+                new Tuple<IInnerInterface, InnerEventArgs, InnerDelegate>(new InnerImplementingClass(), new InnerEventArgs(), Console.WriteLine);
+            List<InnerEnum> innerEnums = new List<InnerEnum>();
+            InnerStruct[] innerStructs = new InnerStruct[10];
+            Lazy<InnerStruct.InnerStructInnerEnum> innerStructInnerEnum = new Lazy<InnerStruct.InnerStructInnerEnum>();
+            IEnumerable<InnerStruct.IInnerStructInnerInterface> innerStructInnerInterface = new List<InnerStruct.IInnerStructInnerInterface>();
+            Dictionary<InnerStruct.InnerStructInnerStruct, InnerStruct.InnerStructInnerClass> innerStructInnerClassByInnerStructInnerStruct =
+                new Dictionary<InnerStruct.InnerStructInnerStruct,InnerStruct.InnerStructInnerClass>();
+            Func<InnerAbstractClass, InnerAbstractClass.InnerAbstractClassInnerEnum, InnerAbstractClass.IInnerAbstractClassInnerInterface> getInnerAbstractClass =
+                (InnerAbstractClass @class, InnerAbstractClass.InnerAbstractClassInnerEnum @enum) => new InnerImplementingClass();
+            List<Dictionary<InnerAbstractClass.InnerAbstractClassStruct, IEnumerable<InnerImplementingClass[]>>> stuff =
+                new List<Dictionary<InnerAbstractClass.InnerAbstractClassStruct,IEnumerable<InnerImplementingClass[]>>>();
+
+            string toStringHolder;
+
+            toStringHolder = tuple.ToString();
+            toStringHolder = tuple.Item1.ToString();
+            toStringHolder = tuple.Item2.ToString();
+            toStringHolder = tuple.Item3.ToString();
+            toStringHolder = innerEnums.ToString();
+            toStringHolder = innerEnums.First().ToString();
+            toStringHolder = innerStructs.ToString();
+            toStringHolder = innerStructs[0].ToString();
+            toStringHolder = innerStructInnerEnum.ToString();
+            toStringHolder = innerStructInnerEnum.Value.ToString();
+            toStringHolder = innerStructInnerInterface.ToString();
+            toStringHolder = innerStructInnerInterface.ToString();
+            toStringHolder = innerStructInnerClassByInnerStructInnerStruct.ToString();
+            toStringHolder = innerStructInnerClassByInnerStructInnerStruct.Keys.First().ToString();
+            toStringHolder = innerStructInnerClassByInnerStructInnerStruct.Values.First().ToString();
+            toStringHolder = getInnerAbstractClass.ToString();
+            toStringHolder = stuff.ToString();
+            toStringHolder = stuff[0].ToString();
+            toStringHolder = stuff[0].Keys.First().ToString();
+            toStringHolder = stuff[0].Values.First().ToString();
+            toStringHolder = stuff[0].Values.First().First().ToString();
+        }
+
         public void CallGenericMethodsOnGenericClosedType(List<int> ints, List<IInnerInterface> innerInterfaces)
         {
             ints.ConvertAll<InnerStruct>(new Converter<int,InnerStruct>(i => new InnerStruct()));
