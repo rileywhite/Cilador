@@ -260,7 +260,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Assert(!method.IsAnyTypeAncestorAGenericInstanceWithArgumentsIn(this.RootSource));
 
             // find the local method with a matching signature
-            var localMethod = importedDeclaringType.Resolve().Methods.FirstOrDefault(possibleMethod => method.SignatureEquals(possibleMethod));
+            var localMethod = importedDeclaringType.Resolve().Methods.FirstOrDefault(possibleMethod => possibleMethod.SignatureEquals(method, this));
 
             if (localMethod == null)
             {
@@ -285,7 +285,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
             // find the local method with a matching signature
             var resolvedMethod = method.Resolve();
-            var localMethod = importedDeclaringType.Resolve().Methods.FirstOrDefault(possibleMethod => resolvedMethod.SignatureEquals(possibleMethod));
+            var localMethod = importedDeclaringType.Resolve().Methods.FirstOrDefault(possibleMethod => possibleMethod.SignatureEquals(resolvedMethod, this));
 
             // if this is not a generic instance, then just import the method
             if (method.IsGenericInstance)

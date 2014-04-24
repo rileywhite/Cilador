@@ -50,11 +50,13 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         [Pure]
-        public static bool SignatureEquals(this MethodReference left, MethodReference right)
+        public static bool SignatureEquals(this MethodReference target, MethodReference source, IRootImportProvider rootImporter)
         {
-            if (left == null || right == null) { return left == null && right == null; }
+            Contract.Requires(rootImporter != null);
 
-            return left.FullName.Replace(left.DeclaringType.FullName, right.DeclaringType.FullName) == right.FullName;
+            if (target == null || source == null) { return target == null && source == null; }
+
+            return target.FullName.Replace(rootImporter.RootTarget.FullName, rootImporter.RootSource.FullName) == source.FullName;
         }
 
         [Pure]

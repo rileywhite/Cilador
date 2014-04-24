@@ -48,14 +48,14 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 if (this.SourceWithRoot.Source.GetMethod != null &&
                     this.Target.GetMethod == null &&
-                    method.SignatureEquals(this.SourceWithRoot.Source.GetMethod))
+                    method.SignatureEquals(this.SourceWithRoot.Source.GetMethod, this.SourceWithRoot.RootContext))
                 {
                     this.Target.GetMethod = method;
                 }
 
                 if (this.SourceWithRoot.Source.SetMethod != null &&
                     this.Target.SetMethod == null &&
-                    method.SignatureEquals(this.SourceWithRoot.Source.SetMethod))
+                    method.SignatureEquals(this.SourceWithRoot.Source.SetMethod, this.SourceWithRoot.RootContext))
                 {
                     this.Target.SetMethod = method;
                 }
@@ -64,7 +64,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 {
                     if (this.Target.OtherMethods[i] != null &&
                         this.Target.OtherMethods[i] == null &&
-                        method.SignatureEquals(this.SourceWithRoot.Source.OtherMethods[i]))
+                        method.SignatureEquals(this.SourceWithRoot.Source.OtherMethods[i], this.SourceWithRoot.RootContext))
                     {
                         this.Target.OtherMethods[i] = method;
                     }

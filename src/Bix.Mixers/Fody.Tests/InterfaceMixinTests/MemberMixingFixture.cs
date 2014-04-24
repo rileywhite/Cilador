@@ -183,7 +183,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
             var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget).FullName);
             Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
-            targetType.ValidateMemberCountsAre(1, 19, 7, 1, 1, 7);  // lambda expressions cause methods and fields to be added by the compiler
+            targetType.ValidateMemberCountsAre(1, 27, 10, 2, 2, 8);  // lambda expressions cause methods and fields to be added by the compiler
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
             targetType.ValidateMemberSources(typeof(SelfReferencingMembersMixin));
