@@ -215,13 +215,6 @@ namespace Bix.Mixers.Fody.ILCloning
             return importedField;
         }
 
-        public PropertyReference RootImport(PropertyReference property)
-        {
-            if (property == null) { return null; }
-            // TODO root importing of property
-            throw new NotImplementedException("Implement root importing of property when needed");
-        }
-
         private Dictionary<string, MethodReference> MethodCache { get; set; }
 
         public MethodReference RootImport(MethodReference method)
@@ -323,13 +316,6 @@ namespace Bix.Mixers.Fody.ILCloning
 
                 return importedMethod;
             }
-        }
-
-        public EventReference RootImport(EventReference @event)
-        {
-            if (@event == null) { return null; }
-            // TODO root import of event
-            throw new NotImplementedException("Implement root import of event when needed");
         }
     }
 }

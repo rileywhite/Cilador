@@ -50,19 +50,9 @@ namespace Bix.Mixers.Fody.ILCloning
             return this.RootContext.RootImport(sourceField);
         }
 
-        public PropertyReference RootImport(PropertyReference sourceProperty)
-        {
-            return this.RootContext.RootImport(sourceProperty);
-        }
-
         public MethodReference RootImport(MethodReference sourceMethod)
         {
             return this.RootContext.RootImport(sourceMethod);
-        }
-
-        public EventReference RootImport(EventReference sourceEvent)
-        {
-            return this.RootContext.RootImport(sourceEvent);
         }
     }
 }

@@ -21,10 +21,6 @@ namespace Bix.Mixers.Fody.ILCloning
 
         FieldReference RootImport(FieldReference field);
 
-        PropertyReference RootImport(PropertyReference property);
-
         MethodReference RootImport(MethodReference method);
-
-        EventReference RootImport(EventReference @event);
     }
 }

@@ -47,21 +47,9 @@ namespace Bix.Mixers.Fody.ILCloning
             throw new NotSupportedException();
         }
 
-        public PropertyReference RootImport(PropertyReference property)
-        {
-            Contract.Ensures(property == null || Contract.Result<PropertyReference>() != null);
-            throw new NotSupportedException();
-        }
-
         public MethodReference RootImport(MethodReference method)
         {
             Contract.Ensures(method == null || Contract.Result<MethodReference>() != null);
-            throw new NotSupportedException();
-        }
-
-        public EventReference RootImport(EventReference @event)
-        {
-            Contract.Ensures(@event == null || Contract.Result<EventReference>() != null);
             throw new NotSupportedException();
         }
     }
