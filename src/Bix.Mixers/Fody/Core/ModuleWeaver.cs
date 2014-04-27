@@ -30,21 +30,38 @@ using System.Xml.Serialization;
 
 namespace Bix.Mixers.Fody.Core
 {
+    /// <summary>
+    /// The <see cref="ModuleWeaver.Execute()"/> method is invoked by Fody as a Visual
+    /// Studio post-build step. This type serves to start the weaving process and to manage
+    /// the configuration of the Fody weaver. It is also passed around as needed to other types
+    /// in the aspect of a <see cref="IWeavingContext"/>.
+    /// </summary>
     public class ModuleWeaver : IDisposable, IPartImportsSatisfiedNotification, IWeavingContext
     {
         #region Construction and Disposal
 
+        /// <summary>
+        /// Finalizer to release resources used by the <see cref="ModuleWeaver"/>
+        /// </summary>
         ~ModuleWeaver()
         {
             this.Dispose(false);
         }
 
+        /// <summary>
+        /// Releases resources used by the <see cref="ModuleWeaver"/> in a
+        /// deterministic manner
+        /// </summary>
         public void Dispose()
         {
             this.Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Releases resources used by the <see cref="ModuleWeaver"/>
+        /// </summary>
+        /// <param name="isDisposing"><c>true</c> if this is being called explicitly through <see cref="Dispose()"/>, else <c>false</c> if being called by the finalizer during garbage collection.</param>
         protected void Dispose(bool isDisposing)
         {
             if (isDisposing)
@@ -58,8 +75,17 @@ namespace Bix.Mixers.Fody.Core
 
         #endregion
 
-        private CompositionContainer container;
+        #region MEF Management
+
+        /// <summary>
+        /// Handles locking for MEF lookup
+        /// </summary>
         private object containerLock = new object();
+
+        private CompositionContainer container;
+        /// <summary>
+        /// Gets the Microsoft Extensibility Framework container used by this object
+        /// </summary>
         private CompositionContainer Container
         {
             get
@@ -71,7 +97,6 @@ namespace Bix.Mixers.Fody.Core
                         var catalog = new AggregateCatalog();
 
                         catalog.Catalogs.Add(new AssemblyCatalog(this.GetType().Assembly));
-                        //catalog.Catalogs.Add(new DirectoryCatalog(AppDomain.CurrentDomain.BaseDirectory));
 
                         this.container = new CompositionContainer(catalog);
                     }
@@ -80,6 +105,14 @@ namespace Bix.Mixers.Fody.Core
             }
         }
 
+        #endregion
+
+        #region Configuration Handling
+
+        /// <summary>
+        /// Called by MEF when a part's imports have been satisfied and it is safe to use.
+        /// For this type, it rebuilds some configuration information based on the imported mix commands.
+        /// </summary>
         void IPartImportsSatisfiedNotification.OnImportsSatisfied()
         {
             Contract.Assert(this.BixMixersConfig != null);
@@ -100,10 +133,17 @@ namespace Bix.Mixers.Fody.Core
             }
         }
 
+        /// <summary>
+        /// Gets or sets the collection of mix commands found in the MEF container catalogs.
+        /// </summary>
         [ImportMany(typeof(IMixCommand), AllowRecomposition = true)]
         private IEnumerable<Lazy<IMixCommand, IMixCommandData>> MixCommands { get; set; }
 
         private XElement config;
+        /// <summary>
+        /// Gets or sets the configuration element from FodyWeavers.xml.
+        /// </summary>
+        /// <remarks>When run as a Fody addin withing Visual Studio, Fody sets this value.</remarks>
         public XElement Config
         {
             get { return this.config; }
@@ -122,6 +162,54 @@ namespace Bix.Mixers.Fody.Core
             }
         }
 
+        /// <summary>
+        /// Gets or sets the contants defined by the build
+        /// </summary>
+        /// <remarks>When run as a Fody addin withing Visual Studio, Fody sets this value.</remarks>
+        public List<string> DefineConstants { get; set; }
+
+        /// <summary>
+        /// Gets the contants defined by the build
+        /// </summary>
+        IReadOnlyCollection<string> IWeavingContext.DefineConstants
+        {
+            get { return this.DefineConstants; }
+        }
+
+        /// <summary>
+        /// Gets or sets the path of the target assembly file.
+        /// </summary>
+        /// <remarks>When run as a Fody addin withing Visual Studio, Fody sets this value.</remarks>
+        public string AssemblyFilePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path for the target assembly's project file
+        /// </summary>
+        /// <remarks>When run as a Fody addin withing Visual Studio, Fody sets this value.</remarks>
+        public string ProjectDirectoryPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path to the Bix.Mixers.Fody addin assembly
+        /// </summary>
+        /// <remarks>When run as a Fody addin withing Visual Studio, Fody sets this value.</remarks>
+        public string AddinDirectoryPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path to the target assembly's solution file
+        /// </summary>
+        /// <remarks>When run as a Fody addin withing Visual Studio, Fody sets this value.</remarks>
+        public string SolutionDirectoryPath { get; set; }
+
+        /// <summary>
+        /// Deserializes a <see cref="BixMixersConfigType"/> from within a config.
+        /// <see cref="XElement"/>
+        /// </summary>
+        /// <remarks>
+        /// The configuration type, <see cref="BixMixersConfigType"/>, is primarily generated
+        /// from MixCommandConfig.xsd.
+        /// </remarks>
+        /// <param name="config">Item that contains the serialized config element.</param>
+        /// <returns>Deserialized configurtion object</returns>
         public static BixMixersConfigType ReadBixMixersConfig(XElement config)
         {
             Contract.Requires(config != null);
@@ -155,95 +243,191 @@ namespace Bix.Mixers.Fody.Core
             return deserializedConfig;
         }
 
+        /// <summary>
+        /// Gets or sets the strongly typed Bix mixers configuration object.
+        /// </summary>
         public BixMixersConfigType BixMixersConfig { get; private set; }
-        
+
+        #endregion
+
+        #region Logging
+
+        /// <summary>
+        /// Gets or sets the logger that displays debug-level output.
+        /// </summary>
+        /// <remarks>When run as a Fody addin withing Visual Studio, Fody sets this value.</remarks>
         public Action<string> LogDebug { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the logger that displays info-level output. In Visual
+        /// Studio, logged items appear in the "Error List" as Message items.
+        /// </summary>
+        /// <remarks>When run as a Fody addin withing Visual Studio, Fody sets this value.</remarks>
         public Action<string> LogInfo { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the logger that displays warning-level output. In Visual
+        /// Studio, logged items appear in the "Error List" as Warning items.
+        /// </summary>
+        /// <remarks>When run as a Fody addin withing Visual Studio, Fody sets this value.</remarks>
         public Action<string> LogWarning { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the logger that displays warning-level output for a given
+        /// CIL instruction's sequence point. In Visual
+        /// Studio, logged items appear in the "Error List" as Warning items.
+        /// </summary>
+        /// <remarks>When run as a Fody addin withing Visual Studio, Fody sets this value.</remarks>
         public Action<string, SequencePoint> LogWarningPoint { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the logger that displays error-level output. In Visual
+        /// Studio, logged items appear in the "Error List" as Error items.
+        /// </summary>
+        /// <remarks>When run as a Fody addin withing Visual Studio, Fody sets this value.</remarks>
         public Action<string> LogError { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the logger that displays error-level output for a given
+        /// CIL instruction's sequence point. In Visual
+        /// Studio, logged items appear in the "Error List" as Error items.
+        /// </summary>
+        /// <remarks>When run as a Fody addin withing Visual Studio, Fody sets this value.</remarks>
         public Action<string, SequencePoint> LogErrorPoint { get; set; }
-        
+
+        #endregion
+
+        #region Assembly Data
+
+        /// <summary>
+        /// Gets or sets the object that can find and load assemblies.
+        /// </summary>
+        /// <remarks>When run as a Fody addin withing Visual Studio, Fody sets this value.</remarks>
         public IAssemblyResolver AssemblyResolver { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the <see cref="ModuleDefinition"/> for the target assembly.
+        /// </summary>
+        /// <remarks>When run as a Fody addin withing Visual Studio, Fody sets this value.</remarks>
         public ModuleDefinition ModuleDefinition { get; set; }
 
-        public List<string> DefineConstants { get; set; }
+        #endregion
 
-        IReadOnlyCollection<string> IWeavingContext.DefineConstants
-        {
-            get { return this.DefineConstants; }
-        }
-        
-        public string AssemblyFilePath { get; set; }
-        
-        public string ProjectDirectoryPath { get; set; }
-        
-        public string AddinDirectoryPath { get; set; }
-        
-        public string SolutionDirectoryPath { get; set; }
+        #region Execution
 
+        /// <summary>
+        /// Executes the Bix.Mixers code weaving logic.
+        /// </summary>
+        /// <remarks>When run as a Fody addin withing Visual Studio, Fody invokes this method after setting all configuration data.</remarks>
         public void Execute()
         {
+            foreach(var mixCommandAttributesByTargetType in ExtractMixCommandAttributesByTargetTypes())
+            {
+                Contract.Assert(mixCommandAttributesByTargetType.Key != null);
+                Contract.Assert(mixCommandAttributesByTargetType.Value != null);
+                Contract.Assert(!mixCommandAttributesByTargetType.Value.Any(customAttribute => customAttribute == null));
+
+                this.FindAndInvokeMixCommands(mixCommandAttributesByTargetType.Key, mixCommandAttributesByTargetType.Value);
+            }
+        }
+
+        /// <summary>
+        /// Looks at all types within the target assembly, and collects any that are annotated with mix command attributes.
+        /// Mix command attributes are removed from types as they are gathered.
+        /// </summary>
+        /// <returns>Collection keyed by types the are annotated with at least one mix command attribute. Values are the collection of mix commands on the key item.</returns>
+        private Dictionary<TypeDefinition, List<CustomAttribute>> ExtractMixCommandAttributesByTargetTypes()
+        {
+            Contract.Ensures(!Contract.Result<Dictionary<TypeDefinition, List<CustomAttribute>>>().Keys.Any(type => type == null));
+            Contract.Ensures(!Contract.Result<Dictionary<TypeDefinition, List<CustomAttribute>>>().Values.Any(
+                customAttributes => customAttributes == null || customAttributes.Any(customAttribute => customAttribute == null)));
+
             var mixCommandAttributeInterfaceType = this.ModuleDefinition.Import(typeof(IMixCommandAttribute)).Resolve();
 
-            var mixMap = new Dictionary<TypeDefinition, List<CustomAttribute>>();
+            Dictionary<TypeDefinition, List<CustomAttribute>> mixCommandAttributesByTargetTypes;
+            mixCommandAttributesByTargetTypes = new Dictionary<TypeDefinition, List<CustomAttribute>>();
             foreach (var type in this.ModuleDefinition.Types)
             {
-                foreach(var attribute in type.CustomAttributes)
+                Contract.Assert(type != null);
+                Contract.Assert(type.CustomAttributes != null);
+
+                for (var i = type.CustomAttributes.Count - 1; i >= 0; i--)
                 {
+                    var attribute = type.CustomAttributes[i];
+                    Contract.Assert(attribute != null);
                     var attributeTypeDefinition = attribute.AttributeType.Resolve();
+                    Contract.Assert(attributeTypeDefinition != null);
 
                     foreach (var attributeInterfaceType in attributeTypeDefinition.Interfaces)
                     {
-                        if(attributeInterfaceType.Resolve() == mixCommandAttributeInterfaceType)
+                        if (attributeInterfaceType.Resolve() == mixCommandAttributeInterfaceType)
                         {
                             List<CustomAttribute> mixAttributesForType;
-                            if(!mixMap.TryGetValue(type.Resolve(), out mixAttributesForType))
+                            if (!mixCommandAttributesByTargetTypes.TryGetValue(type.Resolve(), out mixAttributesForType))
                             {
                                 mixAttributesForType = new List<CustomAttribute>();
-                                mixMap[type.Resolve()] = mixAttributesForType;
+                                mixCommandAttributesByTargetTypes[type.Resolve()] = mixAttributesForType;
                             }
 
                             mixAttributesForType.Add(attribute);
+                            type.CustomAttributes.RemoveAt(i);
 
                             continue;
                         }
                     }
                 }
             }
+            return mixCommandAttributesByTargetTypes;
+        }
 
-            foreach(var mixes in mixMap)
+        /// <summary>
+        /// Looks up commands indicated by mix commands attributes thorugh configuration, and then
+        /// executes each command.
+        /// </summary>
+        /// <param name="targetType">Type which will be modified by mix commands</param>
+        /// <param name="mixCommandAttributes">Collection of mix command attributes which indicate mix commands that will be applied the <paramref name="targetType"/></param>
+        private void FindAndInvokeMixCommands(
+            TypeDefinition targetType,
+            List<CustomAttribute> mixCommandAttributes)
+        {
+            Contract.Requires(targetType != null);
+            Contract.Requires(mixCommandAttributes != null);
+            Contract.Requires(!mixCommandAttributes.Any(customAttribute => customAttribute == null));
+
+            foreach (var mixCommandAttribute in mixCommandAttributes)
             {
-                var mixedType = mixes.Key;
-                Contract.Assert(mixedType != null);
-
-                foreach (var commandAttribute in mixes.Value)
-                {
-                    mixedType.CustomAttributes.Remove(commandAttribute);
-                }
-
-
-                foreach(var commandAttribute in mixes.Value)
-                {
-                    var commandAttributeType = commandAttribute.AttributeType.Resolve();
-                    var mixCommand = this.MixCommands.FirstOrDefault(
-                        command => this.ModuleDefinition.Import(command.Metadata.AttributeType).Resolve() == commandAttributeType && command.Value.IsInitialized);
-
-                    if(mixCommand == null)
-                    {
-                        throw new InvalidOperationException(
-                            string.Format("Cannot find a configured mix command for type [{0}] and command [{1}]", mixedType.FullName, commandAttributeType.FullName));
-                    }
-
-                    mixCommand.Value.Mix(this, mixedType, commandAttribute);
-                }
+                this.GetMixCommandFor(targetType, mixCommandAttribute).Mix(this, targetType, mixCommandAttribute);
             }
         }
+
+        /// <summary>
+        /// Finds the mix command that corresponds to a given mix command attribute for a type
+        /// </summary>
+        /// <param name="targetType">Type that is the target for the command</param>
+        /// <param name="mixCommandAttribute">Attribute to find command for</param>
+        /// <returns>Mix command that corresponds to the given attribute</returns>
+        /// <exception cref="InvalidOperationException">No mix command is found that corresponds to the <paramref name="mixCommandAttribute"/></exception>
+        private IMixCommand GetMixCommandFor(TypeDefinition targetType, CustomAttribute mixCommandAttribute)
+        {
+            Contract.Requires(targetType != null);
+            Contract.Requires(mixCommandAttribute != null);
+            Contract.Ensures(Contract.Result<IMixCommand>() != null);
+
+            var mixCommandAttributeType = mixCommandAttribute.AttributeType.Resolve();
+            try
+            {
+                return this.MixCommands.First(command =>
+                    this.ModuleDefinition.Import(command.Metadata.AttributeType).Resolve() == mixCommandAttributeType &&
+                    command.Value.IsInitialized).Value;
+            }
+            catch(Exception e)
+            {
+                throw new InvalidOperationException(
+                    string.Format("Cannot find a configured mix command for type [{0}] and command [{1}]", targetType.FullName, mixCommandAttributeType.FullName),
+                    e);
+            }
+        }
+
+        #endregion
     }
 }
