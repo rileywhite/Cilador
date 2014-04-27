@@ -25,14 +25,25 @@ using System.Xml.Linq;
 
 namespace Bix.Mixers.Fody.Core
 {
+    /// <summary>
+    /// Contracts for <see cref="IMixCommand"/> implementations.
+    /// </summary>
     [ContractClassFor(typeof(IMixCommand))]
     internal abstract class IMixCommandContract : IMixCommand
     {
+        /// <summary>
+        /// Contracts for <see cref="IMixCommand.IsInitialized"/>
+        /// </summary>
         public bool IsInitialized
         {
             get { throw new NotSupportedException(); }
         }
 
+        /// <summary>
+        /// Contracts for <see cref="IMixCommand.Initialize"/>
+        /// </summary>
+        /// <param name="weavingContext">Context data for command initialization.</param>
+        /// <param name="config">Configuration data for the command. Commands may require particular types for this argument that are subtypes of <see cref="MixCommandConfigTypeBase"/></param>
         public void Initialize(IWeavingContext weavingContext, MixCommandConfigTypeBase config)
         {
             Contract.Requires(weavingContext != null);
@@ -43,6 +54,12 @@ namespace Bix.Mixers.Fody.Core
             throw new NotSupportedException();
         }
 
+        /// <summary>
+        /// Contracts for <see cref="IMixCommand.Mix"/>
+        /// </summary>
+        /// <param name="weavingContext">Context data for mixing.</param>
+        /// <param name="target">The type to which the mix action will be applied/</param>
+        /// <param name="mixCommandAttribute">Attribute that may contain arguments for the mix command invocation.</param>
         public void Mix(IWeavingContext weavingContext, TypeDefinition target, CustomAttribute mixCommandAttribute)
         {
             Contract.Requires(weavingContext != null);

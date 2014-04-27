@@ -43,6 +43,7 @@
     <Compile Include="..\..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="InterfaceIsAlreadyImplementedTarget.cs" />
     <Compile Include="EmptyInterfaceTarget.cs" />
     <Compile Include="IncorrectTargetSpecifyingClassInsteadOfInterface.cs" />
     <Compile Include="InterfaceForImplicitExplicitTestingTarget.cs" />

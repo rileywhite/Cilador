@@ -50,6 +50,7 @@
     <Compile Include="GenericMethodMixin.cs" />
     <Compile Include="IncorrectMixinSpecifyingClassInsteadOfInterface.cs" />
     <Compile Include="InheritingMixin.cs" />
+    <Compile Include="InterfaceIsAlreadyImplementedMixin.cs" />
     <Compile Include="InterfacelessMixin.cs" />
     <Compile Include="OpenGenericNestedTypeMixin.cs" />
     <Compile Include="SecurityDeclarationOnMethodMixin.cs" />

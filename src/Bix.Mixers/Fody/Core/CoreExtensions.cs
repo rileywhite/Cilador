@@ -30,13 +30,28 @@ using System.Xml.Serialization;
 
 namespace Bix.Mixers.Fody.Core
 {
+    /// <summary>
+    /// Extension methods closely associated with funcitonality in <see cref="Bix.Mixers.Fody.Core"/>.
+    /// </summary>
     public static class CoreExtensions
     {
+        /// <summary>
+        /// Desrializes an object into the given type.
+        /// </summary>
+        /// <typeparam name="T">Type to deserialize</typeparam>
+        /// <param name="xElement">XML element from which to deserialize</param>
+        /// <returns>Deserialized element</returns>
         public static T FromXElement<T>(this XElement xElement)
         {
             return (T)xElement.FromXElement(typeof(T));
         }
 
+        /// <summary>
+        /// Desrializes an object into the given type.
+        /// </summary>
+        /// <param name="xElement">XML element from which to deserialize</param>
+        /// <param name="objectType">Type to deserialize</param>
+        /// <returns>Deserialized element</returns>
         public static object FromXElement(this XElement xElement, Type objectType)
         {
             Contract.Requires(objectType != null);
@@ -48,6 +63,12 @@ namespace Bix.Mixers.Fody.Core
             }
         }
 
+        /// <summary>
+        /// Gets the resolved <see cref="TypeDefinition"/> for a given <see cref="Type"/>.
+        /// </summary>
+        /// <param name="weavingContext">Context to use when resolving type information.</param>
+        /// <param name="type">Type to resolve.</param>
+        /// <returns>Resolved type.</returns>
         public static TypeDefinition GetTypeDefinition(this IWeavingContext weavingContext, Type type)
         {
             Contract.Requires(weavingContext != null);
@@ -69,6 +90,12 @@ namespace Bix.Mixers.Fody.Core
             return typeDefinition;
         }
 
+        /// <summary>
+        /// Gets the resolved <see cref="TypeDefinition"/> for a given assembly qualified type name.
+        /// </summary>
+        /// <param name="weavingContext">Context to use when resolving type information.</param>
+        /// <param name="assemblyQualifiedTypeName">Assembly qualified name of the type to resolve.</param>
+        /// <returns>Resolved type.</returns>
         public static TypeDefinition GetTypeDefinition(this IWeavingContext weavingContext, string assemblyQualifiedTypeName)
         {
             Contract.Requires(weavingContext != null);

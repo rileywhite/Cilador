@@ -26,8 +26,22 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.InterfaceMixins
 {
+    /// <summary>
+    /// This is a method object for a single execution of <see cref="InterfaceMixinCommand"/>.
+    /// </summary>
     internal class InterfaceMixinCommandMixer
     {
+        /// <summary>
+        /// Creates a new <see cref="InterfaceMixinCommandMixer"/>.
+        /// </summary>
+        /// <param name="interfaceType">Interface which will be added to the <paramref name="target"/>.</param>
+        /// <param name="mixinType">Type whose implementation will be cloned into the <paramref name="target"/>.</param>
+        /// <param name="target">Type which will be modified by this command invocation.</param>
+        /// <exception cref="WeavingException">
+        /// Thrown if <paramref name="interfaceType"/> is not an interface, if <paramref name="mixinType"/> implements
+        /// does not implement <paramref name="interfaceType"/>, or if <paramref name="mixinType"/> implements any interface
+        /// other than <paramref name="interfaceType"/>.
+        /// </exception>
         public InterfaceMixinCommandMixer(TypeDefinition interfaceType, TypeDefinition mixinType, TypeDefinition target)
         {
             Contract.Requires(interfaceType != null);
@@ -38,11 +52,9 @@ namespace Bix.Mixers.Fody.InterfaceMixins
             Contract.Requires(!target.IsPrimitive);
 
             Contract.Ensures(this.InterfaceType != null);
-            Contract.Ensures(this.MixinType != null);
             Contract.Ensures(this.Target != null);
             Contract.Ensures(this.Target.IsClass);
-            Contract.Ensures(this.TargetModule != null);
-            Contract.Ensures(this.Source != null);
+            Contract.Ensures(this.MixinTypeSourceWithRoot != null);
 
             if (!interfaceType.IsInterface)
             {
@@ -65,43 +77,38 @@ namespace Bix.Mixers.Fody.InterfaceMixins
                     interfaceType.FullName));
             }
 
+            if (target.Interfaces.Any(@interface => @interface.Resolve().FullName == interfaceType.FullName))
+            {
+                throw new WeavingException(string.Format(
+                    "Target type [{0}] already implements interface to be mixed [{1}]",
+                    target.FullName,
+                    interfaceType.FullName));
+            }
+
             this.InterfaceType = interfaceType;
-            this.MixinType = mixinType;
-            this.Source = TypeSourceWithRoot.CreateWithRootSourceAndTarget(mixinType, target);
-            this.TargetModule = target.Module;
+            this.MixinTypeSourceWithRoot = TypeSourceWithRoot.CreateWithRootSourceAndTarget(mixinType, target);
             this.Target = target;
         }
 
+        /// <summary>
+        /// Gets or sets the interface which will be added to the <see cref="Target"/>.
+        /// </summary>
         public TypeDefinition InterfaceType { get; private set; }
 
-        public TypeDefinition MixinType { get; private set; }
+        /// <summary>
+        /// Gets or sets the mixin type with root information that will be used by the IL cloning code.
+        /// </summary>
+        private TypeSourceWithRoot MixinTypeSourceWithRoot { get; set; }
 
-        private TypeSourceWithRoot Source { get; set; }
-
-        private ModuleDefinition TargetModule { get; set; }
-
-        private TypeDefinition target;
-        public TypeDefinition Target
-        {
-            get { return this.target; }
-            private set
-            {
-                Contract.Requires(value != null);
-                Contract.Ensures(this.Target != null);
-
-                if (value.Interfaces.Any(@interface => @interface.Resolve() == this.Source.Source))
-                {
-                    throw new ArgumentException("Cannot set a target type that already implements the interface to be mixed", "value");
-                }
-
-                this.target = value;
-            }
-        }
+        /// <summary>
+        /// Gets or sets the target type which will be modified by the command execution.
+        /// </summary>
+        public TypeDefinition Target { get; private set; }
 
         public void Execute()
         {
-            this.Target.Interfaces.Add(this.TargetModule.Import(this.InterfaceType));
-            var typeCloner = new TypeCloner(this.Target, this.Source);
+            this.Target.Interfaces.Add(this.Target.Module.Import(this.InterfaceType));
+            var typeCloner = new TypeCloner(this.Target, this.MixinTypeSourceWithRoot);
             typeCloner.CloneStructure();
             typeCloner.CloneLogic();
         }

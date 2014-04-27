@@ -24,13 +24,26 @@ using System.Xml.Linq;
 
 namespace Bix.Mixers.Fody.InterfaceMixins
 {
+    /// <summary>
+    /// This mix command will add interfaces to target types and will copy contents
+    /// of mixin implementations into those target types.
+    /// </summary>
     [Export(typeof(IMixCommand))]
     [ExportMetadata("AttributeType", typeof(InterfaceMixinAttribute))]
     [ExportMetadata("ConfigType", typeof(InterfaceMixinConfigType))]
     internal class InterfaceMixinCommand : IMixCommand
     {
+        /// <summary>
+        /// Gets or sets whether the command has been initialized
+        /// </summary>
         public bool IsInitialized { get; private set; }
 
+        /// <summary>
+        /// Initializes the command using context and configuration information.
+        /// </summary>
+        /// <param name="weavingContext">Context information for configuration.</param>
+        /// <param name="config">Command configuration information. For this command type, the value must be of type <see cref="InterfaceMixinConfig"/>.</param>
+        /// <exception cref="ArgumentException">The <paramref name="config"/> is not of type <see cref="InterfaceMixinConfig"/></exception>
         public void Initialize(IWeavingContext weavingContext, MixCommandConfigTypeBase config)
         {
             this.Config = config as InterfaceMixinConfigType;
@@ -42,6 +55,9 @@ namespace Bix.Mixers.Fody.InterfaceMixins
         }
 
         private InterfaceMixinConfigType config;
+        /// <summary>
+        /// Gets or sets the strongly typed configuration for this command.
+        /// </summary>
         private InterfaceMixinConfigType Config
         {
             get { return this.config; }
@@ -55,6 +71,16 @@ namespace Bix.Mixers.Fody.InterfaceMixins
             }
         }
 
+        /// <summary>
+        /// Invokes the mix command on a target type.
+        /// </summary>
+        /// <param name="weavingContext">Context data for mixing.</param>
+        /// <param name="target">The type to which the mix action will be applied/</param>
+        /// <param name="mixCommandAttribute">Attribute that may contain arguments for the mix command invocation. This must be of type <see cref="InterfaceMixinAttribute"/>.</param>
+        /// <exception cref="ArgumentException">
+        /// The <paramref name="mixCommandAttribute"/> is not of type <see cref="InterfaceMixinAttribute"/>, or it does not
+        /// contain the expected argument values.
+        /// </exception>
         public void Mix(IWeavingContext weavingContext, TypeDefinition target, CustomAttribute mixCommandAttribute)
         {
             if (mixCommandAttribute.AttributeType.FullName != weavingContext.GetTypeDefinition(typeof(InterfaceMixinAttribute)).FullName)

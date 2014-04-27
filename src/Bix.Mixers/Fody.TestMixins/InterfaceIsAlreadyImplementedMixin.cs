@@ -14,33 +14,16 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Bix.Mixers.Fody.Core;
-using Bix.Mixers.Fody.InterfaceMixins;
+using Bix.Mixers.Fody.TestMixinInterfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 
-namespace Bix.Mixers.Fody.InterfaceMixins
+namespace Bix.Mixers.Fody.TestMixins
 {
-    /// <summary>
-    /// Config type for <see cref="InterfaceMixinCommand"/>.
-    /// </summary>
-    public partial class InterfaceMixinConfigType : MixCommandConfigTypeBase
+    public class InterfaceIsAlreadyImplementedMixin : IIsAlreadyImplementedTester
     {
-        // This partial definition sets up inheritence from MixCommandConfigTypeBase
-    }
-}
-
-namespace Bix.Mixers.Fody.Core
-{
-    [XmlInclude(typeof(InterfaceMixinConfigType))]
-    public abstract partial class MixCommandConfigTypeBase
-    {
-        // This partial definition adds a the XmlIncludeAttribute that allows InterfaceMixinConfigType
-        // to be included within the list of MixCommandConfigTypeBase items within a serialized instance
-        // of BixMixersConfigType that is in the FodyWeavers.xml file.
     }
 }

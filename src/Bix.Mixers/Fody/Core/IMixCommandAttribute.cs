@@ -22,7 +22,8 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.Core
 {
-    public interface IMixCommandAttribute
-    {
-    }
+    /// <summary>
+    /// Interface that must be implemented by all mix command attributes.
+    /// </summary>
+    public interface IMixCommandAttribute { }
 }

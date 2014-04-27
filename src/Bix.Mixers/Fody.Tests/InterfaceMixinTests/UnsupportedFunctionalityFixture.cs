@@ -453,5 +453,34 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                     typeof(SecurityDeclarationOnMethodMixin).FullName)),
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
+
+        [Test]
+        public void TargetCannotAlreadyImplmentMixinDefinitionInterface()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMap = new InterfaceMapType[]
+                    {
+                        new InterfaceMapType
+                        {
+                            Interface = typeof(IIsAlreadyImplementedTester).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(InterfaceIsAlreadyImplementedMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Target type [{0}] already implements interface to be mixed [{1}]",
+                    typeof(Bix.Mixers.Fody.TestMixinTargets.InterfaceIsAlreadyImplementedTarget).FullName,
+                    typeof(IIsAlreadyImplementedTester).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+        }
     }
 }

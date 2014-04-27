@@ -25,11 +25,30 @@ using System.Xml.Linq;
 
 namespace Bix.Mixers.Fody.Core
 {
+    /// <summary>
+    /// Interface that must be implemented for all mix commands.
+    /// </summary>
     [ContractClass(typeof(IMixCommandContract))]
     public interface IMixCommand
     {
+        /// <summary>
+        /// Gets whether the command has been initialized.
+        /// </summary>
         bool IsInitialized { get; }
+
+        /// <summary>
+        /// Initializes the command.
+        /// </summary>
+        /// <param name="weavingContext">Context data for command initialization.</param>
+        /// <param name="config">Configuration data for the command. Commands may require particular types for this argument that are subtypes of <see cref="MixCommandConfigTypeBase"/></param>
         void Initialize(IWeavingContext weavingContext, MixCommandConfigTypeBase config);
+
+        /// <summary>
+        /// Invokes the mix command on a target type.
+        /// </summary>
+        /// <param name="weavingContext">Context data for mixing.</param>
+        /// <param name="target">The type to which the mix action will be applied/</param>
+        /// <param name="mixCommandAttribute">Attribute that may contain arguments for the mix command invocation.</param>
         void Mix(IWeavingContext weavingContext, TypeDefinition target, CustomAttribute mixCommandAttribute);
     }
 }
