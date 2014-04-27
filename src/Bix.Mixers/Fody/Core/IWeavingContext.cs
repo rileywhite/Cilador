@@ -24,34 +24,98 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.Core
 {
+    /// <summary>
+    /// Represents a read-only context with configuration data, logging actions, and target assembly data
+    /// </summary>
     public interface IWeavingContext
     {
+        #region Configuration
+
+        /// <summary>
+        /// Gets the strongly typed Bix mixers configuration object.
+        /// </summary>
         BixMixersConfigType BixMixersConfig { get; }
 
+        /// <summary>
+        /// Gets the contants defined by the build
+        /// </summary>
+        IReadOnlyCollection<string> DefineConstants { get; }
+
+        /// <summary>
+        /// Gets the path of the target assembly file.
+        /// </summary>
+        string AssemblyFilePath { get; }
+
+        /// <summary>
+        /// Gets the path for the target assembly's project file
+        /// </summary>
+        string ProjectDirectoryPath { get; }
+
+        /// <summary>
+        /// Gets the path to the Bix.Mixers.Fody addin assembly
+        /// </summary>
+        string AddinDirectoryPath { get; }
+
+        /// <summary>
+        /// Gets the path to the target assembly's solution file
+        /// </summary>
+        string SolutionDirectoryPath { get; }
+
+        #endregion
+
+        #region Logging
+
+        /// <summary>
+        /// Gets the logger that displays debug-level output.
+        /// </summary>
         Action<string> LogDebug { get; }
-        
+
+        /// <summary>
+        /// Gets the logger that displays info-level output. In Visual
+        /// Studio, logged items appear in the "Error List" as Message items.
+        /// </summary>
         Action<string> LogInfo { get; }
-        
-        Action<string> LogWarning { get; set; }
-        
+
+        /// <summary>
+        /// Gets the logger that displays warning-level output. In Visual
+        /// Studio, logged items appear in the "Error List" as Warning items.
+        /// </summary>
+        Action<string> LogWarning { get; }
+
+        /// <summary>
+        /// Gets the logger that displays warning-level output for a given
+        /// CIL instruction's sequence point. In Visual
+        /// Studio, logged items appear in the "Error List" as Warning items.
+        /// </summary>
         Action<string, SequencePoint> LogWarningPoint { get; }
-        
+
+        /// <summary>
+        /// Gets the logger that displays error-level output. In Visual
+        /// Studio, logged items appear in the "Error List" as Error items.
+        /// </summary>
         Action<string> LogError { get; }
-        
+
+        /// <summary>
+        /// Gets the logger that displays error-level output for a given
+        /// CIL instruction's sequence point. In Visual
+        /// Studio, logged items appear in the "Error List" as Error items.
+        /// </summary>
         Action<string, SequencePoint> LogErrorPoint { get; }
-        
+
+        #endregion
+
+        #region Target Assembly Data
+
+        /// <summary>
+        /// Gets the object that can find and load assemblies.
+        /// </summary>
         IAssemblyResolver AssemblyResolver { get; }
-        
+
+        /// <summary>
+        /// Gets the <see cref="ModuleDefinition"/> for the target assembly.
+        /// </summary>
         ModuleDefinition ModuleDefinition { get; }
 
-        IReadOnlyCollection<string> DefineConstants { get; }
-        
-        string AssemblyFilePath { get; }
-        
-        string ProjectDirectoryPath { get; }
-        
-        string AddinDirectoryPath { get; }
-        
-        string SolutionDirectoryPath { get; }
+        #endregion
     }
 }

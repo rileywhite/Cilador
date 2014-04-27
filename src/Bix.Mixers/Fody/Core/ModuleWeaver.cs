@@ -297,7 +297,7 @@ namespace Bix.Mixers.Fody.Core
 
         #endregion
 
-        #region Assembly Data
+        #region Target Assembly Data
 
         /// <summary>
         /// Gets or sets the object that can find and load assemblies.
