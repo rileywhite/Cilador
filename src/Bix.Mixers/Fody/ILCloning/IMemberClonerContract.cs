@@ -19,11 +19,20 @@ using System.Diagnostics.Contracts;
 
 namespace Bix.Mixers.Fody.ILCloning
 {
+    /// <summary>
+    /// Contracts for <see cref="IMemberCloner"/>.
+    /// </summary>
     [ContractClassFor(typeof(IMemberCloner))]
     internal abstract class IMemberClonerContract : IMemberCloner
     {
+        /// <summary>
+        /// Contracts for <see cref="IMemberCloner.IsStructureCloned"/>.
+        /// </summary>
         public bool IsStructureCloned { get; private set; }
 
+        /// <summary>
+        /// Contracts for <see cref="IMemberCloner.CloneStructure()"/>.
+        /// </summary>
         public void CloneStructure()
         {
             Contract.Requires(!this.IsStructureCloned);

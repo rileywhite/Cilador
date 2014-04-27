@@ -24,8 +24,16 @@ using System.Reflection;
 
 namespace Bix.Mixers.Fody.ILCloning
 {
+    /// <summary>
+    /// Clones <see cref="TypeDefinition"/> contents from a source to a target.
+    /// </summary>
     internal class TypeCloner : MemberClonerBase<TypeDefinition, TypeSourceWithRoot>
     {
+        /// <summary>
+        /// Creates a new <see cref="TypeCloner"/>.
+        /// </summary>
+        /// <param name="target">Target for cloning.</param>
+        /// <param name="source">Source for cloning</param>
         public TypeCloner(TypeDefinition target, TypeSourceWithRoot source)
             : base(target, source)
         {

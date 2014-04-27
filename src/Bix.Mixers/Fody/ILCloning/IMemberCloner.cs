@@ -19,11 +19,20 @@ using System.Diagnostics.Contracts;
 
 namespace Bix.Mixers.Fody.ILCloning
 {
+    /// <summary>
+    /// Interface implemented by all item cloners.
+    /// </summary>
     [ContractClass(typeof(IMemberClonerContract))]
     internal interface IMemberCloner
     {
+        /// <summary>
+        /// Gets whether the structure of the item has been cloned.
+        /// </summary>
         bool IsStructureCloned { get; }
 
+        /// <summary>
+        /// Clones the item structure.
+        /// </summary>
         void CloneStructure();
     }
 }
