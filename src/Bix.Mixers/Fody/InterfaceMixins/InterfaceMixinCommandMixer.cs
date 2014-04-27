@@ -105,6 +105,9 @@ namespace Bix.Mixers.Fody.InterfaceMixins
         /// </summary>
         public TypeDefinition Target { get; private set; }
 
+        /// <summary>
+        /// Executes the interface mixin command using the arguments passed into the constuctor.
+        /// </summary>
         public void Execute()
         {
             this.Target.Interfaces.Add(this.Target.Module.Import(this.InterfaceType));

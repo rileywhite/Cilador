@@ -25,9 +25,17 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.InterfaceMixins
 {
+    /// <summary>
+    /// Annotates types to which the <see cref="InterfaceMixinCommand"/> should be applied,
+    /// and supplies arguments for the invocation.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
     public sealed class InterfaceMixinAttribute : Attribute, IMixCommandAttribute
     {
+        /// <summary>
+        /// Creates a new <see cref="InterfaceMixinAttribute"/>.
+        /// </summary>
+        /// <param name="interface">Mixin definition interface that will be applied to the target type.</param>
         public InterfaceMixinAttribute(Type @interface)
         {
             Contract.Requires(@interface != null);
@@ -35,6 +43,9 @@ namespace Bix.Mixers.Fody.InterfaceMixins
         }
 
         private Type @interface;
+        /// <summary>
+        /// Gets or sets the mixin definition interface that will be applied to the target type.
+        /// </summary>
         public Type Interface
         {
             get { return this.@interface; }

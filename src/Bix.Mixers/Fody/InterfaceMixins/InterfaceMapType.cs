@@ -25,14 +25,28 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.InterfaceMixins
 {
+    /// <summary>
+    /// Configuration data that maps mixin definition interfaces to mixin implementations
+    /// that will be used to satisfy the definition during mixing.
+    /// </summary>
     public partial class InterfaceMapType
     {
+        /// <summary>
+        /// Gets the mixin definition interface.
+        /// </summary>
+        /// <param name="weavingContext">Context to use for resolving the type.</param>
+        /// <returns>Resolved mixin definition interface type.</returns>
         public TypeDefinition GetInterfaceType(IWeavingContext weavingContext)
         {
             Contract.Requires(weavingContext != null);
             return weavingContext.GetTypeDefinition(this.Interface);
         }
 
+        /// <summary>
+        /// Gets the mixin implementation type.
+        /// </summary>
+        /// <param name="weavingContext">Context to use for resolving the type.</param>
+        /// <returns>Resolved mixin definition type.</returns>
         public TypeDefinition GetMixinType(IWeavingContext weavingContext)
         {
             Contract.Requires(weavingContext != null);
