@@ -21,8 +21,16 @@ using System.Reflection;
 
 namespace Bix.Mixers.Fody.ILCloning
 {
+    /// <summary>
+    /// Clones <see cref="FieldDefinition"/> contents from a source to a target.
+    /// </summary>
     internal class EventCloner : MemberClonerBase<EventDefinition, EventSourceWithRoot>
     {
+        /// <summary>
+        /// Creates a new <see cref="EventCloner"/>
+        /// </summary>
+        /// <param name="target">Cloning target</param>
+        /// <param name="source">Cloning source with root information</param>
         public EventCloner(EventDefinition target, EventSourceWithRoot source)
             : base(target, source)
         {
@@ -30,6 +38,9 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(source != null);
         }
 
+        /// <summary>
+        /// Clones the event in its entirety
+        /// </summary>
         public override void CloneStructure()
         {
             Contract.Assert(this.Target.DeclaringType != null);

@@ -21,11 +21,22 @@ using System.Reflection;
 
 namespace Bix.Mixers.Fody.ILCloning
 {
+    /// <summary>
+    /// Clones <see cref="FieldDefinition"/> contents from a source to a target.
+    /// </summary>
     internal class FieldCloner : MemberClonerBase<FieldDefinition, FieldSourceWithRoot>
     {
+        /// <summary>
+        /// Creates a new <see cref="FieldCloner"/>
+        /// </summary>
+        /// <param name="target">Cloning target</param>
+        /// <param name="source">Cloning source with root information</param>
         public FieldCloner(FieldDefinition target, FieldSourceWithRoot source)
             : base(target, source) { }
 
+        /// <summary>
+        /// Clones the field in its entirety
+        /// </summary>
         public override void CloneStructure()
         {
             Contract.Requires(this.Target.Name == this.SourceWithRoot.Source.Name);

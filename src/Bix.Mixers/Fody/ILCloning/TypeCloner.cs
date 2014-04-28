@@ -46,14 +46,40 @@ namespace Bix.Mixers.Fody.ILCloning
             this.EventCloners = new List<EventCloner>();
         }
 
+        /// <summary>
+        /// Gets or sets the collection of cloners for nested types
+        /// </summary>
         private List<TypeCloner> TypeCloners { get; set; }
+
+        /// <summary>
+        /// Gets or sets the collection of cloners for contained fields
+        /// </summary>
         private List<FieldCloner> FieldCloners { get; set; }
+
+        /// <summary>
+        /// Gets or sets the collection of cloners for contained methods
+        /// </summary>
         private List<MethodCloner> MethodCloners { get; set; }
+
+        /// <summary>
+        /// Gets or sets the collection of cloners for contained properties
+        /// </summary>
         private List<PropertyCloner> PropertyCloners { get; set; }
+
+        /// <summary>
+        /// Gets or sets the collection of cloners for contained events
+        /// </summary>
         private List<EventCloner> EventCloners { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether the initial creation of all members and their
+        /// associated cloners has been created.
+        /// </summary>
         private bool IsWireframeCompleted { get; set; }
 
+        /// <summary>
+        /// Clones the structure of this type but not the logic of method bodies
+        /// </summary>
         public override void CloneStructure()
         {
             this.CreateWireframeAndCloners();
@@ -66,12 +92,18 @@ namespace Bix.Mixers.Fody.ILCloning
             this.IsStructureCloned = true;
         }
 
+        /// <summary>
+        /// Clones just the method body logic for this type's methods and for containing types methods
+        /// </summary>
         public void CloneLogic()
         {
             foreach (var methodCloner in this.MethodCloners) { methodCloner.CloneLogic(); }
             foreach (var typeCloner in this.TypeCloners) { typeCloner.CloneLogic(); }
         }
 
+        /// <summary>
+        /// Clones just the properties of the type
+        /// </summary>
         private void CloneTypeData()
         {
             if (this.Target == this.SourceWithRoot.RootContext.RootTarget)
@@ -150,6 +182,9 @@ namespace Bix.Mixers.Fody.ILCloning
             this.Target.CloneAllCustomAttributes(this.SourceWithRoot.Source, this.SourceWithRoot.RootContext);
         }
 
+        /// <summary>
+        /// Creates all members of this and nested types and associated cloners with minimal properties set.
+        /// </summary>
         private void CreateWireframeAndCloners()
         {
             if (!this.IsWireframeCompleted)
