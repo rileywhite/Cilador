@@ -83,48 +83,6 @@ namespace Bix.Mixers.Fody.ILCloning
             return left.FullName.Replace(left.DeclaringType.FullName + "::", string.Empty) == right.FullName.Replace(right.DeclaringType.FullName + "::", string.Empty);
         }
 
-        [Pure]
-        public static bool IsSkipped(this IMemberDefinition member)
-        {
-            Contract.Requires(member != null);
-            var method = member as MethodDefinition;
-            if (method == null)
-            {
-                // a name comparison is not ideal, but until I see it break, I'll stick with it
-                var skipAttributeFullName = typeof(SkipAttribute).FullName;
-                foreach (var customAttribute in member.CustomAttributes)
-                {
-                    if (customAttribute.AttributeType.FullName == skipAttributeFullName)
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            else { return method.IsSkipped(); }
-        }
-
-        [Pure]
-        public static bool IsSkipped(this MethodDefinition method)
-        {
-            Contract.Requires(method != null);
-
-            // a name comparison is not ideal, but until I see it break, I'll stick with it
-            var skipAttributeFullName = typeof(SkipAttribute).FullName;
-            foreach (var customAttribute in method.CustomAttributes)
-            {
-                if (customAttribute.AttributeType.FullName == skipAttributeFullName)
-                {
-                    return true;
-                }
-            }
-
-            return method.DeclaringType.Properties.Any(
-                property =>
-                    (property.GetMethod == method || property.SetMethod == method) &&
-                    property.IsSkipped());
-        }
-
         public static void CloneAllParameters(
             this Collection<ParameterDefinition> targetParameters,
             Collection<ParameterDefinition> sourceParameters,

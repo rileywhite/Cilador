@@ -26,9 +26,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class SelfReferencingMembersMixin : IEmptyInterface
     {
-        [Skip]
-        public SelfReferencingMembersMixin() { }
-
         private int field;
         public int Property { get; set; }
         public void Method() { }

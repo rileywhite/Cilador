@@ -127,7 +127,6 @@
     <Compile Include="ILCloning\MemberClonerBase.cs" />
     <Compile Include="ILCloning\RootContext.cs" />
     <Compile Include="InterfaceMixins\InterfaceMixinAttribute.cs" />
-    <Compile Include="ILCloning\SkipAttribute.cs" />
     <Compile Include="ILCloning\TypeCloner.cs" />
     <Compile Include="ILCloning\TypeSourceWithRoot.cs" />
     <Compile Include="Core\CoreExtensions.cs" />

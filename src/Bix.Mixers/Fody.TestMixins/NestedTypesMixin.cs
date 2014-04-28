@@ -27,9 +27,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class NestedTypesMixin : IEmptyInterface
     {
-        [Skip]
-        public NestedTypesMixin() { }
-
         public class PublicType { }
         internal class InternalType { }
         protected class ProtectedType { }

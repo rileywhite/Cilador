@@ -157,7 +157,6 @@ namespace Bix.Mixers.Fody.ILCloning
                 var voidReference = this.Target.Module.Import(typeof(void));
 
                 foreach (var sourceWithRoot in from type in this.SourceWithRoot.Source.NestedTypes
-                                       where !type.IsSkipped()
                                        select new TypeSourceWithRoot(this.SourceWithRoot.RootContext, type))
                 {
                     var target = new TypeDefinition(sourceWithRoot.Source.Namespace, sourceWithRoot.Source.Name, 0);
@@ -168,7 +167,6 @@ namespace Bix.Mixers.Fody.ILCloning
                 }
 
                 foreach (var sourceWithRoot in from field in this.SourceWithRoot.Source.Fields
-                                       where !field.IsSkipped()
                                        select new FieldSourceWithRoot(this.SourceWithRoot.RootContext, field))
                 {
                     var target = new FieldDefinition(sourceWithRoot.Source.Name, 0, voidReference);
@@ -177,14 +175,29 @@ namespace Bix.Mixers.Fody.ILCloning
                 }
 
                 foreach (var sourceWithRoot in from method in this.SourceWithRoot.Source.Methods
-                                       where !method.IsSkipped()
                                        select new MethodSourceWithRoot(this.SourceWithRoot.RootContext, method))
                 {
-                    if (sourceWithRoot.Source.Name == ".cctor" && sourceWithRoot.Source.IsStatic)
+                    if (sourceWithRoot.Source.Name == ".cctor" &&
+                        sourceWithRoot.Source.IsStatic &&
+                        sourceWithRoot.Source.DeclaringType == sourceWithRoot.RootContext.RootSource)
                     {
+                        // TODO should static constructors be supported on the root type?
                         throw new WeavingException(string.Format(
                             "Configured mixin implementation cannot have a type initializer (i.e. static constructor): [{0}]",
                             this.SourceWithRoot.RootContext.RootSource.FullName));
+                    }
+
+                    if (sourceWithRoot.Source.IsConstructor &&
+                        sourceWithRoot.Source.DeclaringType == sourceWithRoot.RootContext.RootSource)
+                    {
+                        // TODO support constructors for the root type in some meaningful way
+                        if (sourceWithRoot.Source.HasParameters) 
+                        {
+                            throw new WeavingException(string.Format(
+                                "Configured mixin implementation cannot use constructors: [{0}]",
+                                this.SourceWithRoot.RootContext.RootSource.FullName));
+                        }
+                        continue;
                     }
 
                     var target = new MethodDefinition(sourceWithRoot.Source.Name, 0, voidReference);
@@ -193,7 +206,6 @@ namespace Bix.Mixers.Fody.ILCloning
                 }
 
                 foreach (var sourceWithRoot in from property in this.SourceWithRoot.Source.Properties
-                                       where !property.IsSkipped()
                                        select new PropertySourceWithRoot(this.SourceWithRoot.RootContext, property))
                 {
                     var target = new PropertyDefinition(sourceWithRoot.Source.Name, 0, voidReference);
@@ -202,7 +214,6 @@ namespace Bix.Mixers.Fody.ILCloning
                 }
 
                 foreach (var sourceWithRoot in from @event in this.SourceWithRoot.Source.Events
-                                       where !@event.IsSkipped()
                                        select new EventSourceWithRoot(this.SourceWithRoot.RootContext, @event))
                 {
                     var target = new EventDefinition(sourceWithRoot.Source.Name, 0, voidReference);

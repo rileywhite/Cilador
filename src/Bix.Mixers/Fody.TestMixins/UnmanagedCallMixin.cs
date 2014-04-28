@@ -27,9 +27,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class UnmanagedCallMixin : IEmptyInterface
     {
-        [Skip]
-        public UnmanagedCallMixin() { }
-
         [DllImport("msvcrt.dll")]
         public static extern int puts(string c);
     }

@@ -27,9 +27,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class PropertiesMixin : IEmptyInterface
     {
-        [Skip]
-        public PropertiesMixin() { }
-
         public int AutoPublicGetPublicSet { get; set; }
         public int AutoPublicGetPrivateSet { get; private set; }
         public int AutoPublicGetInternalSet { get; internal set; }

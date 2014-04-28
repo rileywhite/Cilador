@@ -26,9 +26,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class DynamicMixin : IEmptyInterface
     {
-        [Skip]
-        public DynamicMixin() { }
-
 #pragma warning disable 169
         private dynamic dynamicField;
 #pragma warning restore 169

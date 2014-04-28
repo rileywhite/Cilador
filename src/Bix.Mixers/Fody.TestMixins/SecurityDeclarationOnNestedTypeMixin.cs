@@ -27,9 +27,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class SecurityDeclarationOnNestedTypeMixin : IEmptyInterface
     {
-        [Skip]
-        public SecurityDeclarationOnNestedTypeMixin() { }
-
         public class InnerTypeWithoutSecurityDeclaration
         {
             [SecurityPermission(SecurityAction.PermitOnly)]

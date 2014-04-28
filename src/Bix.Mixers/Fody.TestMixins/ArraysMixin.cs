@@ -26,9 +26,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class ArraysMixin : IEmptyInterface
     {
-        [Skip]
-        public ArraysMixin() { }
-
         public int[] Array;
         public int[][] ArrayOfArray;
         public int[][][][][][][][][][][][] ArraysOfArrays;

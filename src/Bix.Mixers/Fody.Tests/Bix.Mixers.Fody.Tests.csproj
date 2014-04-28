@@ -108,6 +108,7 @@
     <Compile Include="Common\CommonExtensions.cs" />
     <Compile Include="Common\AssemblyVerifier.cs" />
     <Compile Include="InterfaceMixinTests\ArrayFixture.cs" />
+    <Compile Include="InterfaceMixinTests\ConstructorsFixture.cs" />
     <Compile Include="InterfaceMixinTests\DynamicFixture.cs" />
     <Compile Include="InterfaceMixinTests\MemberMixingFixture.cs" />
     <Compile Include="InterfaceMixinTests\ImplicitAndExplicitImplementationFixture.cs" />

@@ -24,9 +24,5 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.TestMixins
 {
-    public class EmptyMixin : IEmptyInterface
-    {
-        [Skip]
-        public EmptyMixin() { }
-    }
+    public class EmptyMixin : IEmptyInterface { }
 }

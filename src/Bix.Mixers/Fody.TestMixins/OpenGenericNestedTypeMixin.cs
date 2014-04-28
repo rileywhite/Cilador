@@ -26,9 +26,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class OpenGenericNestedTypeMixin : IEmptyInterface
     {
-        [Skip]
-        public OpenGenericNestedTypeMixin() { }
-
         public class GenericType<T> { }
     }
 }

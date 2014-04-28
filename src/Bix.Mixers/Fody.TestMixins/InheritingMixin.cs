@@ -26,9 +26,5 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class InheritingMixinBase { }
 
-    public class InheritingMixin : InheritingMixinBase, IEmptyInterface
-    {
-        [Skip]
-        public InheritingMixin() { }
-    }
+    public class InheritingMixin : InheritingMixinBase, IEmptyInterface { }
 }

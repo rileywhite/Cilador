@@ -86,10 +86,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
 
             Assert.That(typeof(Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
 
-            targetType.ValidateMemberCountsAre(2, 3, 1, 1, 0, 0);
+            targetType.ValidateMemberCountsAre(1, 3, 1, 1, 0, 0);
 
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
-            Assert.That(targetType.GetConstructor(new Type[] { typeof(int) }) != null, "Couldn't find new constructor");
 
             var property = targetType.GetProperty("SomeValue");
             Assert.That(property != null, "Couldn't find new property SomeValue");
@@ -101,9 +100,6 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             method.Invoke(instance, new object[0]);   // make sure no error is raised
             Assert.That(instance != null, "Failed to create instance with existing default constructor");
             Assert.That(0.Equals(property.GetValue(instance)));
-            instance = Activator.CreateInstance(targetType, new object[] { 32 });
-            Assert.That(instance != null, "Failed to create instance with new constructor");
-            Assert.That(32.Equals(property.GetValue(instance)));
             property.SetValue(instance, 45);
             Assert.That(45.Equals(property.GetValue(instance)));
         }

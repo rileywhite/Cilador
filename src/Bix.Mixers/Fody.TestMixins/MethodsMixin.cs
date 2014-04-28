@@ -27,9 +27,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class MethodsMixin : IEmptyInterface
     {
-        [Skip]
-        public MethodsMixin() { }
-
         public void PublicMethod() { }
         internal void InternalMethod() { }
         protected void ProtectedMethod() { }

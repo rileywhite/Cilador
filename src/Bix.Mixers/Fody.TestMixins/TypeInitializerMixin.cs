@@ -26,9 +26,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class TypeInitializerMixin : IEmptyInterface
     {
-        [Skip]
-        public TypeInitializerMixin() { }
-
         static TypeInitializerMixin() { }
     }
 }

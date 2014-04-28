@@ -25,11 +25,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class EmptyInterfaceWithContentMixin : IEmptyInterface
     {
-        public EmptyInterfaceWithContentMixin(int someValue)
-        {
-            this.SomeValue = someValue;
-        }
-
         public int SomeValue { get; set; }
 
         public void SomeMethod()

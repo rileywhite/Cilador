@@ -26,9 +26,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class PropertiesAndMethodsWithPrimitiveTypesMixin : IInterfaceWithOnlyPrimitiveTypes
     {
-        [Skip]
-        public PropertiesAndMethodsWithPrimitiveTypesMixin() { }
-
         public bool BooleanProperty { get; set; }
 
         public byte ByteProperty { get; set; }

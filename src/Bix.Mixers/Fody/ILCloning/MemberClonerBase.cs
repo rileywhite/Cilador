@@ -42,11 +42,6 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Ensures(this.Target != null);
             Contract.Ensures(this.SourceWithRoot != null);
 
-            if (sourceWithRoot.Source.IsSkipped())
-            {
-                throw new InvalidOperationException("Cannot clone a skipped member");
-            }
-
             this.Target = target;
             this.SourceWithRoot = sourceWithRoot;
         }

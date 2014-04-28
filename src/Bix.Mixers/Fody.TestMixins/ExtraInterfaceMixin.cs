@@ -26,9 +26,5 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public interface AnotherEmptyInterface { }
 
-    public class ExtraInterfaceMixin : IEmptyInterface, AnotherEmptyInterface
-    {
-        [Skip]
-        public ExtraInterfaceMixin() { }
-    }
+    public class ExtraInterfaceMixin : IEmptyInterface, AnotherEmptyInterface { }
 }

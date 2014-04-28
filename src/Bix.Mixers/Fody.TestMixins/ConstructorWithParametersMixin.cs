@@ -14,24 +14,17 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Bix.Mixers.Fody.TestMixinInterfaces;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Bix.Mixers.Fody.ILCloning
+namespace Bix.Mixers.Fody.TestMixins
 {
-    [AttributeUsage(
-        AttributeTargets.Class |
-        AttributeTargets.Struct |
-        AttributeTargets.Interface |
-        AttributeTargets.Enum |
-        AttributeTargets.Constructor |
-        AttributeTargets.Method |
-        AttributeTargets.Property |
-        AttributeTargets.Field |
-        AttributeTargets.Delegate |
-        AttributeTargets.Event,
-        AllowMultiple = false,
-        Inherited = false)]
-    public sealed class SkipAttribute : Attribute
+    public class ConstructorWithParametersMixin : IEmptyInterface
     {
+        public ConstructorWithParametersMixin(int i) { }
     }
 }

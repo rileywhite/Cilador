@@ -27,9 +27,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class EventsMixin : IEmptyInterface
     {
-        [Skip]
-        public EventsMixin() { }
-
 #pragma warning disable 67
 
         public event EventHandler PublicEvent;

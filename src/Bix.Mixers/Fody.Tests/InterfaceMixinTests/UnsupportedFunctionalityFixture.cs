@@ -482,5 +482,33 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                     typeof(IIsAlreadyImplementedTester).FullName)),
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
+
+        [Test]
+        public void ConstructorsCannotHaveParameters()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMap = new InterfaceMapType[]
+                    {
+                        new InterfaceMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(ConstructorWithParametersMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin implementation cannot use constructors: [{0}]",
+                    typeof(ConstructorWithParametersMixin).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+        }
     }
 }

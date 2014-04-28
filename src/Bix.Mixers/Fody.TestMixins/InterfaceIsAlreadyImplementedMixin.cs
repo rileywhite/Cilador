@@ -23,7 +23,5 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.TestMixins
 {
-    public class InterfaceIsAlreadyImplementedMixin : IIsAlreadyImplementedTester
-    {
-    }
+    public class InterfaceIsAlreadyImplementedMixin : IIsAlreadyImplementedTester { }
 }

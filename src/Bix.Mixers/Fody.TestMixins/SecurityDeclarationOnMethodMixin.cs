@@ -27,9 +27,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class SecurityDeclarationOnMethodMixin : IEmptyInterface
     {
-        [Skip]
-        public SecurityDeclarationOnMethodMixin() { }
-
         [SecurityPermission(SecurityAction.PermitOnly)]
         public void MethodWithSecurityDeclaration() { }
     }

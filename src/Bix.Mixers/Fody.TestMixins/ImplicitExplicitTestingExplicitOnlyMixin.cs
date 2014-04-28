@@ -26,9 +26,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class ImplicitExplicitTestingExplicitOnlyMixin : IInterfaceForImplicitExplicitTesting
     {
-        [Skip]
-        public ImplicitExplicitTestingExplicitOnlyMixin() { }
-
         string IInterfaceForImplicitExplicitTesting.Method1() { return "Explicit Method 1"; }
         string IInterfaceForImplicitExplicitTesting.Method2() { return "Explicit Method 2"; }
         string IInterfaceForImplicitExplicitTesting.Method3() { return "Explicit Method 3"; }

@@ -27,9 +27,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class FieldsMixin : IEmptyInterface
     {
-        [Skip]
-        public FieldsMixin() { }
-
 #pragma warning disable 169, 649
 
         public int publicField;
