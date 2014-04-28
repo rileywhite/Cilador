@@ -1,8 +1,3 @@
-_Note: Bix.Mixers.Fody is in the process of its initial release. Until this is complete, the steps
-below, particularly those dealing with the NuGet package availability, are not accurate. If you are
-familiar enough with Fody to use an addin without the NuGet package, you can make it work, but otherwise
-you will have to wait. I'm trying to hurry :-)_
-
 #Welcome to Bix.Mixers!
 
 Bix.Mixers is a [Fody](http://github.com/Fody/Fody) plugin that provides the
