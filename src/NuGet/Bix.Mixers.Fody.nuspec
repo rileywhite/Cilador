@@ -6,6 +6,7 @@
     <title>Bix.Mixers.Fody</title>
     <authors>Riley White</authors>
     <owners>Riley White</owners>
+    <copyright>Riley White 2013-2014</copyright>
     <developmentDependency>true</developmentDependency>
     <licenseUrl>https://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
     <projectUrl>https://github.com/rileywhite/Bix.Mixers.Fody</projectUrl>
