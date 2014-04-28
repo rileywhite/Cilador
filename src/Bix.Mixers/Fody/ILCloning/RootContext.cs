@@ -37,6 +37,11 @@ namespace Bix.Mixers.Fody.ILCloning
     /// </remarks>
     internal class RootContext
     {
+        /// <summary>
+        /// Creates a new <see cref="RootContext"/>
+        /// </summary>
+        /// <param name="rootSource">Top level source type for the cloning operation</param>
+        /// <param name="rootTarget">Top level target type for the cloning operation</param>
         public RootContext(TypeDefinition rootSource, TypeDefinition rootTarget)
         {
             Contract.Requires(rootSource != null);
@@ -51,22 +56,51 @@ namespace Bix.Mixers.Fody.ILCloning
             this.MethodCache = new Dictionary<string, MethodReference>();
         }
 
+        /// <summary>
+        /// Gets or sets the top level source type for the cloning operation
+        /// </summary>
         public TypeDefinition RootSource { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the top level source type for the cloning operation
+        /// </summary>
         public TypeDefinition RootTarget { get; private set; }
 
+        /// <summary>
+        /// Root import an item when the exact item type may not be known.
+        /// </summary>
+        /// <typeparam name="TItem">Type of the item to the precision to which it is known. Might just be <see cref="object"/>.</typeparam>
+        /// <param name="item">Item to root import.</param>
+        /// <returns>Root imported item.</returns>
         public TItem DynamicRootImport<TItem>(TItem item)
         {
             return (TItem)this.RootImport((dynamic)item);
         }
 
+        /// <summary>
+        /// Catch-all method for dynamic-dispatched item. If a call is sent to
+        /// this method, then no special handling is required, so the object
+        /// is simply returned.
+        /// </summary>
+        /// <param name="item">Item to root import.</param>
+        /// <returns>Unmodified <paramref name="item"/></returns>
         private object RootImport(object item)
         {
             return item;
         }
 
+        /// <summary>
+        /// Cache of root-imported types so that any given type is only looked up once
+        /// </summary>
         private Dictionary<string, TypeReference> TypeCache { get; set; }
 
+        /// <summary>
+        /// Root imports a type. That is, it finds the type with respect to the <see cref="RootTarget"/> type.
+        /// If necessary, this handles mixin redirection, meaning that a member within the <see cref="RootTarget"/>
+        /// will be returned in place of a member within the <see cref="RootSource"/>
+        /// </summary>
+        /// <param name="type">Type to root import.</param>
+        /// <returns>Root imported type.</returns>
         public TypeReference RootImport(TypeReference type)
         {
             if (type == null) { return null; }
@@ -90,6 +124,12 @@ namespace Bix.Mixers.Fody.ILCloning
             return importedType;
         }
 
+        /// <summary>
+        /// Handles root importing for a type that exists within the <see cref="RootSource"/>.
+        /// Mixin redirection for types occurs here.
+        /// </summary>
+        /// <param name="type">Type to root import.</param>
+        /// <returns>Root imported type.</returns>
         private TypeReference RootImportTypeWithinSource(TypeReference type)
         {
             Contract.Requires(type != null);
@@ -124,6 +164,12 @@ namespace Bix.Mixers.Fody.ILCloning
             return this.RootTarget.Module.Import(localType);
         }
 
+        /// <summary>
+        /// Root import a type that is not nested within the <see cref="RootSource"/>.
+        /// This may involve replacing generic type arguments in some cases.
+        /// </summary>
+        /// <param name="type">Type to root import.</param>
+        /// <returns>Root imported type.</returns>
         private TypeReference RootImportTypeOutsideOfSource(TypeReference type)
         {
             Contract.Requires(type != null);
@@ -184,8 +230,18 @@ namespace Bix.Mixers.Fody.ILCloning
             }
         }
 
+        /// <summary>
+        /// Cache of root-imported fields so that any given type is only looked up once
+        /// </summary>
         private Dictionary<string, FieldReference> FieldCache { get; set; }
 
+        /// <summary>
+        /// Root imports a field. That is, it finds the field with respect to the <see cref="RootTarget"/> type.
+        /// If necessary, this handles mixin redirection, meaning that a member within the <see cref="RootTarget"/>
+        /// will be returned in place of a member within the <see cref="RootSource"/>
+        /// </summary>
+        /// <param name="field">Field to root import.</param>
+        /// <returns>Root imported field.</returns>
         public FieldReference RootImport(FieldReference field)
         {
             if (field == null) { return null; }
@@ -231,8 +287,18 @@ namespace Bix.Mixers.Fody.ILCloning
             return importedField;
         }
 
+        /// <summary>
+        /// Cache of root-imported fields so that any given type is only looked up once
+        /// </summary>
         private Dictionary<string, MethodReference> MethodCache { get; set; }
 
+        /// <summary>
+        /// Root imports a method. That is, it finds the method with respect to the <see cref="RootTarget"/> type.
+        /// If necessary, this handles mixin redirection, meaning that a member within the <see cref="RootTarget"/>
+        /// will be returned in place of a member within the <see cref="RootSource"/>
+        /// </summary>
+        /// <param name="method">Method to root import.</param>
+        /// <returns>Root imported method.</returns>
         public MethodReference RootImport(MethodReference method)
         {
             if (method == null) { return null; }
@@ -256,6 +322,12 @@ namespace Bix.Mixers.Fody.ILCloning
             return importedMethod;
         }
 
+        /// <summary>
+        /// Handles root importing for a method that exists within the <see cref="RootSource"/>.
+        /// Mixin redirection for methods occurs here.
+        /// </summary>
+        /// <param name="type">Type to root import.</param>
+        /// <returns>Root imported type.</returns>
         private MethodReference RootImportMethodWithinSource(MethodReference method, TypeReference importedDeclaringType)
         {
             Contract.Requires(method != null);
@@ -283,6 +355,12 @@ namespace Bix.Mixers.Fody.ILCloning
             return this.RootTarget.Module.Import(localMethod);
         }
 
+        /// <summary>
+        /// Root import a method that is not within the <see cref="RootSource"/>.
+        /// This may involve replacing generic type arguments in some cases.
+        /// </summary>
+        /// <param name="method">Method to root import.</param>
+        /// <returns>Root imported method.</returns>
         private MethodReference RootImportMethodOutsideOfSource(MethodReference method, TypeReference importedDeclaringType)
         {
             Contract.Requires(method != null);
