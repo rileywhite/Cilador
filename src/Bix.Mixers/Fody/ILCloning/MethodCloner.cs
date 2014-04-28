@@ -29,16 +29,18 @@ namespace Bix.Mixers.Fody.ILCloning
     /// <summary>
     /// Clones <see cref="MethodDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class MethodCloner : MemberClonerBase<MethodDefinition, MethodSourceWithRoot>
+    internal class MethodCloner : MemberClonerBase<MethodDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="MethodCloner"/>
         /// </summary>
-        /// <param name="target">Cloning target</param>
-        /// <param name="source">Cloning source with root information</param>
-        public MethodCloner(MethodDefinition target, MethodSourceWithRoot source)
-            : base(target, source)
+        /// <param name="rootContext">Root context for cloning.</param>
+        /// <param name="target">Cloning target.</param>
+        /// <param name="source">Cloning source.</param>
+        public MethodCloner(RootContext rootContext, MethodDefinition target, MethodDefinition source)
+            : base(rootContext, target, source)
         {
+            Contract.Requires(rootContext != null);
             Contract.Requires(target != null);
             Contract.Requires(source != null);
         }
@@ -49,86 +51,86 @@ namespace Bix.Mixers.Fody.ILCloning
         public override void CloneStructure()
         {
             Contract.Assert(this.Target.DeclaringType != null);
-            Contract.Assert(this.Target.Name == this.SourceWithRoot.Source.Name);
+            Contract.Assert(this.Target.Name == this.Source.Name);
 
-            this.Target.Attributes = this.SourceWithRoot.Source.Attributes;
-            this.Target.CallingConvention = this.SourceWithRoot.Source.CallingConvention;
-            this.Target.ExplicitThis = this.SourceWithRoot.Source.ExplicitThis;
-            this.Target.HasThis = this.SourceWithRoot.Source.HasThis;
-            this.Target.ImplAttributes = this.SourceWithRoot.Source.ImplAttributes;
-            this.Target.IsAddOn = this.SourceWithRoot.Source.IsAddOn;
-            this.Target.IsCheckAccessOnOverride = this.SourceWithRoot.Source.IsCheckAccessOnOverride;
-            this.Target.IsFire = this.SourceWithRoot.Source.IsFire;
-            this.Target.IsForwardRef = this.SourceWithRoot.Source.IsForwardRef;
-            this.Target.IsGetter = this.SourceWithRoot.Source.IsGetter;
-            this.Target.IsIL = this.SourceWithRoot.Source.IsIL;
-            this.Target.IsInternalCall = this.SourceWithRoot.Source.IsInternalCall;
-            this.Target.IsManaged = this.SourceWithRoot.Source.IsManaged;
-            this.Target.IsNative = this.SourceWithRoot.Source.IsNative;
-            this.Target.IsOther = this.SourceWithRoot.Source.IsOther;
-            this.Target.IsPreserveSig = this.SourceWithRoot.Source.IsPreserveSig;
-            this.Target.IsRemoveOn = this.SourceWithRoot.Source.IsRemoveOn;
-            this.Target.IsRuntime = this.SourceWithRoot.Source.IsRuntime;
-            this.Target.IsSetter = this.SourceWithRoot.Source.IsSetter;
-            this.Target.IsSynchronized = this.SourceWithRoot.Source.IsSynchronized;
-            this.Target.IsUnmanaged = this.SourceWithRoot.Source.IsUnmanaged;
-            this.Target.NoInlining = this.SourceWithRoot.Source.NoInlining;
-            this.Target.NoOptimization = this.SourceWithRoot.Source.NoOptimization;
-            this.Target.SemanticsAttributes = this.SourceWithRoot.Source.SemanticsAttributes;
+            this.Target.Attributes = this.Source.Attributes;
+            this.Target.CallingConvention = this.Source.CallingConvention;
+            this.Target.ExplicitThis = this.Source.ExplicitThis;
+            this.Target.HasThis = this.Source.HasThis;
+            this.Target.ImplAttributes = this.Source.ImplAttributes;
+            this.Target.IsAddOn = this.Source.IsAddOn;
+            this.Target.IsCheckAccessOnOverride = this.Source.IsCheckAccessOnOverride;
+            this.Target.IsFire = this.Source.IsFire;
+            this.Target.IsForwardRef = this.Source.IsForwardRef;
+            this.Target.IsGetter = this.Source.IsGetter;
+            this.Target.IsIL = this.Source.IsIL;
+            this.Target.IsInternalCall = this.Source.IsInternalCall;
+            this.Target.IsManaged = this.Source.IsManaged;
+            this.Target.IsNative = this.Source.IsNative;
+            this.Target.IsOther = this.Source.IsOther;
+            this.Target.IsPreserveSig = this.Source.IsPreserveSig;
+            this.Target.IsRemoveOn = this.Source.IsRemoveOn;
+            this.Target.IsRuntime = this.Source.IsRuntime;
+            this.Target.IsSetter = this.Source.IsSetter;
+            this.Target.IsSynchronized = this.Source.IsSynchronized;
+            this.Target.IsUnmanaged = this.Source.IsUnmanaged;
+            this.Target.NoInlining = this.Source.NoInlining;
+            this.Target.NoOptimization = this.Source.NoOptimization;
+            this.Target.SemanticsAttributes = this.Source.SemanticsAttributes;
 
             // TODO research correct usage of method MetadataToken
-            this.Target.MetadataToken = new MetadataToken(this.SourceWithRoot.Source.MetadataToken.TokenType, this.SourceWithRoot.Source.MetadataToken.RID);
+            this.Target.MetadataToken = new MetadataToken(this.Source.MetadataToken.TokenType, this.Source.MetadataToken.RID);
 
-            if(this.SourceWithRoot.Source.IsPInvokeImpl)
+            if(this.Source.IsPInvokeImpl)
             {
                 throw new WeavingException(string.Format(
                     "Configured mixin implementation may not contain extern methods: [{0}]",
-                    this.SourceWithRoot.RootContext.RootSource.FullName));
+                    this.RootContext.RootSource.FullName));
             }
-            Contract.Assert(this.SourceWithRoot.Source.PInvokeInfo == null);
+            Contract.Assert(this.Source.PInvokeInfo == null);
 
-            if (this.SourceWithRoot.Source.HasOverrides)
+            if (this.Source.HasOverrides)
             {
-                foreach (var sourceOverride in this.SourceWithRoot.Source.Overrides)
+                foreach (var sourceOverride in this.Source.Overrides)
                 {
-                    this.Target.Overrides.Add(this.SourceWithRoot.RootImport(sourceOverride));
+                    this.Target.Overrides.Add(this.RootContext.RootImport(sourceOverride));
                 }
             }
 
-            this.ParameterOperandReplacementMap = new Dictionary<ParameterDefinition, ParameterDefinition>(this.SourceWithRoot.Source.Parameters.Count);
-            if (this.SourceWithRoot.Source.HasParameters)
+            this.ParameterOperandReplacementMap = new Dictionary<ParameterDefinition, ParameterDefinition>(this.Source.Parameters.Count);
+            if (this.Source.HasParameters)
             {
                 this.Target.Parameters.CloneAllParameters(
-                    this.SourceWithRoot.Source.Parameters,
-                    this.SourceWithRoot.RootContext,
+                    this.Source.Parameters,
+                    this.RootContext,
                     this.ParameterOperandReplacementMap);
             }
-            Contract.Assert(this.Target.Parameters.Count == this.SourceWithRoot.Source.Parameters.Count);
+            Contract.Assert(this.Target.Parameters.Count == this.Source.Parameters.Count);
 
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around
             this.Target.CustomAttributes.Clear();
-            this.Target.CloneAllCustomAttributes(this.SourceWithRoot.Source, this.SourceWithRoot.RootContext);
+            this.Target.CloneAllCustomAttributes(this.Source, this.RootContext);
 
-            if (this.SourceWithRoot.Source.HasGenericParameters)
+            if (this.Source.HasGenericParameters)
             {
                 // TODO method generic parameters
                 throw new WeavingException(string.Format(
                     "Configured mixin implementation may not include any generic methods: [{0}]",
-                    this.SourceWithRoot.RootContext.RootSource.FullName));
+                    this.RootContext.RootSource.FullName));
             }
 
-            if (this.SourceWithRoot.Source.HasSecurityDeclarations)
+            if (this.Source.HasSecurityDeclarations)
             {
                 // TODO method security declarations
                 throw new WeavingException(string.Format(
                     "Configured mixin implementation may not contain methods annotated with security attributes: [{0}]",
-                    this.SourceWithRoot.RootContext.RootSource.FullName));
+                    this.RootContext.RootSource.FullName));
             }
 
-            var sourceMethodReturnType = this.SourceWithRoot.Source.MethodReturnType;
+            var sourceMethodReturnType = this.Source.MethodReturnType;
             Contract.Assert(sourceMethodReturnType != null);
             this.Target.MethodReturnType = new MethodReturnType(this.Target);
-            this.Target.MethodReturnType.ReturnType = this.SourceWithRoot.RootImport(sourceMethodReturnType.ReturnType);
+            this.Target.MethodReturnType.ReturnType = this.RootContext.RootImport(sourceMethodReturnType.ReturnType);
             this.Target.MethodReturnType.Attributes = sourceMethodReturnType.Attributes;
             this.Target.MethodReturnType.Constant = sourceMethodReturnType.Constant;
             this.Target.MethodReturnType.HasConstant = sourceMethodReturnType.HasConstant;
@@ -143,7 +145,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.Target.MethodReturnType.MetadataToken =
                 new MetadataToken(sourceMethodReturnType.MetadataToken.TokenType, sourceMethodReturnType.MetadataToken.RID);
 
-            this.Target.MethodReturnType.CloneAllCustomAttributes(sourceMethodReturnType, this.SourceWithRoot.RootContext);
+            this.Target.MethodReturnType.CloneAllCustomAttributes(sourceMethodReturnType, this.RootContext);
 
             this.IsStructureCloned = true;
         }
@@ -170,7 +172,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
             Contract.Assert(this.ParameterOperandReplacementMap != null);
 
-            var sourceBody = this.SourceWithRoot.Source.Body;
+            var sourceBody = this.Source.Body;
 
             if(sourceBody == null)
             {
@@ -198,7 +200,7 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 var targetVariable = new VariableDefinition(
                     sourceVariable.Name,
-                    this.SourceWithRoot.RootImport(sourceVariable.VariableType));
+                    this.RootContext.RootImport(sourceVariable.VariableType));
 
                 variableOperandReplacementMap.Add(sourceVariable, targetVariable);
 
@@ -441,7 +443,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, FieldReference field)
         {
-            return ilProcessor.Create(opCode, this.SourceWithRoot.RootImport(field));
+            return ilProcessor.Create(opCode, this.RootContext.RootImport(field));
         }
 
         /// <summary>
@@ -513,7 +515,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, MethodReference method)
         {
-            return ilProcessor.Create(opCode, this.SourceWithRoot.RootImport(method));
+            return ilProcessor.Create(opCode, this.RootContext.RootImport(method));
         }
 
         /// <summary>
@@ -561,7 +563,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, TypeReference type)
         {
-            return ilProcessor.Create(opCode, this.SourceWithRoot.RootImport(type));
+            return ilProcessor.Create(opCode, this.RootContext.RootImport(type));
         }
 
         /// <summary>

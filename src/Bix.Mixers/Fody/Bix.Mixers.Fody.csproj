@@ -104,7 +104,6 @@
     </Compile>
     <Compile Include="Core\WeavingException.cs" />
     <Compile Include="ILCloning\EventCloner.cs" />
-    <Compile Include="ILCloning\EventSourceWithRoot.cs" />
     <Compile Include="ILCloning\ILCloningExtensions.cs" />
     <Compile Include="ILCloning\IMemberCloner.cs" />
     <Compile Include="ILCloning\IMemberClonerContract.cs" />
@@ -113,22 +112,15 @@
     <Compile Include="Core\IMixCommandContract.cs" />
     <Compile Include="InterfaceMixins\InterfaceMapType.cs" />
     <Compile Include="InterfaceMixins\InterfaceMixinCommandMixer.cs" />
-    <Compile Include="ILCloning\IRootImportProvider.cs" />
-    <Compile Include="ILCloning\IRootImportProviderContract.cs" />
     <Compile Include="Core\ModuleWeaver.cs" />
     <Compile Include="ILCloning\PropertyCloner.cs" />
     <Compile Include="ILCloning\MethodCloner.cs" />
     <Compile Include="ILCloning\FieldCloner.cs" />
-    <Compile Include="ILCloning\PropertySourceWithRoot.cs" />
-    <Compile Include="ILCloning\MethodSourceWithRoot .cs" />
-    <Compile Include="ILCloning\FieldSourceWithRoot.cs" />
-    <Compile Include="ILCloning\MemberSourceWithRootBase.cs" />
     <Compile Include="InterfaceMixins\InterfaceMixinCommand.cs" />
     <Compile Include="ILCloning\MemberClonerBase.cs" />
     <Compile Include="ILCloning\RootContext.cs" />
     <Compile Include="InterfaceMixins\InterfaceMixinAttribute.cs" />
     <Compile Include="ILCloning\TypeCloner.cs" />
-    <Compile Include="ILCloning\TypeSourceWithRoot.cs" />
     <Compile Include="Core\CoreExtensions.cs" />
     <Compile Include="Core\IMixCommandData.cs" />
     <Compile Include="InterfaceMixins\InterfaceMixinConfig.cs">

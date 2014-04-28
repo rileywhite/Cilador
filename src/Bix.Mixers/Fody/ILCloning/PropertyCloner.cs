@@ -24,16 +24,18 @@ namespace Bix.Mixers.Fody.ILCloning
     /// <summary>
     /// Clones <see cref="PropertyDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class PropertyCloner : MemberClonerBase<PropertyDefinition, PropertySourceWithRoot>
+    internal class PropertyCloner : MemberClonerBase<PropertyDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="PropertyCloner"/>
         /// </summary>
-        /// <param name="target">Cloning target</param>
-        /// <param name="source">Cloning source with root information</param>
-        public PropertyCloner(PropertyDefinition target, PropertySourceWithRoot source)
-            : base(target, source)
+        /// <param name="rootContext">Root context for cloning.</param>
+        /// <param name="target">Cloning target.</param>
+        /// <param name="source">Cloning source.</param>
+        public PropertyCloner(RootContext rootContext, PropertyDefinition target, PropertyDefinition source)
+            : base(rootContext, target, source)
         {
+            Contract.Requires(rootContext != null);
             Contract.Requires(target != null);
             Contract.Requires(source != null);
         }
@@ -44,54 +46,54 @@ namespace Bix.Mixers.Fody.ILCloning
         public override void CloneStructure()
         {
             Contract.Assert(this.Target.DeclaringType != null);
-            Contract.Assert(this.Target.Name == this.SourceWithRoot.Source.Name);
+            Contract.Assert(this.Target.Name == this.Source.Name);
 
-            this.Target.Attributes = this.SourceWithRoot.Source.Attributes;
-            this.Target.Constant = this.SourceWithRoot.Source.Constant;
-            this.Target.HasConstant = this.SourceWithRoot.Source.HasConstant;
-            this.Target.HasDefault = this.SourceWithRoot.Source.HasDefault;
-            this.Target.HasThis = this.SourceWithRoot.Source.HasThis;
-            this.Target.IsRuntimeSpecialName = this.SourceWithRoot.Source.IsRuntimeSpecialName;
-            this.Target.IsSpecialName = this.SourceWithRoot.Source.IsSpecialName;
+            this.Target.Attributes = this.Source.Attributes;
+            this.Target.Constant = this.Source.Constant;
+            this.Target.HasConstant = this.Source.HasConstant;
+            this.Target.HasDefault = this.Source.HasDefault;
+            this.Target.HasThis = this.Source.HasThis;
+            this.Target.IsRuntimeSpecialName = this.Source.IsRuntimeSpecialName;
+            this.Target.IsSpecialName = this.Source.IsSpecialName;
 
-            this.Target.PropertyType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.PropertyType);
+            this.Target.PropertyType = this.RootContext.RootImport(this.Source.PropertyType);
 
             // TODO research correct usage of property MetadataToken
             this.Target.MetadataToken = new MetadataToken(
-                this.SourceWithRoot.Source.MetadataToken.TokenType,
-                this.SourceWithRoot.Source.MetadataToken.RID);
+                this.Source.MetadataToken.TokenType,
+                this.Source.MetadataToken.RID);
 
-            if (this.SourceWithRoot.Source.HasParameters)
+            if (this.Source.HasParameters)
             {
-                this.Target.Parameters.CloneAllParameters(this.SourceWithRoot.Source.Parameters, this.SourceWithRoot.RootContext);
+                this.Target.Parameters.CloneAllParameters(this.Source.Parameters, this.RootContext);
             }
 
-            for (int i = 0; i < this.SourceWithRoot.Source.OtherMethods.Count; i++)
+            for (int i = 0; i < this.Source.OtherMethods.Count; i++)
             {
                 this.Target.OtherMethods.Add(null);
             }
 
             foreach(var method in this.Target.DeclaringType.Methods)
             {
-                if (this.SourceWithRoot.Source.GetMethod != null &&
+                if (this.Source.GetMethod != null &&
                     this.Target.GetMethod == null &&
-                    method.SignatureEquals(this.SourceWithRoot.Source.GetMethod, this.SourceWithRoot.RootContext))
+                    method.SignatureEquals(this.Source.GetMethod, this.RootContext))
                 {
                     this.Target.GetMethod = method;
                 }
 
-                if (this.SourceWithRoot.Source.SetMethod != null &&
+                if (this.Source.SetMethod != null &&
                     this.Target.SetMethod == null &&
-                    method.SignatureEquals(this.SourceWithRoot.Source.SetMethod, this.SourceWithRoot.RootContext))
+                    method.SignatureEquals(this.Source.SetMethod, this.RootContext))
                 {
                     this.Target.SetMethod = method;
                 }
 
-                for (int i = 0; i < this.SourceWithRoot.Source.OtherMethods.Count; i++)
+                for (int i = 0; i < this.Source.OtherMethods.Count; i++)
                 {
                     if (this.Target.OtherMethods[i] != null &&
                         this.Target.OtherMethods[i] == null &&
-                        method.SignatureEquals(this.SourceWithRoot.Source.OtherMethods[i], this.SourceWithRoot.RootContext))
+                        method.SignatureEquals(this.Source.OtherMethods[i], this.RootContext))
                     {
                         this.Target.OtherMethods[i] = method;
                     }
@@ -100,16 +102,16 @@ namespace Bix.Mixers.Fody.ILCloning
 
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around
             this.Target.CustomAttributes.Clear();
-            this.Target.CloneAllCustomAttributes(this.SourceWithRoot.Source, this.SourceWithRoot.RootContext);
+            this.Target.CloneAllCustomAttributes(this.Source, this.RootContext);
 
             this.IsStructureCloned = true;
 
-            Contract.Assert(this.Target.SignatureEquals(this.SourceWithRoot.Source));
-            Contract.Assert((this.Target.GetMethod == null) == (this.SourceWithRoot.Source.GetMethod == null));
-            Contract.Assert((this.Target.SetMethod == null) == (this.SourceWithRoot.Source.SetMethod == null));
-            for (int i = 0; i < this.SourceWithRoot.Source.OtherMethods.Count; i++)
+            Contract.Assert(this.Target.SignatureEquals(this.Source));
+            Contract.Assert((this.Target.GetMethod == null) == (this.Source.GetMethod == null));
+            Contract.Assert((this.Target.SetMethod == null) == (this.Source.SetMethod == null));
+            for (int i = 0; i < this.Source.OtherMethods.Count; i++)
             {
-                Contract.Assert((this.Target.OtherMethods[i] == null) == (this.SourceWithRoot.Source.OtherMethods[i] == null));
+                Contract.Assert((this.Target.OtherMethods[i] == null) == (this.Source.OtherMethods[i] == null));
             }
         }
     }

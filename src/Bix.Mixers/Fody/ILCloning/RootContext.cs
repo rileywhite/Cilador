@@ -35,7 +35,7 @@ namespace Bix.Mixers.Fody.ILCloning
     /// is certainly in need of change. For now it works, but it will be rewritten when full
     /// mixin generic support is added.
     /// </remarks>
-    internal class RootContext : IRootImportProvider
+    internal class RootContext
     {
         public RootContext(TypeDefinition rootSource, TypeDefinition rootTarget)
         {

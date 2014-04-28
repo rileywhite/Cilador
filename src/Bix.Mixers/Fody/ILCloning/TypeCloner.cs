@@ -27,16 +27,18 @@ namespace Bix.Mixers.Fody.ILCloning
     /// <summary>
     /// Clones <see cref="TypeDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class TypeCloner : MemberClonerBase<TypeDefinition, TypeSourceWithRoot>
+    internal class TypeCloner : MemberClonerBase<TypeDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="TypeCloner"/>.
         /// </summary>
-        /// <param name="target">Target for cloning.</param>
-        /// <param name="source">Source for cloning</param>
-        public TypeCloner(TypeDefinition target, TypeSourceWithRoot source)
-            : base(target, source)
+        /// <param name="rootContext">Root context for cloning.</param>
+        /// <param name="target">Cloning target.</param>
+        /// <param name="source">Cloning source.</param>
+        public TypeCloner(RootContext rootContext, TypeDefinition target, TypeDefinition source)
+            : base(rootContext, target, source)
         {
+            Contract.Requires(rootContext != null);
             Contract.Requires(target != null);
             Contract.Requires(source != null);
             this.TypeCloners = new List<TypeCloner>();
@@ -106,80 +108,80 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         private void CloneTypeData()
         {
-            if (this.Target == this.SourceWithRoot.RootContext.RootTarget)
+            if (this.Target == this.RootContext.RootTarget)
             {
-                if (!(this.SourceWithRoot.Source.IsClass && !this.SourceWithRoot.Source.IsValueType))
+                if (!(this.Source.IsClass && !this.Source.IsValueType))
                 {
-                    throw new WeavingException(string.Format("Configured mixin implementation type must be a reference type: [{0}]", this.SourceWithRoot.Source.FullName));
+                    throw new WeavingException(string.Format("Configured mixin implementation type must be a reference type: [{0}]", this.Source.FullName));
                 }
 
-                if (this.SourceWithRoot.Source.IsAbstract)
+                if (this.Source.IsAbstract)
                 {
-                    throw new WeavingException(string.Format("Configured mixin implementation type cannot be abstract: [{0}]", this.SourceWithRoot.Source.FullName));
+                    throw new WeavingException(string.Format("Configured mixin implementation type cannot be abstract: [{0}]", this.Source.FullName));
                 }
 
-                if (this.SourceWithRoot.Source.HasGenericParameters)
+                if (this.Source.HasGenericParameters)
                 {
-                    throw new WeavingException(string.Format("Configured mixin implementation type cannot be an open generic type: [{0}]", this.SourceWithRoot.Source.FullName));
+                    throw new WeavingException(string.Format("Configured mixin implementation type cannot be an open generic type: [{0}]", this.Source.FullName));
                 }
 
-                if (this.SourceWithRoot.Source.HasSecurityDeclarations)
+                if (this.Source.HasSecurityDeclarations)
                 {
                     throw new WeavingException(string.Format(
                         "Configured mixin implementation may not be annotated with security attributes: [{0}]",
-                        this.SourceWithRoot.Source.FullName));
+                        this.Source.FullName));
                 }
 
-                if (this.SourceWithRoot.Source.BaseType.Resolve() != this.SourceWithRoot.Source.Module.Import(typeof(object)).Resolve())
+                if (this.Source.BaseType.Resolve() != this.Source.Module.Import(typeof(object)).Resolve())
                 {
                     throw new WeavingException(string.Format(
                         "Configured mixin implementation cannot have a base type other than System.Object: [{0}]",
-                        this.SourceWithRoot.Source.FullName));
+                        this.Source.FullName));
                 }
             }
             else
             {
                 Contract.Assert(this.Target.IsNested);
-                Contract.Assert(this.SourceWithRoot.Source.IsNested);
+                Contract.Assert(this.Source.IsNested);
 
-                if(this.SourceWithRoot.Source.HasGenericParameters)
+                if(this.Source.HasGenericParameters)
                 {
                     // TODO nested type generic parameters
                     throw new WeavingException(string.Format(
                         "Configured mixin implementation may not include any open generic nested types: [{0}]",
-                        this.SourceWithRoot.RootContext.RootSource.FullName));
+                        this.RootContext.RootSource.FullName));
                 }
 
-                if (this.SourceWithRoot.Source.HasSecurityDeclarations)
+                if (this.Source.HasSecurityDeclarations)
                 {
                     // TODO Nested type security declarations
                     throw new WeavingException(string.Format(
                         "Configured mixin implementation may not contain nested types annotated with security attributes: [{0}]",
-                        this.SourceWithRoot.RootContext.RootSource.FullName));
+                        this.RootContext.RootSource.FullName));
                 }
 
-                this.Target.Attributes = this.SourceWithRoot.Source.Attributes;
-                this.Target.DeclaringType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.DeclaringType).Resolve();
-                this.Target.BaseType = this.SourceWithRoot.RootImport(this.SourceWithRoot.Source.BaseType);
+                this.Target.Attributes = this.Source.Attributes;
+                this.Target.DeclaringType = this.RootContext.RootImport(this.Source.DeclaringType).Resolve();
+                this.Target.BaseType = this.RootContext.RootImport(this.Source.BaseType);
 
-                foreach (var interfaceType in this.SourceWithRoot.Source.Interfaces)
+                foreach (var interfaceType in this.Source.Interfaces)
                 {
-                    this.Target.Interfaces.Add(this.SourceWithRoot.RootImport(interfaceType));
+                    this.Target.Interfaces.Add(this.RootContext.RootImport(interfaceType));
                 }
 
                 // TODO look more closely at type packing size
-                this.Target.PackingSize = this.SourceWithRoot.Source.PackingSize;
+                this.Target.PackingSize = this.Source.PackingSize;
 
                 // TODO look more closely at type class size
-                this.Target.ClassSize = this.SourceWithRoot.Source.ClassSize;
+                this.Target.ClassSize = this.Source.ClassSize;
 
                 // TODO research correct usage of type metadata token
-                this.Target.MetadataToken = new MetadataToken(this.SourceWithRoot.Source.MetadataToken.TokenType, this.SourceWithRoot.Source.MetadataToken.RID);
+                this.Target.MetadataToken = new MetadataToken(this.Source.MetadataToken.TokenType, this.Source.MetadataToken.RID);
             }
 
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around, but only for non-root type
-            if (this.Target != this.SourceWithRoot.RootContext.RootTarget) { this.Target.CustomAttributes.Clear(); }
-            this.Target.CloneAllCustomAttributes(this.SourceWithRoot.Source, this.SourceWithRoot.RootContext);
+            if (this.Target != this.RootContext.RootTarget) { this.Target.CustomAttributes.Clear(); }
+            this.Target.CloneAllCustomAttributes(this.Source, this.RootContext);
         }
 
         /// <summary>
@@ -191,69 +193,64 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 var voidReference = this.Target.Module.Import(typeof(void));
 
-                foreach (var sourceWithRoot in from type in this.SourceWithRoot.Source.NestedTypes
-                                       select new TypeSourceWithRoot(this.SourceWithRoot.RootContext, type))
+                foreach (var sourceType in this.Source.NestedTypes)
                 {
-                    var target = new TypeDefinition(sourceWithRoot.Source.Namespace, sourceWithRoot.Source.Name, 0);
-                    this.Target.NestedTypes.Add(target);
-                    var typeCloner = new TypeCloner(target, sourceWithRoot);
+                    var targetType = new TypeDefinition(sourceType.Namespace, sourceType.Name, 0);
+                    this.Target.NestedTypes.Add(targetType);
+                    var typeCloner = new TypeCloner(this.RootContext, targetType, sourceType);
                     typeCloner.CreateWireframeAndCloners();
                     this.TypeCloners.Add(typeCloner);
                 }
 
-                foreach (var sourceWithRoot in from field in this.SourceWithRoot.Source.Fields
-                                       select new FieldSourceWithRoot(this.SourceWithRoot.RootContext, field))
+                foreach (var sourceField in this.Source.Fields)
                 {
-                    var target = new FieldDefinition(sourceWithRoot.Source.Name, 0, voidReference);
-                    this.Target.Fields.Add(target);
-                    this.FieldCloners.Add(new FieldCloner(target, sourceWithRoot));
+                    var targetField = new FieldDefinition(sourceField.Name, 0, voidReference);
+                    this.Target.Fields.Add(targetField);
+                    this.FieldCloners.Add(new FieldCloner(this.RootContext, targetField, sourceField));
                 }
 
-                foreach (var sourceWithRoot in from method in this.SourceWithRoot.Source.Methods
-                                       select new MethodSourceWithRoot(this.SourceWithRoot.RootContext, method))
+                foreach (var sourceMethod in this.Source.Methods)
                 {
-                    if (sourceWithRoot.Source.Name == ".cctor" &&
-                        sourceWithRoot.Source.IsStatic &&
-                        sourceWithRoot.Source.DeclaringType == sourceWithRoot.RootContext.RootSource)
+                    if (sourceMethod.Name == ".cctor" &&
+                        sourceMethod.IsStatic &&
+                        sourceMethod.DeclaringType == RootContext.RootSource)
                     {
                         // TODO should static constructors be supported on the root type?
                         throw new WeavingException(string.Format(
                             "Configured mixin implementation cannot have a type initializer (i.e. static constructor): [{0}]",
-                            this.SourceWithRoot.RootContext.RootSource.FullName));
+                            this.RootContext.RootSource.FullName));
                     }
 
-                    if (sourceWithRoot.Source.IsConstructor &&
-                        sourceWithRoot.Source.DeclaringType == sourceWithRoot.RootContext.RootSource)
+                    if (sourceMethod.IsConstructor &&
+                        sourceMethod.DeclaringType == RootContext.RootSource)
                     {
                         // TODO support constructors for the root type in some meaningful way
-                        if (sourceWithRoot.Source.HasParameters) 
+                        if (sourceMethod.HasParameters) 
                         {
                             throw new WeavingException(string.Format(
                                 "Configured mixin implementation cannot use constructors: [{0}]",
-                                this.SourceWithRoot.RootContext.RootSource.FullName));
+                                this.RootContext.RootSource.FullName));
                         }
                         continue;
                     }
 
-                    var target = new MethodDefinition(sourceWithRoot.Source.Name, 0, voidReference);
-                    this.Target.Methods.Add(target);
-                    this.MethodCloners.Add(new MethodCloner(target, sourceWithRoot));
+                    var targetMethod = new MethodDefinition(sourceMethod.Name, 0, voidReference);
+                    this.Target.Methods.Add(targetMethod);
+                    this.MethodCloners.Add(new MethodCloner(this.RootContext, targetMethod, sourceMethod));
                 }
 
-                foreach (var sourceWithRoot in from property in this.SourceWithRoot.Source.Properties
-                                       select new PropertySourceWithRoot(this.SourceWithRoot.RootContext, property))
+                foreach (var sourceProperty in this.Source.Properties)
                 {
-                    var target = new PropertyDefinition(sourceWithRoot.Source.Name, 0, voidReference);
-                    this.Target.Properties.Add(target);
-                    this.PropertyCloners.Add(new PropertyCloner(target, sourceWithRoot));
+                    var targetProperty = new PropertyDefinition(sourceProperty.Name, 0, voidReference);
+                    this.Target.Properties.Add(targetProperty);
+                    this.PropertyCloners.Add(new PropertyCloner(this.RootContext, targetProperty, sourceProperty));
                 }
 
-                foreach (var sourceWithRoot in from @event in this.SourceWithRoot.Source.Events
-                                       select new EventSourceWithRoot(this.SourceWithRoot.RootContext, @event))
+                foreach (var sourceEvent in this.Source.Events)
                 {
-                    var target = new EventDefinition(sourceWithRoot.Source.Name, 0, voidReference);
-                    this.Target.Events.Add(target);
-                    this.EventCloners.Add(new EventCloner(target, sourceWithRoot));
+                    var targetEvent = new EventDefinition(sourceEvent.Name, 0, voidReference);
+                    this.Target.Events.Add(targetEvent);
+                    this.EventCloners.Add(new EventCloner(this.RootContext, targetEvent, sourceEvent));
                 }
             }
             this.IsWireframeCompleted = true;

@@ -54,7 +54,7 @@ namespace Bix.Mixers.Fody.InterfaceMixins
             Contract.Ensures(this.InterfaceType != null);
             Contract.Ensures(this.Target != null);
             Contract.Ensures(this.Target.IsClass);
-            Contract.Ensures(this.MixinTypeSourceWithRoot != null);
+            Contract.Ensures(this.Source != null);
 
             if (!interfaceType.IsInterface)
             {
@@ -86,7 +86,7 @@ namespace Bix.Mixers.Fody.InterfaceMixins
             }
 
             this.InterfaceType = interfaceType;
-            this.MixinTypeSourceWithRoot = TypeSourceWithRoot.CreateWithRootSourceAndTarget(mixinType, target);
+            this.Source = mixinType;
             this.Target = target;
         }
 
@@ -96,9 +96,9 @@ namespace Bix.Mixers.Fody.InterfaceMixins
         public TypeDefinition InterfaceType { get; private set; }
 
         /// <summary>
-        /// Gets or sets the mixin type with root information that will be used by the IL cloning code.
+        /// Gets or sets the mixin type which is the source of mixin code that will be added to the <see cref="Target"/>
         /// </summary>
-        private TypeSourceWithRoot MixinTypeSourceWithRoot { get; set; }
+        private TypeDefinition Source { get; set; }
 
         /// <summary>
         /// Gets or sets the target type which will be modified by the command execution.
@@ -111,7 +111,7 @@ namespace Bix.Mixers.Fody.InterfaceMixins
         public void Execute()
         {
             this.Target.Interfaces.Add(this.Target.Module.Import(this.InterfaceType));
-            var typeCloner = new TypeCloner(this.Target, this.MixinTypeSourceWithRoot);
+            var typeCloner = new TypeCloner(new RootContext(this.Source, this.Target), this.Target, this.Source);
             typeCloner.CloneStructure();
             typeCloner.CloneLogic();
         }
