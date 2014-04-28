@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Bix.Mixers.Fody.Config;
 using Bix.Mixers.Fody.Core;
 using Bix.Mixers.Fody.InterfaceMixins;
 using Bix.Mixers.Fody.Tests.Common;
@@ -34,14 +35,16 @@ namespace Bix.Mixers.Fody.Tests.ModuleWeaverGeneralTests
     internal class ConfigTests
     {
         [TestCase(
-@"<Bix.Mixers><BixMixersConfig xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns=""urn:Bix:Mixers:Fody:Core"">
+@"<Bix.Mixers><BixMixersConfig xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns=""urn:Bix:Mixers:Fody:Config"">
 </BixMixersConfig></Bix.Mixers>")]
         [TestCase(
-@"<Bix.Mixers><BixMixersConfig xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns=""urn:Bix:Mixers:Fody:Core"" xmlns:bmfim=""urn:Bix:Mixers:Fody:InterfaceMixins"">
-  <MixCommandConfig xsi:type=""bmfim:InterfaceMixinConfigType"" xmlns="""">
-    <InterfaceMap Interface=""My.Interface.Assembly.Type, My.Interface.Assembly"" Mixin=""My.Mixin.Assembly.Type, My.Mixin.Assembly"" />
-  </MixCommandConfig>
-</BixMixersConfig></Bix.Mixers>", typeof(InterfaceMixinConfigType))]
+@"<Bix.Mixers>
+    <bmfc:BixMixersConfig xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:bmfc=""urn:Bix:Mixers:Fody:Config"">
+      <MixCommandConfig xsi:type=""bmfc:InterfaceMixinConfigType"">
+        <InterfaceMixinMap Interface=""My.Interface.Assembly.Type, My.Interface.Assembly"" Mixin=""My.Mixin.Assembly.Type, My.Mixin.Assembly"" />
+      </MixCommandConfig>
+    </bmfc:BixMixersConfig>
+</Bix.Mixers>", typeof(InterfaceMixinConfigType))]
         public void CanReadConfig(string xmlString, params Type[] mixCommandConfigTypes)
         {
             var configXElement = XElement.Parse(xmlString);

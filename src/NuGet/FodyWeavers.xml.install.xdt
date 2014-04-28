@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Weavers xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+  <Bix.Mixers xdt:Transform="Insert">
+    <bmfc:BixMixersConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bmfc="urn:Bix:Mixers:Fody:Config">
+      <MixCommandConfig xsi:type="bmfc:InterfaceMixinConfigType">
+
+        <!-- Add an InterfaceMixinMap element for each mixin interface definition -->
+        <InterfaceMixinMap 
+          Interface="MyMixinDefinitions.IHelloWorld, MyMixinDefinitions"
+          Mixin="MyMixins.HelloMixin, MyMixins" />
+
+      </MixCommandConfig>
+    </bmfc:BixMixersConfig>
+  </Bix.Mixers>
+</Weavers>

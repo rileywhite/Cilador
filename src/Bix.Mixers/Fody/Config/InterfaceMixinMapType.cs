@@ -23,13 +23,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bix.Mixers.Fody.InterfaceMixins
+namespace Bix.Mixers.Fody.Config
 {
     /// <summary>
     /// Configuration data that maps mixin definition interfaces to mixin implementations
     /// that will be used to satisfy the definition during mixing.
     /// </summary>
-    public partial class InterfaceMapType
+    public partial class InterfaceMixinMapType
     {
         /// <summary>
         /// Gets the mixin definition interface.

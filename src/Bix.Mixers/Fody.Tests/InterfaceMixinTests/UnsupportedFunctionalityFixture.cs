@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Bix.Mixers.Fody.Config;
 using Bix.Mixers.Fody.Core;
 using Bix.Mixers.Fody.InterfaceMixins;
 using Bix.Mixers.Fody.TestMixinInterfaces;
@@ -41,9 +42,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(AbstractMixin).GetShortAssemblyQualifiedName()
@@ -69,9 +70,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(OpenGenericMixin<>).GetShortAssemblyQualifiedName()
@@ -97,9 +98,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(InterfaceTypeMixin).GetShortAssemblyQualifiedName()
@@ -125,9 +126,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(ValueTypeMixin).GetShortAssemblyQualifiedName()
@@ -153,9 +154,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(InterfacelessMixin).GetShortAssemblyQualifiedName()
@@ -182,9 +183,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(NotAValidMixinInterface).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(IncorrectMixinSpecifyingClassInsteadOfInterface).GetShortAssemblyQualifiedName()
@@ -210,9 +211,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(TypeInitializerMixin).GetShortAssemblyQualifiedName()
@@ -238,9 +239,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(InheritingMixin).GetShortAssemblyQualifiedName()
@@ -266,9 +267,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(ExtraInterfaceMixin).GetShortAssemblyQualifiedName()
@@ -295,9 +296,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(GenericMethodMixin).GetShortAssemblyQualifiedName()
@@ -323,9 +324,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(OpenGenericNestedTypeMixin).GetShortAssemblyQualifiedName()
@@ -351,9 +352,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(UnmanagedCallMixin).GetShortAssemblyQualifiedName()
@@ -379,9 +380,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(SecurityDeclarationMixin).GetShortAssemblyQualifiedName()
@@ -407,9 +408,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(SecurityDeclarationOnNestedTypeMixin).GetShortAssemblyQualifiedName()
@@ -435,9 +436,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(SecurityDeclarationOnMethodMixin).GetShortAssemblyQualifiedName()
@@ -463,9 +464,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IIsAlreadyImplementedTester).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(InterfaceIsAlreadyImplementedMixin).GetShortAssemblyQualifiedName()
@@ -492,9 +493,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(ConstructorWithParametersMixin).GetShortAssemblyQualifiedName()

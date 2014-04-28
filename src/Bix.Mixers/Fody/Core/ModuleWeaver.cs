@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Bix.Mixers.Fody.Config;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
@@ -222,10 +223,10 @@ namespace Bix.Mixers.Fody.Core
             }
 
             var firstChild = children.First();
-            if (firstChild.Name.NamespaceName != "urn:Bix:Mixers:Fody:Core" ||
+            if (firstChild.Name.NamespaceName != "urn:Bix:Mixers:Fody:Config" ||
                 firstChild.Name.LocalName != "BixMixersConfig")
             {
-                throw new WeavingException("Child of Bix.Mixers config in FodyWeavers.xml should be BixMixersConfig in namespace urn:Bix:Mixers:Fody:Core");
+                throw new WeavingException("Child of Bix.Mixers config in FodyWeavers.xml should be BixMixersConfig in namespace urn:Bix:Mixers:Fody:Config");
             }
 
             BixMixersConfigType deserializedConfig;
@@ -236,7 +237,7 @@ namespace Bix.Mixers.Fody.Core
             catch (Exception e)
             {
                 throw new WeavingException(
-                    "Element urn:Bix:Mixers:Fody:Core:BixMixersConfig in FodyWeavers.xml could not be deserialized into type of BixMixersConfigType",
+                    "Element urn:Bix:Mixers:Fody:Config:BixMixersConfig in FodyWeavers.xml could not be deserialized into type of BixMixersConfigType",
                     e);
             }
 

@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Bix.Mixers.Fody.Config;
 using Bix.Mixers.Fody.Core;
 using Bix.Mixers.Fody.InterfaceMixins;
 using Bix.Mixers.Fody.TestMixinInterfaces;
@@ -41,9 +42,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMap = new InterfaceMapType[]
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
                     {
-                        new InterfaceMapType
+                        new InterfaceMixinMapType
                         {
                             Interface = typeof(IInterfaceWithOnlyPrimitiveTypes).GetShortAssemblyQualifiedName(),
                             Mixin = typeof(PropertiesAndMethodsWithPrimitiveTypesMixin).GetShortAssemblyQualifiedName()

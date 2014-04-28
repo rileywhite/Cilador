@@ -18,8 +18,8 @@
 
 <xs:schema
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  xmlns:bmfc="urn:Bix:Mixers:Fody:Core"
-  targetNamespace="urn:Bix:Mixers:Fody:Core">
+  xmlns:bmfc="urn:Bix:Mixers:Fody:Config"
+  targetNamespace="urn:Bix:Mixers:Fody:Config">
 
   <xs:complexType name="MixCommandConfigTypeBase" abstract="true"/>
 
@@ -29,5 +29,21 @@
     </xs:sequence>
   </xs:complexType>
   <xs:element name="BixMixersConfig" type="bmfc:BixMixersConfigType"/>
+
+  <xs:complexType name="InterfaceMixinMapType">
+    <xs:attribute name="Interface" type="xs:string" use="required"/>
+    <xs:attribute name="Mixin" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="InterfaceMixinConfigType">
+    <xs:complexContent>
+      <xs:extension base="bmfc:MixCommandConfigTypeBase">
+        <xs:sequence minOccurs="1" maxOccurs="1">
+          <xs:element name="InterfaceMixinMap" type="bmfc:InterfaceMixinMapType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="InterfaceMixinConfig" type="bmfc:InterfaceMixinConfigType"/>
 
 </xs:schema>

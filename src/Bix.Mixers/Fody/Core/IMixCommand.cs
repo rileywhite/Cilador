@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Bix.Mixers.Fody.Config;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;

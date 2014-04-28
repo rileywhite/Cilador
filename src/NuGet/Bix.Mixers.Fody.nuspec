@@ -10,8 +10,7 @@
     <licenseUrl>https://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
     <projectUrl>https://github.com/rileywhite/Bix.Mixers.Fody</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <iconUrl/>
-    <description>A Fody add-in for Bix</description>
+    <description>Easily create custom C# mixins with this Fody add-in.</description>
     <summary />
     <language>en-US</language>
     <tags>Bix, Mixins, ILWeaving, Fody, Cecil</tags>

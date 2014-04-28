@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Bix.Mixers.Fody.Config;
 using Bix.Mixers.Fody.Core;
 using Mono.Cecil;
 using System;
@@ -66,7 +67,7 @@ namespace Bix.Mixers.Fody.InterfaceMixins
                 Contract.Requires(value != null);
                 Contract.Ensures(this.Config != null);
 
-                value.InterfaceMap = value.InterfaceMap ?? new InterfaceMapType[0];
+                value.InterfaceMixinMap = value.InterfaceMixinMap ?? new InterfaceMixinMapType[0];
                 this.config = value;
             }
         }
@@ -109,7 +110,7 @@ namespace Bix.Mixers.Fody.InterfaceMixins
                 // let execution continue...an error will be thrown for this particular command if invocation is attempted
             }
 
-            var matchedMap = this.Config.InterfaceMap.SingleOrDefault(
+            var matchedMap = this.Config.InterfaceMixinMap.SingleOrDefault(
                 map => map.GetInterfaceType(weavingContext).FullName == commandInterfaceType.FullName);
 
             if(matchedMap == null)
