@@ -56,11 +56,13 @@ library if you like.
     }
 
 You have to follow a few rules for the implementation, but it's pretty basic.
+
  * It has to be a `class`.
  * It has to implement the mixin interface.
  * It can't implement other interfaces.
  * It can't inherit from any other type.
  * Don't provide any constructors.
+ 
 Outside of that, you can do what you want. Experiment a bit :-)
 
 This mixin implementation assembly must reference the mixin definition assembly.
