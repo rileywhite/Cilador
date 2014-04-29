@@ -300,11 +300,20 @@ namespace Bix.Mixers.Fody.Core
 
         #region Target Assembly Data
 
+        private DualAssemblyResolver assemblyResolver = new DualAssemblyResolver();
         /// <summary>
         /// Gets or sets the object that can find and load assemblies.
         /// </summary>
         /// <remarks>When run as a Fody addin withing Visual Studio, Fody sets this value.</remarks>
-        public IAssemblyResolver AssemblyResolver { get; set; }
+        public IAssemblyResolver AssemblyResolver
+        {
+            get { return this.assemblyResolver; }
+            set
+            {
+                // only control the first resolver with this setter
+                this.assemblyResolver.Resolver1 = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="ModuleDefinition"/> for the target assembly.
@@ -322,7 +331,9 @@ namespace Bix.Mixers.Fody.Core
         /// <remarks>When run as a Fody addin withing Visual Studio, Fody invokes this method after setting all configuration data.</remarks>
         public void Execute()
         {
-            foreach(var mixCommandAttributesByTargetType in ExtractMixCommandAttributesByTargetTypes())
+            this.assemblyResolver.Resolver2 = new WeavingContextAssemblyResolver(this);
+
+            foreach (var mixCommandAttributesByTargetType in ExtractMixCommandAttributesByTargetTypes())
             {
                 Contract.Assert(mixCommandAttributesByTargetType.Key != null);
                 Contract.Assert(mixCommandAttributesByTargetType.Value != null);

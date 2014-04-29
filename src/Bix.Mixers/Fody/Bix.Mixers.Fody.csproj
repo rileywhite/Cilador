@@ -98,10 +98,12 @@
     <Compile Include="..\..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Core\DualAssemblyResolver.cs" />
     <Compile Include="Core\IWeavingContext.cs" />
     <Compile Include="Config\MixCommandConfig.cs">
       <DependentUpon>MixCommandConfig.xsd</DependentUpon>
     </Compile>
+    <Compile Include="Core\WeavingContextAssemblyResolver.cs" />
     <Compile Include="Core\WeavingException.cs" />
     <Compile Include="ILCloning\EventCloner.cs" />
     <Compile Include="ILCloning\ILCloningExtensions.cs" />

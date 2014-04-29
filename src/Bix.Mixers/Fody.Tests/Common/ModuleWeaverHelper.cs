@@ -60,6 +60,9 @@ namespace Bix.Mixers.Fody.Tests.Common
             moduleWeaver.AssemblyResolver = new DefaultAssemblyResolver();
             moduleWeaver.Config = config;
             moduleWeaver.DefineConstants = new List<string>();
+#if DEBUG
+            moduleWeaver.DefineConstants.Add("DEBUG");
+#endif
             moduleWeaver.LogDebug = m => { };
             moduleWeaver.LogError = m => { };
             moduleWeaver.LogErrorPoint = (m, p) => { };
