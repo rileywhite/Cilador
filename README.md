@@ -21,9 +21,9 @@ to a mixin target type.
 
 #Usage
 See [Bix.Mixers.Fody-Examples](http://github.com/rileywhite/Bix.Mixers.Fody-Examples)
-for full examples. Read on for a short introduction.
+for working examples. Read on for a short introduction.
 
-##Create the mixin definition interface in the assembly that will contain mixin definitions.
+##Create a mixin definition interface in the assembly that will contain mixin definitions.
 
     namespace MyMixinDefinitions
     {
@@ -58,9 +58,16 @@ You have to follow a few rules for the implementation, but it's pretty basic.
  * It can't inherit from any other type.
  * Don't provide any constructors.
  
-Outside of that, you can do what you want. Experiment a bit :-)
+Outside of that, you can do what you want. You can include fields, properties, methods,
+events, and even nested types. Visibility will transfer over to the mixin target, as
+will custom attributes, and virtual/abstract (only nested types can be abstract, though).
 
-This mixin implementation assembly must reference the mixin definition assembly.
+There are some unsupported things, such as generic mixin types and methods, but most
+things will work. Experiment a bit, and [create an issue](https://github.com/rileywhite/Bix.Mixers.Fody/issues)
+if something you want is missing.
+
+The mixin implementation assembly must reference the mixin definition assembly since the definition
+interface is implemented by your mixin implementation type.
 
 ##Add an InterfaceMixinAttribute to your target type in a third assembly. Specify the mixin definition interface in the attribute constructor.
 
@@ -73,10 +80,11 @@ This mixin implementation assembly must reference the mixin definition assembly.
     }
 
 This is the assembly that should contain types used by your application. It must reference
-the mixin definition assembly, but it needn't reference the mixin implementation assembly.
+the mixin definition assembly, but it need not reference the mixin implementation assembly.
 
-Types inside this assembly cannot generally use the mixin
-functionality, but types outside of this assembly can use the mixin functionality.
+Types inside this assembly cannot use the mixin without casting or reflection, but types
+outside of this assembly can use the mixin functionality. Intellisense doesn't work, unfortunately,
+and Visual Studio may complain, but when it comes time to compile, it'll all work.
 
 ##Configure mixins for the target type assembly.
 
@@ -93,21 +101,33 @@ to the mixin implementation.
         </BixMixersConfig>
       </Bix.Mixers>
     </Weavers>
+
+You can consider everything by the `InterfaceMap` elements to be boilerplate.
+
+Include an `InterfaceMap` element specifying each mixin definition `Interface`. The type you supply for the `Mixin`
+will be used to implement the interface in each mixin target. Use the assembly qualified names of all types. In
+the simplest case, thats just `<My.Namespaces.TypeName>, <AssemblyFilenameWithoutExtension>`, but it can get
+[more complex](http://msdn.microsoft.com/en-us/library/k8xx4k69.aspx).
 	
-##Make sure Fody can find your mixin definitions and implementations.
+##Make sure Fody can find your mixin implementations.
+
+While the mixin definition assembly must be referenced by the target project, the implementation assembly may not be.
+If this is the case, then you'll need to put the assembly into a location where it can be found by Bix.Mixers.
 
 Create a Tools directory in your Visual Studio solution directory. Add the following command to your mixin
-definition and mixin implementation project post-build actions. If these depend on other assemblies, you'll
-have to do the same for them.
+implementation project post-build action.
 
     copy "$(TargetPath)" "$(SolutionDir)Tools"
+
+You may need to manually change the build order of the projects in your solution to ensure that the file exists
+before the target assembly is compiled.
 
 Alternatively, you can copy all assembly files manually; however, this may affect compilation if all assembly
 projects are in the same solution.
 
 ##Compile and test
 
-Code in a fourth assembly that references the target assembly and mixin definition assembly can now call mixed code.
+Code in a fourth assembly that references the target assembly and mixin definition assembly can now call mixed in code.
 
     namespace MyApplication
     {
