@@ -1,6 +1,7 @@
 #Welcome to Bix.Mixers!
 
-Bix.Mixers is a [Fody](http://github.com/Fody/Fody) plugin that provides the
+Bix.Mixers is a [Fody](http://github.com/Fody/Fody) plugin, available through
+[NuGet](https://www.nuget.org/packages/Bix.Mixers.Fody/), that provides the
 ability to write custom mixins for C#.
 
 What does this mean? I'm glad you asked.
