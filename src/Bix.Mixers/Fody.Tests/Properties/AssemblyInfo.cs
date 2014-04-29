@@ -24,7 +24,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Bix.Mixers.Fody.Tests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 

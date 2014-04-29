@@ -16,9 +16,10 @@
 
 using System.Reflection;
 
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Riley White")]
 [assembly: AssemblyProduct("Bix.Mixers.Fody")]
 [assembly: AssemblyCopyright("Copyright © Riley White 2013-2014")]
+[assembly: AssemblyTrademark("")]
 [assembly: AssemblyVersion(CommonAssemblyInfo.Version)]
 [assembly: AssemblyFileVersion(CommonAssemblyInfo.Version)]
 

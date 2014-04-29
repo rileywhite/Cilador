@@ -23,9 +23,34 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Bix.Mixers.Fody")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription(@"Initial pre-release version of Bix.Mixers.Fody. Please consider this software to be non-production quality.
+
+Supports:
+
+Mixins containing fields, methods, properties, events, and nested types.
+Public, private, protected, internal, and protected internal members.
+Static members
+Custom attributes on members
+Virtual members
+Abstract nested types and abstract members within these nested types
+
+Unsupported:
+
+Mixin constructors
+Mixin type initializers
+Generics within mixins
+Initialization on fields
+Unmanaged code calls (extern)
+Security attributes
+Mixins implementing mulitple interfaces
+Mixins with base types other than object
+Value type mixins
+
+Tricky Stuff:
+
+Initialized fields in mixin implementation types will silently lose initialization in the mixin target type
+Parameterless constructors in mixin implementation types will silently not copy logic into the target type.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
