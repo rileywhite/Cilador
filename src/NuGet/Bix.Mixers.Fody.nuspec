@@ -6,13 +6,13 @@
     <title>Bix.Mixers.Fody</title>
     <authors>Riley White</authors>
     <owners>Riley White</owners>
-    <copyright>Riley White 2013-2014</copyright>
-    <developmentDependency>true</developmentDependency>
+    <copyright>Copyright © Riley White 2013-2014</copyright>
+    <developmentDependency>false</developmentDependency>
     <licenseUrl>https://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
     <projectUrl>https://github.com/rileywhite/Bix.Mixers.Fody</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Easily create custom C# mixins with this Fody add-in.</description>
-    <summary />
+    <summary>Create custom C# mixins with this Fody add-in.</summary>
+    <description>$description$</description>
     <language>en-US</language>
     <tags>Bix, Mixins, ILWeaving, Fody, Cecil</tags>
     <dependencies>

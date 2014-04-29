@@ -41,6 +41,8 @@
     <Copy SourceFiles="$(ProjectDir)Bix.Mixers.Fody.nuspec" DestinationFolder="$(SolutionDir)NuGetBuild" />
     <Copy SourceFiles="$(ProjectDir)FodyWeavers.xml.install.xdt" DestinationFolder="$(SolutionDir)NuGetBuild\Content" />
     <Copy SourceFiles="$(ProjectDir)FodyWeavers.xml.uninstall.xdt" DestinationFolder="$(SolutionDir)NuGetBuild\Content" />
+    <Copy SourceFiles="$(SolutionDir)Bix.Mixers\Fody\bin\$(ConfigurationName)\Bix.Mixers.Fody.dll" DestinationFolder="$(SolutionDir)NuGetBuild\lib\net45" />
+    <Copy SourceFiles="$(SolutionDir)Bix.Mixers\Fody\bin\$(ConfigurationName)\Bix.Mixers.Fody.pdb" DestinationFolder="$(SolutionDir)NuGetBuild\lib\net45" />
     <Copy SourceFiles="$(SolutionDir)Bix.Mixers\Fody\bin\$(ConfigurationName)\Bix.Mixers.Fody.dll" DestinationFolder="$(SolutionDir)NuGetBuild" />
     <Copy SourceFiles="$(SolutionDir)Bix.Mixers\Fody\bin\$(ConfigurationName)\Bix.Mixers.Fody.pdb" DestinationFolder="$(SolutionDir)NuGetBuild" />
     <PepitaPackage.CreatePackageTask NuGetBuildDirectory="$(SolutionDir)NuGetBuild" MetadataAssembly="$(SolutionDir)Bix.Mixers\Fody\bin\$(ConfigurationName)\Bix.Mixers.Fody.dll" />
