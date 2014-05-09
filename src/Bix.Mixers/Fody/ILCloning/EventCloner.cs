@@ -52,9 +52,9 @@ namespace Bix.Mixers.Fody.ILCloning
             this.Target.EventType = this.RootContext.RootImport(this.Source.EventType);
 
             // TODO reseach correct usage of event MetadataToken
-            this.Target.MetadataToken = new MetadataToken(
-                this.Source.MetadataToken.TokenType,
-                this.Source.MetadataToken.RID);
+            //this.Target.MetadataToken = new MetadataToken(
+            //    this.Source.MetadataToken.TokenType,
+            //    this.Source.MetadataToken.RID);
 
 
             foreach (var method in this.Target.DeclaringType.Methods)

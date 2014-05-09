@@ -79,7 +79,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.Target.SemanticsAttributes = this.Source.SemanticsAttributes;
 
             // TODO research correct usage of method MetadataToken
-            this.Target.MetadataToken = new MetadataToken(this.Source.MetadataToken.TokenType, this.Source.MetadataToken.RID);
+            //this.Target.MetadataToken = new MetadataToken(this.Source.MetadataToken.TokenType, this.Source.MetadataToken.RID);
 
             if(this.Source.IsPInvokeImpl)
             {
@@ -142,8 +142,8 @@ namespace Bix.Mixers.Fody.ILCloning
             }
 
             // TODO research correct usage of MethodReturnType.MetadataToken
-            this.Target.MethodReturnType.MetadataToken =
-                new MetadataToken(sourceMethodReturnType.MetadataToken.TokenType, sourceMethodReturnType.MetadataToken.RID);
+            //this.Target.MethodReturnType.MetadataToken =
+            //    new MetadataToken(sourceMethodReturnType.MetadataToken.TokenType, sourceMethodReturnType.MetadataToken.RID);
 
             this.Target.MethodReturnType.CloneAllCustomAttributes(sourceMethodReturnType, this.RootContext);
 
@@ -185,10 +185,10 @@ namespace Bix.Mixers.Fody.ILCloning
 
             targetBody.InitLocals = sourceBody.InitLocals;
 
-            // TODO not sure about this
-            targetBody.LocalVarToken = new MetadataToken(
-                sourceBody.LocalVarToken.TokenType,
-                sourceBody.LocalVarToken.RID);
+            // TODO research correct usage of LocalVarToken
+            //targetBody.LocalVarToken = new MetadataToken(
+            //    sourceBody.LocalVarToken.TokenType,
+            //    sourceBody.LocalVarToken.RID);
 
             targetBody.MaxStackSize = sourceBody.MaxStackSize;
 

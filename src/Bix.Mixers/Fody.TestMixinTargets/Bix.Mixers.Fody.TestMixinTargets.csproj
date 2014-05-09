@@ -48,6 +48,7 @@
     <Compile Include="IncorrectTargetSpecifyingClassInsteadOfInterface.cs" />
     <Compile Include="InterfaceForImplicitExplicitTestingTarget.cs" />
     <Compile Include="InterfaceWithOnlyPrimitiveTypesTarget.cs" />
+    <Compile Include="NonTargetType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

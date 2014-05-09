@@ -117,7 +117,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 }
 
                 // TODO research correct usage
-                targetParameter.MetadataToken = new MetadataToken(sourceParameter.MetadataToken.TokenType, sourceParameter.MetadataToken.RID);
+                //targetParameter.MetadataToken = new MetadataToken(sourceParameter.MetadataToken.TokenType, sourceParameter.MetadataToken.RID);
 
                 // I did not check whether I get a similar issue here as with the duplication in the FieldCloner...adding a clear line just to make sure, though
                 targetParameter.CustomAttributes.Clear();
