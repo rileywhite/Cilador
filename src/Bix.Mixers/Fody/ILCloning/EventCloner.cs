@@ -29,13 +29,13 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Creates a new <see cref="EventCloner"/>
         /// </summary>
-        /// <param name="rootContext">Root context for cloning.</param>
+        /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="target">Cloning target.</param>
         /// <param name="source">Cloning source.</param>
-        public EventCloner(RootContext rootContext, EventDefinition target, EventDefinition source)
-            : base(rootContext, target, source)
+        public EventCloner(ILCloningContext ilCloningContext, EventDefinition target, EventDefinition source)
+            : base(ilCloningContext, target, source)
         {
-            Contract.Requires(rootContext != null);
+            Contract.Requires(ilCloningContext != null);
             Contract.Requires(target != null);
             Contract.Requires(source != null);
         }
@@ -49,7 +49,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Assert(this.Target.Name == this.Source.Name);
 
             this.Target.Attributes = this.Source.Attributes;
-            this.Target.EventType = this.RootContext.RootImport(this.Source.EventType);
+            this.Target.EventType = this.ILCloningContext.RootImport(this.Source.EventType);
 
             // TODO reseach correct usage of event MetadataToken
             //this.Target.MetadataToken = new MetadataToken(
@@ -61,21 +61,21 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 if (this.Source.AddMethod != null &&
                     this.Target.AddMethod == null &&
-                    method.SignatureEquals(this.Source.AddMethod, this.RootContext))
+                    method.SignatureEquals(this.Source.AddMethod, this.ILCloningContext))
                 {
                     this.Target.AddMethod = method;
                 }
 
                 if (this.Source.RemoveMethod != null &&
                     this.Target.RemoveMethod == null &&
-                    method.SignatureEquals(this.Source.RemoveMethod, this.RootContext))
+                    method.SignatureEquals(this.Source.RemoveMethod, this.ILCloningContext))
                 {
                     this.Target.RemoveMethod = method;
                 }
 
                 if (this.Source.InvokeMethod != null &&
                     this.Target.InvokeMethod == null &&
-                    method.SignatureEquals(this.Source.InvokeMethod, this.RootContext))
+                    method.SignatureEquals(this.Source.InvokeMethod, this.ILCloningContext))
                 {
                     this.Target.InvokeMethod = method;
                 }
@@ -84,7 +84,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 {
                     if (this.Target.OtherMethods[i] != null &&
                         this.Target.OtherMethods[i] == null &&
-                        method.SignatureEquals(this.Source.OtherMethods[i], this.RootContext))
+                        method.SignatureEquals(this.Source.OtherMethods[i], this.ILCloningContext))
                     {
                         this.Target.OtherMethods[i] = method;
                     }
@@ -93,7 +93,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
             // I did not check for a similar issue here as with the duplication in the FieldCloner...adding a clear line just to be safe
             this.Target.CustomAttributes.Clear();
-            this.Target.CloneAllCustomAttributes(this.Source, this.RootContext);
+            this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
 
             this.IsStructureCloned = true;
 

@@ -35,14 +35,14 @@ namespace Bix.Mixers.Fody.ILCloning
     /// is certainly in need of change. For now it works, but it will be rewritten when full
     /// mixin generic support is added.
     /// </remarks>
-    internal class RootContext
+    internal class ILCloningContext
     {
         /// <summary>
-        /// Creates a new <see cref="RootContext"/>
+        /// Creates a new <see cref="ILCloningContext"/>
         /// </summary>
         /// <param name="rootSource">Top level source type for the cloning operation</param>
         /// <param name="rootTarget">Top level target type for the cloning operation</param>
-        public RootContext(TypeDefinition rootSource, TypeDefinition rootTarget)
+        public ILCloningContext(TypeDefinition rootSource, TypeDefinition rootTarget)
         {
             Contract.Requires(rootSource != null);
             Contract.Requires(rootTarget != null);

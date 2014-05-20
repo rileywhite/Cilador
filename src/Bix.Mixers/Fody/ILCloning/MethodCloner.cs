@@ -34,13 +34,13 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Creates a new <see cref="MethodCloner"/>
         /// </summary>
-        /// <param name="rootContext">Root context for cloning.</param>
+        /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="target">Cloning target.</param>
         /// <param name="source">Cloning source.</param>
-        public MethodCloner(RootContext rootContext, MethodDefinition target, MethodDefinition source)
-            : base(rootContext, target, source)
+        public MethodCloner(ILCloningContext ilCloningContext, MethodDefinition target, MethodDefinition source)
+            : base(ilCloningContext, target, source)
         {
-            Contract.Requires(rootContext != null);
+            Contract.Requires(ilCloningContext != null);
             Contract.Requires(target != null);
             Contract.Requires(source != null);
         }
@@ -85,7 +85,7 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 throw new WeavingException(string.Format(
                     "Configured mixin implementation may not contain extern methods: [{0}]",
-                    this.RootContext.RootSource.FullName));
+                    this.ILCloningContext.RootSource.FullName));
             }
             Contract.Assert(this.Source.PInvokeInfo == null);
 
@@ -93,7 +93,7 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 foreach (var sourceOverride in this.Source.Overrides)
                 {
-                    this.Target.Overrides.Add(this.RootContext.RootImport(sourceOverride));
+                    this.Target.Overrides.Add(this.ILCloningContext.RootImport(sourceOverride));
                 }
             }
 
@@ -102,21 +102,21 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 this.Target.Parameters.CloneAllParameters(
                     this.Source.Parameters,
-                    this.RootContext,
+                    this.ILCloningContext,
                     this.ParameterOperandReplacementMap);
             }
             Contract.Assert(this.Target.Parameters.Count == this.Source.Parameters.Count);
 
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around
             this.Target.CustomAttributes.Clear();
-            this.Target.CloneAllCustomAttributes(this.Source, this.RootContext);
+            this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
 
             if (this.Source.HasGenericParameters)
             {
                 // TODO method generic parameters
                 throw new WeavingException(string.Format(
                     "Configured mixin implementation may not include any generic methods: [{0}]",
-                    this.RootContext.RootSource.FullName));
+                    this.ILCloningContext.RootSource.FullName));
             }
 
             if (this.Source.HasSecurityDeclarations)
@@ -124,13 +124,13 @@ namespace Bix.Mixers.Fody.ILCloning
                 // TODO method security declarations
                 throw new WeavingException(string.Format(
                     "Configured mixin implementation may not contain methods annotated with security attributes: [{0}]",
-                    this.RootContext.RootSource.FullName));
+                    this.ILCloningContext.RootSource.FullName));
             }
 
             var sourceMethodReturnType = this.Source.MethodReturnType;
             Contract.Assert(sourceMethodReturnType != null);
             this.Target.MethodReturnType = new MethodReturnType(this.Target);
-            this.Target.MethodReturnType.ReturnType = this.RootContext.RootImport(sourceMethodReturnType.ReturnType);
+            this.Target.MethodReturnType.ReturnType = this.ILCloningContext.RootImport(sourceMethodReturnType.ReturnType);
             this.Target.MethodReturnType.Attributes = sourceMethodReturnType.Attributes;
             this.Target.MethodReturnType.Constant = sourceMethodReturnType.Constant;
             this.Target.MethodReturnType.HasConstant = sourceMethodReturnType.HasConstant;
@@ -145,7 +145,7 @@ namespace Bix.Mixers.Fody.ILCloning
             //this.Target.MethodReturnType.MetadataToken =
             //    new MetadataToken(sourceMethodReturnType.MetadataToken.TokenType, sourceMethodReturnType.MetadataToken.RID);
 
-            this.Target.MethodReturnType.CloneAllCustomAttributes(sourceMethodReturnType, this.RootContext);
+            this.Target.MethodReturnType.CloneAllCustomAttributes(sourceMethodReturnType, this.ILCloningContext);
 
             this.IsStructureCloned = true;
         }
@@ -200,7 +200,7 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 var targetVariable = new VariableDefinition(
                     sourceVariable.Name,
-                    this.RootContext.RootImport(sourceVariable.VariableType));
+                    this.ILCloningContext.RootImport(sourceVariable.VariableType));
 
                 variableOperandReplacementMap.Add(sourceVariable, targetVariable);
 
@@ -443,7 +443,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, FieldReference field)
         {
-            return ilProcessor.Create(opCode, this.RootContext.RootImport(field));
+            return ilProcessor.Create(opCode, this.ILCloningContext.RootImport(field));
         }
 
         /// <summary>
@@ -515,7 +515,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, MethodReference method)
         {
-            return ilProcessor.Create(opCode, this.RootContext.RootImport(method));
+            return ilProcessor.Create(opCode, this.ILCloningContext.RootImport(method));
         }
 
         /// <summary>
@@ -563,7 +563,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, TypeReference type)
         {
-            return ilProcessor.Create(opCode, this.RootContext.RootImport(type));
+            return ilProcessor.Create(opCode, this.ILCloningContext.RootImport(type));
         }
 
         /// <summary>

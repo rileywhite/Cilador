@@ -29,13 +29,13 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Creates a new <see cref="FieldCloner"/>
         /// </summary>
-        /// <param name="rootContext">Root context for cloning.</param>
+        /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="target">Cloning target.</param>
         /// <param name="source">Cloning source.</param>
-        public FieldCloner(RootContext rootContext, FieldDefinition target, FieldDefinition source)
-            : base(rootContext, target, source)
+        public FieldCloner(ILCloningContext ilCloningContext, FieldDefinition target, FieldDefinition source)
+            : base(ilCloningContext, target, source)
         {
-            Contract.Requires(rootContext != null);
+            Contract.Requires(ilCloningContext != null);
             Contract.Requires(target != null);
             Contract.Requires(source != null);
         }
@@ -75,7 +75,7 @@ namespace Bix.Mixers.Fody.ILCloning
             //    this.Source.MetadataToken.TokenType,
             //    this.Source.MetadataToken.RID);
 
-            this.Target.FieldType = this.RootContext.RootImport(this.Source.FieldType);
+            this.Target.FieldType = this.ILCloningContext.RootImport(this.Source.FieldType);
 
             // for some reason, I'm seeing duplicate custom attributes if I don't clear first
             // adding a console output line line like this makes it go away: Console.WriteLine(this.Target.CustomAttributes.Count);
@@ -83,7 +83,7 @@ namespace Bix.Mixers.Fody.ILCloning
             // (breaking anywhere before the RootImportAll call in the debugger keeps it from happening, too)
             this.Target.CustomAttributes.Clear();
             Contract.Assert(this.Target.CustomAttributes.Count == 0);
-            this.Target.CloneAllCustomAttributes(this.Source, this.RootContext);
+            this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
 
             this.IsStructureCloned = true;
         }

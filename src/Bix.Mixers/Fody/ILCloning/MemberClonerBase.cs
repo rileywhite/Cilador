@@ -31,27 +31,27 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Creates a new <see cref="MemberClonerBase<,>"/>
         /// </summary>
-        /// <param name="rootContext">Root context for cloning.</param>
+        /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="target">Resolved cloning target.</param>
         /// <param name="sourceWithRoot">Resolved cloning source.</param>
-        public MemberClonerBase(RootContext rootContext, TMemberDefinition target, TMemberDefinition source)
+        public MemberClonerBase(ILCloningContext ilCloningContext, TMemberDefinition target, TMemberDefinition source)
         {
-            Contract.Requires(rootContext != null);
+            Contract.Requires(ilCloningContext != null);
             Contract.Requires(target != null);
             Contract.Requires(source != null);
-            Contract.Ensures(this.RootContext != null);
+            Contract.Ensures(this.ILCloningContext != null);
             Contract.Ensures(this.Target != null);
             Contract.Ensures(this.Source != null);
 
-            this.RootContext = rootContext;
+            this.ILCloningContext = ilCloningContext;
             this.Target = target;
             this.Source = source;
         }
 
         /// <summary>
-        /// Gets or sets the resolved cloning target.
+        /// Gets or sets the context for IL cloning.
         /// </summary>
-        public RootContext RootContext { get; private set; }
+        public ILCloningContext ILCloningContext { get; private set; }
 
         /// <summary>
         /// Gets or sets the resolved cloning target.

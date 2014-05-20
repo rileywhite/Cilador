@@ -29,13 +29,13 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Creates a new <see cref="PropertyCloner"/>
         /// </summary>
-        /// <param name="rootContext">Root context for cloning.</param>
+        /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="target">Cloning target.</param>
         /// <param name="source">Cloning source.</param>
-        public PropertyCloner(RootContext rootContext, PropertyDefinition target, PropertyDefinition source)
-            : base(rootContext, target, source)
+        public PropertyCloner(ILCloningContext ilCloningContext, PropertyDefinition target, PropertyDefinition source)
+            : base(ilCloningContext, target, source)
         {
-            Contract.Requires(rootContext != null);
+            Contract.Requires(ilCloningContext != null);
             Contract.Requires(target != null);
             Contract.Requires(source != null);
         }
@@ -56,7 +56,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.Target.IsRuntimeSpecialName = this.Source.IsRuntimeSpecialName;
             this.Target.IsSpecialName = this.Source.IsSpecialName;
 
-            this.Target.PropertyType = this.RootContext.RootImport(this.Source.PropertyType);
+            this.Target.PropertyType = this.ILCloningContext.RootImport(this.Source.PropertyType);
 
             // TODO research correct usage of property MetadataToken
             //this.Target.MetadataToken = new MetadataToken(
@@ -65,7 +65,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
             if (this.Source.HasParameters)
             {
-                this.Target.Parameters.CloneAllParameters(this.Source.Parameters, this.RootContext);
+                this.Target.Parameters.CloneAllParameters(this.Source.Parameters, this.ILCloningContext);
             }
 
             for (int i = 0; i < this.Source.OtherMethods.Count; i++)
@@ -77,14 +77,14 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 if (this.Source.GetMethod != null &&
                     this.Target.GetMethod == null &&
-                    method.SignatureEquals(this.Source.GetMethod, this.RootContext))
+                    method.SignatureEquals(this.Source.GetMethod, this.ILCloningContext))
                 {
                     this.Target.GetMethod = method;
                 }
 
                 if (this.Source.SetMethod != null &&
                     this.Target.SetMethod == null &&
-                    method.SignatureEquals(this.Source.SetMethod, this.RootContext))
+                    method.SignatureEquals(this.Source.SetMethod, this.ILCloningContext))
                 {
                     this.Target.SetMethod = method;
                 }
@@ -93,7 +93,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 {
                     if (this.Target.OtherMethods[i] != null &&
                         this.Target.OtherMethods[i] == null &&
-                        method.SignatureEquals(this.Source.OtherMethods[i], this.RootContext))
+                        method.SignatureEquals(this.Source.OtherMethods[i], this.ILCloningContext))
                     {
                         this.Target.OtherMethods[i] = method;
                     }
@@ -102,7 +102,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around
             this.Target.CustomAttributes.Clear();
-            this.Target.CloneAllCustomAttributes(this.Source, this.RootContext);
+            this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
 
             this.IsStructureCloned = true;
 

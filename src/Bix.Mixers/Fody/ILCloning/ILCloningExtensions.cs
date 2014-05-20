@@ -66,13 +66,13 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         [Pure]
-        public static bool SignatureEquals(this MethodReference target, MethodReference source, RootContext rootContext)
+        public static bool SignatureEquals(this MethodReference target, MethodReference source, ILCloningContext ilCloningContext)
         {
-            Contract.Requires(rootContext != null);
+            Contract.Requires(ilCloningContext != null);
 
             if (target == null || source == null) { return target == null && source == null; }
 
-            return target.FullName.Replace(rootContext.RootTarget.FullName, rootContext.RootSource.FullName) == source.FullName;
+            return target.FullName.Replace(ilCloningContext.RootTarget.FullName, ilCloningContext.RootSource.FullName) == source.FullName;
         }
 
         [Pure]
@@ -86,20 +86,20 @@ namespace Bix.Mixers.Fody.ILCloning
         public static void CloneAllParameters(
             this Collection<ParameterDefinition> targetParameters,
             Collection<ParameterDefinition> sourceParameters,
-            RootContext rootContext,
+            ILCloningContext ilCloningContext,
             Dictionary<ParameterDefinition, ParameterDefinition> parameterOperandReplacementMap = null)
         {
             Contract.Requires(targetParameters != null);
             Contract.Requires(sourceParameters != null);
             Contract.Requires(targetParameters != sourceParameters);
             Contract.Requires(targetParameters.Count == 0);
-            Contract.Requires(rootContext != null);
+            Contract.Requires(ilCloningContext != null);
             Contract.Ensures(targetParameters.Count == sourceParameters.Count);
 
             foreach (var sourceParameter in sourceParameters)
             {
                 var targetParameter =
-                    new ParameterDefinition(sourceParameter.Name, sourceParameter.Attributes, rootContext.RootImport(sourceParameter.ParameterType));
+                    new ParameterDefinition(sourceParameter.Name, sourceParameter.Attributes, ilCloningContext.RootImport(sourceParameter.ParameterType));
                 targetParameter.Constant = sourceParameter.Constant;
                 targetParameter.HasConstant = sourceParameter.HasConstant;
                 targetParameter.HasDefault = sourceParameter.HasDefault;
@@ -121,7 +121,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
                 // I did not check whether I get a similar issue here as with the duplication in the FieldCloner...adding a clear line just to make sure, though
                 targetParameter.CustomAttributes.Clear();
-                targetParameter.CloneAllCustomAttributes(sourceParameter, rootContext);
+                targetParameter.CloneAllCustomAttributes(sourceParameter, ilCloningContext);
 
                 targetParameters.Add(targetParameter);
                 if (parameterOperandReplacementMap != null) { parameterOperandReplacementMap.Add(sourceParameter, targetParameter); }
@@ -131,30 +131,30 @@ namespace Bix.Mixers.Fody.ILCloning
         public static void CloneAllCustomAttributes(
             this ICustomAttributeProvider target,
             ICustomAttributeProvider source,
-            RootContext rootContext)
+            ILCloningContext ilCloningContext)
         {
             Contract.Requires(target != null);
             Contract.Requires(target.CustomAttributes != null);
-            Contract.Requires(target.CustomAttributes.Count == 0 || target == rootContext.RootTarget);
+            Contract.Requires(target.CustomAttributes.Count == 0 || target == ilCloningContext.RootTarget);
             Contract.Requires(source != null);
             Contract.Requires(source.CustomAttributes != null);
             Contract.Requires(target != source);
-            Contract.Requires(rootContext != null);
+            Contract.Requires(ilCloningContext != null);
             Contract.Ensures(
                 target.CustomAttributes.Count == source.CustomAttributes.Count ||
-                (target == rootContext.RootTarget && target.CustomAttributes.Count > source.CustomAttributes.Count));
+                (target == ilCloningContext.RootTarget && target.CustomAttributes.Count > source.CustomAttributes.Count));
 
             foreach (var sourceAttribute in source.CustomAttributes)
             {
-                var targetAttribute = new CustomAttribute(rootContext.RootImport(sourceAttribute.Constructor));
+                var targetAttribute = new CustomAttribute(ilCloningContext.RootImport(sourceAttribute.Constructor));
                 if (sourceAttribute.HasConstructorArguments)
                 {
                     foreach (var sourceArgument in sourceAttribute.ConstructorArguments)
                     {
                         targetAttribute.ConstructorArguments.Add(
                             new CustomAttributeArgument(
-                                rootContext.RootImport(sourceArgument.Type),
-                                rootContext.DynamicRootImport(sourceArgument.Value)));
+                                ilCloningContext.RootImport(sourceArgument.Type),
+                                ilCloningContext.DynamicRootImport(sourceArgument.Value)));
                     }
                 }
 
@@ -166,8 +166,8 @@ namespace Bix.Mixers.Fody.ILCloning
                             new CustomAttributeNamedArgument(
                                 sourceProperty.Name,
                                 new CustomAttributeArgument(
-                                    rootContext.RootImport(sourceProperty.Argument.Type),
-                                    rootContext.DynamicRootImport(sourceProperty.Argument.Value))));
+                                    ilCloningContext.RootImport(sourceProperty.Argument.Type),
+                                    ilCloningContext.DynamicRootImport(sourceProperty.Argument.Value))));
                     }
                 }
                 target.CustomAttributes.Add(targetAttribute);

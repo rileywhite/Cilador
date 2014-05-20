@@ -32,13 +32,13 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Creates a new <see cref="TypeCloner"/>.
         /// </summary>
-        /// <param name="rootContext">Root context for cloning.</param>
+        /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="target">Cloning target.</param>
         /// <param name="source">Cloning source.</param>
-        public TypeCloner(RootContext rootContext, TypeDefinition target, TypeDefinition source)
-            : base(rootContext, target, source)
+        public TypeCloner(ILCloningContext ilCloningContext, TypeDefinition target, TypeDefinition source)
+            : base(ilCloningContext, target, source)
         {
-            Contract.Requires(rootContext != null);
+            Contract.Requires(ilCloningContext != null);
             Contract.Requires(target != null);
             Contract.Requires(source != null);
             this.TypeCloners = new List<TypeCloner>();
@@ -108,7 +108,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         private void CloneTypeData()
         {
-            if (this.Target == this.RootContext.RootTarget)
+            if (this.Target == this.ILCloningContext.RootTarget)
             {
                 if (!(this.Source.IsClass && !this.Source.IsValueType))
                 {
@@ -149,7 +149,7 @@ namespace Bix.Mixers.Fody.ILCloning
                     // TODO nested type generic parameters
                     throw new WeavingException(string.Format(
                         "Configured mixin implementation may not include any open generic nested types: [{0}]",
-                        this.RootContext.RootSource.FullName));
+                        this.ILCloningContext.RootSource.FullName));
                 }
 
                 if (this.Source.HasSecurityDeclarations)
@@ -157,16 +157,16 @@ namespace Bix.Mixers.Fody.ILCloning
                     // TODO Nested type security declarations
                     throw new WeavingException(string.Format(
                         "Configured mixin implementation may not contain nested types annotated with security attributes: [{0}]",
-                        this.RootContext.RootSource.FullName));
+                        this.ILCloningContext.RootSource.FullName));
                 }
 
                 this.Target.Attributes = this.Source.Attributes;
-                this.Target.DeclaringType = this.RootContext.RootImport(this.Source.DeclaringType).Resolve();
-                this.Target.BaseType = this.RootContext.RootImport(this.Source.BaseType);
+                this.Target.DeclaringType = this.ILCloningContext.RootImport(this.Source.DeclaringType).Resolve();
+                this.Target.BaseType = this.ILCloningContext.RootImport(this.Source.BaseType);
 
                 foreach (var interfaceType in this.Source.Interfaces)
                 {
-                    this.Target.Interfaces.Add(this.RootContext.RootImport(interfaceType));
+                    this.Target.Interfaces.Add(this.ILCloningContext.RootImport(interfaceType));
                 }
 
                 // TODO look more closely at type packing size
@@ -180,8 +180,8 @@ namespace Bix.Mixers.Fody.ILCloning
             }
 
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around, but only for non-root type
-            if (this.Target != this.RootContext.RootTarget) { this.Target.CustomAttributes.Clear(); }
-            this.Target.CloneAllCustomAttributes(this.Source, this.RootContext);
+            if (this.Target != this.ILCloningContext.RootTarget) { this.Target.CustomAttributes.Clear(); }
+            this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
         }
 
         /// <summary>
@@ -197,7 +197,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 {
                     var targetType = new TypeDefinition(sourceType.Namespace, sourceType.Name, 0);
                     this.Target.NestedTypes.Add(targetType);
-                    var typeCloner = new TypeCloner(this.RootContext, targetType, sourceType);
+                    var typeCloner = new TypeCloner(this.ILCloningContext, targetType, sourceType);
                     typeCloner.CreateWireframeAndCloners();
                     this.TypeCloners.Add(typeCloner);
                 }
@@ -206,51 +206,51 @@ namespace Bix.Mixers.Fody.ILCloning
                 {
                     var targetField = new FieldDefinition(sourceField.Name, 0, voidReference);
                     this.Target.Fields.Add(targetField);
-                    this.FieldCloners.Add(new FieldCloner(this.RootContext, targetField, sourceField));
+                    this.FieldCloners.Add(new FieldCloner(this.ILCloningContext, targetField, sourceField));
                 }
 
                 foreach (var sourceMethod in this.Source.Methods)
                 {
                     if (sourceMethod.Name == ".cctor" &&
                         sourceMethod.IsStatic &&
-                        sourceMethod.DeclaringType == RootContext.RootSource)
+                        sourceMethod.DeclaringType == ILCloningContext.RootSource)
                     {
                         // TODO should static constructors be supported on the root type?
                         throw new WeavingException(string.Format(
                             "Configured mixin implementation cannot have a type initializer (i.e. static constructor): [{0}]",
-                            this.RootContext.RootSource.FullName));
+                            this.ILCloningContext.RootSource.FullName));
                     }
 
                     if (sourceMethod.IsConstructor &&
-                        sourceMethod.DeclaringType == RootContext.RootSource)
+                        sourceMethod.DeclaringType == ILCloningContext.RootSource)
                     {
                         // TODO support constructors for the root type in some meaningful way
                         if (sourceMethod.HasParameters) 
                         {
                             throw new WeavingException(string.Format(
                                 "Configured mixin implementation cannot use constructors: [{0}]",
-                                this.RootContext.RootSource.FullName));
+                                this.ILCloningContext.RootSource.FullName));
                         }
                         continue;
                     }
 
                     var targetMethod = new MethodDefinition(sourceMethod.Name, 0, voidReference);
                     this.Target.Methods.Add(targetMethod);
-                    this.MethodCloners.Add(new MethodCloner(this.RootContext, targetMethod, sourceMethod));
+                    this.MethodCloners.Add(new MethodCloner(this.ILCloningContext, targetMethod, sourceMethod));
                 }
 
                 foreach (var sourceProperty in this.Source.Properties)
                 {
                     var targetProperty = new PropertyDefinition(sourceProperty.Name, 0, voidReference);
                     this.Target.Properties.Add(targetProperty);
-                    this.PropertyCloners.Add(new PropertyCloner(this.RootContext, targetProperty, sourceProperty));
+                    this.PropertyCloners.Add(new PropertyCloner(this.ILCloningContext, targetProperty, sourceProperty));
                 }
 
                 foreach (var sourceEvent in this.Source.Events)
                 {
                     var targetEvent = new EventDefinition(sourceEvent.Name, 0, voidReference);
                     this.Target.Events.Add(targetEvent);
-                    this.EventCloners.Add(new EventCloner(this.RootContext, targetEvent, sourceEvent));
+                    this.EventCloners.Add(new EventCloner(this.ILCloningContext, targetEvent, sourceEvent));
                 }
             }
             this.IsWireframeCompleted = true;
