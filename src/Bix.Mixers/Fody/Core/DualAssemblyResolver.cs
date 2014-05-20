@@ -17,6 +17,7 @@
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,6 +29,23 @@ namespace Bix.Mixers.Fody.Core
     /// </summary>
     internal class DualAssemblyResolver : IAssemblyResolver
     {
+        /// <summary>
+        /// Creates a new <see cref="DualAssemblyResolver"/>.
+        /// </summary>
+        /// <param name="weavingContext">Weaving context to use in assembly resolution.</param>
+        public DualAssemblyResolver(IWeavingContext weavingContext)
+        {
+            Contract.Requires(weavingContext != null);
+            Contract.Ensures(this.WeavingContext != null);
+
+            this.WeavingContext = weavingContext;
+        }
+
+        /// <summary>
+        /// Gets or sets the weaving context to use in item resolution
+        /// </summary>
+        private IWeavingContext WeavingContext { get; set; }
+
         /// <summary>
         /// Gets or sets the first reolver that is checked in resolve attempts.
         /// </summary>
@@ -69,20 +87,7 @@ namespace Bix.Mixers.Fody.Core
         /// <returns>Resolved assembly.</returns>
         public AssemblyDefinition Resolve(string fullName)
         {
-            foreach (var resolver in new IAssemblyResolver[] { this.Resolver1, this.Resolver2 })
-            {
-                if (resolver != null)
-                {
-                    try
-                    {
-                        var assembly = resolver.Resolve(fullName);
-                        if (assembly != null) { return assembly; }
-                    }
-                    catch { }
-                }
-            }
-
-            return null;
+            return this.Resolve(fullName, new ReaderParameters { AssemblyResolver = this, MetadataResolver = this.WeavingContext.MetadataResolver });
         }
 
         /// <summary>
@@ -116,20 +121,7 @@ namespace Bix.Mixers.Fody.Core
         /// <returns>Resolved assembly.</returns>
         public AssemblyDefinition Resolve(AssemblyNameReference name)
         {
-            foreach (var resolver in new IAssemblyResolver[] { this.Resolver1, this.Resolver2 })
-            {
-                if (resolver != null)
-                {
-                    try
-                    {
-                        var assembly = resolver.Resolve(name);
-                        if (assembly != null) { return assembly; }
-                    }
-                    catch { }
-                }
-            }
-
-            return null;
+            return this.Resolve(name, new ReaderParameters { AssemblyResolver = this, MetadataResolver = this.WeavingContext.MetadataResolver });
         }
     }
 }

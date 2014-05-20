@@ -44,9 +44,14 @@ namespace Bix.Mixers.Fody.Core
             Contract.Assert(Directory.Exists(weavingContext.ProjectDirectoryPath));
             Contract.Assert(Directory.Exists(weavingContext.SolutionDirectoryPath));
 
+            // configuration specific path
             var projectRelativePath = Path.Combine("bin", weavingContext.DefineConstants.Contains("DEBUG") ? "Debug" : "Release");
             this.AddSearchDirectory(Path.Combine(weavingContext.ProjectDirectoryPath, projectRelativePath));
 
+            // simple bin path, e.g. for asp.net
+            this.AddSearchDirectory(Path.Combine(weavingContext.ProjectDirectoryPath, "bin"));
+
+            // solution tools path for files created not normally available to the mix target assembly
             this.AddSearchDirectory(Path.Combine(weavingContext.SolutionDirectoryPath, "Tools"));
         }
     }

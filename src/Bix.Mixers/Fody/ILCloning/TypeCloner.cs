@@ -132,7 +132,7 @@ namespace Bix.Mixers.Fody.ILCloning
                         this.Source.FullName));
                 }
 
-                if (this.Source.BaseType.Resolve() != this.Source.Module.Import(typeof(object)).Resolve())
+                if (this.Source.BaseType.Resolve().FullName != this.Source.Module.Import(typeof(object)).Resolve().FullName)
                 {
                     throw new WeavingException(string.Format(
                         "Configured mixin implementation cannot have a base type other than System.Object: [{0}]",

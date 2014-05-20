@@ -42,6 +42,18 @@ namespace Bix.Mixers.Fody.Core
         #region Construction and Disposal
 
         /// <summary>
+        /// Creates a new <see cref="ModuleWeaver"/>.
+        /// </summary>
+        public ModuleWeaver()
+        {
+            Contract.Ensures(this.AssemblyResolver != null);
+            Contract.Ensures(this.MetadataResolver != null);
+
+            this.assemblyResolver = new DualAssemblyResolver(this);
+            this.MetadataResolver = new MetadataResolver(this.AssemblyResolver);
+        }
+
+        /// <summary>
         /// Finalizer to release resources used by the <see cref="ModuleWeaver"/>
         /// </summary>
         ~ModuleWeaver()
@@ -300,7 +312,7 @@ namespace Bix.Mixers.Fody.Core
 
         #region Target Assembly Data
 
-        private DualAssemblyResolver assemblyResolver = new DualAssemblyResolver();
+        private DualAssemblyResolver assemblyResolver;
         /// <summary>
         /// Gets or sets the object that can find and load assemblies.
         /// </summary>
@@ -314,6 +326,11 @@ namespace Bix.Mixers.Fody.Core
                 this.assemblyResolver.Resolver1 = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the object that can resolve type members.
+        /// </summary>
+        public IMetadataResolver MetadataResolver { get; private set; }
 
         /// <summary>
         /// Gets or sets the <see cref="ModuleDefinition"/> for the target assembly.

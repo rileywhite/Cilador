@@ -108,6 +108,11 @@ namespace Bix.Mixers.Fody.Core
         #region Target Assembly Data
 
         /// <summary>
+        /// Gets the object that can resolve type members.
+        /// </summary>
+        IMetadataResolver MetadataResolver { get; }
+
+        /// <summary>
         /// Gets the object that can find and load assemblies.
         /// </summary>
         IAssemblyResolver AssemblyResolver { get; }
