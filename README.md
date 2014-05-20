@@ -126,6 +126,10 @@ before the target assembly is compiled.
 Alternatively, you can copy all assembly files manually; however, this may affect compilation if all assembly
 projects are in the same solution.
 
+_Note: Due to a [currently unresolved issue](https://github.com/rileywhite/Bix.Mixers.Fody/issues/1), if you
+are explicitly implementing any mixin definition interface members, then you need to copy the mixin definition
+assembly into the solution Tools directory, as well._
+
 ##Compile and test
 
 Code in a fourth assembly that references the target assembly and mixin definition assembly can now call mixed in code.
