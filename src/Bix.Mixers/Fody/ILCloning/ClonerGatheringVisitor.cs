@@ -29,6 +29,11 @@ namespace Bix.Mixers.Fody.ILCloning
     /// A visitor that traverses a cloner target hierarchy and creates
     /// cloners for each item that should be cloned.
     /// </summary>
+    /// <remarks>
+    /// This "visits" each item in the hierarchy, similar to the visitor pattern,
+    /// but the classic visitor pattern doesn't quite make sense here. This
+    /// is a variation on the visitor pattern.
+    /// </remarks>
     internal class ClonerGatheringVisitor
     {
         /// <summary>
