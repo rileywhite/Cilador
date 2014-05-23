@@ -55,6 +55,8 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         private void PopulateParameterCloners()
         {
+            Contract.Ensures(this.ParameterCloners != null);
+
             this.ParameterCloners = new List<ParameterCloner>();
 
             var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));

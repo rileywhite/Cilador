@@ -44,14 +44,39 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(target != null);
             Contract.Requires(source != null);
             Contract.Ensures(this.SignatureCloner != null);
+            Contract.Ensures(this.VariableCloners != null);
 
             this.SignatureCloner = signatureCloner;
+            this.PopulateVariableCloners();
         }
 
         /// <summary>
         /// Gets or sets the method signature cloner with which this method body cloner is associated
         /// </summary>
         public MethodSignatureCloner SignatureCloner { get; private set; }
+
+        /// <summary>
+        /// Populates <see cref="VariableCloners"/>.
+        /// </summary>
+        private void PopulateVariableCloners()
+        {
+            Contract.Ensures(this.VariableCloners != null);
+
+            this.VariableCloners = new List<VariableCloner>();
+
+            var voidTypeReference = this.Target.Method.Module.Import(typeof(void));
+            foreach(var sourceVariable in this.Source.Variables)
+            {
+                var targetVariable = new VariableDefinition(sourceVariable.Name, voidTypeReference);
+                this.Target.Variables.Add(targetVariable);
+                this.VariableCloners.Add(new VariableCloner(this.ILCloningContext, targetVariable, sourceVariable));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the collection of variable cloners for the method body.
+        /// </summary>
+        public List<VariableCloner> VariableCloners { get; private set; }
 
         /// <summary>
         /// Clones the method body from the source to the target.
@@ -69,18 +94,6 @@ namespace Bix.Mixers.Fody.ILCloning
 
             // TODO method body scope may be tough to get right
             this.Target.Scope = this.Source.Scope;
-
-            var variableOperandReplacementMap = new Dictionary<VariableDefinition, VariableDefinition>(this.Source.Variables.Count);
-            foreach (var sourceVariable in this.Source.Variables)
-            {
-                var targetVariable = new VariableDefinition(
-                    sourceVariable.Name,
-                    this.ILCloningContext.RootImport(sourceVariable.VariableType));
-
-                variableOperandReplacementMap.Add(sourceVariable, targetVariable);
-
-                this.Target.Variables.Add(targetVariable);
-            }
 
             var instructionOperandReplacementMap = new Dictionary<Instruction, Instruction>(this.Source.Instructions.Count);
             var ilProcessor = this.Target.GetILProcessor();
@@ -103,41 +116,11 @@ namespace Bix.Mixers.Fody.ILCloning
 
             foreach (var targetInstruction in this.Target.Instructions.Where(instruction => instruction.Operand != null))
             {
-                if (TryReplaceVariableOperand(variableOperandReplacementMap, targetInstruction)) { continue; }
                 if (TryReplaceInstructionOperand(instructionOperandReplacementMap, targetInstruction)) { continue; }
                 if (TryReplaceInstructionsOperand(instructionOperandReplacementMap, targetInstruction)) { continue; }
             }
 
             this.IsCloned = true;
-        }
-
-        /// <summary>
-        /// Replaces a source local variable instruction operand with the corresponding target local variable operand if applicable.
-        /// </summary>
-        /// <param name="variableOperandReplacementMap">Mapping of source to target local variables.</param>
-        /// <param name="targetInstruction">Instruction to look at.</param>
-        /// <returns><c>true</c> if the operand for the instruction is a local variable operand, else <c>false</c></returns>
-        /// <exception cref="InvalidOperationException">Thrown if the instruction operand is a local variable that isn't in the replacement map.</exception>
-        private bool TryReplaceVariableOperand(
-            Dictionary<VariableDefinition, VariableDefinition> variableOperandReplacementMap,
-            Instruction targetInstruction)
-        {
-            Contract.Requires(variableOperandReplacementMap != null);
-            Contract.Requires(targetInstruction != null);
-
-            var variableOperand = targetInstruction.Operand as VariableDefinition;
-            if (variableOperand != null)
-            {
-                VariableDefinition replacementVariableOperand;
-                if (!variableOperandReplacementMap.TryGetValue(variableOperand, out replacementVariableOperand))
-                {
-                    throw new InvalidOperationException("Failed to update local variable operand in an instruction");
-                }
-                targetInstruction.Operand = replacementVariableOperand;
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -417,7 +400,12 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, VariableDefinition variable)
         {
-            return ilProcessor.Create(opCode, variable);
+            var variableCloner = this.VariableCloners.FirstOrDefault(cloner => cloner.Source == variable);
+            if (variableCloner == null)
+            {
+                throw new InvalidOperationException("Could not locate a variable for copying an instruction");
+            }
+            return ilProcessor.Create(opCode, variableCloner.Target);
         }
     }
 }

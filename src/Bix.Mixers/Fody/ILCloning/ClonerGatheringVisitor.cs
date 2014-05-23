@@ -46,6 +46,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.MethodSignatureCloners = new List<MethodSignatureCloner>();
             this.MethodParameterCloners = new List<ParameterCloner>();
             this.MethodBodyCloners = new List<MethodBodyCloner>();
+            this.VariableCloners = new List<VariableCloner>();
             this.PropertyCloners = new List<PropertyCloner>();
             this.EventCloners = new List<EventCloner>();
         }
@@ -61,6 +62,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.MethodParameterCloners.Clone();
             this.PropertyCloners.Clone();
             this.EventCloners.Clone();
+            this.VariableCloners.Clone();
             this.MethodBodyCloners.Clone();
         }
 
@@ -70,44 +72,49 @@ namespace Bix.Mixers.Fody.ILCloning
         public ILCloningContext ILCloningContext { get; private set; }
 
         /// <summary>
-        /// Gets or sets the collection of cloners for nested types
+        /// Gets or sets the collection of cloners for nested types.
         /// </summary>
         private List<TypeCloner> TypeCloners { get; set; }
 
         /// <summary>
-        /// Gets or sets the collection of cloners for contained fields
+        /// Gets or sets the collection of cloners for contained fields.
         /// </summary>
         private List<FieldCloner> FieldCloners { get; set; }
 
         /// <summary>
-        /// Gets or sets the collection of cloners for contained method signatures
+        /// Gets or sets the collection of cloners for contained method signatures.
         /// </summary>
         private List<MethodSignatureCloner> MethodSignatureCloners { get; set; }
 
         /// <summary>
-        /// Gets or sets the collection of cloners for method parameters within contained items
+        /// Gets or sets the collection of cloners for method parameters within contained items.
         /// </summary>
         private List<ParameterCloner> MethodParameterCloners { get; set; }
 
         /// <summary>
-        /// Gets or sets the collection of cloners for contained method bodies
+        /// Gets or sets the collection of cloners for contained method bodies.
         /// </summary>
         private List<MethodBodyCloner> MethodBodyCloners { get; set; }
 
         /// <summary>
-        /// Gets or sets the collection of cloners for contained properties
+        /// Gets or sets the collection of cloners for variables contained within method bodies.
+        /// </summary>
+        private List<VariableCloner> VariableCloners { get; set; }
+
+        /// <summary>
+        /// Gets or sets the collection of cloners for contained properties.
         /// </summary>
         private List<PropertyCloner> PropertyCloners { get; set; }
 
         /// <summary>
-        /// Gets or sets the collection of cloners for contained events
+        /// Gets or sets the collection of cloners for contained events.
         /// </summary>
         private List<EventCloner> EventCloners { get; set; }
 
         /// <summary>
-        /// Gathers all cloners for the given cloning source and target
+        /// Gathers all cloners for the given cloning source and target.
         /// </summary>
-        /// <typeparam name="T">Type of item to gather cloners for</typeparam>
+        /// <typeparam name="T">Type of item to gather cloners for.</typeparam>
         /// <param name="source">Cloning source to gather cloners for.</param>
         /// <param name="target">Cloning target to gather cloners for.</param>
         /// <exception cref="ArgumentException">Raised when the type <typeparamref name="T"/> cannot be cloned.</exception>
@@ -231,7 +238,9 @@ namespace Bix.Mixers.Fody.ILCloning
 
             if (sourceMethod.HasBody)
             {
-                this.MethodBodyCloners.Add(new MethodBodyCloner(methodSignatureCloner, targetMethod.Body, sourceMethod.Body));
+                var methodBodyCloner = new MethodBodyCloner(methodSignatureCloner, targetMethod.Body, sourceMethod.Body);
+                this.MethodBodyCloners.Add(methodBodyCloner);
+                this.VariableCloners.AddRange(methodBodyCloner.VariableCloners);
             }
         }
 
