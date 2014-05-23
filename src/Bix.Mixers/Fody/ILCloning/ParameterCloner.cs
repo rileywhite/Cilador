@@ -29,14 +29,22 @@ namespace Bix.Mixers.Fody.ILCloning
     /// </summary>
     internal class ParameterCloner : ClonerBase<ParameterDefinition>
     {
-        public ParameterCloner(IParameterContainerCloner parameterContainer, ParameterDefinition target, ParameterDefinition source)
-            : base(parameterContainer.ILCloningContext, target, source)
+        public ParameterCloner(MethodSignatureCloner methodSignatureCloner, ParameterDefinition target, ParameterDefinition source)
+            : base(methodSignatureCloner.ILCloningContext, target, source)
         {
-            Contract.Requires(parameterContainer != null);
-            Contract.Requires(parameterContainer.ILCloningContext != null);
+            Contract.Requires(methodSignatureCloner != null);
+            Contract.Requires(methodSignatureCloner.ILCloningContext != null);
             Contract.Requires(target != null);
             Contract.Requires(source != null);
+            Contract.Ensures(this.MethodSignatureCloner != null);
+
+            this.MethodSignatureCloner = methodSignatureCloner;
         }
+
+        /// <summary>
+        /// Gets or sets the method signature cloner assiciated with the parameter cloners
+        /// </summary>
+        public MethodSignatureCloner MethodSignatureCloner { get; private set; }
 
         /// <summary>
         /// Clones the parameter

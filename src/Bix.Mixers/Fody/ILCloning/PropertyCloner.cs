@@ -25,7 +25,7 @@ namespace Bix.Mixers.Fody.ILCloning
     /// <summary>
     /// Clones <see cref="PropertyDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class PropertyCloner : ClonerBase<PropertyDefinition>, IParameterContainerCloner
+    internal class PropertyCloner : ClonerBase<PropertyDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="PropertyCloner"/>
@@ -39,8 +39,6 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(target != null);
             Contract.Requires(source != null);
-
-            this.ParameterCloners = new List<ParameterCloner>();
         }
 
         /// <summary>
@@ -48,9 +46,10 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         public override void Clone()
         {
+            Contract.Ensures(this.Target.Parameters.Count == this.Source.Parameters.Count);
+
             Contract.Assert(this.Target.DeclaringType != null);
             Contract.Assert(this.Target.Name == this.Source.Name);
-//            Contract.Assert(this.Target.Parameters.Count == this.Source.Parameters.Count);
 
             this.Target.Attributes = this.Source.Attributes;
             this.Target.Constant = this.Source.Constant;
@@ -72,6 +71,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 this.Target.OtherMethods.Add(null);
             }
 
+            // seting the getter and setter methods also sets the parameters for the property
             foreach(var method in this.Target.DeclaringType.Methods)
             {
                 if (this.Source.GetMethod != null &&
@@ -113,10 +113,5 @@ namespace Bix.Mixers.Fody.ILCloning
                 Contract.Assert((this.Target.OtherMethods[i] == null) == (this.Source.OtherMethods[i] == null));
             }
         }
-
-        /// <summary>
-        /// Gets the collection of parameter cloners for contained parameters
-        /// </summary>
-        public List<ParameterCloner> ParameterCloners { get; private set; }
     }
 }

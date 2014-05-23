@@ -47,10 +47,12 @@ namespace Bix.Mixers.Fody.ILCloning
             this.MethodParameterCloners = new List<ParameterCloner>();
             this.MethodBodyCloners = new List<MethodBodyCloner>();
             this.PropertyCloners = new List<PropertyCloner>();
-            this.PropertyParameterCloners = new List<ParameterCloner>();
             this.EventCloners = new List<EventCloner>();
         }
 
+        /// <summary>
+        /// Invokes cloners that have been gathered.
+        /// </summary>
         public void InvokeCloners()
         {
             this.TypeCloners.Clone();
@@ -58,7 +60,6 @@ namespace Bix.Mixers.Fody.ILCloning
             this.MethodSignatureCloners.Clone();
             this.MethodParameterCloners.Clone();
             this.PropertyCloners.Clone();
-            this.PropertyParameterCloners.Clone();
             this.EventCloners.Clone();
             this.MethodBodyCloners.Clone();
         }
@@ -97,11 +98,6 @@ namespace Bix.Mixers.Fody.ILCloning
         /// Gets or sets the collection of cloners for contained properties
         /// </summary>
         private List<PropertyCloner> PropertyCloners { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of cloners for property parameters within contained items
-        /// </summary>
-        private List<ParameterCloner> PropertyParameterCloners { get; set; }
 
         /// <summary>
         /// Gets or sets the collection of cloners for contained events
@@ -230,14 +226,8 @@ namespace Bix.Mixers.Fody.ILCloning
             var methodSignatureCloner = new MethodSignatureCloner(this.ILCloningContext, targetMethod, sourceMethod);
             this.MethodSignatureCloners.Add(methodSignatureCloner);
 
-            if (sourceMethod.HasParameters)
-            {
-                methodSignatureCloner.ParameterCloners.AddParameterClonersFor(
-                    methodSignatureCloner,
-                    sourceMethod.Parameters,
-                    targetMethod.Parameters);
-                this.MethodParameterCloners.AddRange(methodSignatureCloner.ParameterCloners);
-            }
+            Contract.Assert(methodSignatureCloner.ParameterCloners != null);
+            this.MethodParameterCloners.AddRange(methodSignatureCloner.ParameterCloners);
 
             if (sourceMethod.HasBody)
             {
@@ -258,15 +248,6 @@ namespace Bix.Mixers.Fody.ILCloning
 
             var propertyCloner = new PropertyCloner(this.ILCloningContext, targetProperty, sourceProperty);
             this.PropertyCloners.Add(propertyCloner);
-
-            if (sourceProperty.HasParameters)
-            {
-                propertyCloner.ParameterCloners.AddParameterClonersFor(
-                    propertyCloner,
-                    sourceProperty.Parameters,
-                    targetProperty.Parameters);
-                this.PropertyParameterCloners.AddRange(propertyCloner.ParameterCloners);
-            }
         }
 
         /// <summary>

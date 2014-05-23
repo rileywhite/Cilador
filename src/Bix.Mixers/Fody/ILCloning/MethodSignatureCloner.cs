@@ -29,7 +29,7 @@ namespace Bix.Mixers.Fody.ILCloning
     /// <summary>
     /// Clones <see cref="MethodDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class MethodSignatureCloner : ClonerBase<MethodDefinition>, IParameterContainerCloner
+    internal class MethodSignatureCloner : ClonerBase<MethodDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="MethodSignatureCloner"/>
@@ -42,10 +42,37 @@ namespace Bix.Mixers.Fody.ILCloning
         {
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(target != null);
+            Contract.Requires(target.Parameters != null);
             Contract.Requires(source != null);
+            Contract.Requires(source.Parameters != null);
+            Contract.Ensures(this.ParameterCloners != null);
 
-            this.ParameterCloners = new List<ParameterCloner>();
+            this.PopulateParameterCloners();
         }
+
+        /// <summary>
+        /// Populates <see cref="ParameterCloners"/>
+        /// </summary>
+        private void PopulateParameterCloners()
+        {
+            this.ParameterCloners = new List<ParameterCloner>();
+
+            var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
+            foreach (var sourceParameter in this.Source.Parameters)
+            {
+                var targetParameter = new ParameterDefinition(
+                    sourceParameter.Name,
+                    sourceParameter.Attributes,
+                    voidTypeReference);
+                this.Target.Parameters.Add(targetParameter);
+                this.ParameterCloners.Add(new ParameterCloner(this, targetParameter, sourceParameter));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the collection of parameter cloners for contained parameters
+        /// </summary>
+        public List<ParameterCloner> ParameterCloners { get; private set; }
 
         /// <summary>
         /// Clones the method with the exception of the method body
@@ -142,10 +169,5 @@ namespace Bix.Mixers.Fody.ILCloning
 
             this.IsCloned = true;
         }
-
-        /// <summary>
-        /// Gets the collection of parameter cloners for contained parameters
-        /// </summary>
-        public List<ParameterCloner> ParameterCloners { get; private set; }
     }
 }

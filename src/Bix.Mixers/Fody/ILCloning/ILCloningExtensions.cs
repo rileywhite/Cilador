@@ -125,34 +125,6 @@ namespace Bix.Mixers.Fody.ILCloning
             return left.FullName.Replace(left.DeclaringType.FullName + "::", string.Empty) == right.FullName.Replace(right.DeclaringType.FullName + "::", string.Empty);
         }
 
-        /// <summary>
-        /// Creates and adds parameter cloners for a source and target item to a collection of cloners.
-        /// </summary>
-        /// <param name="parameterCloners">Collection of cloners to add items to.</param>
-        /// <param name="parameterContainerCloner">Cloner for an item with parameters.</param>
-        /// <param name="sourceParameters">Source parameters collection.</param>
-        /// <param name="targetParameters">Target parameters collection.</param>
-        public static void AddParameterClonersFor(
-            this List<ParameterCloner> parameterCloners,
-            IParameterContainerCloner parameterContainerCloner,
-            Collection<ParameterDefinition> sourceParameters,
-            Collection<ParameterDefinition> targetParameters)
-        {
-            Contract.Requires(parameterCloners != null);
-            Contract.Requires(parameterContainerCloner != null);
-            Contract.Requires(targetParameters != null);
-
-            foreach (var sourceParameter in sourceParameters)
-            {
-                var targetParameter = new ParameterDefinition(
-                    sourceParameter.Name,
-                    sourceParameter.Attributes,
-                    parameterContainerCloner.ILCloningContext.RootTarget.Module.Import(typeof(void)));
-                targetParameters.Add(targetParameter);
-                parameterCloners.Add(new ParameterCloner(parameterContainerCloner, targetParameter, sourceParameter));
-            }
-        }
-
         public static void CloneAllCustomAttributes(
             this ICustomAttributeProvider target,
             ICustomAttributeProvider source,
