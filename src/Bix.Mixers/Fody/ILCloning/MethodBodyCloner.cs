@@ -14,189 +14,64 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Bix.Mixers.Fody.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Collections.Generic;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.ILCloning
 {
     /// <summary>
-    /// Clones <see cref="MethodDefinition"/> contents from a source to a target.
+    /// Clones a method body from a source to a target.
     /// </summary>
-    internal class MethodCloner : MemberClonerBase<MethodDefinition>
+    internal class MethodBodyCloner : ClonerBase<MethodBody>
     {
         /// <summary>
-        /// Creates a new <see cref="MethodCloner"/>
+        /// Creates a new <see cref="MethodBodyCloner"/>
         /// </summary>
-        /// <param name="ilCloningContext">IL cloning context.</param>
-        /// <param name="target">Cloning target.</param>
-        /// <param name="source">Cloning source.</param>
-        public MethodCloner(ILCloningContext ilCloningContext, MethodDefinition target, MethodDefinition source)
-            : base(ilCloningContext, target, source)
+        /// <param name="signatureCloner">Cloner for the method signature to which this method body is attached.</param>
+        /// <param name="target">Resolved cloning target.</param>
+        /// <param name="source">Resolved cloning source.</param>
+        public MethodBodyCloner(MethodSignatureCloner signatureCloner, MethodBody target, MethodBody source)
+            : base(signatureCloner.ILCloningContext, target, source)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(signatureCloner != null);
+            Contract.Requires(signatureCloner.ILCloningContext != null);
             Contract.Requires(target != null);
             Contract.Requires(source != null);
+            Contract.Ensures(this.SignatureCloner != null);
+
+            this.SignatureCloner = signatureCloner;
         }
 
         /// <summary>
-        /// Clones all method info except the actual method body.
+        /// Gets or sets the method signature cloner with which this method body cloner is associated
         /// </summary>
-        public override void CloneStructure()
+        public MethodSignatureCloner SignatureCloner { get; private set; }
+
+        /// <summary>
+        /// Clones the method body from the source to the target.
+        /// </summary>
+        public override void Clone()
         {
-            Contract.Assert(this.Target.DeclaringType != null);
-            Contract.Assert(this.Target.Name == this.Source.Name);
-
-            this.Target.Attributes = this.Source.Attributes;
-            this.Target.CallingConvention = this.Source.CallingConvention;
-            this.Target.ExplicitThis = this.Source.ExplicitThis;
-            this.Target.HasThis = this.Source.HasThis;
-            this.Target.ImplAttributes = this.Source.ImplAttributes;
-            this.Target.IsAddOn = this.Source.IsAddOn;
-            this.Target.IsCheckAccessOnOverride = this.Source.IsCheckAccessOnOverride;
-            this.Target.IsFire = this.Source.IsFire;
-            this.Target.IsForwardRef = this.Source.IsForwardRef;
-            this.Target.IsGetter = this.Source.IsGetter;
-            this.Target.IsIL = this.Source.IsIL;
-            this.Target.IsInternalCall = this.Source.IsInternalCall;
-            this.Target.IsManaged = this.Source.IsManaged;
-            this.Target.IsNative = this.Source.IsNative;
-            this.Target.IsOther = this.Source.IsOther;
-            this.Target.IsPreserveSig = this.Source.IsPreserveSig;
-            this.Target.IsRemoveOn = this.Source.IsRemoveOn;
-            this.Target.IsRuntime = this.Source.IsRuntime;
-            this.Target.IsSetter = this.Source.IsSetter;
-            this.Target.IsSynchronized = this.Source.IsSynchronized;
-            this.Target.IsUnmanaged = this.Source.IsUnmanaged;
-            this.Target.NoInlining = this.Source.NoInlining;
-            this.Target.NoOptimization = this.Source.NoOptimization;
-            this.Target.SemanticsAttributes = this.Source.SemanticsAttributes;
-
-            // TODO research correct usage of method MetadataToken
-            //this.Target.MetadataToken = new MetadataToken(this.Source.MetadataToken.TokenType, this.Source.MetadataToken.RID);
-
-            if(this.Source.IsPInvokeImpl)
-            {
-                throw new WeavingException(string.Format(
-                    "Configured mixin implementation may not contain extern methods: [{0}]",
-                    this.ILCloningContext.RootSource.FullName));
-            }
-            Contract.Assert(this.Source.PInvokeInfo == null);
-
-            if (this.Source.HasOverrides)
-            {
-                foreach (var sourceOverride in this.Source.Overrides)
-                {
-                    this.Target.Overrides.Add(this.ILCloningContext.RootImport(sourceOverride));
-                }
-            }
-
-            this.ParameterOperandReplacementMap = new Dictionary<ParameterDefinition, ParameterDefinition>(this.Source.Parameters.Count);
-            if (this.Source.HasParameters)
-            {
-                this.Target.Parameters.CloneAllParameters(
-                    this.Source.Parameters,
-                    this.ILCloningContext,
-                    this.ParameterOperandReplacementMap);
-            }
-            Contract.Assert(this.Target.Parameters.Count == this.Source.Parameters.Count);
-
-            // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around
-            this.Target.CustomAttributes.Clear();
-            this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
-
-            if (this.Source.HasGenericParameters)
-            {
-                // TODO method generic parameters
-                throw new WeavingException(string.Format(
-                    "Configured mixin implementation may not include any generic methods: [{0}]",
-                    this.ILCloningContext.RootSource.FullName));
-            }
-
-            if (this.Source.HasSecurityDeclarations)
-            {
-                // TODO method security declarations
-                throw new WeavingException(string.Format(
-                    "Configured mixin implementation may not contain methods annotated with security attributes: [{0}]",
-                    this.ILCloningContext.RootSource.FullName));
-            }
-
-            var sourceMethodReturnType = this.Source.MethodReturnType;
-            Contract.Assert(sourceMethodReturnType != null);
-            this.Target.MethodReturnType = new MethodReturnType(this.Target);
-            this.Target.MethodReturnType.ReturnType = this.ILCloningContext.RootImport(sourceMethodReturnType.ReturnType);
-            this.Target.MethodReturnType.Attributes = sourceMethodReturnType.Attributes;
-            this.Target.MethodReturnType.Constant = sourceMethodReturnType.Constant;
-            this.Target.MethodReturnType.HasConstant = sourceMethodReturnType.HasConstant;
-
-            // TODO research correct usage of MethodReturnType.MarshalInfo
-            if (sourceMethodReturnType.MarshalInfo != null)
-            {
-                this.Target.MethodReturnType.MarshalInfo = new MarshalInfo(sourceMethodReturnType.MarshalInfo.NativeType);
-            }
-
-            // TODO research correct usage of MethodReturnType.MetadataToken
-            //this.Target.MethodReturnType.MetadataToken =
-            //    new MetadataToken(sourceMethodReturnType.MetadataToken.TokenType, sourceMethodReturnType.MetadataToken.RID);
-
-            this.Target.MethodReturnType.CloneAllCustomAttributes(sourceMethodReturnType, this.ILCloningContext);
-
-            this.IsStructureCloned = true;
-        }
-
-        /// <summary>
-        /// Gets or sets the collection of clone parameters keyed by the source parameters that they will replace
-        /// in the cloned method bodies.
-        /// </summary>
-        Dictionary<ParameterDefinition, ParameterDefinition> ParameterOperandReplacementMap { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the method body logic has been cloned.
-        /// </summary>
-        public bool IsBodyCloned { get; private set; }
-
-        /// <summary>
-        /// Clones the method body logic from the source to the target.
-        /// </summary>
-        public void CloneLogic()
-        {
-            Contract.Requires(this.IsStructureCloned);
-            Contract.Requires(!this.IsBodyCloned);
-            Contract.Ensures(this.IsBodyCloned);
-
-            Contract.Assert(this.ParameterOperandReplacementMap != null);
-
-            var sourceBody = this.Source.Body;
-
-            if(sourceBody == null)
-            {
-                this.Target.Body = null;
-                this.IsBodyCloned = true;
-                return;
-            }
-
-            var targetBody = this.Target.Body;
-
-            targetBody.InitLocals = sourceBody.InitLocals;
+            this.Target.InitLocals = this.Source.InitLocals;
 
             // TODO research correct usage of LocalVarToken
             //targetBody.LocalVarToken = new MetadataToken(
             //    sourceBody.LocalVarToken.TokenType,
             //    sourceBody.LocalVarToken.RID);
 
-            targetBody.MaxStackSize = sourceBody.MaxStackSize;
+            this.Target.MaxStackSize = this.Source.MaxStackSize;
 
             // TODO method body scope may be tough to get right
-            targetBody.Scope = sourceBody.Scope;
+            this.Target.Scope = this.Source.Scope;
 
-            var variableOperandReplacementMap = new Dictionary<VariableDefinition, VariableDefinition>(sourceBody.Variables.Count);
-            foreach (var sourceVariable in sourceBody.Variables)
+            var variableOperandReplacementMap = new Dictionary<VariableDefinition, VariableDefinition>(this.Source.Variables.Count);
+            foreach (var sourceVariable in this.Source.Variables)
             {
                 var targetVariable = new VariableDefinition(
                     sourceVariable.Name,
@@ -204,12 +79,12 @@ namespace Bix.Mixers.Fody.ILCloning
 
                 variableOperandReplacementMap.Add(sourceVariable, targetVariable);
 
-                targetBody.Variables.Add(targetVariable);
+                this.Target.Variables.Add(targetVariable);
             }
 
-            var instructionOperandReplacementMap = new Dictionary<Instruction, Instruction>(sourceBody.Instructions.Count);
-            var ilProcessor = targetBody.GetILProcessor();
-            foreach (var sourceInstruction in sourceBody.Instructions)
+            var instructionOperandReplacementMap = new Dictionary<Instruction, Instruction>(this.Source.Instructions.Count);
+            var ilProcessor = this.Target.GetILProcessor();
+            foreach (var sourceInstruction in this.Source.Instructions)
             {
                 Instruction targetInstruction;
                 if (sourceInstruction.Operand == null)
@@ -226,45 +101,15 @@ namespace Bix.Mixers.Fody.ILCloning
                 instructionOperandReplacementMap.Add(sourceInstruction, targetInstruction);
             }
 
-            foreach (var targetInstruction in targetBody.Instructions.Where(instruction => instruction.Operand != null))
+            foreach (var targetInstruction in this.Target.Instructions.Where(instruction => instruction.Operand != null))
             {
-                if (TryReplaceParameterOperand(this.ParameterOperandReplacementMap, targetInstruction)) { continue; }
-                if (TryReplaceThisReferenceOperand(sourceBody.ThisParameter, targetBody.ThisParameter, targetInstruction)) { continue; }
+                if (TryReplaceThisReferenceOperand(this.Source.ThisParameter, this.Target.ThisParameter, targetInstruction)) { continue; }
                 if (TryReplaceVariableOperand(variableOperandReplacementMap, targetInstruction)) { continue; }
                 if (TryReplaceInstructionOperand(instructionOperandReplacementMap, targetInstruction)) { continue; }
                 if (TryReplaceInstructionsOperand(instructionOperandReplacementMap, targetInstruction)) { continue; }
             }
 
-            this.IsBodyCloned = true;
-        }
-
-        /// <summary>
-        /// Replaces a source parameter instruction operand with the corresponding target parameter operand if applicable.
-        /// </summary>
-        /// <param name="parameterOperandReplacementMap">Mapping of source to target parameters.</param>
-        /// <param name="targetInstruction">Instruction to look at.</param>
-        /// <returns><c>true</c> if the operand for the instruction is a parameter operand, else <c>false</c></returns>
-        /// <exception cref="InvalidOperationException">Thrown if the instruction operand is a parameter that isn't in the replacement map.</exception>
-        private bool TryReplaceParameterOperand(
-            Dictionary<ParameterDefinition, ParameterDefinition> parameterOperandReplacementMap,
-            Instruction targetInstruction)
-        {
-            Contract.Requires(parameterOperandReplacementMap != null);
-            Contract.Requires(targetInstruction != null);
-
-            var parameterOperand = targetInstruction.Operand as ParameterDefinition;
-            if (parameterOperand != null)
-            {
-                ParameterDefinition replacementParameterOperand;
-                if (!parameterOperandReplacementMap.TryGetValue(parameterOperand, out replacementParameterOperand))
-                {
-                    throw new InvalidOperationException("Failed to update parameter operand in an instruction");
-                }
-                targetInstruction.Operand = replacementParameterOperand;
-                return true;
-            }
-
-            return false;
+            this.IsCloned = true;
         }
 
         /// <summary>
@@ -527,7 +372,18 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, ParameterDefinition parameter)
         {
-            return ilProcessor.Create(opCode, parameter);
+            Contract.Requires(ilProcessor != null);
+            Contract.Requires(parameter != null);
+            Contract.Requires(this.SignatureCloner != null);
+            Contract.Requires(this.SignatureCloner.ParameterCloners != null);
+
+            var parameterCloner = this.SignatureCloner.ParameterCloners.FirstOrDefault(cloner => cloner.Source == parameter);
+            if (parameterCloner == null)
+            {
+                throw new InvalidOperationException("Failed to find a parameter cloner matching the operand in an instruction");
+            }
+
+            return ilProcessor.Create(opCode, parameterCloner.Target);
         }
 
         /// <summary>

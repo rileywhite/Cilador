@@ -110,6 +110,7 @@
     <Compile Include="InterfaceMixinTests\ArrayFixture.cs" />
     <Compile Include="InterfaceMixinTests\ConstructorsFixture.cs" />
     <Compile Include="InterfaceMixinTests\DynamicFixture.cs" />
+    <Compile Include="InterfaceMixinTests\GenericsFixture.cs" />
     <Compile Include="InterfaceMixinTests\MemberMixingFixture.cs" />
     <Compile Include="InterfaceMixinTests\ImplicitAndExplicitImplementationFixture.cs" />
     <Compile Include="InterfaceMixinTests\InterfaceWithOnlyPrimitiveTypesFixture.cs" />

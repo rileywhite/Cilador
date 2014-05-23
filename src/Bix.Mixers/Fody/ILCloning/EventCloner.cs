@@ -24,7 +24,7 @@ namespace Bix.Mixers.Fody.ILCloning
     /// <summary>
     /// Clones <see cref="FieldDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class EventCloner : MemberClonerBase<EventDefinition>
+    internal class EventCloner : ClonerBase<EventDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="EventCloner"/>
@@ -43,7 +43,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Clones the event in its entirety
         /// </summary>
-        public override void CloneStructure()
+        public override void Clone()
         {
             Contract.Assert(this.Target.DeclaringType != null);
             Contract.Assert(this.Target.Name == this.Source.Name);
@@ -95,7 +95,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.Target.CustomAttributes.Clear();
             this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
 
-            this.IsStructureCloned = true;
+            this.IsCloned = true;
 
             Contract.Assert((this.Target.AddMethod == null) == (this.Source.AddMethod == null));
             Contract.Assert((this.Target.RemoveMethod == null) == (this.Source.RemoveMethod == null));

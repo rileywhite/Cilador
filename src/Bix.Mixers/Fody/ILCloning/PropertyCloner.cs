@@ -16,6 +16,7 @@
 
 using Mono.Cecil;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Reflection;
 
@@ -24,7 +25,7 @@ namespace Bix.Mixers.Fody.ILCloning
     /// <summary>
     /// Clones <see cref="PropertyDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class PropertyCloner : MemberClonerBase<PropertyDefinition>
+    internal class PropertyCloner : ClonerBase<PropertyDefinition>, IParameterContainerCloner
     {
         /// <summary>
         /// Creates a new <see cref="PropertyCloner"/>
@@ -38,15 +39,18 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(target != null);
             Contract.Requires(source != null);
+
+            this.ParameterCloners = new List<ParameterCloner>();
         }
 
         /// <summary>
         /// Clones the property in its entirety
         /// </summary>
-        public override void CloneStructure()
+        public override void Clone()
         {
             Contract.Assert(this.Target.DeclaringType != null);
             Contract.Assert(this.Target.Name == this.Source.Name);
+//            Contract.Assert(this.Target.Parameters.Count == this.Source.Parameters.Count);
 
             this.Target.Attributes = this.Source.Attributes;
             this.Target.Constant = this.Source.Constant;
@@ -62,11 +66,6 @@ namespace Bix.Mixers.Fody.ILCloning
             //this.Target.MetadataToken = new MetadataToken(
             //    this.Source.MetadataToken.TokenType,
             //    this.Source.MetadataToken.RID);
-
-            if (this.Source.HasParameters)
-            {
-                this.Target.Parameters.CloneAllParameters(this.Source.Parameters, this.ILCloningContext);
-            }
 
             for (int i = 0; i < this.Source.OtherMethods.Count; i++)
             {
@@ -104,7 +103,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.Target.CustomAttributes.Clear();
             this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
 
-            this.IsStructureCloned = true;
+            this.IsCloned = true;
 
             Contract.Assert(this.Target.SignatureEquals(this.Source));
             Contract.Assert((this.Target.GetMethod == null) == (this.Source.GetMethod == null));
@@ -114,5 +113,10 @@ namespace Bix.Mixers.Fody.ILCloning
                 Contract.Assert((this.Target.OtherMethods[i] == null) == (this.Source.OtherMethods[i] == null));
             }
         }
+
+        /// <summary>
+        /// Gets the collection of parameter cloners for contained parameters
+        /// </summary>
+        public List<ParameterCloner> ParameterCloners { get; private set; }
     }
 }

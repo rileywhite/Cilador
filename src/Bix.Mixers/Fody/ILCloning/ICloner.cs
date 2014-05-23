@@ -22,17 +22,22 @@ namespace Bix.Mixers.Fody.ILCloning
     /// <summary>
     /// Interface implemented by all item cloners.
     /// </summary>
-    [ContractClass(typeof(IMemberClonerContract))]
-    internal interface IMemberCloner
+    [ContractClass(typeof(IClonerContract))]
+    internal interface ICloner
     {
         /// <summary>
-        /// Gets whether the structure of the item has been cloned.
+        /// Gets the context for IL cloning.
         /// </summary>
-        bool IsStructureCloned { get; }
+        ILCloningContext ILCloningContext { get; }
 
         /// <summary>
-        /// Clones the item structure.
+        /// Gets whether the item has been cloned.
         /// </summary>
-        void CloneStructure();
+        bool IsCloned { get; }
+
+        /// <summary>
+        /// Clones the item.
+        /// </summary>
+        void Clone();
     }
 }

@@ -25,17 +25,34 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.ILCloning
 {
+    /// <summary>
+    /// Extension methods used for IL cloning
+    /// </summary>
     internal static class ILCloningExtensions
     {
-        public static void CloneStructure(this IEnumerable<IMemberCloner> cloners)
+        /// <summary>
+        /// Invokes clone on each item
+        /// </summary>
+        /// <param name="cloners"></param>
+        public static void Clone(this IEnumerable<ICloner> cloners)
         {
             Contract.Requires(cloners != null);
-            Contract.Requires(!cloners.Any(cloner => cloner.IsStructureCloned));
-            Contract.Ensures(cloners.All(cloner => cloner.IsStructureCloned));
+            Contract.Requires(!cloners.Any(cloner => cloner.IsCloned));
+            Contract.Ensures(cloners.All(cloner => cloner.IsCloned));
 
-            foreach (var cloner in cloners) { cloner.CloneStructure(); }
+            // TODO test this parallel version
+            //Parallel.ForEach(
+            //    cloners,
+            //    new Action<ICloner>(cloner => cloner.Clone()));
+            foreach (var cloner in cloners) { cloner.Clone(); }
         }
 
+        /// <summary>
+        /// Determines whether a type is nested within another type, even deeply.
+        /// </summary>
+        /// <param name="type">Type that may be nested within <paramref name="possibleAncestorType"/></param>
+        /// <param name="possibleAncestorType">Type that may contain <paramref name="type"/>.</param>
+        /// <returns><c>true</c> if <paramref name="type"/> is nested within <paramref name="possibleAncestorType"/>, else <c>false</c>.</returns>
         [Pure]
         public static bool IsNestedWithin(this TypeReference type, TypeDefinition possibleAncestorType)
         {
@@ -44,6 +61,15 @@ namespace Bix.Mixers.Fody.ILCloning
             else { return type.DeclaringType.IsNestedWithin(possibleAncestorType); }
         }
 
+        /// <summary>
+        /// Determines whether a member that
+        /// (1) is a generic instance or is contained within a generic instance that
+        /// (2) has any generic argument that
+        /// (3) is a nested type within another given type.
+        /// </summary>
+        /// <param name="member">Member to check.</param>
+        /// <param name="argumentsSearchType">Type to look for generic arguments that are nested within it.</param>
+        /// <returns><c>true</c> if <paramref name="member"/> is requires the use of a type within <paramref name="argumentsSearchType"/> for a generic argument, else <c>false</c>.</returns>
         [Pure]
         public static bool IsAnyTypeAncestorAGenericInstanceWithArgumentsIn(this MemberReference member, TypeDefinition argumentsSearchType)
         {
@@ -65,6 +91,14 @@ namespace Bix.Mixers.Fody.ILCloning
             }
         }
 
+        /// <summary>
+        /// Determines whether a target and source method reference have equivalent signatures within the context
+        /// of IL cloning.
+        /// </summary>
+        /// <param name="target">Target method..</param>
+        /// <param name="source">Source method</param>
+        /// <param name="ilCloningContext">IL cloning context.</param>
+        /// <returns><c>true</c> if the signatures are equivalent within the root target and source, else <c>false</c></returns>
         [Pure]
         public static bool SignatureEquals(this MethodReference target, MethodReference source, ILCloningContext ilCloningContext)
         {
@@ -75,6 +109,14 @@ namespace Bix.Mixers.Fody.ILCloning
             return target.FullName.Replace(ilCloningContext.RootTarget.FullName, ilCloningContext.RootSource.FullName) == source.FullName;
         }
 
+        /// <summary>
+        /// Determines whether a target and source property reference have equivalent signatures within the context
+        /// of IL cloning.
+        /// </summary>
+        /// <param name="target">Target property.</param>
+        /// <param name="source">Source property.</param>
+        /// <param name="ilCloningContext">IL cloning context.</param>
+        /// <returns><c>true</c> if the signatures are equivalent within the root target and source, else <c>false</c></returns>
         [Pure]
         public static bool SignatureEquals(this PropertyDefinition left, PropertyDefinition right)
         {
@@ -83,48 +125,31 @@ namespace Bix.Mixers.Fody.ILCloning
             return left.FullName.Replace(left.DeclaringType.FullName + "::", string.Empty) == right.FullName.Replace(right.DeclaringType.FullName + "::", string.Empty);
         }
 
-        public static void CloneAllParameters(
-            this Collection<ParameterDefinition> targetParameters,
+        /// <summary>
+        /// Creates and adds parameter cloners for a source and target item to a collection of cloners.
+        /// </summary>
+        /// <param name="parameterCloners">Collection of cloners to add items to.</param>
+        /// <param name="parameterContainerCloner">Cloner for an item with parameters.</param>
+        /// <param name="sourceParameters">Source parameters collection.</param>
+        /// <param name="targetParameters">Target parameters collection.</param>
+        public static void AddParameterClonersFor(
+            this List<ParameterCloner> parameterCloners,
+            IParameterContainerCloner parameterContainerCloner,
             Collection<ParameterDefinition> sourceParameters,
-            ILCloningContext ilCloningContext,
-            Dictionary<ParameterDefinition, ParameterDefinition> parameterOperandReplacementMap = null)
+            Collection<ParameterDefinition> targetParameters)
         {
+            Contract.Requires(parameterCloners != null);
+            Contract.Requires(parameterContainerCloner != null);
             Contract.Requires(targetParameters != null);
-            Contract.Requires(sourceParameters != null);
-            Contract.Requires(targetParameters != sourceParameters);
-            Contract.Requires(targetParameters.Count == 0);
-            Contract.Requires(ilCloningContext != null);
-            Contract.Ensures(targetParameters.Count == sourceParameters.Count);
 
             foreach (var sourceParameter in sourceParameters)
             {
-                var targetParameter =
-                    new ParameterDefinition(sourceParameter.Name, sourceParameter.Attributes, ilCloningContext.RootImport(sourceParameter.ParameterType));
-                targetParameter.Constant = sourceParameter.Constant;
-                targetParameter.HasConstant = sourceParameter.HasConstant;
-                targetParameter.HasDefault = sourceParameter.HasDefault;
-                targetParameter.HasFieldMarshal = sourceParameter.HasFieldMarshal;
-                targetParameter.IsIn = sourceParameter.IsIn;
-                targetParameter.IsLcid = sourceParameter.IsLcid;
-                targetParameter.IsOptional = sourceParameter.IsOptional;
-                targetParameter.IsOut = sourceParameter.IsOut;
-                targetParameter.IsReturnValue = sourceParameter.IsReturnValue;
-
-                // TODO research correct usage
-                if (sourceParameter.MarshalInfo != null)
-                {
-                    targetParameter.MarshalInfo = new MarshalInfo(sourceParameter.MarshalInfo.NativeType);
-                }
-
-                // TODO research correct usage
-                //targetParameter.MetadataToken = new MetadataToken(sourceParameter.MetadataToken.TokenType, sourceParameter.MetadataToken.RID);
-
-                // I did not check whether I get a similar issue here as with the duplication in the FieldCloner...adding a clear line just to make sure, though
-                targetParameter.CustomAttributes.Clear();
-                targetParameter.CloneAllCustomAttributes(sourceParameter, ilCloningContext);
-
+                var targetParameter = new ParameterDefinition(
+                    sourceParameter.Name,
+                    sourceParameter.Attributes,
+                    parameterContainerCloner.ILCloningContext.RootTarget.Module.Import(typeof(void)));
                 targetParameters.Add(targetParameter);
-                if (parameterOperandReplacementMap != null) { parameterOperandReplacementMap.Add(sourceParameter, targetParameter); }
+                parameterCloners.Add(new ParameterCloner(parameterContainerCloner, targetParameter, sourceParameter));
             }
         }
 

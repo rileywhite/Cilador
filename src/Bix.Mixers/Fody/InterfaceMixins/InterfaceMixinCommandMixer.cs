@@ -111,9 +111,9 @@ namespace Bix.Mixers.Fody.InterfaceMixins
         public void Execute()
         {
             this.Target.Interfaces.Add(this.Target.Module.Import(this.InterfaceType));
-            var typeCloner = new TypeCloner(new ILCloningContext(this.Source, this.Target), this.Target, this.Source);
-            typeCloner.CloneStructure();
-            typeCloner.CloneLogic();
+            ClonerGatheringVisitor visitor = new ClonerGatheringVisitor(new ILCloningContext(this.Source, this.Target));
+            visitor.Visit(this.Source, this.Target);
+            visitor.InvokeCloners();
         }
     }
 }

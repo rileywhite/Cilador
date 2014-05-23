@@ -20,23 +20,39 @@ using System.Diagnostics.Contracts;
 namespace Bix.Mixers.Fody.ILCloning
 {
     /// <summary>
-    /// Contracts for <see cref="IMemberCloner"/>.
+    /// Contracts for <see cref="ICloner"/>.
     /// </summary>
-    [ContractClassFor(typeof(IMemberCloner))]
-    internal abstract class IMemberClonerContract : IMemberCloner
+    [ContractClassFor(typeof(ICloner))]
+    internal abstract class IClonerContract : ICloner
     {
         /// <summary>
-        /// Contracts for <see cref="IMemberCloner.IsStructureCloned"/>.
+        /// Gets the context for IL cloning.
         /// </summary>
-        public bool IsStructureCloned { get; private set; }
+        public ILCloningContext ILCloningContext
+        {
+            get
+            {
+                Contract.Ensures(Contract.Result<ILCloningContext>() != null);
+                throw new NotSupportedException();
+            }
+        }
 
         /// <summary>
-        /// Contracts for <see cref="IMemberCloner.CloneStructure()"/>.
+        /// Contracts for <see cref="ICloner.IsCloned"/>.
         /// </summary>
-        public void CloneStructure()
+        public bool IsCloned
         {
-            Contract.Requires(!this.IsStructureCloned);
-            Contract.Ensures(this.IsStructureCloned);
+            get { throw new NotSupportedException(); }
+        }
+
+        /// <summary>
+        /// Contracts for <see cref="ICloner.Clone()"/>.
+        /// </summary>
+        public void Clone()
+        {
+            Contract.Requires(!this.IsCloned);
+            Contract.Ensures(this.IsCloned);
+            throw new NotSupportedException();
         }
     }
 }

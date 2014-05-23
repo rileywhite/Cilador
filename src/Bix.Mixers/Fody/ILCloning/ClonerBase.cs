@@ -24,17 +24,16 @@ namespace Bix.Mixers.Fody.ILCloning
     /// <summary>
     /// Base type for all cloners that clone member items.
     /// </summary>
-    /// <typeparam name="TMemberDefinition">Resolved type of the member.</typeparam>
-    internal abstract class MemberClonerBase<TMemberDefinition> : IMemberCloner
-        where TMemberDefinition : MemberReference, IMemberDefinition, Mono.Cecil.ICustomAttributeProvider
+    /// <typeparam name="TClonedItem">Resolved type of the member.</typeparam>
+    internal abstract class ClonerBase<TClonedItem> : ICloner
     {
         /// <summary>
         /// Creates a new <see cref="MemberClonerBase<,>"/>
         /// </summary>
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="target">Resolved cloning target.</param>
-        /// <param name="sourceWithRoot">Resolved cloning source.</param>
-        public MemberClonerBase(ILCloningContext ilCloningContext, TMemberDefinition target, TMemberDefinition source)
+        /// <param name="source">Resolved cloning source.</param>
+        public ClonerBase(ILCloningContext ilCloningContext, TClonedItem target, TClonedItem source)
         {
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(target != null);
@@ -56,21 +55,21 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Gets or sets the resolved cloning target.
         /// </summary>
-        public TMemberDefinition Target { get; private set; }
+        public TClonedItem Target { get; private set; }
 
         /// <summary>
         /// Gets or sets the resolved cloning source.
         /// </summary>
-        public TMemberDefinition Source { get; private set; }
+        public TClonedItem Source { get; private set; }
 
         /// <summary>
-        /// Gets or sets whether the structure has been cloned.
+        /// Gets or sets whether the item has been cloned.
         /// </summary>
-        public bool IsStructureCloned { get; protected set; }
+        public bool IsCloned { get; protected set; }
 
         /// <summary>
-        /// Clones the structure from the source to the target.
+        /// Clones the item from the source to the target.
         /// </summary>
-        public abstract void CloneStructure();
+        public abstract void Clone();
     }
 }

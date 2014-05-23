@@ -27,7 +27,7 @@ namespace Bix.Mixers.Fody.ILCloning
     /// <summary>
     /// Clones <see cref="TypeDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class TypeCloner : MemberClonerBase<TypeDefinition>
+    internal class TypeCloner : ClonerBase<TypeDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="TypeCloner"/>.
@@ -41,72 +41,12 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(target != null);
             Contract.Requires(source != null);
-            this.TypeCloners = new List<TypeCloner>();
-            this.FieldCloners = new List<FieldCloner>();
-            this.MethodCloners = new List<MethodCloner>();
-            this.PropertyCloners = new List<PropertyCloner>();
-            this.EventCloners = new List<EventCloner>();
         }
 
         /// <summary>
-        /// Gets or sets the collection of cloners for nested types
+        /// Clones the type.
         /// </summary>
-        private List<TypeCloner> TypeCloners { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of cloners for contained fields
-        /// </summary>
-        private List<FieldCloner> FieldCloners { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of cloners for contained methods
-        /// </summary>
-        private List<MethodCloner> MethodCloners { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of cloners for contained properties
-        /// </summary>
-        private List<PropertyCloner> PropertyCloners { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of cloners for contained events
-        /// </summary>
-        private List<EventCloner> EventCloners { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether the initial creation of all members and their
-        /// associated cloners has been created.
-        /// </summary>
-        private bool IsWireframeCompleted { get; set; }
-
-        /// <summary>
-        /// Clones the structure of this type but not the logic of method bodies
-        /// </summary>
-        public override void CloneStructure()
-        {
-            this.CreateWireframeAndCloners();
-            this.CloneTypeData();
-            this.TypeCloners.CloneStructure();
-            this.FieldCloners.CloneStructure();
-            this.MethodCloners.CloneStructure();
-            this.PropertyCloners.CloneStructure();
-            this.EventCloners.CloneStructure();
-            this.IsStructureCloned = true;
-        }
-
-        /// <summary>
-        /// Clones just the method body logic for this type's methods and for containing types methods
-        /// </summary>
-        public void CloneLogic()
-        {
-            foreach (var methodCloner in this.MethodCloners) { methodCloner.CloneLogic(); }
-            foreach (var typeCloner in this.TypeCloners) { typeCloner.CloneLogic(); }
-        }
-
-        /// <summary>
-        /// Clones just the properties of the type
-        /// </summary>
-        private void CloneTypeData()
+        public override void Clone()
         {
             if (this.Target == this.ILCloningContext.RootTarget)
             {
@@ -144,7 +84,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 Contract.Assert(this.Target.IsNested);
                 Contract.Assert(this.Source.IsNested);
 
-                if(this.Source.HasGenericParameters)
+                if (this.Source.HasGenericParameters)
                 {
                     // TODO nested type generic parameters
                     throw new WeavingException(string.Format(
@@ -182,78 +122,8 @@ namespace Bix.Mixers.Fody.ILCloning
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around, but only for non-root type
             if (this.Target != this.ILCloningContext.RootTarget) { this.Target.CustomAttributes.Clear(); }
             this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
-        }
 
-        /// <summary>
-        /// Creates all members of this and nested types and associated cloners with minimal properties set.
-        /// </summary>
-        private void CreateWireframeAndCloners()
-        {
-            if (!this.IsWireframeCompleted)
-            {
-                var voidReference = this.Target.Module.Import(typeof(void));
-
-                foreach (var sourceType in this.Source.NestedTypes)
-                {
-                    var targetType = new TypeDefinition(sourceType.Namespace, sourceType.Name, 0);
-                    this.Target.NestedTypes.Add(targetType);
-                    var typeCloner = new TypeCloner(this.ILCloningContext, targetType, sourceType);
-                    typeCloner.CreateWireframeAndCloners();
-                    this.TypeCloners.Add(typeCloner);
-                }
-
-                foreach (var sourceField in this.Source.Fields)
-                {
-                    var targetField = new FieldDefinition(sourceField.Name, 0, voidReference);
-                    this.Target.Fields.Add(targetField);
-                    this.FieldCloners.Add(new FieldCloner(this.ILCloningContext, targetField, sourceField));
-                }
-
-                foreach (var sourceMethod in this.Source.Methods)
-                {
-                    if (sourceMethod.Name == ".cctor" &&
-                        sourceMethod.IsStatic &&
-                        sourceMethod.DeclaringType == ILCloningContext.RootSource)
-                    {
-                        // TODO should static constructors be supported on the root type?
-                        throw new WeavingException(string.Format(
-                            "Configured mixin implementation cannot have a type initializer (i.e. static constructor): [{0}]",
-                            this.ILCloningContext.RootSource.FullName));
-                    }
-
-                    if (sourceMethod.IsConstructor &&
-                        sourceMethod.DeclaringType == ILCloningContext.RootSource)
-                    {
-                        // TODO support constructors for the root type in some meaningful way
-                        if (sourceMethod.HasParameters) 
-                        {
-                            throw new WeavingException(string.Format(
-                                "Configured mixin implementation cannot use constructors: [{0}]",
-                                this.ILCloningContext.RootSource.FullName));
-                        }
-                        continue;
-                    }
-
-                    var targetMethod = new MethodDefinition(sourceMethod.Name, 0, voidReference);
-                    this.Target.Methods.Add(targetMethod);
-                    this.MethodCloners.Add(new MethodCloner(this.ILCloningContext, targetMethod, sourceMethod));
-                }
-
-                foreach (var sourceProperty in this.Source.Properties)
-                {
-                    var targetProperty = new PropertyDefinition(sourceProperty.Name, 0, voidReference);
-                    this.Target.Properties.Add(targetProperty);
-                    this.PropertyCloners.Add(new PropertyCloner(this.ILCloningContext, targetProperty, sourceProperty));
-                }
-
-                foreach (var sourceEvent in this.Source.Events)
-                {
-                    var targetEvent = new EventDefinition(sourceEvent.Name, 0, voidReference);
-                    this.Target.Events.Add(targetEvent);
-                    this.EventCloners.Add(new EventCloner(this.ILCloningContext, targetEvent, sourceEvent));
-                }
-            }
-            this.IsWireframeCompleted = true;
+            this.IsCloned = true;
         }
     }
 }

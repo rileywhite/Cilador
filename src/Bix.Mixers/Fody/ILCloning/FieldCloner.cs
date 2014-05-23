@@ -24,7 +24,7 @@ namespace Bix.Mixers.Fody.ILCloning
     /// <summary>
     /// Clones <see cref="FieldDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class FieldCloner : MemberClonerBase<FieldDefinition>
+    internal class FieldCloner : ClonerBase<FieldDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="FieldCloner"/>
@@ -43,7 +43,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Clones the field in its entirety
         /// </summary>
-        public override void CloneStructure()
+        public override void Clone()
         {
             Contract.Requires(this.Target.Name == this.Source.Name);
 
@@ -85,7 +85,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Assert(this.Target.CustomAttributes.Count == 0);
             this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
 
-            this.IsStructureCloned = true;
+            this.IsCloned = true;
         }
     }
 }
