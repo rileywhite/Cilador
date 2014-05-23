@@ -47,6 +47,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.MethodParameterCloners = new List<ParameterCloner>();
             this.MethodBodyCloners = new List<MethodBodyCloner>();
             this.VariableCloners = new List<VariableCloner>();
+            this.InstructionCloners = new List<InstructionCloner>();
             this.PropertyCloners = new List<PropertyCloner>();
             this.EventCloners = new List<EventCloner>();
         }
@@ -64,6 +65,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.EventCloners.Clone();
             this.VariableCloners.Clone();
             this.MethodBodyCloners.Clone();
+            this.InstructionCloners.Clone();
         }
 
         /// <summary>
@@ -100,6 +102,11 @@ namespace Bix.Mixers.Fody.ILCloning
         /// Gets or sets the collection of cloners for variables contained within method bodies.
         /// </summary>
         private List<VariableCloner> VariableCloners { get; set; }
+
+        /// <summary>
+        /// Gets or sets the collection of cloners for instruction contained within method bodies.
+        /// </summary>
+        private List<InstructionCloner> InstructionCloners { get; set; }
 
         /// <summary>
         /// Gets or sets the collection of cloners for contained properties.
@@ -241,6 +248,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 var methodBodyCloner = new MethodBodyCloner(methodSignatureCloner, targetMethod.Body, sourceMethod.Body);
                 this.MethodBodyCloners.Add(methodBodyCloner);
                 this.VariableCloners.AddRange(methodBodyCloner.VariableCloners);
+                this.InstructionCloners.AddRange(methodBodyCloner.InstructionCloners);
             }
         }
 

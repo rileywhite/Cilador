@@ -48,6 +48,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
             this.SignatureCloner = signatureCloner;
             this.PopulateVariableCloners();
+            this.PopulateInstructionCloners();
         }
 
         /// <summary>
@@ -65,7 +66,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.VariableCloners = new List<VariableCloner>();
 
             var voidTypeReference = this.Target.Method.Module.Import(typeof(void));
-            foreach(var sourceVariable in this.Source.Variables)
+            foreach (var sourceVariable in this.Source.Variables)
             {
                 var targetVariable = new VariableDefinition(sourceVariable.Name, voidTypeReference);
                 this.Target.Variables.Add(targetVariable);
@@ -77,6 +78,36 @@ namespace Bix.Mixers.Fody.ILCloning
         /// Gets or sets the collection of variable cloners for the method body.
         /// </summary>
         public List<VariableCloner> VariableCloners { get; private set; }
+
+        /// <summary>
+        /// Populates <see cref="InstructionCloners"/>.
+        /// </summary>
+        private void PopulateInstructionCloners()
+        {
+            Contract.Ensures(this.InstructionCloners != null);
+
+            var ilProcessor = this.Target.GetILProcessor();
+
+            this.InstructionCloners = new List<InstructionCloner>();
+
+            foreach (var sourceInstruction in this.Source.Instructions)
+            {
+                // the operand is required to create the instruction
+                // but at this stage, it cannot always be resolved because wireframes of all items do not yet exist
+                // so the source's operand is used, and it will be replaced, if needed, in the clone step of each instruction cloner
+                Instruction targetInstruction =
+                    sourceInstruction.Operand == null ?
+                    ilProcessor.Create(sourceInstruction.OpCode) :
+                    this.CreateInstructionWithOperand(ilProcessor, sourceInstruction.OpCode, (dynamic)sourceInstruction.Operand);
+                ilProcessor.Append(targetInstruction);
+                this.InstructionCloners.Add(new InstructionCloner(this, targetInstruction, sourceInstruction));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the collection of instruction cloners for the method body.
+        /// </summary>
+        public List<InstructionCloner> InstructionCloners { get; private set; }
 
         /// <summary>
         /// Clones the method body from the source to the target.
@@ -95,91 +126,7 @@ namespace Bix.Mixers.Fody.ILCloning
             // TODO method body scope may be tough to get right
             this.Target.Scope = this.Source.Scope;
 
-            var instructionOperandReplacementMap = new Dictionary<Instruction, Instruction>(this.Source.Instructions.Count);
-            var ilProcessor = this.Target.GetILProcessor();
-            foreach (var sourceInstruction in this.Source.Instructions)
-            {
-                Instruction targetInstruction;
-                if (sourceInstruction.Operand == null)
-                {
-                    targetInstruction = ilProcessor.Create(sourceInstruction.OpCode);
-                }
-                else
-                {
-                    targetInstruction = this.CreateInstructionWithOperand(ilProcessor, sourceInstruction.OpCode, (dynamic)sourceInstruction.Operand);
-                }
-                targetInstruction.Offset = sourceInstruction.Offset;
-
-                ilProcessor.Append(targetInstruction);
-                instructionOperandReplacementMap.Add(sourceInstruction, targetInstruction);
-            }
-
-            foreach (var targetInstruction in this.Target.Instructions.Where(instruction => instruction.Operand != null))
-            {
-                if (TryReplaceInstructionOperand(instructionOperandReplacementMap, targetInstruction)) { continue; }
-                if (TryReplaceInstructionsOperand(instructionOperandReplacementMap, targetInstruction)) { continue; }
-            }
-
             this.IsCloned = true;
-        }
-
-        /// <summary>
-        /// Replaces a source instruction reference instruction operand with the corresponding target instruction operand if applicable.
-        /// </summary>
-        /// <param name="instructionOperandReplacementMap">Mapping of source to target instructions.</param>
-        /// <param name="targetInstruction">Instruction to look at.</param>
-        /// <returns><c>true</c> if the operand for the instruction is an instruction reference operand, else <c>false</c></returns>
-        /// <exception cref="InvalidOperationException">Thrown if the instruction operand is an instruction reference that isn't in the replacement map.</exception>
-        private bool TryReplaceInstructionOperand(
-            Dictionary<Instruction, Instruction> instructionOperandReplacementMap,
-            Instruction targetInstruction)
-        {
-            Contract.Requires(instructionOperandReplacementMap != null);
-            Contract.Requires(targetInstruction != null);
-
-            var instructionOperand = targetInstruction.Operand as Instruction;
-            if (instructionOperand != null)
-            {
-                Instruction replacementInstructionOperand;
-                if (!instructionOperandReplacementMap.TryGetValue(instructionOperand, out replacementInstructionOperand))
-                {
-                    throw new InvalidOperationException("Failed to update instruction operand in an instruction");
-                }
-                targetInstruction.Operand = replacementInstructionOperand;
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Replaces items within a source instruction reference instruction array operand with the corresponding target instruction references if applicable.
-        /// </summary>
-        /// <param name="instructionOperandReplacementMap">Mapping of source to target instructions.</param>
-        /// <param name="targetInstruction">Instruction to look at.</param>
-        /// <returns><c>true</c> if the operand for the instruction is an instruction reference array operand, else <c>false</c></returns>
-        /// <exception cref="InvalidOperationException">Thrown if any item in the instruction array operand is an instruction reference that isn't in the replacement map.</exception>
-        private bool TryReplaceInstructionsOperand(Dictionary<Instruction, Instruction> instructionOperandReplacementMap, Instruction targetInstruction)
-        {
-            Contract.Requires(instructionOperandReplacementMap != null);
-            Contract.Requires(targetInstruction != null);
-
-            var instructionsOperand = targetInstruction.Operand as Instruction[];
-            if (instructionsOperand != null)
-            {
-                for (int i = 0; i < instructionsOperand.Length; i++)
-                {
-                    Instruction replacementInstructionOperand;
-                    if (!instructionOperandReplacementMap.TryGetValue(instructionsOperand[i], out replacementInstructionOperand))
-                    {
-                        throw new InvalidOperationException(string.Format("Failed to update index [{0}] within an instructions operand in an instruction", i.ToString()));
-                    }
-                    instructionsOperand[i] = replacementInstructionOperand;
-                }
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -252,11 +199,12 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, FieldReference field)
         {
-            return ilProcessor.Create(opCode, this.ILCloningContext.RootImport(field));
+            return ilProcessor.Create(opCode, field);
         }
 
         /// <summary>
         /// Creates a new method with the given operand
+        /// Gets or sets the collection of instruction cloners for the method body.
         /// </summary>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
@@ -272,11 +220,11 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="target">Operand for instruction</param>
+        /// <param name="instruction">Operand for instruction</param>
         /// <returns>New instruction.</returns>
-        private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, Instruction target)
+        private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, Instruction instruction)
         {
-            return ilProcessor.Create(opCode, target);
+            return ilProcessor.Create(opCode, instruction);
         }
 
         /// <summary>
@@ -284,11 +232,11 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="targets">Operand for instruction</param>
+        /// <param name="instructions">Operand for instruction</param>
         /// <returns>New instruction.</returns>
-        private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, Instruction[] targets)
+        private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, Instruction[] instructions)
         {
-            return ilProcessor.Create(opCode, targets);
+            return ilProcessor.Create(opCode, instructions);
         }
 
         /// <summary>
@@ -324,11 +272,12 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, MethodReference method)
         {
-            return ilProcessor.Create(opCode, this.ILCloningContext.RootImport(method));
+            return ilProcessor.Create(opCode, method);
         }
 
         /// <summary>
         /// Creates a new method with the given operand
+        /// Clones the method body from the source to the target.
         /// </summary>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
@@ -336,23 +285,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, ParameterDefinition parameter)
         {
-            Contract.Requires(ilProcessor != null);
-            Contract.Requires(parameter != null);
-            Contract.Requires(this.SignatureCloner != null);
-            Contract.Requires(this.SignatureCloner.ParameterCloners != null);
-
-            if (parameter == this.Source.ThisParameter)
-            {
-                return ilProcessor.Create(opCode, this.Target.ThisParameter);
-            }
-
-            var parameterCloner = this.SignatureCloner.ParameterCloners.FirstOrDefault(cloner => cloner.Source == parameter);
-            if (parameterCloner == null)
-            {
-                throw new InvalidOperationException("Failed to find a parameter cloner matching the operand in an instruction");
-            }
-
-            return ilProcessor.Create(opCode, parameterCloner.Target);
+            return ilProcessor.Create(opCode, parameter);
         }
 
         /// <summary>
@@ -400,12 +333,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, VariableDefinition variable)
         {
-            var variableCloner = this.VariableCloners.FirstOrDefault(cloner => cloner.Source == variable);
-            if (variableCloner == null)
-            {
-                throw new InvalidOperationException("Could not locate a variable for copying an instruction");
-            }
-            return ilProcessor.Create(opCode, variableCloner.Target);
+            return ilProcessor.Create(opCode, variable);
         }
     }
 }

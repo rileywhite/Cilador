@@ -32,7 +32,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Creates a new <see cref="VariableCloner"/>.
         /// </summary>
-        /// <param name="ilCloningContext">IL cloning context.</param>
+        /// <param name="methodBodyCloner">Method body cloner associated with new variable cloner.</param>
         /// <param name="target">Cloning target.</param>
         /// <param name="source">Cloning source.</param>
         public VariableCloner(MethodBodyCloner methodBodyCloner, VariableDefinition target, VariableDefinition source)
