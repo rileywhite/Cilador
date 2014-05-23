@@ -106,7 +106,6 @@
     <Compile Include="Core\WeavingContextAssemblyResolver.cs" />
     <Compile Include="Core\WeavingException.cs" />
     <Compile Include="ILCloning\ClonerGatheringVisitor.cs" />
-    <Compile Include="ILCloning\ILCloningVisitorBase.cs" />
     <Compile Include="ILCloning\EventCloner.cs" />
     <Compile Include="ILCloning\ILCloningExtensions.cs" />
     <Compile Include="ILCloning\ICloner.cs" />

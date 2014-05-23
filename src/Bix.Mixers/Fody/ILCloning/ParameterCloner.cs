@@ -29,6 +29,12 @@ namespace Bix.Mixers.Fody.ILCloning
     /// </summary>
     internal class ParameterCloner : ClonerBase<ParameterDefinition>
     {
+        /// <summary>
+        /// Creates a new <see cref="ParameterCloner"/>.
+        /// </summary>
+        /// <param name="methodSignatureCloner">Cloner for the signature associated with the method body being cloned.</param>
+        /// <param name="target">Cloning target.</param>
+        /// <param name="source">Cloning source.</param>
         public ParameterCloner(MethodSignatureCloner methodSignatureCloner, ParameterDefinition target, ParameterDefinition source)
             : base(methodSignatureCloner.ILCloningContext, target, source)
         {
