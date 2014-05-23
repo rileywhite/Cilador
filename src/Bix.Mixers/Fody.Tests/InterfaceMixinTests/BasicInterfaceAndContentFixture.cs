@@ -121,13 +121,14 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
             var targetType = assembly.GetType("Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget");
             Assert.That(!typeof(Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
-            Assert.That(targetType.GetConstructors(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Length == 1, "Expected 1 constructor");
+            Assert.That(targetType.GetConstructors(TestContent.BindingFlagsForMixedMembers).Length == 1, "Expected 1 constructor");
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
             var instance = Activator.CreateInstance(targetType, new object[0]);
             Assert.That(!(instance is Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface));
         }
 
-        public void CanMixOpenGenericMixinIfClosedWithTypeArguments()
+        [Test]
+        public void CanHandleThisReference()
         {
             var config = new BixMixersConfigType();
 
@@ -140,7 +141,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                         new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
-                            Mixin = typeof(OpenGenericMixin<int>).GetShortAssemblyQualifiedName()
+                            Mixin = typeof(ThisPameterMixin).GetShortAssemblyQualifiedName()
                         }
                     }
                 },
@@ -148,13 +149,22 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
             var targetType = assembly.GetType("Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget");
-            Assert.That(!typeof(Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
-            Assert.That(targetType.GetConstructors(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Length == 1, "Expected 1 constructor");
+            Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
+            Assert.That(targetType.GetConstructors(TestContent.BindingFlagsForMixedMembers).Length == 1, "Expected 1 constructor");
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
-            var valueField = targetType.GetField("Value", TestContent.BindingFlagsForMixedMembers);
-            Assert.That(valueField != null);
-            Assert.That(typeof(int) == valueField.FieldType);
+            var instance = Activator.CreateInstance(targetType);
+            Assert.That(instance, Is.Not.Null);
+
+            var method = targetType.GetMethod("GetThis", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(method, Is.Not.Null);
+            Assert.That(method.ReturnType.FullName, Is.EqualTo(targetType.FullName));
+            Assert.That(instance, Is.SameAs(method.Invoke(instance, new object[0])));
+
+            method = targetType.GetMethod("GetThisAsInterface", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(method, Is.Not.Null);
+            Assert.That(method.ReturnType.FullName, Is.EqualTo(typeof(IEmptyInterface).FullName));
+            Assert.That(instance, Is.SameAs(method.Invoke(instance, new object[0])));
         }
     }
 }

@@ -103,31 +103,12 @@ namespace Bix.Mixers.Fody.ILCloning
 
             foreach (var targetInstruction in this.Target.Instructions.Where(instruction => instruction.Operand != null))
             {
-                if (TryReplaceThisReferenceOperand(this.Source.ThisParameter, this.Target.ThisParameter, targetInstruction)) { continue; }
                 if (TryReplaceVariableOperand(variableOperandReplacementMap, targetInstruction)) { continue; }
                 if (TryReplaceInstructionOperand(instructionOperandReplacementMap, targetInstruction)) { continue; }
                 if (TryReplaceInstructionsOperand(instructionOperandReplacementMap, targetInstruction)) { continue; }
             }
 
             this.IsCloned = true;
-        }
-
-        /// <summary>
-        /// Replaces a source <c>this</c> reference instruction operand with the target's <c>this</c> reference if applicable.
-        /// </summary>
-        /// <param name="sourceThis">Source method's <c>this</c> reference.</param>
-        /// <param name="targetThis">Target method's <c>this</c> reference.</param>
-        /// <param name="targetInstruction">Instruction to look at.</param>
-        /// <returns><c>true</c> if the operand for the instruction is a <c>this</c> reference, else <c>false</c></returns>
-        private bool TryReplaceThisReferenceOperand(ParameterDefinition sourceThis, ParameterDefinition targetThis, Instruction targetInstruction)
-        {
-            Contract.Requires(targetInstruction != null);
-            if (targetInstruction.Operand == sourceThis)
-            {
-                targetInstruction.Operand = targetThis;
-                return true;
-            }
-            else { return false; }
         }
 
         /// <summary>
@@ -376,6 +357,11 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(parameter != null);
             Contract.Requires(this.SignatureCloner != null);
             Contract.Requires(this.SignatureCloner.ParameterCloners != null);
+
+            if (parameter == this.Source.ThisParameter)
+            {
+                return ilProcessor.Create(opCode, this.Target.ThisParameter);
+            }
 
             var parameterCloner = this.SignatureCloner.ParameterCloners.FirstOrDefault(cloner => cloner.Source == parameter);
             if (parameterCloner == null)
