@@ -26,6 +26,6 @@ namespace Bix.Mixers.Fody.TestMixins
 {
     public class GenericMethodMixin : IEmptyInterface
     {
-        public void GenericMethod<T>() { }
+        public T GenericMethod<T>(T arg) { return arg; }
     }
 }

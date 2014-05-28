@@ -133,14 +133,6 @@ namespace Bix.Mixers.Fody.ILCloning
             this.Target.CustomAttributes.Clear();
             this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
 
-            if (this.Source.HasGenericParameters)
-            {
-                // TODO method generic parameters
-                throw new WeavingException(string.Format(
-                    "Configured mixin implementation may not include any generic methods: [{0}]",
-                    this.ILCloningContext.RootSource.FullName));
-            }
-
             if (this.Source.HasSecurityDeclarations)
             {
                 // TODO method security declarations

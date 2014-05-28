@@ -55,6 +55,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.InstructionCloners = new List<InstructionCloner>();
             this.PropertyCloners = new List<PropertyCloner>();
             this.EventCloners = new List<EventCloner>();
+            this.GenericParameterCloners = new List<GenericParameterCloner>();
         }
 
         /// <summary>
@@ -63,6 +64,7 @@ namespace Bix.Mixers.Fody.ILCloning
         public void InvokeCloners()
         {
             this.TypeCloners.Clone();
+            this.GenericParameterCloners.Clone();
             this.FieldCloners.Clone();
             this.MethodSignatureCloners.Clone();
             this.MethodParameterCloners.Clone();
@@ -122,6 +124,11 @@ namespace Bix.Mixers.Fody.ILCloning
         /// Gets or sets the collection of cloners for contained events.
         /// </summary>
         private List<EventCloner> EventCloners { get; set; }
+
+        /// <summary>
+        /// Gets or sets the collection of cloners for generic parameters contained within methods and types.
+        /// </summary>
+        private List<GenericParameterCloner> GenericParameterCloners { get; set; }
 
         /// <summary>
         /// Gathers all cloners for the given cloning source and target.
@@ -247,6 +254,14 @@ namespace Bix.Mixers.Fody.ILCloning
 
             Contract.Assert(methodSignatureCloner.ParameterCloners != null);
             this.MethodParameterCloners.AddRange(methodSignatureCloner.ParameterCloners);
+
+            // TODO may need to traverse hierarchy of generic parameters
+            foreach (var sourceGenericParameter in sourceMethod.GenericParameters)
+            {
+                var targetGenericParameter = new GenericParameter(sourceGenericParameter.Name, targetMethod);
+                targetMethod.GenericParameters.Add(targetGenericParameter);
+                this.GenericParameterCloners.Add(new GenericParameterCloner(this.ILCloningContext, targetGenericParameter, sourceGenericParameter));
+            }
 
             if (sourceMethod.HasBody)
             {

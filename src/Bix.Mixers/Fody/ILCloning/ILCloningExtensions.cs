@@ -125,6 +125,12 @@ namespace Bix.Mixers.Fody.ILCloning
             return left.FullName.Replace(left.DeclaringType.FullName + "::", string.Empty) == right.FullName.Replace(right.DeclaringType.FullName + "::", string.Empty);
         }
 
+        /// <summary>
+        /// Clones all custom attributes from a source to a target.
+        /// </summary>
+        /// <param name="target">Cloning target.</param>
+        /// <param name="source">Cloning source.</param>
+        /// <param name="ilCloningContext">Context for IL cloning.</param>
         public static void CloneAllCustomAttributes(
             this ICustomAttributeProvider target,
             ICustomAttributeProvider source,
@@ -143,6 +149,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
             foreach (var sourceAttribute in source.CustomAttributes)
             {
+                // TODO what is the blob argument for custom attributes?
                 var targetAttribute = new CustomAttribute(ilCloningContext.RootImport(sourceAttribute.Constructor));
                 if (sourceAttribute.HasConstructorArguments)
                 {

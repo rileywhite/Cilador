@@ -288,34 +288,6 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
         }
 
         [Test]
-        public void CannotMixGenericMethod()
-        {
-            var config = new BixMixersConfigType();
-
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
-            {
-                new InterfaceMixinConfigType
-                {
-                    InterfaceMixinMap = new InterfaceMixinMapType[]
-                    {
-                        new InterfaceMixinMapType
-                        {
-                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
-                            Mixin = typeof(GenericMethodMixin).GetShortAssemblyQualifiedName()
-                        }
-                    }
-                },
-            };
-
-            Assert.Throws(
-                Is.TypeOf((typeof(WeavingException)))
-                .And.Message.EqualTo(string.Format(
-                    "Configured mixin implementation may not include any generic methods: [{0}]",
-                    typeof(GenericMethodMixin).FullName)),
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
-        }
-
-        [Test]
         public void CannotMixOpenGenericNestedType()
         {
             var config = new BixMixersConfigType();
