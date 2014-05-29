@@ -103,6 +103,11 @@
     <Compile Include="..\..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Common\GenericParameterTypeValidator.cs" />
+    <Compile Include="Common\GenericRealParameterTypeValidator.cs" />
+    <Compile Include="Common\ParameterTypeValidatorBaseContract.cs" />
+    <Compile Include="Common\RealParameterTypeValidator.cs" />
+    <Compile Include="Common\ParameterTypeValidatorBase.cs" />
     <Compile Include="Common\TestContent.cs" />
     <Compile Include="Common\ModuleWeaverHelper.cs" />
     <Compile Include="Common\CommonExtensions.cs" />

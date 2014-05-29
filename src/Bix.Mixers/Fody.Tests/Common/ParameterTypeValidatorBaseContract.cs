@@ -14,35 +14,28 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Bix.Mixers.Fody.ILCloning;
-using Bix.Mixers.Fody.TestMixinInterfaces;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bix.Mixers.Fody.TestMixins
+namespace Bix.Mixers.Fody.Tests.Common
 {
-    public class GenericMethodMixin : IEmptyInterface
+    /// <summary>
+    /// Contracts for <see cref="ParameterTypeValidatorBase"/>.
+    /// </summary>
+    [ContractClassFor(typeof(ParameterTypeValidatorBase))]
+    internal abstract class ParameterTypeValidatorBaseContract : ParameterTypeValidatorBase
     {
-        public T GenericMethod<T>(T arg) { return arg; }
-
-        public Tuple<TClass, TStruct, TNew, TClassNew, TDisposable, TTClass> GenericMethodWithConstraints<TClass, TStruct, TNew, TClassNew, TDisposable, TTClass>(
-            TClass tClass,
-            TStruct tStruct,
-            TNew tNew,
-            TClassNew tClassNew,
-            TDisposable tDisposable,
-            TTClass ttClass)
-            where TClass : class
-            where TStruct : struct
-            where TNew : new()
-            where TClassNew : class, new()
-            where TDisposable : IDisposable
-            where TTClass : TClass
+        /// <summary>
+        /// Contracts for <see cref="Validate(Type)"/>.
+        /// </summary>
+        /// <param name="actualType">Actual parameter type.</param>
+        public override void Validate(Type actualType)
         {
-            return Tuple.Create(tClass, tStruct, tNew, tClassNew, tDisposable, ttClass);
+            Contract.Requires(actualType != null);
         }
     }
 }

@@ -21,11 +21,13 @@ using Bix.Mixers.Fody.TestMixins;
 using Bix.Mixers.Fody.Tests.Common;
 using NUnit.Framework;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
 {
@@ -78,13 +80,17 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
             var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget).FullName);
             Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
-            targetType.ValidateMemberCountsAre(1, 1, 0, 0, 0, 0);
+            targetType.ValidateMemberCountsAre(1, 2, 0, 0, 0, 0);
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
+            // simple generic method
             var method = targetType.GetMethod("GenericMethod", TestContent.BindingFlagsForMixedMembers);
             Assert.That(method, Is.Not.Null);
             Assert.That(method.ContainsGenericParameters);
-            Assert.That(method.GetParameters().Length, Is.EqualTo(1));
+            ParameterTypeValidatorBase.ValidateParameters(
+                method,
+                GenericParameterTypeValidator.Named("T"),
+                GenericParameterTypeValidator.Named("T"));
 
             var genericParameters = method.GetGenericArguments();
             Assert.That(genericParameters, Is.Not.Null);
@@ -94,11 +100,72 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             Assert.That(instance is IEmptyInterface);
 
             var genericInstanceMethod = method.MakeGenericMethod(typeof(int));
+            Assert.That(!genericInstanceMethod.ContainsGenericParameters);
+            ParameterTypeValidatorBase.ValidateParameters(
+                genericInstanceMethod,
+                RealParameterTypeValidator.ForType<int>(),
+                RealParameterTypeValidator.ForType<int>());
             Assert.That(genericInstanceMethod.Invoke(instance, new object[] { 94387 }), Is.EqualTo(94387));
 
             genericInstanceMethod = method.MakeGenericMethod(typeof(object));
+            Assert.That(!genericInstanceMethod.ContainsGenericParameters);
+            ParameterTypeValidatorBase.ValidateParameters(
+                genericInstanceMethod,
+                RealParameterTypeValidator.ForType<object>(),
+                RealParameterTypeValidator.ForType<object>());
             var someObject = new object();
             Assert.That(genericInstanceMethod.Invoke(instance, new object[] { someObject }), Is.SameAs(someObject));
+
+            // generic method with constraints
+            method = targetType.GetMethod("GenericMethodWithConstraints", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(method, Is.Not.Null);
+            Assert.That(method.ContainsGenericParameters);
+            ParameterTypeValidatorBase.ValidateParameters(
+                method,
+                new GenericRealParameterTypeValidator(typeof(Tuple<,,,,,>),
+                    GenericParameterTypeValidator.Named("TClass"),
+                    GenericParameterTypeValidator.Named("TStruct"),
+                    GenericParameterTypeValidator.Named("TNew"),
+                    GenericParameterTypeValidator.Named("TClassNew"),
+                    GenericParameterTypeValidator.Named("TDisposable"),
+                    GenericParameterTypeValidator.Named("TTClass")),
+                GenericParameterTypeValidator.Named("TClass"),
+                GenericParameterTypeValidator.Named("TStruct"),
+                GenericParameterTypeValidator.Named("TNew"),
+                GenericParameterTypeValidator.Named("TClassNew"),
+                GenericParameterTypeValidator.Named("TDisposable"),
+                GenericParameterTypeValidator.Named("TTClass"));
+
+            genericParameters = method.GetGenericArguments();
+            Assert.That(genericParameters, Is.Not.Null);
+            Assert.That(genericParameters.Length, Is.EqualTo(6));
+
+            instance = Activator.CreateInstance(targetType, new object[0]);
+            Assert.That(instance is IEmptyInterface);
+
+            genericInstanceMethod = method.MakeGenericMethod(
+                typeof(Stream),
+                typeof(DictionaryEntry),
+                typeof(DictionaryEntry),
+                typeof(object),
+                typeof(StringWriter),
+                typeof(FileStream));
+            Assert.That(!genericInstanceMethod.ContainsGenericParameters);
+            ParameterTypeValidatorBase.ValidateParameters(
+                genericInstanceMethod,
+                new GenericRealParameterTypeValidator(typeof(Tuple<,,,,,>),
+                    RealParameterTypeValidator.ForType<Stream>(),
+                    RealParameterTypeValidator.ForType<DictionaryEntry>(),
+                    RealParameterTypeValidator.ForType<DictionaryEntry>(),
+                    RealParameterTypeValidator.ForType<object>(),
+                    RealParameterTypeValidator.ForType<StringWriter>(),
+                    RealParameterTypeValidator.ForType<FileStream>()),
+                RealParameterTypeValidator.ForType<Stream>(),
+                RealParameterTypeValidator.ForType<DictionaryEntry>(),
+                RealParameterTypeValidator.ForType<DictionaryEntry>(),
+                RealParameterTypeValidator.ForType<object>(),
+                RealParameterTypeValidator.ForType<StringWriter>(),
+                RealParameterTypeValidator.ForType<FileStream>());
         }
 
         //[Test]
