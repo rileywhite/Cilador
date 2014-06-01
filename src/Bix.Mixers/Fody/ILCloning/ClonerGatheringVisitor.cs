@@ -169,6 +169,15 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 var targetNestedType = new TypeDefinition(sourceNestedType.Namespace, sourceNestedType.Name, 0);
                 targetType.NestedTypes.Add(targetNestedType);
+
+                // TODO may need to traverse hierarchy of generic parameters
+                foreach (var sourceGenericParameter in sourceNestedType.GenericParameters)
+                {
+                    var targetGenericParameter = new GenericParameter(sourceGenericParameter.Name, targetNestedType);
+                    targetNestedType.GenericParameters.Add(targetGenericParameter);
+                    this.GenericParameterCloners.Add(new GenericParameterCloner(this.ILCloningContext, targetGenericParameter, sourceGenericParameter));
+                }
+                
                 this.Visit(sourceNestedType, targetNestedType);
             }
 

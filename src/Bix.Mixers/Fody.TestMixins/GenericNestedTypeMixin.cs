@@ -24,8 +24,11 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.TestMixins
 {
-    public class OpenGenericNestedTypeMixin : IEmptyInterface
+    public class GenericNestedTypeMixin : IEmptyInterface
     {
-        public class GenericType<T> { }
+        public class GenericType<T>
+        {
+            public T GetThing(T thing) { return thing; }
+        }
     }
 }

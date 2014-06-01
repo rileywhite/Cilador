@@ -168,28 +168,28 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 RealParameterTypeValidator.ForType<FileStream>());
         }
 
-        //[Test]
-        //public void CanMixOpenGenericNestedType()
-        //{
-        //    var config = new BixMixersConfigType();
+        [Test]
+        public void CanMixGenericNestedType()
+        {
+            var config = new BixMixersConfigType();
 
-        //    config.MixCommandConfig = new MixCommandConfigTypeBase[]
-        //    {
-        //        new InterfaceMixinConfigType
-        //        {
-        //            InterfaceMixinMap = new InterfaceMixinMapType[]
-        //            {
-        //                new InterfaceMixinMapType
-        //                {
-        //                    Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
-        //                    Mixin = typeof(OpenGenericNestedTypeMixin).GetShortAssemblyQualifiedName()
-        //                }
-        //            }
-        //        },
-        //    };
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
+                    {
+                        new InterfaceMixinMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(GenericNestedTypeMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
 
-        //    ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-        //}
+            ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+        }
 
 //        [Test]
 //        public void CanUseOpenGenericMixinInterface()

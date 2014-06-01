@@ -288,34 +288,6 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
         }
 
         [Test]
-        public void CannotMixOpenGenericNestedType()
-        {
-            var config = new BixMixersConfigType();
-
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
-            {
-                new InterfaceMixinConfigType
-                {
-                    InterfaceMixinMap = new InterfaceMixinMapType[]
-                    {
-                        new InterfaceMixinMapType
-                        {
-                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
-                            Mixin = typeof(OpenGenericNestedTypeMixin).GetShortAssemblyQualifiedName()
-                        }
-                    }
-                },
-            };
-
-            Assert.Throws(
-                Is.TypeOf((typeof(WeavingException)))
-                .And.Message.EqualTo(string.Format(
-                    "Configured mixin implementation may not include any open generic nested types: [{0}]",
-                    typeof(OpenGenericNestedTypeMixin).FullName)),
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
-        }
-
-        [Test]
         public void CannotMakeUnmanagedCall()
         {
             var config = new BixMixersConfigType();

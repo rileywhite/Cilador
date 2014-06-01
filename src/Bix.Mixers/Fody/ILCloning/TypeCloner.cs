@@ -84,14 +84,6 @@ namespace Bix.Mixers.Fody.ILCloning
                 Contract.Assert(this.Target.IsNested);
                 Contract.Assert(this.Source.IsNested);
 
-                if (this.Source.HasGenericParameters)
-                {
-                    // TODO nested type generic parameters
-                    throw new WeavingException(string.Format(
-                        "Configured mixin implementation may not include any open generic nested types: [{0}]",
-                        this.ILCloningContext.RootSource.FullName));
-                }
-
                 if (this.Source.HasSecurityDeclarations)
                 {
                     // TODO Nested type security declarations
