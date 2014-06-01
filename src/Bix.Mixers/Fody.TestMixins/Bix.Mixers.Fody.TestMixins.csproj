@@ -65,7 +65,7 @@
     <Compile Include="UnmanagedCallMixin.cs" />
     <Compile Include="ValueTypeMixin.cs" />
     <Compile Include="InterfaceTypeMixin.cs" />
-    <Compile Include="OpenGenericMixin.cs" />
+    <Compile Include="GenericMixinImplementation.cs" />
     <Compile Include="AbstractMixin.cs" />
     <Compile Include="EmptyInterfaceWithContentMixin.cs" />
     <Compile Include="EmptyMixin.cs" />

@@ -75,7 +75,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                         new InterfaceMixinMapType
                         {
                             Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
-                            Mixin = typeof(OpenGenericMixin<>).GetShortAssemblyQualifiedName()
+                            Mixin = typeof(GenericMixinImplementation<>).GetShortAssemblyQualifiedName()
                         }
                     }
                 },
@@ -85,7 +85,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 Is.TypeOf((typeof(WeavingException)))
                 .And.Message.EqualTo(string.Format(
                     "Configured mixin implementation type cannot be an open generic type: [{0}]",
-                    typeof(OpenGenericMixin<>).FullName)),
+                    typeof(GenericMixinImplementation<>).FullName)),
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
 

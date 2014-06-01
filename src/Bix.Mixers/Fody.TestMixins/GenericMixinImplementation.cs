@@ -24,7 +24,7 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.TestMixins
 {
-    public class OpenGenericMixin<T> : IEmptyInterface
+    public class GenericMixinImplementation<T> : IEmptyInterface
     {
         public T Value;
     }
