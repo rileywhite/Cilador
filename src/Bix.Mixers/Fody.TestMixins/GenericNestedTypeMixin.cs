@@ -30,5 +30,25 @@ namespace Bix.Mixers.Fody.TestMixins
         {
             public T GetThing(T thing) { return thing; }
         }
+
+        public class GenericTypeWithConstraints<TClass, TStruct, TNew, TClassNew, TDisposable, TTClass>
+            where TClass : class
+            where TStruct : struct
+            where TNew : new()
+            where TClassNew : class, new()
+            where TDisposable : IDisposable
+            where TTClass : TClass
+        {
+            public Tuple<TClass, TStruct, TNew, TClassNew, TDisposable, TTClass> GenericMethodWithConstraints(
+                TClass tClass,
+                TStruct tStruct,
+                TNew tNew,
+                TClassNew tClassNew,
+                TDisposable tDisposable,
+                TTClass ttClass)
+            {
+                return Tuple.Create(tClass, tStruct, tNew, tClassNew, tDisposable, ttClass);
+            }
+        }
     }
 }

@@ -25,31 +25,31 @@ using System.Threading.Tasks;
 namespace Bix.Mixers.Fody.Tests.Common
 {
     /// <summary>
-    /// Validates a parameter type that is a true type (i.e. not a generic parameter) but
+    /// Validates a type that is a true type but
     /// that is itself a generic type, possibly containing generic parameters.
     /// </summary>
-    internal class GenericRealParameterTypeValidator : ParameterTypeValidatorBase
+    internal class GenericTypeValidator : TypeValidatorBase
     {
         /// <summary>
-        /// Creates a new <see cref="GenericRealParameterTypeValidator"/>.
+        /// Creates a new <see cref="GenericTypeValidator"/>.
         /// </summary>
         /// <param name="genericParameterType">Open generic type of the parameter.</param>
-        /// <param name="genericArgumentParameterTypeValidators">Validators for each expected generic argument.</param>
-        public GenericRealParameterTypeValidator(
+        /// <param name="genericArgumentTypeValidators">Validators for each expected generic argument.</param>
+        public GenericTypeValidator(
             Type genericParameterType,
-            params ParameterTypeValidatorBase[] genericArgumentParameterTypeValidators)
+            params TypeValidatorBase[] genericArgumentTypeValidators)
         {
             Contract.Requires(genericParameterType != null);
             Contract.Requires(genericParameterType.IsGenericTypeDefinition);
-            Contract.Requires(genericArgumentParameterTypeValidators != null);
-            Contract.Requires(genericArgumentParameterTypeValidators.Length > 1);
+            Contract.Requires(genericArgumentTypeValidators != null);
+            Contract.Requires(genericArgumentTypeValidators.Length > 0);
             Contract.Ensures(this.GenericParameterType != null);
             Contract.Ensures(this.GenericParameterType.IsGenericTypeDefinition);
-            Contract.Ensures(this.GenericArgumentParameterTypeValidators != null);
-            Contract.Ensures(this.GenericArgumentParameterTypeValidators.Length > 1);
+            Contract.Ensures(this.GenericArgumentTypeValidators != null);
+            Contract.Ensures(this.GenericArgumentTypeValidators.Length > 0);
 
             this.GenericParameterType = genericParameterType;
-            this.GenericArgumentParameterTypeValidators = genericArgumentParameterTypeValidators;
+            this.GenericArgumentTypeValidators = genericArgumentTypeValidators;
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Bix.Mixers.Fody.Tests.Common
         /// <summary>
         /// Gets or sets the collection of validators for the generic arguments.
         /// </summary>
-        public ParameterTypeValidatorBase[] GenericArgumentParameterTypeValidators { get; private set; }
+        public TypeValidatorBase[] GenericArgumentTypeValidators { get; private set; }
 
         /// <summary>
         /// Validates the type.
@@ -69,10 +69,9 @@ namespace Bix.Mixers.Fody.Tests.Common
         {
             Assert.That(this.GenericParameterType, Is.SameAs(actualType.GetGenericTypeDefinition()));
 
-            Assert.That(actualType.IsConstructedGenericType);
             var arguments = actualType.GetGenericArguments();
-            Assert.That(this.GenericArgumentParameterTypeValidators.Length, Is.EqualTo(arguments.Length));
-            Parallel.For(0, this.GenericArgumentParameterTypeValidators.Length, i => this.GenericArgumentParameterTypeValidators[i].Validate(arguments[i]));
+            Assert.That(this.GenericArgumentTypeValidators.Length, Is.EqualTo(arguments.Length));
+            Parallel.For(0, this.GenericArgumentTypeValidators.Length, i => this.GenericArgumentTypeValidators[i].Validate(arguments[i]));
         }
     }
 }

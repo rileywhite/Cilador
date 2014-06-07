@@ -27,24 +27,24 @@ namespace Bix.Mixers.Fody.Tests.Common
     /// <summary>
     /// Validates a non-generic parameter type
     /// </summary>
-    internal class RealParameterTypeValidator : ParameterTypeValidatorBase
+    internal class NonGenericTypeValidator : TypeValidatorBase
     {
         /// <summary>
         /// Gets a validator for an expected type.
         /// </summary>
         /// <typeparam name="T">Expected parameter type.</typeparam>
         /// <returns></returns>
-        public static RealParameterTypeValidator ForType<T>()
+        public static NonGenericTypeValidator ForType<T>()
         {
-            Contract.Ensures(Contract.Result<RealParameterTypeValidator>() != null);
-            return new RealParameterTypeValidator(typeof(T));
+            Contract.Ensures(Contract.Result<NonGenericTypeValidator>() != null);
+            return new NonGenericTypeValidator(typeof(T));
         }
 
         /// <summary>
-        /// Creates a new <see cref="RealParameterTypeValidator"/>.
+        /// Creates a new <see cref="NonGenericTypeValidator"/>.
         /// </summary>
         /// <param name="parameterType">Expected parameter type.</param>
-        private RealParameterTypeValidator(Type parameterType)
+        private NonGenericTypeValidator(Type parameterType)
         {
             Contract.Requires(parameterType != null);
             Contract.Ensures(this.ParameterType != null);

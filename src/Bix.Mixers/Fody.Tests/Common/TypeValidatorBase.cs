@@ -29,7 +29,7 @@ namespace Bix.Mixers.Fody.Tests.Common
     /// Base type for validating a parameter type
     /// </summary>
     [ContractClass(typeof(ParameterTypeValidatorBaseContract))]
-    internal abstract class ParameterTypeValidatorBase
+    internal abstract class TypeValidatorBase
     {
         /// <summary>
         /// Validates a method against expected return and parameter types.
@@ -39,18 +39,33 @@ namespace Bix.Mixers.Fody.Tests.Common
         /// <param name="parameterTypeValidators">Expected parameter types.</param>
         public static void ValidateParameters(
             MethodInfo actualMethod,
-            ParameterTypeValidatorBase returnTypeValidator,
-            params ParameterTypeValidatorBase[] parameterTypeValidators)
+            TypeValidatorBase returnTypeValidator,
+            params TypeValidatorBase[] parameterTypeValidators)
         {
             Contract.Requires(actualMethod != null);
             Contract.Requires(returnTypeValidator != null);
             Contract.Requires(parameterTypeValidators != null);
 
             returnTypeValidator.Validate(actualMethod.ReturnType);
-            
+
             var parameters = actualMethod.GetParameters();
             Assert.That(parameterTypeValidators.Length, Is.EqualTo(parameters.Length));
             Parallel.For(0, parameterTypeValidators.Length, i => parameterTypeValidators[i].Validate(parameters[i].ParameterType));
+        }
+
+        /// <summary>
+        /// Validates a type against expected generic argument types.
+        /// </summary>
+        /// <param name="actualType">Type to validate.</param>
+        /// <param name="typeValidator">Expected types.</param>
+        public static void ValidateType(
+            Type actualType,
+            TypeValidatorBase typeValidator)
+        {
+            Contract.Requires(actualType != null);
+            Contract.Requires(typeValidator != null);
+
+            typeValidator.Validate(actualType);
         }
 
         /// <summary>

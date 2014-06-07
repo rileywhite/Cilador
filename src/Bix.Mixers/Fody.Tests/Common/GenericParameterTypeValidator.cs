@@ -27,7 +27,7 @@ namespace Bix.Mixers.Fody.Tests.Common
     /// <summary>
     /// Validates a generic parameter type
     /// </summary>
-    internal class GenericParameterTypeValidator : ParameterTypeValidatorBase
+    internal class GenericParameterTypeValidator : TypeValidatorBase
     {
         /// <summary>
         /// Creates a new <see cref="GenericParameterTypeValidator"/>

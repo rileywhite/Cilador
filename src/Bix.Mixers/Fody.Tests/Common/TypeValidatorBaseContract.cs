@@ -24,10 +24,10 @@ using System.Threading.Tasks;
 namespace Bix.Mixers.Fody.Tests.Common
 {
     /// <summary>
-    /// Contracts for <see cref="ParameterTypeValidatorBase"/>.
+    /// Contracts for <see cref="TypeValidatorBase"/>.
     /// </summary>
-    [ContractClassFor(typeof(ParameterTypeValidatorBase))]
-    internal abstract class ParameterTypeValidatorBaseContract : ParameterTypeValidatorBase
+    [ContractClassFor(typeof(TypeValidatorBase))]
+    internal abstract class ParameterTypeValidatorBaseContract : TypeValidatorBase
     {
         /// <summary>
         /// Contracts for <see cref="Validate(Type)"/>.
