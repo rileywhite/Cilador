@@ -191,7 +191,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
             var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget).FullName);
             Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
-            targetType.ValidateMemberCountsAre(1, 0, 0, 0, 0, 2);
+            targetType.ValidateMemberCountsAre(1, 0, 0, 0, 0, 3);
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
             // basic nested generic type
@@ -289,7 +289,57 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 NonGenericTypeValidator.ForType<StringWriter>(),
                 NonGenericTypeValidator.ForType<FileStream>());
 
-            // TODO methods that use the type generic parameter and have their own generic parameters
+            // nested generic type with open generic method
+            type = targetType.GetNestedType("GenericTypeWithGenericMethod`1", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(type, Is.Not.Null);
+            Assert.That(type.ContainsGenericParameters);
+            TypeValidatorBase.ValidateType(
+                type,
+                new GenericTypeValidator(
+                    type,
+                    GenericParameterTypeValidator.Named("TType")));
+
+            method = type.GetMethod("GetThings", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(method, Is.Not.Null);
+            Assert.That(method.ContainsGenericParameters);
+            TypeValidatorBase.ValidateParameters(
+                method,
+                new GenericTypeValidator(typeof(Tuple<,>),
+                    GenericParameterTypeValidator.Named("TType"),
+                    GenericParameterTypeValidator.Named("TMethod")),
+                GenericParameterTypeValidator.Named("TType"),
+                GenericParameterTypeValidator.Named("TMethod"));
+
+            genericInstanceType = type.MakeGenericType(typeof(int));
+            Assert.That(!genericInstanceType.ContainsGenericParameters);
+            Assert.That(genericInstanceType.IsConstructedGenericType);
+
+            instance = Activator.CreateInstance(genericInstanceType, new object[0]);
+
+            var genericInstanceGenericMethod = genericInstanceType.GetMethod("GetThings", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(genericInstanceGenericMethod, Is.Not.Null);
+            Assert.That(genericInstanceGenericMethod.ContainsGenericParameters);
+            TypeValidatorBase.ValidateParameters(
+                genericInstanceGenericMethod,
+                new GenericTypeValidator(typeof(Tuple<,>),
+                    NonGenericTypeValidator.ForType<int>(),
+                    GenericParameterTypeValidator.Named("TMethod")),
+                NonGenericTypeValidator.ForType<int>(),
+                GenericParameterTypeValidator.Named("TMethod"));
+
+            genericInstanceMethod = genericInstanceGenericMethod.MakeGenericMethod(typeof(object));
+            Assert.That(!genericInstanceMethod.ContainsGenericParameters);
+            TypeValidatorBase.ValidateParameters(
+                genericInstanceMethod,
+                new GenericTypeValidator(typeof(Tuple<,>),
+                    NonGenericTypeValidator.ForType<int>(),
+                    NonGenericTypeValidator.ForType<object>()),
+                NonGenericTypeValidator.ForType<int>(),
+                NonGenericTypeValidator.ForType<object>());
+            someObject = new object();
+            var things = (Tuple<int, object>)genericInstanceMethod.Invoke(instance, new object[] { 45866, someObject });
+            Assert.That(things.Item1, Is.EqualTo(45866));
+            Assert.That(things.Item2, Is.SameAs(someObject));
 
             // TODO nested, partially closed generic types
         }
