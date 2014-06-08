@@ -39,7 +39,7 @@ namespace Bix.Mixers.Fody.TestMixins
             where TDisposable : IDisposable
             where TTClass : TClass
         {
-            public Tuple<TClass, TStruct, TNew, TClassNew, TDisposable, TTClass> GenericMethodWithConstraints(
+            public Tuple<TClass, TStruct, TNew, TClassNew, TDisposable, TTClass> GetThings(
                 TClass tClass,
                 TStruct tStruct,
                 TNew tNew,
@@ -50,5 +50,10 @@ namespace Bix.Mixers.Fody.TestMixins
                 return Tuple.Create(tClass, tStruct, tNew, tClassNew, tDisposable, ttClass);
             }
         }
+
+        //public class GenericTypeWithGenericMethod<TType>
+        //{
+        //    public Tuple<TType, TMethod> GetThings<TMethod>(TType typeThing, TMethod methodThing) { return Tuple.Create(typeThing, methodThing); }
+        //}
     }
 }
