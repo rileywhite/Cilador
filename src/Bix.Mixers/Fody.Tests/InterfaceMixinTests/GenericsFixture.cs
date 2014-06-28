@@ -341,7 +341,9 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             Assert.That(things.Item1, Is.EqualTo(45866));
             Assert.That(things.Item2, Is.SameAs(someObject));
 
-            // TODO nested, partially closed generic types
+            // generic type with multiple parameters
+
+            // TODO mulitiply nested and partially closed generic types
         }
 
 //        [Test]
