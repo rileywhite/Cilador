@@ -54,17 +54,40 @@ namespace Bix.Mixers.Fody.ILCloning
             this.TypeCache = new Dictionary<string, TypeReference>();
             this.FieldCache = new Dictionary<string, FieldReference>();
             this.MethodCache = new Dictionary<string, MethodReference>();
+            this.ClonerGatheringVisitor = new ClonerGatheringVisitor(this);
         }
 
         /// <summary>
-        /// Gets or sets the top level source type for the cloning operation
+        /// Executes the cloning actions specified by the context.
+        /// </summary>
+        internal void Execute()
+        {
+            Contract.Requires(this.RootSource != null);
+            Contract.Requires(this.RootTarget != null);
+
+            this.ClonerGatheringVisitor.Visit(this.RootSource, this.RootTarget);
+            this.Cloners.InvokeCloners();
+        }
+
+        /// <summary>
+        /// Gets or sets the top level source type for the cloning operation.
         /// </summary>
         public TypeDefinition RootSource { get; private set; }
 
         /// <summary>
-        /// Gets or sets the top level source type for the cloning operation
+        /// Gets or sets the top level source type for the cloning operation.
         /// </summary>
         public TypeDefinition RootTarget { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the cloner gathering visitor used by this context.
+        /// </summary>
+        private ClonerGatheringVisitor ClonerGatheringVisitor { get; set; }
+
+        private Cloners Cloners
+        {
+            get { return this.ClonerGatheringVisitor.Cloners; }
+        }
 
         /// <summary>
         /// Root import an item when the exact item type may not be known.

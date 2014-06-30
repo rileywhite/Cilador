@@ -32,7 +32,7 @@ namespace Bix.Mixers.Fody.ILCloning
     /// <remarks>
     /// This "visits" each item in the hierarchy, similar to the visitor pattern,
     /// but the classic visitor pattern doesn't quite make sense here. This
-    /// is a variation on the visitor pattern.
+    /// is a variation.
     /// </remarks>
     internal class ClonerGatheringVisitor
     {
@@ -43,92 +43,21 @@ namespace Bix.Mixers.Fody.ILCloning
         {
             Contract.Requires(ilCloningContext != null);
             Contract.Ensures(this.ILCloningContext != null);
+            Contract.Ensures(this.Cloners != null);
 
             this.ILCloningContext = ilCloningContext;
-
-            this.TypeCloners = new List<TypeCloner>();
-            this.FieldCloners = new List<FieldCloner>();
-            this.MethodSignatureCloners = new List<MethodSignatureCloner>();
-            this.MethodParameterCloners = new List<ParameterCloner>();
-            this.MethodBodyCloners = new List<MethodBodyCloner>();
-            this.VariableCloners = new List<VariableCloner>();
-            this.InstructionCloners = new List<InstructionCloner>();
-            this.PropertyCloners = new List<PropertyCloner>();
-            this.EventCloners = new List<EventCloner>();
-            this.GenericParameterCloners = new List<GenericParameterCloner>();
-        }
-
-        /// <summary>
-        /// Invokes cloners that have been gathered.
-        /// </summary>
-        public void InvokeCloners()
-        {
-            this.TypeCloners.Clone();
-            this.GenericParameterCloners.Clone();
-            this.FieldCloners.Clone();
-            this.MethodSignatureCloners.Clone();
-            this.MethodParameterCloners.Clone();
-            this.PropertyCloners.Clone();
-            this.EventCloners.Clone();
-            this.VariableCloners.Clone();
-            this.MethodBodyCloners.Clone();
-            this.InstructionCloners.Clone();
+            this.Cloners = new Cloners();
         }
 
         /// <summary>
         /// Gets or sets the context for IL cloning.
         /// </summary>
-        public ILCloningContext ILCloningContext { get; private set; }
+        private ILCloningContext ILCloningContext { get; set; }
 
         /// <summary>
-        /// Gets or sets the collection of cloners for nested types.
+        /// Gets or sets the cloners created during visit operations.
         /// </summary>
-        private List<TypeCloner> TypeCloners { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of cloners for contained fields.
-        /// </summary>
-        private List<FieldCloner> FieldCloners { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of cloners for contained method signatures.
-        /// </summary>
-        private List<MethodSignatureCloner> MethodSignatureCloners { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of cloners for method parameters within contained items.
-        /// </summary>
-        private List<ParameterCloner> MethodParameterCloners { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of cloners for contained method bodies.
-        /// </summary>
-        private List<MethodBodyCloner> MethodBodyCloners { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of cloners for variables contained within method bodies.
-        /// </summary>
-        private List<VariableCloner> VariableCloners { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of cloners for instruction contained within method bodies.
-        /// </summary>
-        private List<InstructionCloner> InstructionCloners { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of cloners for contained properties.
-        /// </summary>
-        private List<PropertyCloner> PropertyCloners { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of cloners for contained events.
-        /// </summary>
-        private List<EventCloner> EventCloners { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of cloners for generic parameters contained within methods and types.
-        /// </summary>
-        private List<GenericParameterCloner> GenericParameterCloners { get; set; }
+        public Cloners Cloners { get; private set; }
 
         /// <summary>
         /// Gathers all cloners for the given cloning source and target.
@@ -161,7 +90,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(sourceType != null);
             Contract.Requires(targetType != null);
 
-            this.TypeCloners.Add(new TypeCloner(this.ILCloningContext, targetType, sourceType));
+            this.Cloners.AddCloner(new TypeCloner(this.ILCloningContext, targetType, sourceType));
 
             var voidReference = targetType.Module.Import(typeof(void));
 
@@ -175,7 +104,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 {
                     var targetGenericParameter = new GenericParameter(sourceGenericParameter.Name, targetNestedType);
                     targetNestedType.GenericParameters.Add(targetGenericParameter);
-                    this.GenericParameterCloners.Add(new GenericParameterCloner(this.ILCloningContext, targetGenericParameter, sourceGenericParameter));
+                    this.Cloners.AddCloner(new GenericParameterCloner(this.ILCloningContext, targetGenericParameter, sourceGenericParameter));
                 }
                 
                 this.Visit(sourceNestedType, targetNestedType);
@@ -244,7 +173,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(sourceField != null);
             Contract.Requires(targetField != null);
 
-            this.FieldCloners.Add(new FieldCloner(this.ILCloningContext, targetField, sourceField));
+            this.Cloners.AddCloner(new FieldCloner(this.ILCloningContext, targetField, sourceField));
         }
 
         /// <summary>
@@ -259,25 +188,25 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(targetMethod != null);
 
             var methodSignatureCloner = new MethodSignatureCloner(this.ILCloningContext, targetMethod, sourceMethod);
-            this.MethodSignatureCloners.Add(methodSignatureCloner);
+            this.Cloners.AddCloner(methodSignatureCloner);
 
             Contract.Assert(methodSignatureCloner.ParameterCloners != null);
-            this.MethodParameterCloners.AddRange(methodSignatureCloner.ParameterCloners);
+            this.Cloners.AddCloners(methodSignatureCloner.ParameterCloners);
 
             // TODO may need to traverse hierarchy of generic parameters
             foreach (var sourceGenericParameter in sourceMethod.GenericParameters)
             {
                 var targetGenericParameter = new GenericParameter(sourceGenericParameter.Name, targetMethod);
                 targetMethod.GenericParameters.Add(targetGenericParameter);
-                this.GenericParameterCloners.Add(new GenericParameterCloner(this.ILCloningContext, targetGenericParameter, sourceGenericParameter));
+                this.Cloners.AddCloner(new GenericParameterCloner(this.ILCloningContext, targetGenericParameter, sourceGenericParameter));
             }
 
             if (sourceMethod.HasBody)
             {
                 var methodBodyCloner = new MethodBodyCloner(methodSignatureCloner, targetMethod.Body, sourceMethod.Body);
-                this.MethodBodyCloners.Add(methodBodyCloner);
-                this.VariableCloners.AddRange(methodBodyCloner.VariableCloners);
-                this.InstructionCloners.AddRange(methodBodyCloner.InstructionCloners);
+                this.Cloners.AddCloner(methodBodyCloner);
+                this.Cloners.AddCloners(methodBodyCloner.VariableCloners);
+                this.Cloners.AddCloners(methodBodyCloner.InstructionCloners);
             }
         }
 
@@ -293,7 +222,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(targetProperty != null);
 
             var propertyCloner = new PropertyCloner(this.ILCloningContext, targetProperty, sourceProperty);
-            this.PropertyCloners.Add(propertyCloner);
+            this.Cloners.AddCloner(propertyCloner);
         }
 
         /// <summary>
@@ -307,7 +236,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(sourceEvent != null);
             Contract.Requires(targetEvent != null);
 
-            this.EventCloners.Add(new EventCloner(this.ILCloningContext, targetEvent, sourceEvent));
+            this.Cloners.AddCloner(new EventCloner(this.ILCloningContext, targetEvent, sourceEvent));
         }
     }
 }
