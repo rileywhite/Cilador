@@ -66,6 +66,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(this.RootTarget != null);
 
             this.ClonerGatheringVisitor.Visit(this.RootSource, this.RootTarget);
+            this.Cloners.SetAllClonersAdded();
             this.Cloners.InvokeCloners();
         }
 

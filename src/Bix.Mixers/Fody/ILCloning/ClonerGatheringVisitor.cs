@@ -60,26 +60,6 @@ namespace Bix.Mixers.Fody.ILCloning
         public Cloners Cloners { get; private set; }
 
         /// <summary>
-        /// Gathers all cloners for the given cloning source and target.
-        /// </summary>
-        /// <typeparam name="T">Type of item to gather cloners for.</typeparam>
-        /// <param name="source">Cloning source to gather cloners for.</param>
-        /// <param name="target">Cloning target to gather cloners for.</param>
-        /// <exception cref="ArgumentException">Raised when the type <typeparamref name="T"/> cannot be cloned.</exception>
-        public void Visit<T>(T source, T target)
-            where T : class
-        {
-            Contract.Requires(source != null);
-            Contract.Requires(target != null);
-
-            try { this.Visit((dynamic)source, (dynamic)target); }
-            catch (MissingMethodException mme)
-            {
-                throw new ArgumentException(string.Format("Unable to gather cloners for type [{0}]", typeof(T).FullName), "source", mme);
-            }
-        }
-
-        /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
         /// <typeparam name="T">Type of item to gather cloners for</typeparam>
@@ -168,7 +148,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <typeparam name="T">Type of item to gather cloners for</typeparam>
         /// <param name="source">Cloning source to gather cloners for.</param>
         /// <param name="target">Cloning target to gather cloners for.</param>
-        public void Visit(FieldDefinition sourceField, FieldDefinition targetField)
+        private void Visit(FieldDefinition sourceField, FieldDefinition targetField)
         {
             Contract.Requires(sourceField != null);
             Contract.Requires(targetField != null);
@@ -182,7 +162,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <typeparam name="T">Type of item to gather cloners for</typeparam>
         /// <param name="source">Cloning source to gather cloners for.</param>
         /// <param name="target">Cloning target to gather cloners for.</param>
-        public void Visit(MethodDefinition sourceMethod, MethodDefinition targetMethod)
+        private void Visit(MethodDefinition sourceMethod, MethodDefinition targetMethod)
         {
             Contract.Requires(sourceMethod != null);
             Contract.Requires(targetMethod != null);
@@ -216,7 +196,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <typeparam name="T">Type of item to gather cloners for</typeparam>
         /// <param name="source">Cloning source to gather cloners for.</param>
         /// <param name="target">Cloning target to gather cloners for.</param>
-        public void Visit(PropertyDefinition sourceProperty, PropertyDefinition targetProperty)
+        private void Visit(PropertyDefinition sourceProperty, PropertyDefinition targetProperty)
         {
             Contract.Requires(sourceProperty != null);
             Contract.Requires(targetProperty != null);
@@ -231,7 +211,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <typeparam name="T">Type of item to gather cloners for</typeparam>
         /// <param name="source">Cloning source to gather cloners for.</param>
         /// <param name="target">Cloning target to gather cloners for.</param>
-        public void Visit(EventDefinition sourceEvent, EventDefinition targetEvent)
+        private void Visit(EventDefinition sourceEvent, EventDefinition targetEvent)
         {
             Contract.Requires(sourceEvent != null);
             Contract.Requires(targetEvent != null);

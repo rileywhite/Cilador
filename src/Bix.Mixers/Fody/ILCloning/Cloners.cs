@@ -70,6 +70,20 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
+        /// Gets or sets whether the cloners are currenty being invoked.
+        /// </summary>
+        public bool AreAllClonersAdded { get; private set; }
+
+        /// <summary>
+        /// Marks that all cloners have been added. Targets may be looked
+        /// up and cloning may be invoked only after this has been called.
+        /// </summary>
+        public void SetAllClonersAdded()
+        {
+            this.AreAllClonersAdded = true;
+        }
+
+        /// <summary>
         /// Gets or sets whether the cloners are currently being invoked.
         /// </summary>
         public bool AreClonersInvoking { get; private set; }
@@ -84,7 +98,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         public bool CanInvokeCloners
         {
-            get { return !this.AreClonersInvoking && !this.AreClonersInvoked; }
+            get { return this.AreAllClonersAdded && !this.AreClonersInvoking && !this.AreClonersInvoked; }
         }
 
         /// <summary>
@@ -131,7 +145,7 @@ namespace Bix.Mixers.Fody.ILCloning
         public void AddCloner(TypeCloner cloner)
         {
             Contract.Requires(cloner != null);
-            Contract.Requires(this.CanInvokeCloners);
+            Contract.Requires(!this.AreAllClonersAdded);
 
             this.TypeCloners.Add(cloner);
             this.TargetTypeBySourceFullName.Add(GetIndexValueFor(cloner.Source), cloner.Target);
@@ -154,10 +168,24 @@ namespace Bix.Mixers.Fody.ILCloning
         public void AddCloner(FieldCloner cloner)
         {
             Contract.Requires(cloner != null);
-            Contract.Requires(this.CanInvokeCloners);
+            Contract.Requires(!this.AreAllClonersAdded);
 
             this.FieldCloners.Add(cloner);
             this.TargetFieldBySourceFullName.Add(GetIndexValueFor(cloner.Source), cloner.Target);
+        }
+
+        /// <summary>
+        /// Attempt to retrieve the cloning target for a given source field.
+        /// </summary>
+        /// <param name="source">Source field to find target for.</param>
+        /// <param name="target">Target field for the given source if it exists, else <c>null</c>.</param>
+        /// <returns><c>true</c> if a target was found, else <c>false</c>.</returns>
+        public bool TryGetTargetFor(FieldDefinition source, out FieldDefinition target)
+        {
+            Contract.Requires(source != null);
+            Contract.Requires(this.AreAllClonersAdded);
+
+            return this.TargetFieldBySourceFullName.TryGetValue(GetIndexValueFor(source), out target);
         }
 
         /// <summary>
@@ -177,7 +205,7 @@ namespace Bix.Mixers.Fody.ILCloning
         public void AddCloner(MethodSignatureCloner cloner)
         {
             Contract.Requires(cloner != null);
-            Contract.Requires(this.CanInvokeCloners);
+            Contract.Requires(!this.AreAllClonersAdded);
 
             this.MethodSignatureCloners.Add(cloner);
             this.TargetMethodBySourceFullName.Add(GetIndexValueFor(cloner.Source), cloner.Target);
@@ -196,7 +224,7 @@ namespace Bix.Mixers.Fody.ILCloning
         {
             Contract.Requires(cloners != null);
             Contract.Requires(!cloners.Any(cloner => cloner == null));
-            Contract.Requires(this.CanInvokeCloners);
+            Contract.Requires(!this.AreAllClonersAdded);
 
             this.MethodParameterCloners.AddRange(cloners); ;
         }
@@ -213,7 +241,7 @@ namespace Bix.Mixers.Fody.ILCloning
         public void AddCloner(MethodBodyCloner cloner)
         {
             Contract.Requires(cloner != null);
-            Contract.Requires(this.CanInvokeCloners);
+            Contract.Requires(!this.AreAllClonersAdded);
 
             this.MethodBodyCloners.Add(cloner);
         }
@@ -231,7 +259,7 @@ namespace Bix.Mixers.Fody.ILCloning
         {
             Contract.Requires(cloners != null);
             Contract.Requires(!cloners.Any(cloner => cloner == null));
-            Contract.Requires(this.CanInvokeCloners);
+            Contract.Requires(!this.AreAllClonersAdded);
 
             this.VariableCloners.AddRange(cloners);
         }
@@ -249,7 +277,7 @@ namespace Bix.Mixers.Fody.ILCloning
         {
             Contract.Requires(cloners != null);
             Contract.Requires(!cloners.Any(cloner => cloner == null));
-            Contract.Requires(this.CanInvokeCloners);
+            Contract.Requires(!this.AreAllClonersAdded);
 
             this.InstructionCloners.AddRange(cloners);
         }
@@ -271,7 +299,7 @@ namespace Bix.Mixers.Fody.ILCloning
         public void AddCloner(PropertyCloner cloner)
         {
             Contract.Requires(cloner != null);
-            Contract.Requires(this.CanInvokeCloners);
+            Contract.Requires(!this.AreAllClonersAdded);
 
             this.PropertyCloners.Add(cloner);
             this.TargetPropertyBySourceFullName.Add(GetIndexValueFor(cloner.Source), cloner.Target);
@@ -294,7 +322,7 @@ namespace Bix.Mixers.Fody.ILCloning
         public void AddCloner(EventCloner cloner)
         {
             Contract.Requires(cloner != null);
-            Contract.Requires(this.CanInvokeCloners);
+            Contract.Requires(!this.AreAllClonersAdded);
 
             this.EventCloners.Add(cloner);
             this.TargetEventBySourceFullName.Add(GetIndexValueFor(cloner.Source), cloner.Target);
@@ -312,7 +340,7 @@ namespace Bix.Mixers.Fody.ILCloning
         public void AddCloner(GenericParameterCloner cloner)
         {
             Contract.Requires(cloner != null);
-            Contract.Requires(this.CanInvokeCloners);
+            Contract.Requires(!this.AreAllClonersAdded);
 
             this.GenericParameterCloners.Add(cloner);
         }
