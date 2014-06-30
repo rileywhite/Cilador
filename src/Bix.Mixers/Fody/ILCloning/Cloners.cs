@@ -180,10 +180,11 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="source">Source field to find target for.</param>
         /// <param name="target">Target field for the given source if it exists, else <c>null</c>.</param>
         /// <returns><c>true</c> if a target was found, else <c>false</c>.</returns>
-        public bool TryGetTargetFor(FieldDefinition source, out FieldDefinition target)
+        public bool TryGetTargetFor(FieldReference source, out FieldDefinition target)
         {
             Contract.Requires(source != null);
             Contract.Requires(this.AreAllClonersAdded);
+            Contract.Ensures(Contract.ValueAtReturn(out target) != null || !Contract.Result<bool>());
 
             return this.TargetFieldBySourceFullName.TryGetValue(GetIndexValueFor(source), out target);
         }
@@ -350,7 +351,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         /// <param name="item">Item that will need indexed.</param>
         /// <returns></returns>
-        private static string GetIndexValueFor(IMemberDefinition item)
+        private static string GetIndexValueFor(MemberReference item)
         {
             Contract.Requires(item != null);
             return item.FullName;

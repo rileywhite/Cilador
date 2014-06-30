@@ -279,30 +279,18 @@ namespace Bix.Mixers.Fody.ILCloning
                 return importedField;
             }
 
-            // do a root import of the declaring type
-            var importedDeclaringType = this.RootImport(field.DeclaringType);
-
-            // if the declaring type is unchanged, then import the field directly
-            if (importedDeclaringType.FullName == field.DeclaringType.FullName)
+            FieldDefinition targetField;
+            if (this.Cloners.TryGetTargetFor(field, out targetField))
             {
-                importedField = this.RootTarget.Module.Import(field);
+                Contract.Assert(targetField != null);
+
+                // all root importing comes from code that is being generated within the target module
+                // so there is no need to do a module import
+                importedField = targetField;
             }
             else
             {
-                // if there was a change, then find the field with a matching local name
-                var localField = importedDeclaringType.Resolve().Fields.FirstOrDefault(possibleField => possibleField.Name == field.Name);
-
-                if (localField == null)
-                {
-                    throw new InvalidOperationException(string.Format(
-                        "Could not find expected field [{0}] inside of imported declaring type [{1}] for root import of [{2}] to root target [{3}]",
-                        field.Name,
-                        importedDeclaringType.FullName,
-                        field.FullName,
-                        this.RootTarget.FullName));
-                }
-
-                importedField = this.RootTarget.Module.Import(localField);
+                importedField = this.RootTarget.Module.Import(field);
             }
 
             Contract.Assert(importedField != null);
