@@ -110,22 +110,6 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Determines whether a target and source property reference have equivalent signatures within the context
-        /// of IL cloning.
-        /// </summary>
-        /// <param name="target">Target property.</param>
-        /// <param name="source">Source property.</param>
-        /// <param name="ilCloningContext">IL cloning context.</param>
-        /// <returns><c>true</c> if the signatures are equivalent within the root target and source, else <c>false</c></returns>
-        [Pure]
-        public static bool SignatureEquals(this PropertyDefinition left, PropertyDefinition right)
-        {
-            if (left == null || right == null) { return left == null && right == null; }
-
-            return left.FullName.Replace(left.DeclaringType.FullName + "::", string.Empty) == right.FullName.Replace(right.DeclaringType.FullName + "::", string.Empty);
-        }
-
-        /// <summary>
         /// Clones all custom attributes from a source to a target.
         /// </summary>
         /// <param name="target">Cloning target.</param>

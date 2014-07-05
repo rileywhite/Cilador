@@ -105,7 +105,6 @@ namespace Bix.Mixers.Fody.ILCloning
 
             this.IsCloned = true;
 
-            Contract.Assert(this.Target.SignatureEquals(this.Source));
             Contract.Assert((this.Target.GetMethod == null) == (this.Source.GetMethod == null));
             Contract.Assert((this.Target.SetMethod == null) == (this.Source.SetMethod == null));
             for (int i = 0; i < this.Source.OtherMethods.Count; i++)
