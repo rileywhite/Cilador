@@ -57,38 +57,32 @@ namespace Bix.Mixers.Fody.ILCloning
             //    this.Source.MetadataToken.RID);
 
 
-            foreach (var method in this.Target.DeclaringType.Methods)
+            if (this.Source.AddMethod != null)
             {
-                if (this.Source.AddMethod != null &&
-                    this.Target.AddMethod == null &&
-                    method.SignatureEquals(this.Source.AddMethod, this.ILCloningContext))
-                {
-                    this.Target.AddMethod = method;
-                }
+                var targetAddMethod = this.ILCloningContext.RootImport(this.Source.AddMethod) as MethodDefinition;
+                Contract.Assert(targetAddMethod != null); // this should always be the case because the method is internal to the target
+                this.Target.AddMethod = targetAddMethod;
+            }
 
-                if (this.Source.RemoveMethod != null &&
-                    this.Target.RemoveMethod == null &&
-                    method.SignatureEquals(this.Source.RemoveMethod, this.ILCloningContext))
-                {
-                    this.Target.RemoveMethod = method;
-                }
+            if (this.Source.RemoveMethod != null)
+            {
+                var targetRemoveMethod = this.ILCloningContext.RootImport(this.Source.RemoveMethod) as MethodDefinition;
+                Contract.Assert(targetRemoveMethod != null); // this should always be the case because the method is internal to the target
+                this.Target.RemoveMethod = targetRemoveMethod;
+            }
 
-                if (this.Source.InvokeMethod != null &&
-                    this.Target.InvokeMethod == null &&
-                    method.SignatureEquals(this.Source.InvokeMethod, this.ILCloningContext))
-                {
-                    this.Target.InvokeMethod = method;
-                }
+            if (this.Source.InvokeMethod != null)
+            {
+                var targetInvokeMethod = this.ILCloningContext.RootImport(this.Source.InvokeMethod) as MethodDefinition;
+                Contract.Assert(targetInvokeMethod != null); // this should always be the case because the method is internal to the target
+                this.Target.InvokeMethod = targetInvokeMethod;
+            }
 
-                for (int i = 0; i < this.Source.OtherMethods.Count; i++)
-                {
-                    if (this.Target.OtherMethods[i] != null &&
-                        this.Target.OtherMethods[i] == null &&
-                        method.SignatureEquals(this.Source.OtherMethods[i], this.ILCloningContext))
-                    {
-                        this.Target.OtherMethods[i] = method;
-                    }
-                }
+            foreach (var sourceOtherMethod in this.Source.OtherMethods)
+            {
+                var targetOtherMethod = this.ILCloningContext.RootImport(sourceOtherMethod) as MethodDefinition;
+                Contract.Assert(targetOtherMethod != null); // this should always be the case because the method is internal to the target
+                this.Target.OtherMethods.Add(targetOtherMethod);
             }
 
             // I did not check for a similar issue here as with the duplication in the FieldCloner...adding a clear line just to be safe
