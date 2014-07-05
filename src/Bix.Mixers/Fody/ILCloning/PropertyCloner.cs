@@ -66,37 +66,26 @@ namespace Bix.Mixers.Fody.ILCloning
             //    this.Source.MetadataToken.TokenType,
             //    this.Source.MetadataToken.RID);
 
-            for (int i = 0; i < this.Source.OtherMethods.Count; i++)
+            // seting the getter and setter methods also sets the parameters for the property
+            if (this.Source.GetMethod != null)
             {
-                this.Target.OtherMethods.Add(null);
+                var targetGetMethod = this.ILCloningContext.RootImport(this.Source.GetMethod) as MethodDefinition;
+                Contract.Assert(targetGetMethod != null); // this should always be the case because the method is internal to the target
+                this.Target.GetMethod = targetGetMethod;
             }
 
-            // seting the getter and setter methods also sets the parameters for the property
-            foreach(var method in this.Target.DeclaringType.Methods)
+            if (this.Source.SetMethod != null)
             {
-                if (this.Source.GetMethod != null &&
-                    this.Target.GetMethod == null &&
-                    method.SignatureEquals(this.Source.GetMethod, this.ILCloningContext))
-                {
-                    this.Target.GetMethod = method;
-                }
+                var targetSetMethod = this.ILCloningContext.RootImport(this.Source.SetMethod) as MethodDefinition;
+                Contract.Assert(targetSetMethod != null); // this should always be the case because the method is internal to the target
+                this.Target.SetMethod = targetSetMethod;
+            }
 
-                if (this.Source.SetMethod != null &&
-                    this.Target.SetMethod == null &&
-                    method.SignatureEquals(this.Source.SetMethod, this.ILCloningContext))
-                {
-                    this.Target.SetMethod = method;
-                }
-
-                for (int i = 0; i < this.Source.OtherMethods.Count; i++)
-                {
-                    if (this.Target.OtherMethods[i] != null &&
-                        this.Target.OtherMethods[i] == null &&
-                        method.SignatureEquals(this.Source.OtherMethods[i], this.ILCloningContext))
-                    {
-                        this.Target.OtherMethods[i] = method;
-                    }
-                }
+            foreach (var sourceOtherMethod in this.Source.OtherMethods)
+            {
+                var targetOtherMethod = this.ILCloningContext.RootImport(sourceOtherMethod) as MethodDefinition;
+                Contract.Assert(targetOtherMethod != null); // this should always be the case because the method is internal to the target
+                this.Target.OtherMethods.Add(targetOtherMethod);
             }
 
             // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around
