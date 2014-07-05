@@ -77,12 +77,6 @@ namespace Bix.Mixers.Fody.ILCloning
 
             this.Target.FieldType = this.ILCloningContext.RootImport(this.Source.FieldType);
 
-            // for some reason, I'm seeing duplicate custom attributes if I don't clear first
-            // adding a console output line line like this makes it go away: Console.WriteLine(this.Target.CustomAttributes.Count);
-            // but I opted for an explicit clear instead
-            // (breaking anywhere before the RootImportAll call in the debugger keeps it from happening, too)
-            this.Target.CustomAttributes.Clear();
-            Contract.Assert(this.Target.CustomAttributes.Count == 0);
             this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
 
             this.IsCloned = true;

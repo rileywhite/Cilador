@@ -111,8 +111,6 @@ namespace Bix.Mixers.Fody.ILCloning
                 //this.Target.MetadataToken = new MetadataToken(this.Source.MetadataToken.TokenType, this.Source.MetadataToken.RID);
             }
 
-            // I get a similar issue here as with the duplication in the FieldCloner...adding a clear line to work around, but only for non-root type
-            if (this.Target != this.ILCloningContext.RootTarget) { this.Target.CustomAttributes.Clear(); }
             this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
 
             this.IsCloned = true;
