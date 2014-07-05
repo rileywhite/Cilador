@@ -93,8 +93,8 @@ namespace Bix.Mixers.Fody.ILCloning
             foreach (var sourceInstruction in this.Source.Instructions)
             {
                 // the operand is required to create the instruction
-                // but at this stage, it cannot always be resolved because wireframes of all items do not yet exist
-                // so the source's operand is used, and it will be replaced, if needed, in the clone step of each instruction cloner
+                // but at this stage, it root resolving is not yet allowed because wireframes of all items do not yet exist
+                // so, where needed, dummy operands are used which will be replaced in the clone step of each instruction cloner
                 Instruction targetInstruction =
                     sourceInstruction.Operand == null ?
                     ilProcessor.Create(sourceInstruction.OpCode) :
@@ -173,7 +173,8 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </exception>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, CallSite callSite)
         {
-            // TODO support extern methods
+            // TODO support extern methods and get coverage for this
+            // see https://github.com/jbevain/cecil/blob/master/Mono.Cecil.Cil/OpCodes.cs for opcodes
             throw new NotSupportedException(
                 "Callsite instruction operands are used with the calli op code to make unmanaged method calls. This is not supported.");
         }
@@ -199,9 +200,9 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, FieldReference field)
         {
-            return ilProcessor.Create(opCode, field);
+            return ilProcessor.Create(opCode, new FieldReference("", this.ILCloningContext.RootTarget.Module.Import(typeof(void))));
         }
-
+        
         /// <summary>
         /// Creates a new method with the given operand
         /// Gets or sets the collection of instruction cloners for the method body.
@@ -224,7 +225,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, Instruction instruction)
         {
-            return ilProcessor.Create(opCode, instruction);
+            return ilProcessor.Create(opCode, Instruction.Create(OpCodes.Nop));
         }
 
         /// <summary>
@@ -236,7 +237,9 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, Instruction[] instructions)
         {
-            return ilProcessor.Create(opCode, instructions);
+            // TODO get coverage on this line with an inline switch
+            // https://github.com/jbevain/cecil/blob/master/Mono.Cecil.Cil/OpCodes.cs
+            return ilProcessor.Create(opCode, new Instruction[0]);
         }
 
         /// <summary>
@@ -272,7 +275,9 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, MethodReference method)
         {
-            return ilProcessor.Create(opCode, method);
+            return ilProcessor.Create(
+                opCode,
+                new MethodReference("", this.ILCloningContext.RootTarget.Module.Import(typeof(void))));
         }
 
         /// <summary>
@@ -285,7 +290,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, ParameterDefinition parameter)
         {
-            return ilProcessor.Create(opCode, parameter);
+            return ilProcessor.Create(opCode, new ParameterDefinition(this.ILCloningContext.RootTarget.Module.Import(typeof(void))));
         }
 
         /// <summary>
@@ -321,7 +326,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, TypeReference type)
         {
-            return ilProcessor.Create(opCode, this.ILCloningContext.RootImport(type));
+            return ilProcessor.Create(opCode, this.ILCloningContext.RootTarget.Module.Import(typeof(void)));
         }
 
         /// <summary>
@@ -333,7 +338,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>New instruction.</returns>
         private Instruction CreateInstructionWithOperand(ILProcessor ilProcessor, OpCode opCode, VariableDefinition variable)
         {
-            return ilProcessor.Create(opCode, variable);
+            return ilProcessor.Create(opCode, new VariableDefinition(this.ILCloningContext.RootTarget.Module.Import(typeof(void))));
         }
     }
 }

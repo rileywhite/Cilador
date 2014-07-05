@@ -152,6 +152,21 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
+        /// Attempt to retrieve the cloning target for a given source.
+        /// </summary>
+        /// <param name="source">Source to find target for.</param>
+        /// <param name="target">Target for the given source if it exists, else <c>null</c>.</param>
+        /// <returns><c>true</c> if a target was found, else <c>false</c>.</returns>
+        public bool TryGetTargetFor(TypeReference source, out TypeDefinition target)
+        {
+            Contract.Requires(source != null);
+            Contract.Requires(this.AreAllClonersAdded);
+            Contract.Ensures(Contract.ValueAtReturn(out target) != null || !Contract.Result<bool>());
+
+            return this.TargetTypeBySourceFullName.TryGetValue(GetIndexValueFor(source), out target);
+        }
+
+        /// <summary>
         /// Gets or sets the collection of target field indexed by full name of the cloning source.
         /// </summary>
         private Dictionary<string, FieldDefinition> TargetFieldBySourceFullName { get; set; }
@@ -175,10 +190,10 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Attempt to retrieve the cloning target for a given source field.
+        /// Attempt to retrieve the cloning target for a given source.
         /// </summary>
-        /// <param name="source">Source field to find target for.</param>
-        /// <param name="target">Target field for the given source if it exists, else <c>null</c>.</param>
+        /// <param name="source">Source to find target for.</param>
+        /// <param name="target">Target for the given source if it exists, else <c>null</c>.</param>
         /// <returns><c>true</c> if a target was found, else <c>false</c>.</returns>
         public bool TryGetTargetFor(FieldReference source, out FieldDefinition target)
         {
@@ -210,6 +225,21 @@ namespace Bix.Mixers.Fody.ILCloning
 
             this.MethodSignatureCloners.Add(cloner);
             this.TargetMethodBySourceFullName.Add(GetIndexValueFor(cloner.Source), cloner.Target);
+        }
+
+        /// <summary>
+        /// Attempt to retrieve the cloning target for a given source.
+        /// </summary>
+        /// <param name="source">Source to find target for.</param>
+        /// <param name="target">Target for the given source if it exists, else <c>null</c>.</param>
+        /// <returns><c>true</c> if a target was found, else <c>false</c>.</returns>
+        public bool TryGetTargetFor(MethodReference source, out MethodDefinition target)
+        {
+            Contract.Requires(source != null);
+            Contract.Requires(this.AreAllClonersAdded);
+            Contract.Ensures(Contract.ValueAtReturn(out target) != null || !Contract.Result<bool>());
+
+            return this.TargetMethodBySourceFullName.TryGetValue(GetIndexValueFor(source), out target);
         }
 
         /// <summary>

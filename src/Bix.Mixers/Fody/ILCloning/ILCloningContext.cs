@@ -131,14 +131,22 @@ namespace Bix.Mixers.Fody.ILCloning
             if (type.IsGenericParameter) { return type; }
 
             TypeReference importedType;
+            // if root import has already occurred, then return the previous result
             if (!this.TypeCache.TryGetValue(type.FullName, out importedType))
             {
-                // if root import has already occurred, then return the previous result
-
-                importedType =
-                    type.FullName == this.RootSource.FullName || type.IsNestedWithin(this.RootSource) ?
-                    this.RootImportTypeWithinSource(type) :
-                    this.RootImportTypeOutsideOfSource(type);
+                // try to get the type from within the clone targets that would correspond with a type within the clone source
+                TypeDefinition importedTypeDefinition;
+                if (this.Cloners.TryGetTargetFor(type, out importedTypeDefinition))
+                {
+                    // all root importing comes from code that is being generated within the target module
+                    // so there is no need to do a module import
+                    importedType = importedTypeDefinition;
+                }
+                else
+                {
+                    // not within the clone targets, so import from outside of clone source/targets
+                    importedType = this.RootImportTypeOutsideOfSource(type);
+                }
 
                 this.TypeCache[type.FullName] = importedType;
             }
@@ -146,46 +154,6 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Assert(importedType != null);
             Contract.Assert(!(importedType is IMemberDefinition) || importedType.Module == this.RootTarget.Module);
             return importedType;
-        }
-
-        /// <summary>
-        /// Handles root importing for a type that exists within the <see cref="RootSource"/>.
-        /// Mixin redirection for types occurs here.
-        /// </summary>
-        /// <param name="type">Type to root import.</param>
-        /// <returns>Root imported type.</returns>
-        private TypeReference RootImportTypeWithinSource(TypeReference type)
-        {
-            Contract.Requires(type != null);
-            Contract.Requires(!type.IsGenericParameter);
-            Contract.Requires(type.FullName == this.RootSource.FullName || type.IsNestedWithin(this.RootSource));
-            Contract.Ensures(Contract.Result<TypeReference>() != null);
-
-            // if the root source type is being imported, then select the root target type
-            if (type.FullName == this.RootSource.FullName) { return this.RootTarget; }
-
-            // because generic types are not supported within mixins, we do not have to worry about generic types or arguments in this method
-            // (the source may be generic or nested within a generic, but we will not touch any of that)
-
-            // first doing a root import on the declaring type
-            Contract.Assert(type.DeclaringType != null);
-            var importedDeclaringType = this.RootImport(type.DeclaringType);
-            Contract.Assert(importedDeclaringType != null);
-
-            // find the nested type with the same local name as the type being imported
-            var localType = importedDeclaringType.Resolve().NestedTypes.FirstOrDefault(nestedType => nestedType.Name == type.Name);
-
-            if (localType == null)
-            {
-                throw new InvalidOperationException(string.Format(
-                    "Could not find expected type [{0}] inside of imported declaring type [{1}] for root import of [{2}] to root target [{3}]",
-                    type.Name,
-                    importedDeclaringType.FullName,
-                    type.FullName,
-                    this.RootTarget.FullName));
-            }
-
-            return this.RootTarget.Module.Import(localType);
         }
 
         /// <summary>
