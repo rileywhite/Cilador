@@ -166,5 +166,30 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             Assert.That(method.ReturnType.FullName, Is.EqualTo(typeof(IEmptyInterface).FullName));
             Assert.That(instance, Is.SameAs(method.Invoke(instance, new object[0])));
         }
+
+        [Test]
+        public void DoesNotAddReferenceFromMixinTargetToMixinImplementationAssembly()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
+                    {
+                        new InterfaceMixinMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(EmptyInterfaceWithContentMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+            var referencedAssemblies = assembly.GetReferencedAssemblies();
+            Assert.That(!referencedAssemblies.Any(reference => typeof(EmptyInterfaceWithContentMixin).Assembly.Equals(reference)));
+        }
     }
 }
