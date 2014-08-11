@@ -56,12 +56,12 @@ namespace Bix.Mixers.Fody.TestMixins
             public Tuple<TType, TMethod> GetThings<TMethod>(TType typeThing, TMethod methodThing) { return Tuple.Create(typeThing, methodThing); }
         }
 
-        //public class GenericTypeWithMultipleParameters<T1, T2>
-        //{
-        //    public T1 Thing1 { get; set; }
+        public class GenericTypeWithMultipleParameters<T1, T2>
+        {
+            public T1 Thing1 { get; set; }
 
-        //    public T2 Thing2 { get; set; }
-        //}
+            public T2 Thing2 { get; set; }
+        }
 
         //public class PartiallyClosedGenericType<T3> : GenericTypeWithMultipleParameters<int, T3>
         //{

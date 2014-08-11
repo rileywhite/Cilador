@@ -135,12 +135,36 @@ namespace Bix.Mixers.Fody.ILCloning
             if (!this.TypeCache.TryGetValue(type.FullName, out importedType))
             {
                 // try to get the type from within the clone targets that would correspond with a type within the clone source
-                TypeDefinition importedTypeDefinition;
-                if (this.Cloners.TryGetTargetFor(type, out importedTypeDefinition))
+                if (type.FullName == this.RootSource.FullName || type.IsNestedWithin(this.RootSource))
                 {
-                    // all root importing comes from code that is being generated within the target module
-                    // so there is no need to do a module import
-                    importedType = importedTypeDefinition;
+                    if (type.IsArray)
+                    {
+                        var arrayType = (ArrayType)type;
+                        return new ArrayType(this.RootImport(arrayType.ElementType), arrayType.Rank);
+                    }
+                    else if (type.IsGenericInstance)
+                    {
+                        // root import the generic definition and all generic arguments
+                        var genericInstanceType = (GenericInstanceType)type;
+                        var importedGenericInstanceType = new GenericInstanceType(this.RootTarget.Module.Import(genericInstanceType.ElementType));
+
+                        foreach (var genericArgument in genericInstanceType.GenericArguments)
+                        {
+                            importedGenericInstanceType.GenericArguments.Add(this.RootImport(genericArgument));
+                        }
+
+                        return importedGenericInstanceType;
+                    }
+                    else
+                    {
+                        // the found target type must be the actual root imported type
+                        TypeDefinition foundTargetType;
+                        if (!this.Cloners.TryGetTargetFor(type, out foundTargetType))
+                        {
+                            throw new InvalidOperationException(string.Format("Expected to find target for [{0}] in the imported types, but did not find it.", type.FullName));
+                        }
+                        importedType = foundTargetType;
+                    }
                 }
                 else
                 {
@@ -188,7 +212,6 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 Contract.Assert(!isDeclaringTypeReplaced);
 
-                // TODO this seems to work for C#...research whether array importing may need to be more thorough (e.g. dimensions, etc)
                 var arrayType = (ArrayType)type;
                 return new ArrayType(this.RootImport(arrayType.ElementType), arrayType.Rank);
             }

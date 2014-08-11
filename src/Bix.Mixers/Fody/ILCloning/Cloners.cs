@@ -160,10 +160,13 @@ namespace Bix.Mixers.Fody.ILCloning
         public bool TryGetTargetFor(TypeReference source, out TypeDefinition target)
         {
             Contract.Requires(source != null);
+            Contract.Requires(!source.IsArray);
+            Contract.Requires(!source.IsGenericInstance);
+            Contract.Requires(!source.IsGenericParameter);
             Contract.Requires(this.AreAllClonersAdded);
             Contract.Ensures(Contract.ValueAtReturn(out target) != null || !Contract.Result<bool>());
 
-            return this.TargetTypeBySourceFullName.TryGetValue(GetIndexValueFor(source), out target);
+            return this.TargetTypeBySourceFullName.TryGetValue(GetIndexValueFor(source.Resolve()), out target);
         }
 
         /// <summary>
@@ -201,7 +204,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(this.AreAllClonersAdded);
             Contract.Ensures(Contract.ValueAtReturn(out target) != null || !Contract.Result<bool>());
 
-            return this.TargetFieldBySourceFullName.TryGetValue(GetIndexValueFor(source), out target);
+            return this.TargetFieldBySourceFullName.TryGetValue(GetIndexValueFor(source.Resolve()), out target);
         }
 
         /// <summary>
@@ -239,7 +242,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(this.AreAllClonersAdded);
             Contract.Ensures(Contract.ValueAtReturn(out target) != null || !Contract.Result<bool>());
 
-            return this.TargetMethodBySourceFullName.TryGetValue(GetIndexValueFor(source), out target);
+            return this.TargetMethodBySourceFullName.TryGetValue(GetIndexValueFor(source.Resolve()), out target);
         }
 
         /// <summary>
@@ -381,9 +384,8 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         /// <param name="item">Item that will need indexed.</param>
         /// <returns></returns>
-        private static string GetIndexValueFor(MemberReference item)
+        private static string GetIndexValueFor(IMemberDefinition item)
         {
-            Contract.Requires(item != null);
             return item.FullName;
         }
     }

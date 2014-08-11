@@ -70,11 +70,6 @@ namespace Bix.Mixers.Fody.ILCloning
                 this.Target.InitialValue = initialValue;
             }
 
-            // TODO research correct usage of field MetadataToken
-            //this.Target.MetadataToken = new MetadataToken(
-            //    this.Source.MetadataToken.TokenType,
-            //    this.Source.MetadataToken.RID);
-
             this.Target.FieldType = this.ILCloningContext.RootImport(this.Source.FieldType);
 
             this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);

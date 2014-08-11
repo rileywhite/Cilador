@@ -31,6 +31,11 @@ namespace Bix.Mixers.Fody.TestMixins
         {
             int a = 5;
             a += 1;
+
+            goto End;
+
+        End:
+            a += 1;
         }
     }
 }
