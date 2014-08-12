@@ -134,42 +134,68 @@ namespace Bix.Mixers.Fody.ILCloning
             // if root import has already occurred, then return the previous result
             if (!this.TypeCache.TryGetValue(type.FullName, out importedType))
             {
-                // try to get the type from within the clone targets that would correspond with a type within the clone source
-                if (type.FullName == this.RootSource.FullName || type.IsNestedWithin(this.RootSource))
+                bool isDeclaringTypeReplaced;
+
+                TypeReference newDeclaringType;
+                if ((type.FullName == this.RootSource.FullName || type.IsNestedWithin(this.RootSource)) &&
+                    (type.IsAnyTypeAncestorAGenericInstanceWithArgumentsIn(this.RootSource)))
                 {
-                    if (type.IsArray)
-                    {
-                        var arrayType = (ArrayType)type;
-                        return new ArrayType(this.RootImport(arrayType.ElementType), arrayType.Rank);
-                    }
-                    else if (type.IsGenericInstance)
-                    {
-                        // root import the generic definition and all generic arguments
-                        var genericInstanceType = (GenericInstanceType)type;
-                        var importedGenericInstanceType = new GenericInstanceType(this.RootTarget.Module.Import(genericInstanceType.ElementType));
+                    // not within the clone targets, so import from outside of clone source/targets
 
-                        foreach (var genericArgument in genericInstanceType.GenericArguments)
-                        {
-                            importedGenericInstanceType.GenericArguments.Add(this.RootImport(genericArgument));
-                        }
+                    // because types outside of the clone source/target may be closed generic types, we have to make sure that
+                    // the type is imported with the correct generic arguments for an arbitrary list of declaring type ancestors
 
-                        return importedGenericInstanceType;
-                    }
-                    else
-                    {
-                        // the found target type must be the actual root imported type
-                        TypeDefinition foundTargetType;
-                        if (!this.Cloners.TryGetTargetFor(type, out foundTargetType))
-                        {
-                            throw new InvalidOperationException(string.Format("Expected to find target for [{0}] in the imported types, but did not find it.", type.FullName));
-                        }
-                        importedType = foundTargetType;
-                    }
+                    isDeclaringTypeReplaced = true;
+                    newDeclaringType = this.RootImport(type.DeclaringType);
                 }
                 else
                 {
-                    // not within the clone targets, so import from outside of clone source/targets
-                    importedType = this.RootImportTypeOutsideOfSource(type);
+                    // this will be either a mixed type or a non-mixed type with no generic argument reference to a mixed type
+                    isDeclaringTypeReplaced = false;
+                    newDeclaringType = null;
+                }
+
+                if (type.IsArray)
+                {
+                    // an array type needs to have its element type root imported
+                    Contract.Assert(!isDeclaringTypeReplaced);
+
+                    var arrayType = (ArrayType)type;
+                    importedType = new ArrayType(this.RootImport(arrayType.ElementType), arrayType.Rank);
+                }
+                else if (type.IsGenericInstance)
+                {
+                    // root import the generic definition and all generic arguments
+                    var genericInstanceType = (GenericInstanceType)type;
+                    var importedGenericInstanceType = new GenericInstanceType(this.RootTarget.Module.Import(genericInstanceType.ElementType));
+
+                    if (isDeclaringTypeReplaced) { importedGenericInstanceType.DeclaringType = newDeclaringType; }
+
+                    foreach (var genericArgument in genericInstanceType.GenericArguments)
+                    {
+                        importedGenericInstanceType.GenericArguments.Add(this.RootImport(genericArgument));
+                    }
+
+                    importedType = importedGenericInstanceType;
+                }
+                else
+                {
+                    if (isDeclaringTypeReplaced)
+                    {
+                        importedType = this.RootTarget.Module.Import(
+                            new TypeReference(type.Namespace, type.Name, type.Module, type.Module)
+                            {
+                                DeclaringType = newDeclaringType,
+                            });
+                    }
+                    else
+                    {
+                        TypeDefinition foundTargetType;
+                        importedType =
+                            this.Cloners.TryGetTargetFor(type, out foundTargetType) ?
+                            foundTargetType :
+                            this.RootTarget.Module.Import(type);
+                    }
                 }
 
                 this.TypeCache[type.FullName] = importedType;
@@ -178,70 +204,6 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Assert(importedType != null);
             Contract.Assert(!(importedType is IMemberDefinition) || importedType.Module == this.RootTarget.Module);
             return importedType;
-        }
-
-        /// <summary>
-        /// Root import a type that is not nested within the <see cref="RootSource"/>.
-        /// This may involve replacing generic type arguments in some cases.
-        /// </summary>
-        /// <param name="type">Type to root import.</param>
-        /// <returns>Root imported type.</returns>
-        private TypeReference RootImportTypeOutsideOfSource(TypeReference type)
-        {
-            Contract.Requires(type != null);
-            Contract.Requires(!type.IsGenericParameter);
-            Contract.Requires(type.FullName != this.RootSource.FullName && !type.IsNestedWithin(this.RootSource));
-            Contract.Ensures(Contract.Result<TypeReference>() != null);
-
-            // because types outside of the clone source/target may be closed generic types, we have to make sure that
-            // the type is imported with the correct generic arguments for an arbitrary list of declaring type ancestors
-            bool isDeclaringTypeReplaced;
-            TypeReference newDeclaringType;
-            if (type.IsAnyTypeAncestorAGenericInstanceWithArgumentsIn(this.RootSource))
-            {
-                isDeclaringTypeReplaced = true;
-                newDeclaringType = this.RootImportTypeOutsideOfSource(type.DeclaringType);
-            }
-            else
-            {
-                isDeclaringTypeReplaced = false;
-                newDeclaringType = null;
-            }
-
-            if (type.IsArray)
-            {
-                Contract.Assert(!isDeclaringTypeReplaced);
-
-                var arrayType = (ArrayType)type;
-                return new ArrayType(this.RootImport(arrayType.ElementType), arrayType.Rank);
-            }
-            else if (type.IsGenericInstance)
-            {
-                // root import the generic definition and all generic arguments
-                var genericInstanceType = (GenericInstanceType)type;
-                var importedGenericInstanceType = new GenericInstanceType(this.RootTarget.Module.Import(genericInstanceType.ElementType));
-
-                if (isDeclaringTypeReplaced) { importedGenericInstanceType.DeclaringType = newDeclaringType; }
-
-                foreach (var genericArgument in genericInstanceType.GenericArguments)
-                {
-                    importedGenericInstanceType.GenericArguments.Add(this.RootImport(genericArgument));
-                }
-
-                return importedGenericInstanceType;
-            }
-            else
-            {
-                if (isDeclaringTypeReplaced)
-                {
-                    return this.RootTarget.Module.Import(
-                        new TypeReference(type.Namespace, type.Name, type.Module, type.Module)
-                        {
-                            DeclaringType = newDeclaringType,
-                        });
-                }
-                else { return this.RootTarget.Module.Import(type); }
-            }
         }
 
         /// <summary>
