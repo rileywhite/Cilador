@@ -239,6 +239,7 @@ namespace Bix.Mixers.Fody.ILCloning
         public bool TryGetTargetFor(MethodReference source, out MethodDefinition target)
         {
             Contract.Requires(source != null);
+            Contract.Requires(!source.IsGenericInstance);
             Contract.Requires(this.AreAllClonersAdded);
             Contract.Ensures(Contract.ValueAtReturn(out target) != null || !Contract.Result<bool>());
 

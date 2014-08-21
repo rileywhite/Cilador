@@ -63,9 +63,9 @@ namespace Bix.Mixers.Fody.TestMixins
             public T2 Thing2 { get; set; }
         }
 
-        //public class PartiallyClosedGenericType<T3> : GenericTypeWithMultipleParameters<int, T3>
-        //{
-        //}
+        public class PartiallyClosedGenericType<T3> : GenericTypeWithMultipleParameters<int, T3>
+        {
+        }
 
         //public class TypeWithPartiallyClosedGenericMethod
         //{

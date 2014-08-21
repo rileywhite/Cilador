@@ -106,9 +106,6 @@ namespace Bix.Mixers.Fody.ILCloning
 
                 // TODO look more closely at type class size
                 this.Target.ClassSize = this.Source.ClassSize;
-
-                // TODO research correct usage of type metadata token
-                //this.Target.MetadataToken = new MetadataToken(this.Source.MetadataToken.TokenType, this.Source.MetadataToken.RID);
             }
 
             this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);

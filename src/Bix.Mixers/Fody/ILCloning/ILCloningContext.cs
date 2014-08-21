@@ -128,7 +128,11 @@ namespace Bix.Mixers.Fody.ILCloning
         public TypeReference RootImport(TypeReference type)
         {
             if (type == null) { return null; }
-            if (type.IsGenericParameter) { return type; }
+            if (type.IsGenericParameter)
+            {
+                var genericParameter = (GenericParameter)type;
+                return this.RootImport((dynamic)genericParameter.Owner).GenericParameters[genericParameter.Position];
+            }
 
             // if root import has already occurred, then return the previous result
             TypeReference importedType;
@@ -141,8 +145,9 @@ namespace Bix.Mixers.Fody.ILCloning
             bool isDeclaringTypeReplaced;
 
             TypeReference newDeclaringType;
-            if ((type.FullName == this.RootSource.FullName || type.IsNestedWithin(this.RootSource)) &&
-                (type.IsAnyTypeAncestorAGenericInstanceWithArgumentsIn(this.RootSource)))
+            if (type.FullName != this.RootSource.FullName &&
+                !type.IsNestedWithin(this.RootSource) &&
+                type.IsAnyTypeAncestorAGenericInstanceWithArgumentsIn(this.RootSource))
             {
                 // not within the clone targets, so import from outside of clone source/targets
 
@@ -171,7 +176,7 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 // root import the generic definition and all generic arguments
                 var genericInstanceType = (GenericInstanceType)type;
-                var importedGenericInstanceType = new GenericInstanceType(this.RootTarget.Module.Import(genericInstanceType.ElementType));
+                var importedGenericInstanceType = new GenericInstanceType(this.RootImport(genericInstanceType.ElementType));
 
                 if (isDeclaringTypeReplaced) { importedGenericInstanceType.DeclaringType = newDeclaringType; }
 
@@ -272,57 +277,25 @@ namespace Bix.Mixers.Fody.ILCloning
             if (method == null) { return null; }
 
             MethodReference importedMethod;
-            if (!this.MethodCache.TryGetValue(method.FullName, out importedMethod))
+            if (this.MethodCache.TryGetValue(method.FullName, out importedMethod))
             {
-                // try to get the method from within the clone targets that would correspond with a method within the clone source
-                MethodDefinition importedMethodDefinition;
-                if (this.Cloners.TryGetTargetFor(method, out importedMethodDefinition))
-                {
-                    // all root importing comes from code that is being generated within the target module
-                    // so there is no need to do a module import
-                    importedMethod = importedMethodDefinition;
-                }
-                else
-                {
-                    // not within the clone targets, so import from outside of clone source/targets
-                    importedMethod = this.RootImportMethodOutsideOfSource(method);
-                }
-
-                this.MethodCache[method.FullName] = importedMethod;
+                Contract.Assert(importedMethod != null);
+                return importedMethod;
             }
-
-            Contract.Assert(importedMethod != null);
-            Contract.Assert(!(importedMethod is IMemberDefinition) || importedMethod.Module == this.RootTarget.Module);
-            return importedMethod;
-        }
-
-        /// <summary>
-        /// Root import a method that is not within the <see cref="RootSource"/>.
-        /// This may involve replacing generic type arguments in some cases.
-        /// </summary>
-        /// <param name="method">Method to root import.</param>
-        /// <returns>Root imported method.</returns>
-        private MethodReference RootImportMethodOutsideOfSource(MethodReference method)
-        {
-            Contract.Requires(method != null);
-            Contract.Requires(!method.DeclaringType.IsNestedWithin(this.RootSource));
-            Contract.Ensures(Contract.Result<MethodReference>() != null);
 
             // do a root import of the declaring type
             var importedDeclaringType = this.RootImport(method.DeclaringType);
 
-            Contract.Assert(!importedDeclaringType.IsNestedWithin(this.RootTarget));
-
-            // find the local method with a matching signature
-            var resolvedMethod = method.Resolve();
-            var localMethod = importedDeclaringType.Resolve().Methods.FirstOrDefault(possibleMethod => possibleMethod.SignatureEquals(resolvedMethod, this));
-
-            // check for a generic instance because this will be more work
+            // generic instance methods are handled differently
             if (method.IsGenericInstance)
             {
+                // find the local method with a matching signature
+                var resolvedMethod = method.Resolve();
+                var localMethod = importedDeclaringType.Resolve().Methods.FirstOrDefault(possibleMethod => possibleMethod.SignatureEquals(resolvedMethod, this));
+
                 Contract.Assert(localMethod.GenericParameters.Count > 0);
 
-                // if this is a generic instance, then create a new generic instance reference and root import all generic arguments
+                // create a new generic instance reference and root import all generic arguments
                 var genericInstanceMethod = (GenericInstanceMethod)method;
 
                 var importedLocalMethod = this.RootTarget.Module.Import(localMethod);
@@ -339,21 +312,62 @@ namespace Bix.Mixers.Fody.ILCloning
                     importedGenericInstanceMethod.GenericArguments.Add(this.RootImport(genericArgument));
                 }
 
-                return importedGenericInstanceMethod;
+                importedMethod = importedGenericInstanceMethod;
             }
             else
             {
-                // if this is not a generic instance, then just import the method
-                var importedMethod = this.RootTarget.Module.Import(localMethod);
-
-                if (method.DeclaringType.IsGenericInstance)
+                // try to get the method from within the clone targets that would correspond with a method within the clone source
+                MethodDefinition importedMethodDefinition;
+                if (this.Cloners.TryGetTargetFor(method, out importedMethodDefinition))
                 {
-                    Contract.Assert(importedDeclaringType.IsGenericInstance);
-                    importedMethod.DeclaringType = importedDeclaringType;
-                }
+                    if (!importedDeclaringType.IsGenericInstance)
+                    {
+                        // this is the easy case
+                        importedMethod = importedMethodDefinition;
+                    }
+                    else
+                    {
+                        // the method is defined within a generic type _and_ importing results in a definition rather than a reference
+                        // this means that we need to make a new reference
+                        importedMethod = new MethodReference(importedMethodDefinition.Name, importedMethodDefinition.ReturnType)
+                        {
+                            DeclaringType = importedDeclaringType,
+                            HasThis = importedMethodDefinition.HasThis,
+                            ExplicitThis = importedMethodDefinition.ExplicitThis,
+                            CallingConvention = importedMethodDefinition.CallingConvention,
+                        };
 
-                return importedMethod;
+                        foreach (var parameter in importedMethodDefinition.Parameters)
+                        {
+                            importedMethod.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
+                        }
+
+                        foreach (var genericParameter in importedMethodDefinition.GenericParameters)
+                        {
+                            importedMethod.GenericParameters.Add(new GenericParameter(genericParameter.Name, importedMethod));
+                        }
+                    }
+                }
+                else
+                {
+                    // import the method
+                    var resolvedMethod = method.Resolve();
+                    var localMethod = importedDeclaringType.Resolve().Methods.FirstOrDefault(possibleMethod => possibleMethod.SignatureEquals(resolvedMethod, this));
+
+                    importedMethod = this.RootTarget.Module.Import(localMethod);
+
+                    if (method.DeclaringType.IsGenericInstance)
+                    {
+                        Contract.Assert(importedDeclaringType.IsGenericInstance);
+                        importedMethod.DeclaringType = importedDeclaringType;
+                    }
+                }
             }
+
+            Contract.Assert(importedMethod != null);
+            Contract.Assert(!(importedMethod is IMemberDefinition) || importedMethod.Module == this.RootTarget.Module);
+            this.MethodCache[method.FullName] = importedMethod;
+            return importedMethod;
         }
     }
 }

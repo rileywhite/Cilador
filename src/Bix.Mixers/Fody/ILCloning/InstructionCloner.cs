@@ -49,7 +49,7 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Gets or sets the cloner for the method body associated with this variable cloner.
+        /// Gets or sets the cloner for the method body associated with this instruction cloner.
         /// </summary>
         public MethodBodyCloner MethodBodyCloner { get; private set; }
 
@@ -88,7 +88,7 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Creates a new method with the given operand
+        /// Imports the operand
         /// </summary>
         /// <param name="value">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
@@ -116,7 +116,7 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Creates a new method with the given operand
+        /// Imports the operand
         /// </summary>
         /// <param name="value">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
@@ -126,7 +126,7 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Creates a new method with the given operand
+        /// Imports the operand
         /// </summary>
         /// <param name="field">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
@@ -137,7 +137,7 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Creates a new method with the given operand
+        /// Imports the operand
         /// </summary>
         /// <param name="value">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
@@ -147,7 +147,7 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Creates a new method with the given operand
+        /// Imports the operand
         /// </summary>
         /// <param name="instruction">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
@@ -164,7 +164,7 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Creates a new method with the given operand
+        /// Imports the operand
         /// </summary>
         /// <param name="instructions">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
@@ -181,7 +181,7 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Creates a new method with the given operand
+        /// Imports the operand
         /// </summary>
         /// <param name="value">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
@@ -191,7 +191,7 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Creates a new method with the given operand
+        /// Imports the operand
         /// </summary>
         /// <param name="value">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
@@ -201,7 +201,7 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Creates a new method with the given operand
+        /// Imports the operand
         /// </summary>
         /// <param name="method">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
@@ -212,7 +212,7 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Creates a new method with the given operand
+        /// Imports the operand
         /// </summary>
         /// <param name="parameter">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
@@ -236,7 +236,7 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Creates a new method with the given operand
+        /// Imports the operand
         /// </summary>
         /// <param name="value">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
@@ -246,7 +246,7 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Creates a new method with the given operand
+        /// Imports the operand
         /// </summary>
         /// <param name="value">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
@@ -257,7 +257,7 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Creates a new method with the given operand
+        /// Imports the operand
         /// </summary>
         /// <param name="type">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
@@ -268,7 +268,7 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Creates a new method with the given operand
+        /// Imports the operand
         /// </summary>
         /// <param name="variable">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>

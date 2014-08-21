@@ -106,7 +106,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
             if (target == null || source == null) { return target == null && source == null; }
 
-            return target.FullName.Replace(ilCloningContext.RootTarget.FullName, ilCloningContext.RootSource.FullName) == source.FullName;
+            return source.FullName.Replace(ilCloningContext.RootSource.FullName, ilCloningContext.RootTarget.FullName) == target.FullName;
         }
 
         /// <summary>
