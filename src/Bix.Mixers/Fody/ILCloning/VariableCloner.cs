@@ -57,6 +57,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         public override void Clone()
         {
+            Contract.Assert(this.Target.Name == this.Source.Name);
             this.Target.VariableType = this.ILCloningContext.RootImport(this.Source.VariableType);
             this.IsCloned = true;
         }

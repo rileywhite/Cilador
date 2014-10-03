@@ -62,7 +62,6 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <typeparam name="T">Type of item to gather cloners for</typeparam>
         /// <param name="source">Cloning source to gather cloners for.</param>
         /// <param name="target">Cloning target to gather cloners for.</param>
         public void Visit(TypeDefinition sourceType, TypeDefinition targetType)
@@ -72,23 +71,19 @@ namespace Bix.Mixers.Fody.ILCloning
 
             this.Cloners.AddCloner(new TypeCloner(this.ILCloningContext, targetType, sourceType));
 
-            var voidReference = targetType.Module.Import(typeof(void));
-
             foreach (var sourceNestedType in sourceType.NestedTypes)
             {
                 var targetNestedType = new TypeDefinition(sourceNestedType.Namespace, sourceNestedType.Name, 0);
                 targetType.NestedTypes.Add(targetNestedType);
 
-                // TODO may need to traverse hierarchy of generic parameters
-                foreach (var sourceGenericParameter in sourceNestedType.GenericParameters)
-                {
-                    var targetGenericParameter = new GenericParameter(sourceGenericParameter.Name, targetNestedType);
-                    targetNestedType.GenericParameters.Add(targetGenericParameter);
-                    this.Cloners.AddCloner(new GenericParameterCloner(this.ILCloningContext, targetGenericParameter, sourceGenericParameter));
-                }
+                this.Visit(
+                    (IGenericParameterProvider)sourceNestedType,
+                    (IGenericParameterProvider)targetNestedType);
                 
                 this.Visit(sourceNestedType, targetNestedType);
             }
+
+            var voidReference = targetType.Module.Import(typeof(void));
 
             foreach (var sourceField in sourceType.Fields)
             {
@@ -145,7 +140,6 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <typeparam name="T">Type of item to gather cloners for</typeparam>
         /// <param name="source">Cloning source to gather cloners for.</param>
         /// <param name="target">Cloning target to gather cloners for.</param>
         private void Visit(FieldDefinition sourceField, FieldDefinition targetField)
@@ -159,7 +153,6 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <typeparam name="T">Type of item to gather cloners for</typeparam>
         /// <param name="source">Cloning source to gather cloners for.</param>
         /// <param name="target">Cloning target to gather cloners for.</param>
         private void Visit(MethodDefinition sourceMethod, MethodDefinition targetMethod)
@@ -173,13 +166,9 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Assert(methodSignatureCloner.ParameterCloners != null);
             this.Cloners.AddCloners(methodSignatureCloner.ParameterCloners);
 
-            // TODO may need to traverse hierarchy of generic parameters
-            foreach (var sourceGenericParameter in sourceMethod.GenericParameters)
-            {
-                var targetGenericParameter = new GenericParameter(sourceGenericParameter.Name, targetMethod);
-                targetMethod.GenericParameters.Add(targetGenericParameter);
-                this.Cloners.AddCloner(new GenericParameterCloner(this.ILCloningContext, targetGenericParameter, sourceGenericParameter));
-            }
+            this.Visit(
+                (IGenericParameterProvider)sourceMethod,
+                (IGenericParameterProvider)targetMethod);
 
             if (sourceMethod.HasBody)
             {
@@ -193,7 +182,6 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <typeparam name="T">Type of item to gather cloners for</typeparam>
         /// <param name="source">Cloning source to gather cloners for.</param>
         /// <param name="target">Cloning target to gather cloners for.</param>
         private void Visit(PropertyDefinition sourceProperty, PropertyDefinition targetProperty)
@@ -208,7 +196,6 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <typeparam name="T">Type of item to gather cloners for</typeparam>
         /// <param name="source">Cloning source to gather cloners for.</param>
         /// <param name="target">Cloning target to gather cloners for.</param>
         private void Visit(EventDefinition sourceEvent, EventDefinition targetEvent)
@@ -217,6 +204,25 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(targetEvent != null);
 
             this.Cloners.AddCloner(new EventCloner(this.ILCloningContext, targetEvent, sourceEvent));
+        }
+
+        /// <summary>
+        /// Gathers all cloners for the given cloning source and target.
+        /// </summary>
+        /// <param name="source">Cloning source to gather cloners for.</param>
+        /// <param name="target">Cloning target to gather cloners for.</param>
+        private void Visit(IGenericParameterProvider sourceGenericParameterProvider, IGenericParameterProvider targetGenericParameterProvider)
+        {
+            var voidReference = targetGenericParameterProvider.Module.Import(typeof(void));
+            foreach (var sourceGenericParameter in sourceGenericParameterProvider.GenericParameters)
+            {
+                targetGenericParameterProvider.GenericParameters.Add(new GenericParameter(voidReference)); // this is just a placeholder since null is not allowed
+                this.Cloners.AddCloner(new GenericParameterCloner(
+                    this.ILCloningContext,
+                    () => targetGenericParameterProvider.GenericParameters[sourceGenericParameter.Position],
+                    targetGenericParameter => targetGenericParameterProvider.GenericParameters[sourceGenericParameter.Position] = targetGenericParameter,
+                    () => sourceGenericParameter));
+            }
         }
     }
 }

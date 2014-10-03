@@ -51,6 +51,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
             this.RootSource = rootSource;
             this.RootTarget = rootTarget;
+            this.GenericParameterCache = new Dictionary<string, GenericParameter>();
             this.TypeCache = new Dictionary<string, TypeReference>();
             this.FieldCache = new Dictionary<string, FieldReference>();
             this.MethodCache = new Dictionary<string, MethodReference>();
@@ -130,8 +131,7 @@ namespace Bix.Mixers.Fody.ILCloning
             if (type == null) { return null; }
             if (type.IsGenericParameter)
             {
-                var genericParameter = (GenericParameter)type;
-                return this.RootImport((dynamic)genericParameter.Owner).GenericParameters[genericParameter.Position];
+                return this.RootImport((GenericParameter)type); ;
             }
 
             // if root import has already occurred, then return the previous result
@@ -213,6 +213,48 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Assert(!(importedType is IMemberDefinition) || importedType.Module == this.RootTarget.Module);
             this.TypeCache[type.FullName] = importedType;
             return importedType;
+        }
+
+        /// <summary>
+        /// Cache of root-imported generic parameters so that any given generic parameter is only looked up once
+        /// </summary>
+        private Dictionary<string, GenericParameter> GenericParameterCache { get; set; }
+
+        /// <summary>
+        /// Root imports a generic parameter. That is, it finds the type with respect to the <see cref="RootTarget"/> type.
+        /// If necessary, this handles mixin redirection, meaning that a member within the <see cref="RootTarget"/>
+        /// will be returned in place of a member within the <see cref="RootSource"/>
+        /// </summary>
+        /// <param name="genericParameter">Type to root import.</param>
+        /// <returns>Root imported type.</returns>
+        public TypeReference RootImport(GenericParameter genericParameter)
+        {
+            if (genericParameter == null) { return null; }
+
+            string cacheKey = Cloners.GetUniqueKeyFor(genericParameter);
+
+            // if root import has already occurred, then return the previous result
+            GenericParameter importedGenericParameter;
+            if (this.GenericParameterCache.TryGetValue(cacheKey, out importedGenericParameter))
+            {
+                Contract.Assert(importedGenericParameter != null);
+                return importedGenericParameter;
+            }
+
+            if (!this.Cloners.TryGetTargetFor(genericParameter, out importedGenericParameter))
+            {
+                throw new InvalidOperationException(string.Format(
+                    "Could not find the target generic parameter for source named [{0}] with owner [{1}].",
+                    genericParameter.Name,
+                    ((MemberReference)genericParameter.Owner).Name));
+            }
+
+            Contract.Assert(importedGenericParameter != null);
+            Contract.Assert(importedGenericParameter.Module == this.RootTarget.Module);
+            Contract.Assert(importedGenericParameter.Owner.Module == this.RootTarget.Module);
+            this.GenericParameterCache[cacheKey] = importedGenericParameter;
+
+            return importedGenericParameter;
         }
 
         /// <summary>

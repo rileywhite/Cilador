@@ -27,14 +27,32 @@ namespace Bix.Mixers.Fody.ILCloning
     /// <summary>
     /// Clones <see cref="GenericParameter"/> contents from a source to a target.
     /// </summary>
-    internal class GenericParameterCloner : ClonerBase<GenericParameter>
+    internal class GenericParameterCloner : ClonerBase<GenericParameterAccessor>
     {
-        public GenericParameterCloner(ILCloningContext ilCloningContext, GenericParameter target, GenericParameter source)
+        public GenericParameterCloner(
+            ILCloningContext ilCloningContext,
+            Func<GenericParameter> targetGetter,
+            Action<GenericParameter> targetSetter,
+            Func<GenericParameter> sourceGetter)
+            : this(
+            ilCloningContext,
+            new GenericParameterAccessor(getter: targetGetter, setter: targetSetter),
+            new GenericParameterAccessor(getter: sourceGetter))
+        {
+            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(targetGetter != null);
+            Contract.Requires(targetSetter != null);
+            Contract.Requires(sourceGetter != null);
+        }
+
+        public GenericParameterCloner(ILCloningContext ilCloningContext, GenericParameterAccessor target, GenericParameterAccessor source)
             : base(ilCloningContext, target, source)
         {
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(target != null);
+            Contract.Requires(target.IsGetAccessor && target.IsSetAccessor);
             Contract.Requires(source != null);
+            Contract.Requires(source.IsGetAccessor);
         }
 
         /// <summary>
@@ -42,19 +60,22 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         public override void Clone()
         {
-            Contract.Assert(this.Source.Name == this.Target.Name);
+            var sourceGenericParameter = this.Source.Getter();
+            if (sourceGenericParameter == null) { throw new InvalidOperationException("Unable to retrieve a generic parameter using a source getter method."); }
 
-            this.Target.Attributes = this.Source.Attributes;
+            var targetGenericParameter = new GenericParameter(
+                sourceGenericParameter.Name,
+                this.ILCloningContext.DynamicRootImport(sourceGenericParameter.Owner));
+            this.Target.Setter(targetGenericParameter);
 
-            // TODO research correct usage of metadata token
-            // TODO research correct usage of scope
+            targetGenericParameter.Attributes = sourceGenericParameter.Attributes;
 
-            foreach(var sourceConstraint in this.Source.Constraints)
+            foreach (var sourceConstraint in sourceGenericParameter.Constraints)
             {
-                this.Target.Constraints.Add(this.ILCloningContext.RootImport(sourceConstraint));
+                targetGenericParameter.Constraints.Add(this.ILCloningContext.RootImport(sourceConstraint));
             }
 
-            this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
+            targetGenericParameter.CloneAllCustomAttributes(sourceGenericParameter, this.ILCloningContext);
 
             this.IsCloned = true;
         }

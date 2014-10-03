@@ -67,12 +67,12 @@ namespace Bix.Mixers.Fody.TestMixins
         {
         }
 
-        //public class TypeWithPartiallyClosedGenericMethod
-        //{
-        //    public GenericTypeWithMultipleParameters<int, T3> GetThing<T3>(T3 innerThing)
-        //    {
-        //        return new GenericTypeWithMultipleParameters<int, T3> { Thing1 = 297387, Thing2 = innerThing };
-        //    }
-        //}
+        public class TypeWithPartiallyClosedGenericMethod
+        {
+            public GenericTypeWithMultipleParameters<int, T4> GetThing<T4>(T4 innerThing)
+            {
+                return new GenericTypeWithMultipleParameters<int, T4> { Thing1 = 297387, Thing2 = innerThing };
+            }
+        }
     }
 }
