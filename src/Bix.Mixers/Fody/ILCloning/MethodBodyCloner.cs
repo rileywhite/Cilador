@@ -93,7 +93,7 @@ namespace Bix.Mixers.Fody.ILCloning
             foreach (var sourceInstruction in this.Source.Instructions)
             {
                 // the operand is required to create the instruction
-                // but at this stage, it root resolving is not yet allowed because wireframes of all items do not yet exist
+                // but at this stage root resolving is not yet allowed because wireframes of all items do not yet exist
                 // so, where needed, dummy operands are used which will be replaced in the clone step of each instruction cloner
                 Instruction targetInstruction =
                     sourceInstruction.Operand == null ?
@@ -116,15 +116,14 @@ namespace Bix.Mixers.Fody.ILCloning
         {
             this.Target.InitLocals = this.Source.InitLocals;
 
-            // TODO research correct usage of LocalVarToken
-            //targetBody.LocalVarToken = new MetadataToken(
-            //    sourceBody.LocalVarToken.TokenType,
-            //    sourceBody.LocalVarToken.RID);
-
             this.Target.MaxStackSize = this.Source.MaxStackSize;
 
-            // TODO method body scope may be tough to get right
-            this.Target.Scope = this.Source.Scope;
+            if (this.Source.Scope != null)
+            {
+                // TODO method body scope may be tough to get right
+                // for now raise an exception
+                throw new NotSupportedException("An unsupported configuration was detected. Please consider filing a bug report on the project's github page.");
+            }
 
             this.IsCloned = true;
         }
