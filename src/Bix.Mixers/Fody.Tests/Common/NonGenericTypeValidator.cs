@@ -33,11 +33,21 @@ namespace Bix.Mixers.Fody.Tests.Common
         /// Gets a validator for an expected type.
         /// </summary>
         /// <typeparam name="T">Expected parameter type.</typeparam>
-        /// <returns></returns>
+        /// <returns>New type validator for a non-generic type.</returns>
         public static NonGenericTypeValidator ForType<T>()
         {
             Contract.Ensures(Contract.Result<NonGenericTypeValidator>() != null);
             return new NonGenericTypeValidator(typeof(T));
+        }
+
+        /// <summary>
+        /// Gets a validator for an expected type.
+        /// </summary>
+        /// <returns>New type validator for a void type.</returns>
+        public static NonGenericTypeValidator ForVoidType()
+        {
+            Contract.Ensures(Contract.Result<NonGenericTypeValidator>() != null);
+            return new NonGenericTypeValidator(typeof(void));
         }
 
         /// <summary>

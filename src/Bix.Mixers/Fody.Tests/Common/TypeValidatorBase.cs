@@ -54,6 +54,67 @@ namespace Bix.Mixers.Fody.Tests.Common
         }
 
         /// <summary>
+        /// Represents what kind of validation to apply to a property.
+        /// </summary>
+        [Flags]
+        public enum PropertyAccessorExpectations
+        {
+            /// <summary>
+            /// The property is expected to have only a getter.
+            /// </summary>
+            Get = 1,
+
+            /// <summary>
+            /// The property is expected to have only a setter.
+            /// </summary>
+            Set = 2,
+
+            /// <summary>
+            /// The property is expected to have both a getter and a setter.
+            /// </summary>
+            Both = Get | Set,
+        }
+
+        /// <summary>
+        /// Validates a property and its getter and/or setter.
+        /// </summary>
+        /// <param name="actualProperty">Property to validate.</param>
+        /// <param name="propertyAccessorExpectations">Expected property accessors.</param>
+        /// <param name="propertyTypeValidator">Validator for the type of the property.</param>
+        public static void ValidatePropertyTypeAndAccessors(
+            PropertyInfo actualProperty,
+            PropertyAccessorExpectations propertyAccessorExpectations,
+            TypeValidatorBase propertyTypeValidator)
+        {
+            Contract.Requires(actualProperty != null);
+            Contract.Requires(propertyTypeValidator != null);
+
+            propertyTypeValidator.Validate(actualProperty.PropertyType);
+
+            var getMethod = actualProperty.GetGetMethod(true);
+            if ((propertyAccessorExpectations & PropertyAccessorExpectations.Get) != PropertyAccessorExpectations.Get)
+            {
+                Assert.That(getMethod, Is.Null);
+            }
+            else
+            {
+                Assert.That(getMethod, Is.Not.Null);
+                ValidateParameters(getMethod, propertyTypeValidator);
+            }
+
+            var setMethod = actualProperty.GetSetMethod(true);
+            if ((propertyAccessorExpectations & PropertyAccessorExpectations.Set) != PropertyAccessorExpectations.Set)
+            {
+                Assert.That(setMethod, Is.Null);
+            }
+            else
+            {
+                Assert.That(setMethod, Is.Not.Null);
+                ValidateParameters(setMethod, NonGenericTypeValidator.ForVoidType(), propertyTypeValidator);
+            }
+        }
+
+        /// <summary>
         /// Validates a type against expected generic argument types.
         /// </summary>
         /// <param name="actualType">Type to validate.</param>

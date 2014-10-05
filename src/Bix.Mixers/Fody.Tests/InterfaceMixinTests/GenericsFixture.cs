@@ -342,8 +342,55 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             Assert.That(things.Item2, Is.SameAs(someObject));
 
             // generic type with multiple parameters
+            type = targetType.GetNestedType("GenericTypeWithMultipleParameters`2", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(type, Is.Not.Null);
+            Assert.That(type.ContainsGenericParameters);
+            TypeValidatorBase.ValidateType(
+                type,
+                new GenericTypeValidator(
+                    type,
+                    GenericParameterTypeValidator.Named("T1"),
+                    GenericParameterTypeValidator.Named("T2")));
 
-            // TODO mulitiply nested and partially closed generic types
+            var property = type.GetProperty("Thing1");
+            TypeValidatorBase.ValidatePropertyTypeAndAccessors(
+                property,
+                TypeValidatorBase.PropertyAccessorExpectations.Both,
+                GenericParameterTypeValidator.Named("T1"));
+            MethodValidator.ValidateMethod(property.GetGetMethod(), typeof(GenericNestedTypeMixin.GenericTypeWithMultipleParameters<,>).GetProperty(property.Name).GetGetMethod());
+            MethodValidator.ValidateMethod(property.GetSetMethod(), typeof(GenericNestedTypeMixin.GenericTypeWithMultipleParameters<,>).GetProperty(property.Name).GetSetMethod());
+
+            TypeValidatorBase.ValidatePropertyTypeAndAccessors(
+                type.GetProperty("Thing2"),
+                TypeValidatorBase.PropertyAccessorExpectations.Both,
+                GenericParameterTypeValidator.Named("T2"));
+            MethodValidator.ValidateMethod(property.GetGetMethod(), typeof(GenericNestedTypeMixin.GenericTypeWithMultipleParameters<,>).GetProperty(property.Name).GetGetMethod());
+            MethodValidator.ValidateMethod(property.GetSetMethod(), typeof(GenericNestedTypeMixin.GenericTypeWithMultipleParameters<,>).GetProperty(property.Name).GetSetMethod());
+
+            genericInstanceType = type.MakeGenericType(typeof(int), typeof(string));
+            Assert.That(!genericInstanceType.ContainsGenericParameters);
+            Assert.That(genericInstanceType.IsConstructedGenericType);
+
+            instance = Activator.CreateInstance(genericInstanceType, new object[0]);
+
+            var genericInstanceProperty = genericInstanceType.GetProperty("Thing1", TestContent.BindingFlagsForMixedMembers);
+            TypeValidatorBase.ValidatePropertyTypeAndAccessors(
+                genericInstanceProperty,
+                TypeValidatorBase.PropertyAccessorExpectations.Both,
+                NonGenericTypeValidator.ForType<int>());
+            genericInstanceProperty.SetValue(instance, 48008);
+            Assert.That(genericInstanceProperty.GetValue(instance), Is.EqualTo(48008));
+
+            genericInstanceProperty = genericInstanceType.GetProperty("Thing2", TestContent.BindingFlagsForMixedMembers);
+            TypeValidatorBase.ValidatePropertyTypeAndAccessors(
+                genericInstanceProperty,
+                TypeValidatorBase.PropertyAccessorExpectations.Both,
+                NonGenericTypeValidator.ForType<string>());
+            genericInstanceProperty.SetValue(instance, "SAdfiohoqiweAsiohnewlroi asoidfh inra6f");
+            Assert.That(genericInstanceProperty.GetValue(instance), Is.EqualTo("SAdfiohoqiweAsiohnewlroi asoidfh inra6f"));
+
+
+            // TODO multiply nested and partially closed generic types
         }
 
 //        [Test]

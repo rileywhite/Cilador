@@ -109,6 +109,7 @@
     </Compile>
     <Compile Include="Common\GenericParameterTypeValidator.cs" />
     <Compile Include="Common\GenericTypeValidator.cs" />
+    <Compile Include="Common\MethodValidator.cs" />
     <Compile Include="Common\TypeValidatorBaseContract.cs" />
     <Compile Include="Common\NonGenericTypeValidator.cs" />
     <Compile Include="Common\TypeValidatorBase.cs" />

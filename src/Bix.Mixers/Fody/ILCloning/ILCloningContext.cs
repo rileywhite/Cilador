@@ -281,19 +281,33 @@ namespace Bix.Mixers.Fody.ILCloning
                 Contract.Assert(importedField != null);
                 return importedField;
             }
+            
+            // do a root import of the declaring type
+            var importedDeclaringType = this.RootImport(field.DeclaringType);
 
-            FieldDefinition targetField;
-            if (this.Cloners.TryGetTargetFor(field, out targetField))
+            // try to get the field from within the clone targets that would correspond with a field within the clone source
+            FieldDefinition importedFieldDefinition;
+            if (!this.Cloners.TryGetTargetFor(field, out importedFieldDefinition))
             {
-                Contract.Assert(targetField != null);
-
-                // all root importing comes from code that is being generated within the target module
-                // so there is no need to do a module import
-                importedField = targetField;
+                // not a mixed type field, so do a simple import
+                importedField = this.RootTarget.Module.Import(field);
             }
             else
             {
-                importedField = this.RootTarget.Module.Import(field);
+                if (!importedDeclaringType.IsGenericInstance)
+                {
+                    // this is the easy case
+                    importedField = importedFieldDefinition;
+                }
+                else
+                {
+                    // the method is defined within a generic type _and_ importing results in a definition rather than a reference
+                    // this means that we need to make a new reference
+                    importedField = new FieldReference(importedFieldDefinition.Name, importedFieldDefinition.FieldType)
+                    {
+                        DeclaringType = importedDeclaringType,
+                    };
+                }
             }
 
             Contract.Assert(importedField != null);
