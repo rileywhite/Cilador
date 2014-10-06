@@ -411,6 +411,7 @@ namespace Bix.Mixers.Fody.ILCloning
                     var localMethod = importedDeclaringType.Resolve().Methods.FirstOrDefault(possibleMethod => possibleMethod.SignatureEquals(resolvedMethod, this));
 
                     importedMethod = this.RootTarget.Module.Import(localMethod);
+                    Contract.Assume(importedMethod != null);
 
                     if (method.DeclaringType.IsGenericInstance)
                     {
