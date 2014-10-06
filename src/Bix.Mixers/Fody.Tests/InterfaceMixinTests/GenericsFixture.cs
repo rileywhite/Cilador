@@ -345,7 +345,6 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             // generic type with multiple parameters
             type = targetType.GetNestedType("GenericTypeWithMultipleParameters`2", TestContent.BindingFlagsForMixedMembers);
             Assert.That(type, Is.Not.Null);
-            Assert.That(type.ContainsGenericParameters);
             TypeValidatorBase.ValidateType(
                 type,
                 new GenericTypeValidator(
@@ -431,7 +430,48 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             Assert.That(genericInstanceProperty.GetValue(instance), Is.EqualTo("AFioenAjeiona aesoing ijeng inuia eabruibeg uybvwaytvr  b"));
 
 
-            // TODO multiply nested and partially closed generic types
+            // type with method with partially closed generic type
+            type = targetType.GetNestedType("TypeWithPartiallyClosedGenericMethod", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(type, Is.Not.Null);
+            Assert.That(!type.IsGenericType);
+
+            instance = Activator.CreateInstance(type);
+
+            var returnTypeGenericDefinition = targetType.GetNestedType("GenericTypeWithMultipleParameters`2", TestContent.BindingFlagsForMixedMembers);
+
+            method = type.GetMethod("GetThing", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(method, Is.Not.Null);
+            TypeValidatorBase.ValidateParameters(
+                method,
+                new GenericTypeValidator(
+                    returnTypeGenericDefinition,
+                    NonGenericTypeValidator.ForType<int>(),
+                    GenericParameterTypeValidator.Named("T4")),
+                GenericParameterTypeValidator.Named("T4"));
+
+            genericInstanceMethod = method.MakeGenericMethod(new Type[] { typeof(string) });
+            var returnValue = genericInstanceMethod.Invoke(instance, new object[] { "Eoahio eioua bueagingnpiuw nufib fuiwebyu" });
+            var genericInstanceReturnType = returnTypeGenericDefinition.MakeGenericType(new Type[] { typeof(int), typeof(string) });
+            Assert.That(returnValue.GetType(), Is.EqualTo(genericInstanceReturnType));
+            Assert.That(genericInstanceReturnType.GetProperty("Thing1").GetValue(returnValue), Is.EqualTo(297387));
+            Assert.That(genericInstanceReturnType.GetProperty("Thing2").GetValue(returnValue), Is.EqualTo("Eoahio eioua bueagingnpiuw nufib fuiwebyu"));
+
+            method = type.GetMethod("GetOtherThing", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(method, Is.Not.Null);
+            TypeValidatorBase.ValidateParameters(
+                method,
+                new GenericTypeValidator(
+                    returnTypeGenericDefinition,
+                    GenericParameterTypeValidator.Named("T5"),
+                    NonGenericTypeValidator.ForType<int>()),
+                GenericParameterTypeValidator.Named("T5"));
+
+            genericInstanceMethod = method.MakeGenericMethod(new Type[] { typeof(string) });
+            returnValue = genericInstanceMethod.Invoke(instance, new object[] { "Eaiosn4oil ifhiu 3ybusabu 3byuvsdf yuvaytithomn gfd" });
+            genericInstanceReturnType = returnTypeGenericDefinition.MakeGenericType(new Type[] { typeof(string), typeof(int) });
+            Assert.That(returnValue.GetType(), Is.EqualTo(genericInstanceReturnType));
+            Assert.That(genericInstanceReturnType.GetProperty("Thing1").GetValue(returnValue), Is.EqualTo("Eaiosn4oil ifhiu 3ybusabu 3byuvsdf yuvaytithomn gfd"));
+            Assert.That(genericInstanceReturnType.GetProperty("Thing2").GetValue(returnValue), Is.EqualTo(789437));
         }
 
 //        [Test]

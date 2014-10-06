@@ -73,6 +73,11 @@ namespace Bix.Mixers.Fody.TestMixins
             {
                 return new GenericTypeWithMultipleParameters<int, T4> { Thing1 = 297387, Thing2 = innerThing };
             }
+
+            public GenericTypeWithMultipleParameters<T5, int> GetOtherThing<T5>(T5 innerThing)
+            {
+                return new GenericTypeWithMultipleParameters<T5, int> { Thing1 = innerThing, Thing2 = 789437 };
+            }
         }
     }
 }
