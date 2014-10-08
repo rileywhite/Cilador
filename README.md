@@ -58,13 +58,14 @@ You have to follow a few rules for the implementation, but it's pretty basic.
  * It can't implement other interfaces.
  * It can't inherit from any other type.
  * Don't provide any constructors.
- 
+
 Outside of that, you can do what you want. You can include fields, properties, methods,
 events, and even nested types. Visibility will transfer over to the mixin target, as
 will custom attributes, and virtual/abstract (only nested types can be abstract, though).
 
-There are some unsupported things, such as generic mixin types and methods, but most
-things will work. Experiment a bit, and [create an issue](https://github.com/rileywhite/Bix.Mixers.Fody/issues)
+There are some unsupported things, such as generic mixin types (generic methods and nested
+generic types are supported as of 0.1.4), but most things will work. Experiment a bit,
+and [create an issue](https://github.com/rileywhite/Bix.Mixers.Fody/issues)
 if something you want is missing.
 
 The mixin implementation assembly must reference the mixin definition assembly since the definition
@@ -109,7 +110,7 @@ Include an `InterfaceMap` element specifying each mixin definition `Interface`. 
 will be used to implement the interface in each mixin target. Use the assembly qualified names of all types. In
 the simplest case, thats just `<My.Namespaces.TypeName>, <AssemblyFilenameWithoutExtension>`, but it can get
 [more complex](http://msdn.microsoft.com/en-us/library/k8xx4k69.aspx).
-	
+
 ##Make sure Fody can find your mixin implementations.
 
 While the mixin definition assembly must be referenced by the target project, the implementation assembly may not be.
