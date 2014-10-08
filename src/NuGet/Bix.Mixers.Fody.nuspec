@@ -14,7 +14,7 @@
     <summary>Create custom C# mixins with this Fody add-in.</summary>
     <description>$description$</description>
     <language>en-US</language>
-    <tags>Bix, Mixins, Mixin, BehaviorComposition, TypeComposition, ILWeaving, Fody, Cecil</tags>
+    <tags>Bix, Mixins, Mixin, BehaviorComposition, Behavior-Composition, TypeComposition, Type-Composition, ILWeaving, IL-Weaving, CodeWeaving, Code-Weaving, Inheritance, Fody, Cecil</tags>
     <dependencies>
       <dependency id="Fody"/>
     </dependencies>
