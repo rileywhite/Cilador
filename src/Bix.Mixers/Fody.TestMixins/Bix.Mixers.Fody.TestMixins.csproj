@@ -49,8 +49,10 @@
     <Compile Include="DynamicMixin.cs" />
     <Compile Include="ExtraInterfaceMixin.cs" />
     <Compile Include="GenericMethodMixin.cs" />
+    <Compile Include="IEmptyInterfaceMixin.cs" />
     <Compile Include="IncorrectMixinSpecifyingClassInsteadOfInterface.cs" />
     <Compile Include="InheritingMixin.cs" />
+    <Compile Include="InstanceInitializationMixin.cs" />
     <Compile Include="InterfaceIsAlreadyImplementedMixin.cs" />
     <Compile Include="InterfacelessMixin.cs" />
     <Compile Include="NestedTypeConstructorsMixin.cs" />

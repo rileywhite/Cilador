@@ -43,6 +43,7 @@
     <Compile Include="..\..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="IForTargetWithMultipleConstructors.cs" />
     <Compile Include="IEmptyInterface.cs" />
     <Compile Include="IGenericMixinDefinition.cs" />
     <Compile Include="IInterfaceForImplicitExplicitTesting.cs" />
