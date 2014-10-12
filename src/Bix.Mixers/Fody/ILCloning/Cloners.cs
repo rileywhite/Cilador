@@ -129,6 +129,8 @@ namespace Bix.Mixers.Fody.ILCloning
             this.AreClonersInvoking = false;
         }
 
+        #region Types
+
         /// <summary>
         /// Gets or sets the collection of target types indexed by full name of the cloning source.
         /// </summary>
@@ -169,6 +171,10 @@ namespace Bix.Mixers.Fody.ILCloning
 
             return this.TargetTypeBySourceFullName.TryGetValue(GetUniqueKeyFor(source.Resolve()), out target);
         }
+
+        #endregion
+
+        #region Generic Parameters
 
         /// <summary>
         /// Gets or sets the collection of target generic parameters indexed by full owner name and position of the cloning source.
@@ -234,6 +240,10 @@ namespace Bix.Mixers.Fody.ILCloning
             return target != null;
         }
 
+        #endregion
+
+        #region Fields
+
         /// <summary>
         /// Gets or sets the collection of target field indexed by full name of the cloning source.
         /// </summary>
@@ -271,6 +281,10 @@ namespace Bix.Mixers.Fody.ILCloning
 
             return this.TargetFieldBySourceFullName.TryGetValue(GetUniqueKeyFor(source.Resolve()), out target);
         }
+
+        #endregion
+
+        #region Method Signatures
 
         /// <summary>
         /// Gets or sets the collection of target method indexed by full name of the cloning source.
@@ -311,6 +325,10 @@ namespace Bix.Mixers.Fody.ILCloning
             return this.TargetMethodBySourceFullName.TryGetValue(GetUniqueKeyFor(source.Resolve()), out target);
         }
 
+        #endregion
+
+        #region Method Parameters
+
         /// <summary>
         /// Gets or sets cloners for all method parameters to be cloned.
         /// </summary>
@@ -329,6 +347,10 @@ namespace Bix.Mixers.Fody.ILCloning
             this.MethodParameterCloners.AddRange(cloners); ;
         }
 
+        #endregion
+
+        #region Method Bodies
+
         /// <summary>
         /// Gets or sets cloners for all method bodies to be cloned.
         /// </summary>
@@ -345,6 +367,10 @@ namespace Bix.Mixers.Fody.ILCloning
 
             this.MethodBodyCloners.Add(cloner);
         }
+
+        #endregion
+
+        #region Method Body Variables
 
         /// <summary>
         /// Gets or sets cloners for all variables to be cloned.
@@ -364,6 +390,10 @@ namespace Bix.Mixers.Fody.ILCloning
             this.VariableCloners.AddRange(cloners);
         }
 
+        #endregion
+
+        #region Method Body Instructions
+
         /// <summary>
         /// Gets or sets cloners for all IL instructions to be cloned.
         /// </summary>
@@ -381,6 +411,10 @@ namespace Bix.Mixers.Fody.ILCloning
 
             this.InstructionCloners.AddRange(cloners);
         }
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the collection of target property indexed by full name of the cloning source.
@@ -405,6 +439,10 @@ namespace Bix.Mixers.Fody.ILCloning
             this.TargetPropertyBySourceFullName.Add(GetUniqueKeyFor(cloner.Source), cloner.Target);
         }
 
+        #endregion
+
+        #region Events
+
         /// <summary>
         /// Gets or sets the collection of target event indexed by full name of the cloning source.
         /// </summary>
@@ -427,6 +465,8 @@ namespace Bix.Mixers.Fody.ILCloning
             this.EventCloners.Add(cloner);
             this.TargetEventBySourceFullName.Add(GetUniqueKeyFor(cloner.Source), cloner.Target);
         }
+
+        #endregion
 
         /// <summary>
         /// Gets a unique string key for an item that is suitable for use in dictionaries and hashes.

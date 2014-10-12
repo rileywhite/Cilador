@@ -16,6 +16,7 @@
 
 using Bix.Mixers.Fody.Core;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -107,13 +108,16 @@ namespace Bix.Mixers.Fody.ILCloning
                 if (sourceMethod.IsConstructor &&
                     sourceMethod.DeclaringType == ILCloningContext.RootSource)
                 {
-                    // TODO support constructors for the root type in some meaningful way
                     if (sourceMethod.HasParameters)
                     {
+                        // TODO support constructors for the root type in some meaningful way
                         throw new WeavingException(string.Format(
                             "Configured mixin implementation cannot use constructors: [{0}]",
                             this.ILCloningContext.RootSource.FullName));
                     }
+
+                    this.VisitRootSourceDefaultConstructor(sourceMethod, targetType.Methods.Where(method => method.IsConstructor));
+
                     continue;
                 }
 
@@ -135,6 +139,112 @@ namespace Bix.Mixers.Fody.ILCloning
                 targetType.Events.Add(targetEvent);
                 this.Visit(sourceEvent, targetEvent);
             }
+        }
+
+        /// <summary>
+        /// Visits the default source constructor to look for the instance initialization code which
+        /// takes care of initializing fields that are initialized in their declarations.
+        /// </summary>
+        /// <param name="sourceConstructor">Source's default constructor.</param>
+        /// <param name="targetConstructors">All target constructors.</param>
+        private void VisitRootSourceDefaultConstructor(MethodDefinition sourceConstructor, IEnumerable<MethodDefinition> targetConstructors)
+        {
+            Contract.Requires(sourceConstructor != null);
+            Contract.Requires(sourceConstructor.DeclaringType == this.ILCloningContext.RootSource);
+            Contract.Requires(!sourceConstructor.Parameters.Any());
+            Contract.Requires(sourceConstructor.HasBody);
+            Contract.Requires(targetConstructors != null);
+
+            var sourceConstructorBody = sourceConstructor.Body;
+            Contract.Assert(sourceConstructorBody != null);
+            Contract.Assert(sourceConstructorBody.Instructions != null);
+            Contract.Assert(sourceConstructorBody.Instructions.Any());
+
+            // we want the collection of instructions between the first ldarg and the call into the base constructor.
+            var sourceInstruction = sourceConstructorBody.Instructions[0];
+            if (sourceInstruction.OpCode != OpCodes.Ldarg_0 || sourceInstruction.Operand != null)
+            {
+                throw new InvalidOperationException("The first instruction in a mixin implementation's default constructor wasn't the expected ldarg.0");
+            }
+
+            var sourceInitializationInstructions = new List<Instruction>();
+            var objectConstructorFullName = this.ILCloningContext.RootSource.Module.Import(typeof(object).GetConstructor(new Type[0])).FullName;
+            int? baseConstructorCallInstructionIndex = default(int?);
+            for (int i = 1; i < sourceConstructorBody.Instructions.Count && !baseConstructorCallInstructionIndex.HasValue; i++)
+            {
+                // we have a rule that an implementation must have only a default constructor and that it must inherit from object
+                // all we have to do is find the first call to object's constructor
+                sourceInstruction = sourceConstructorBody.Instructions[i];
+                if (sourceInstruction.OpCode == OpCodes.Call &&
+                    sourceInstruction.Operand != null &&
+                    sourceInstruction.Operand is MethodReference &&
+                    ((MethodReference)sourceInstruction.Operand).FullName == objectConstructorFullName)
+                {
+                    baseConstructorCallInstructionIndex = i;
+                }
+                else
+                {
+                    sourceInitializationInstructions.Add(sourceInstruction);
+                }
+            }
+
+            if (!baseConstructorCallInstructionIndex.HasValue)
+            {
+                // if more constructors were allowed, this might be possible in constructors that call through to other constructors
+                // under current assumptions, this shouldn't happen
+                throw new InvalidOperationException("Could not find base constructor call in mixin implementation.");
+            }
+
+            // TODO enforce the rule about no logic in the source's default constructor
+
+            // sanity check
+            Contract.Assert(sourceInitializationInstructions.Count == baseConstructorCallInstructionIndex - 1);
+
+            if (!sourceInitializationInstructions.Any())
+            {
+                // nothing to do if there are no source initialization instructions
+                return;
+            }
+            
+            // find target constructors that call into their base constructor
+            var targetBaseTypeConstructorFullNames =
+                from method in this.ILCloningContext.RootTarget.BaseType.Resolve().Methods
+                where method.IsConstructor
+                select method.FullName;
+
+            // filter target constructors by those that call the base constructor
+            var initializingTargetConstructors =
+                from method in targetConstructors
+                where method.HasBody && method.Body.Instructions.Any(instruction =>
+                    instruction.OpCode == OpCodes.Call &&
+                    instruction.Operand != null &&
+                    instruction.Operand is MethodReference &&
+                    targetBaseTypeConstructorFullNames.Contains(((MethodReference)instruction.Operand).FullName))
+                select method;
+
+            // a valid type should have at least one constructor that calls into a base constructor
+            if (!initializingTargetConstructors.Any())
+            {
+                throw new InvalidOperationException("Could not find any target constructors that call into a base constructor.");
+            }
+
+            // we're going to insert the initializing instruction clone targets into the initializing constructors after the first instruction
+            var instructionCloners = new List<InstructionCloner>(sourceInitializationInstructions.Count * initializingTargetConstructors.Count());
+            foreach (var initializingTargetConstructor in initializingTargetConstructors)
+            {
+                var ilProcessor = initializingTargetConstructor.Body.GetILProcessor();
+                var firstInstructionInTargetConstructor = initializingTargetConstructor.Body.Instructions[0];
+
+                // go backwards through the source initialization instructions
+                // this makes it so that every new instruction is added just after the first instruction in the target
+                for (int i = sourceInitializationInstructions.Count - 1; i >= 0; i++)
+                {
+                    //Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(this.ILCloningContext, ilProcessor, sourceInstruction);
+                    //ilProcessor.Append(targetInstruction);
+                    //instructionCloners.Add(new InstructionCloner(this, targetInstruction, sourceInstruction));
+                }
+            }
+            this.Cloners.AddCloners(instructionCloners);
         }
 
         /// <summary>

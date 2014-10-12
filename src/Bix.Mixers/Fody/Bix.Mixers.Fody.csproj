@@ -117,6 +117,7 @@
     <Compile Include="Core\IMixCommandAttribute.cs" />
     <Compile Include="Core\IMixCommandContract.cs" />
     <Compile Include="Config\InterfaceMixinMapType.cs" />
+    <Compile Include="ILCloning\MethodContext.cs" />
     <Compile Include="ILCloning\MethodBodyCloner.cs" />
     <Compile Include="ILCloning\ParameterCloner.cs" />
     <Compile Include="ILCloning\InstructionCloner.cs" />
