@@ -4,8 +4,23 @@ using System;
 
 namespace Bix.Mixers.Fody.TestMixinTargets
 {
+    public class MultipleConstructorsTargetBase
+    {
+        public MultipleConstructorsTargetBase()
+        {
+            this.WhichConstructor = "First";
+        }
+
+        public MultipleConstructorsTargetBase(int i)
+        {
+            this.WhichConstructor = "Second";
+        }
+
+        public string WhichConstructor;
+    }
+
     [InterfaceMixin(typeof(IForTargetWithMultipleConstructors))]
-    public class MultipleConstructorsTarget
+    public class MultipleConstructorsTarget : MultipleConstructorsTargetBase
     {
         public MultipleConstructorsTarget()
         {
@@ -19,6 +34,7 @@ namespace Bix.Mixers.Fody.TestMixinTargets
         public MultipleConstructorsTarget(int i, string j) : this(i, j, new object()) { }
 
         public MultipleConstructorsTarget(int i, string j, object k)
+            : base(i)
         {
             this.OriginalUninitializedInt = i;
             this.OriginalUninitializedString = j;

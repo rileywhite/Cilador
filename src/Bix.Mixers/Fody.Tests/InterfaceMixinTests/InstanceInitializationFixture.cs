@@ -17,7 +17,8 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 new Type[0],
                 new object[0],
                 783535,
-                "KNion wineofn oianweiof nqiognui ndf");
+                "KNion wineofn oianweiof nqiognui ndf",
+                "First");
         }
 
         [Test]
@@ -27,7 +28,8 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 new Type[] { typeof(int), typeof(string), typeof(object) },
                 new object[] { 138785, "SAJio  oioihIouh UIH UIH PUIHG", new object() },
                 138785,
-                "SAJio  oioihIouh UIH UIH PUIHG");
+                "SAJio  oioihIouh UIH UIH PUIHG",
+                "Second");
         }
 
         [Test]
@@ -37,7 +39,8 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 new Type[] { typeof(int), typeof(string) },
                 new object[] { 684684, ":POIenuiofh oie hioeh goiuh iu g" },
                 684684,
-                ":POIenuiofh oie hioeh goiuh iu g");
+                ":POIenuiofh oie hioeh goiuh iu g",
+                "Second");
         }
 
         [Test]
@@ -47,10 +50,11 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 new Type[] { typeof(int) },
                 new object[] { 90874389 },
                 90874389,
-                "A iuohiogfniouhe uihui iu.");
+                "A iuohiogfniouhe uihui iu.",
+                "Second");
         }
 
-        private void TestWith(Type[] constructorTypes, object[] constructorArgs, int intValue, string stringValue)
+        private void TestWith(Type[] constructorTypes, object[] constructorArgs, int intValue, string stringValue, string whichBaseConstructor)
         {
             var config = new BixMixersConfigType();
 
@@ -90,6 +94,8 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             Assert.That(instance.GetType().GetField("OriginalUninitializedInt").GetValue(instance), Is.EqualTo(intValue));
             Assert.That(instance.GetType().GetField("OriginalUninitializedString").GetValue(instance), Is.EqualTo(stringValue));
             Assert.That(instance.GetType().GetField("OriginalUninitializedObject").GetValue(instance), Is.Not.Null);
+
+            Assert.That(instance.GetType().GetField("WhichConstructor").GetValue(instance), Is.EqualTo(whichBaseConstructor));
 
             Assert.That(instance.GetType().GetField("SomeNumber").GetValue(instance), Is.EqualTo(684865));
             Assert.That(instance.GetType().GetField("SomeString").GetValue(instance), Is.EqualTo("Tawhlej oisahoeh 8ohf 4ifh8ohe fni dlgj"));
