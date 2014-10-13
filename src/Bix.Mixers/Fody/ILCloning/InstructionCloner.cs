@@ -65,7 +65,7 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Gets or sets the cloner for the method body associated with this instruction cloner.
+        /// Gets or sets the context for the method associated with this cloner.
         /// </summary>
         public MethodContext MethodContext { get; private set; }
 

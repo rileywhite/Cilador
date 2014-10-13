@@ -317,6 +317,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 this.Cloners.AddCloner(methodBodyCloner);
                 this.Cloners.AddCloners(methodBodyCloner.VariableCloners);
                 this.Cloners.AddCloners(methodBodyCloner.InstructionCloners);
+                this.Cloners.AddCloners(methodBodyCloner.ExceptionHandlerCloners);
             }
         }
 

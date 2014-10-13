@@ -42,6 +42,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Ensures(this.MethodBodyCloners != null);
             Contract.Ensures(this.VariableCloners != null);
             Contract.Ensures(this.InstructionCloners != null);
+            Contract.Ensures(this.ExceptionHandlerCloners != null);
             Contract.Ensures(this.PropertyCloners != null);
             Contract.Ensures(this.EventCloners != null);
             Contract.Ensures(this.GenericParameterCloners != null);
@@ -58,6 +59,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.MethodBodyCloners = new List<MethodBodyCloner>();
             this.VariableCloners = new List<VariableCloner>();
             this.InstructionCloners = new List<InstructionCloner>();
+            this.ExceptionHandlerCloners = new List<ExceptionHandlerCloner>();
             this.PropertyCloners = new List<PropertyCloner>();
             this.EventCloners = new List<EventCloner>();
             this.GenericParameterCloners = new List<GenericParameterCloner>();
@@ -124,6 +126,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.VariableCloners.Clone();
             this.MethodBodyCloners.Clone();
             this.InstructionCloners.Clone();
+            this.ExceptionHandlerCloners.Clone();
 
             this.AreClonersInvoked = true;
             this.AreClonersInvoking = false;
@@ -410,6 +413,28 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(!this.AreAllClonersAdded);
 
             this.InstructionCloners.AddRange(cloners);
+        }
+
+        #endregion
+
+        #region Method Body Exception Handlers
+
+        /// <summary>
+        /// Gets or sets cloners for all exception handlers to be cloned.
+        /// </summary>
+        private List<ExceptionHandlerCloner> ExceptionHandlerCloners { get; set; }
+
+        /// <summary>
+        /// Adds a cloner to the collection.
+        /// </summary>
+        /// <param name="cloners">Cloners to add to the collection.</param>
+        public void AddCloners(IEnumerable<ExceptionHandlerCloner> cloners)
+        {
+            Contract.Requires(cloners != null);
+            Contract.Requires(!cloners.Any(cloner => cloner == null));
+            Contract.Requires(!this.AreAllClonersAdded);
+
+            this.ExceptionHandlerCloners.AddRange(cloners);
         }
 
         #endregion

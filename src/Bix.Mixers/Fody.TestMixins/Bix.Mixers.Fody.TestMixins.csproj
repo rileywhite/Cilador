@@ -62,6 +62,7 @@
     <Compile Include="SecurityDeclarationMixin.cs" />
     <Compile Include="SelfReferencingMembersMixin.cs" />
     <Compile Include="ThisPameterMixin.cs" />
+    <Compile Include="TryCatchFinallyMixin.cs" />
     <Compile Include="TypeInitializerMixin.cs" />
     <Compile Include="UnmanagedCallMixin.cs" />
     <Compile Include="ValueTypeMixin.cs" />

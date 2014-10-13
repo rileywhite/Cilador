@@ -49,6 +49,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.SignatureCloner = signatureCloner;
             this.PopulateVariableCloners();
             this.PopulateInstructionCloners();
+            this.PopulateExceptionHandlerCloners();
         }
 
         /// <summary>
@@ -105,6 +106,28 @@ namespace Bix.Mixers.Fody.ILCloning
         /// Gets or sets the collection of instruction cloners for the method body.
         /// </summary>
         public List<InstructionCloner> InstructionCloners { get; private set; }
+
+        /// <summary>
+        /// Populates <see cref="ExceptionHandlerCloners"/>.
+        /// </summary>
+        private void PopulateExceptionHandlerCloners()
+        {
+            Contract.Ensures(this.ExceptionHandlerCloners != null);
+
+            this.ExceptionHandlerCloners = new List<ExceptionHandlerCloner>();
+
+            foreach (var sourceExceptionHandler in this.Source.ExceptionHandlers)
+            {
+                var targetExceptionHandler = new ExceptionHandler(sourceExceptionHandler.HandlerType);
+                this.Target.ExceptionHandlers.Add(targetExceptionHandler);
+                this.ExceptionHandlerCloners.Add(new ExceptionHandlerCloner(new MethodContext(this), targetExceptionHandler, sourceExceptionHandler));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the collection of exception handler cloners for the method body.
+        /// </summary>
+        public List<ExceptionHandlerCloner> ExceptionHandlerCloners { get; private set; }
 
         /// <summary>
         /// Clones the method body from the source to the target.

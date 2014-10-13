@@ -106,10 +106,12 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>Target instruction corresponding to the source.</returns>
         public Instruction RootImport(Instruction source)
         {
-            var instructionCloner = this.InstructionSourceAndTargets.FirstOrDefault(cloner => cloner.Item1== source);
+            if (source == null) { return null; }
+
+            var instructionCloner = this.InstructionSourceAndTargets.FirstOrDefault(cloner => cloner.Item1 == source);
             if (instructionCloner == null)
             {
-                throw new InvalidOperationException("Could not locate a instruction for copying an operand");
+                throw new InvalidOperationException("Could not root import an instruction");
             }
             return instructionCloner.Item2;
         }
@@ -121,10 +123,12 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>Target variable definition corresponding to the source.</returns>
         public VariableDefinition RootImport(VariableDefinition source)
         {
+            if (source == null) { return null; }
+
             var variableCloner = this.VariableSourceAndTargets.FirstOrDefault(cloner => cloner.Item1 == source);
             if (variableCloner == null)
             {
-                throw new InvalidOperationException("Could not locate a variable for copying an instruction");
+                throw new InvalidOperationException("Could not root import a variable");
             }
             return variableCloner.Item2;
         }
@@ -136,6 +140,8 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <returns>Target parameter definition corresponding to the source.</returns>
         public ParameterDefinition RootImport(ParameterDefinition source)
         {
+            if (source == null) { return null; }
+
             if (source == this.ThisParameterSourceAndTarget.Item1)
             {
                 return this.ThisParameterSourceAndTarget.Item2;
@@ -145,7 +151,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 this.ParameterSourceAndTargets.FirstOrDefault(cloner => cloner.Item1 == source);
             if (parameterCloner == null)
             {
-                throw new InvalidOperationException("Failed to find a parameter cloner matching the operand in an instruction");
+                throw new InvalidOperationException("Could not root import a variable a parameter definition.");
             }
 
             return parameterCloner.Item2;

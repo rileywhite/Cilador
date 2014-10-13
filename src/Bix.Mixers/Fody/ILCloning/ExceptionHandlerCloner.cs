@@ -1,0 +1,68 @@
+﻿/***************************************************************************/
+// Copyright 2013-2014 Riley White
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+/***************************************************************************/
+
+using Mono.Cecil.Cil;
+using System;
+using System.Diagnostics.Contracts;
+
+namespace Bix.Mixers.Fody.ILCloning
+{
+    /// <summary>
+    /// Clones <see cref="ExceptionHandler"/> contents from a source to a target.
+    /// </summary>
+    internal class ExceptionHandlerCloner : ClonerBase<ExceptionHandler>
+    {
+        /// <summary>
+        /// Creates a new <see cref="ExceptionHandlerCloner"/>
+        /// </summary>
+        /// <param name="methodContext">Method context for this cloner.</param>
+        /// <param name="target">Cloning target.</param>
+        /// <param name="source">Cloning source.</param>
+        public ExceptionHandlerCloner(MethodContext methodContext, ExceptionHandler target, ExceptionHandler source)
+            : base(methodContext.ILCloningContext, target, source)
+        {
+            Contract.Requires(methodContext != null);
+            Contract.Requires(methodContext.ILCloningContext != null);
+            Contract.Requires(target != null);
+            Contract.Requires(source != null);
+            Contract.Ensures(this.MethodContext != null);
+
+            this.MethodContext = methodContext;
+        }
+
+        /// <summary>
+        /// Gets or sets the context for the method associated with this cloner.
+        /// </summary>
+        public MethodContext MethodContext { get; private set; }
+
+        /// <summary>
+        /// Clones the exception handler in its entirety.
+        /// </summary>
+        public override void Clone()
+        {
+            Contract.Assert(this.Target.HandlerType == this.Source.HandlerType);
+
+            this.Target.CatchType = this.ILCloningContext.RootImport(this.Source.CatchType);
+            this.Target.FilterStart = this.MethodContext.RootImport(this.Source.FilterStart);
+            this.Target.HandlerEnd = this.MethodContext.RootImport(this.Source.HandlerEnd);
+            this.Target.HandlerStart = this.MethodContext.RootImport(this.Source.HandlerStart);
+            this.Target.TryEnd = this.MethodContext.RootImport(this.Source.TryEnd);
+            this.Target.TryStart = this.MethodContext.RootImport(this.Source.TryStart);
+
+            this.IsCloned = true;
+        }
+    }
+}
