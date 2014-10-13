@@ -16,9 +16,8 @@ There are two parts to a Bix.Mixers mixin.
 1. Mixin Definition: C# interface that provides a way to identify the mixin and that provides the
 minimum set of properties, methods, and events that will be added to a mixin target type.
 
-2. Mixin Implementation: C# class that implements a mixin definition interface. With the exception
-of constructors and field initial values, the entire contents of a mixin definition will be added
-to a mixin target type.
+2. Mixin Implementation: C# class that implements a mixin definition interface. The entire contents
+of a mixin definition will be added to a mixin target type.
 
 #Usage
 See [Bix.Mixers.Fody-Examples](http://github.com/rileywhite/Bix.Mixers.Fody-Examples)
