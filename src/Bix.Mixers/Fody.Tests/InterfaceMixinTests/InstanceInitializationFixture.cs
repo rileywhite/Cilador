@@ -108,7 +108,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             var result = someFunc.DynamicInvoke(new object[] { 1, "2", new object() }) as Tuple<int, string, object>;
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Item1, Is.EqualTo(1));
-            Assert.That(result.Item1, Is.EqualTo("2"));
+            Assert.That(result.Item2, Is.EqualTo("2"));
             Assert.That(result.Item3, Is.Not.Null);
 
             var someMethodDelegateInstance = instance.GetType().GetField("SomeMethodDelegateInstance").GetValue(instance) as Delegate;
@@ -116,7 +116,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             result = someMethodDelegateInstance.DynamicInvoke(new object[] { 3, "4", new object() }) as Tuple<int, string, object>;
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Item1, Is.EqualTo(3));
-            Assert.That(result.Item1, Is.EqualTo("4"));
+            Assert.That(result.Item2, Is.EqualTo("4"));
             Assert.That(result.Item3, Is.Not.Null);
         }
     }

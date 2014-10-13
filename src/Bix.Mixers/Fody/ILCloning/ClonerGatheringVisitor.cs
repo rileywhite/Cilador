@@ -192,7 +192,8 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 // if more constructors were allowed, this might be possible in constructors that call through to other constructors
                 // under current assumptions, this shouldn't happen
-                throw new InvalidOperationException("Could not find base constructor call in mixin implementation.");
+                // this is not the right place to handle the error, though, so simply return from the method.
+                return;
             }
 
             // TODO enforce the rule about no logic in the source's default constructor
@@ -229,7 +230,7 @@ namespace Bix.Mixers.Fody.ILCloning
             }
 
             // we're going to insert the initializing instruction clone targets into the initializing constructors after the first instruction
-            var instructionCloners = new List<InstructionCloner>(sourceInitializationInstructions.Count * initializingTargetConstructors.Count());
+            //var instructionCloners = new List<InstructionCloner>(sourceInitializationInstructions.Count * initializingTargetConstructors.Count());
             foreach (var initializingTargetConstructor in initializingTargetConstructors)
             {
                 var ilProcessor = initializingTargetConstructor.Body.GetILProcessor();
@@ -237,14 +238,23 @@ namespace Bix.Mixers.Fody.ILCloning
 
                 // go backwards through the source initialization instructions
                 // this makes it so that every new instruction is added just after the first instruction in the target
-                for (int i = sourceInitializationInstructions.Count - 1; i >= 0; i++)
+                var instructionCloners = new List<InstructionCloner>(sourceInitializationInstructions.Count);
+                MethodContext methodContext = new MethodContext(
+                    this.ILCloningContext,
+                    Tuple.Create(sourceConstructor.Body.ThisParameter, initializingTargetConstructor.Body.ThisParameter),
+                    new List<Tuple<ParameterDefinition, ParameterDefinition>>(),
+                    new List<Tuple<VariableDefinition, VariableDefinition>>(),
+                    instructionCloners);
+                for (int i = sourceInitializationInstructions.Count - 1; i >= 0; i--)
                 {
-                    //Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(this.ILCloningContext, ilProcessor, sourceInstruction);
-                    //ilProcessor.Append(targetInstruction);
-                    //instructionCloners.Add(new InstructionCloner(this, targetInstruction, sourceInstruction));
+                    sourceInstruction = sourceInitializationInstructions[i];
+                    Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(this.ILCloningContext, ilProcessor, sourceInstruction);
+                    ilProcessor.InsertAfter(firstInstructionInTargetConstructor, targetInstruction);
+                    instructionCloners.Add(new InstructionCloner(methodContext, targetInstruction, sourceInstruction));
                 }
+
+                this.Cloners.AddCloners(instructionCloners);
             }
-            this.Cloners.AddCloners(instructionCloners);
         }
 
         /// <summary>

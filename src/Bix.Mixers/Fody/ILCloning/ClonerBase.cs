@@ -25,7 +25,7 @@ namespace Bix.Mixers.Fody.ILCloning
     /// Base type for all cloners that clone member items.
     /// </summary>
     /// <typeparam name="TClonedItem">Resolved type of the member.</typeparam>
-    internal abstract class ClonerBase<TClonedItem> : ICloner
+    internal abstract class ClonerBase<TClonedItem> : Tuple<TClonedItem, TClonedItem>, ICloner
     {
         /// <summary>
         /// Creates a new <see cref="MemberClonerBase<,>"/>
@@ -34,6 +34,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="target">Resolved cloning target.</param>
         /// <param name="source">Resolved cloning source.</param>
         public ClonerBase(ILCloningContext ilCloningContext, TClonedItem target, TClonedItem source)
+            : base(source, target)
         {
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(target != null);
