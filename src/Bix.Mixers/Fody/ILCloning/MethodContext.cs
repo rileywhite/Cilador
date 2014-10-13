@@ -1,4 +1,20 @@
-﻿using Mono.Cecil;
+﻿/***************************************************************************/
+// Copyright 2013-2014 Riley White
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+/***************************************************************************/
+
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
@@ -7,8 +23,15 @@ using System.Linq;
 
 namespace Bix.Mixers.Fody.ILCloning
 {
+    /// <summary>
+    /// This type provides source and target context for root import of method items.
+    /// </summary>
     internal class MethodContext
     {
+        /// <summary>
+        /// Creates a new <see cref="MethodContext"/> for a method that will be fully cloned.
+        /// </summary>
+        /// <param name="methodBodyCloner">Cloner for the method.</param>
         public MethodContext(MethodBodyCloner methodBodyCloner) : this(
             methodBodyCloner.ILCloningContext,
             Tuple.Create(methodBodyCloner.Source.ThisParameter, methodBodyCloner.Target.ThisParameter),
@@ -21,6 +44,15 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Ensures(this.ILCloningContext != null);
         }
 
+        /// <summary>
+        /// Creates a new <see cref="MethodContext"/> for a method that will not be
+        /// fully cloned.
+        /// </summary>
+        /// <param name="ilCloningContext">Cloning context.</param>
+        /// <param name="thisParameterSourceAndTarget">This parameter definition for the source and target methods.</param>
+        /// <param name="parameterSourceAndTargets">Parameter definitions for the source and target methods.</param>
+        /// <param name="variableSourceAndTargets">Variable definitions for the source and target methods.</param>
+        /// <param name="instructionSourceAndTargets">Instructiosn for the source and target methods.</param>
         public MethodContext(
             ILCloningContext ilCloningContext,
             Tuple<ParameterDefinition, ParameterDefinition> thisParameterSourceAndTarget,
@@ -42,9 +74,24 @@ namespace Bix.Mixers.Fody.ILCloning
             this.InstructionSourceAndTargets = instructionSourceAndTargets;
         }
 
+        /// <summary>
+        /// Gets or sets the This parameter definition for the source and target.
+        /// </summary>
         private Tuple<ParameterDefinition, ParameterDefinition> ThisParameterSourceAndTarget { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parameter definitions for the source and target.
+        /// </summary>
         private IEnumerable<Tuple<ParameterDefinition, ParameterDefinition>> ParameterSourceAndTargets { get; set; }
+
+        /// <summary>
+        /// Gets or sets the variable definitions for the source and target.
+        /// </summary>
         private IEnumerable<Tuple<VariableDefinition, VariableDefinition>> VariableSourceAndTargets { get; set; }
+
+        /// <summary>
+        /// Gets or sets the instructions for the source and target.
+        /// </summary>
         private IEnumerable<Tuple<Instruction, Instruction>> InstructionSourceAndTargets { get; set; }
 
         /// <summary>
@@ -52,6 +99,11 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         public ILCloningContext ILCloningContext { get; set; }
 
+        /// <summary>
+        /// Root import an instruction.
+        /// </summary>
+        /// <param name="source">Source instruction.</param>
+        /// <returns>Target instruction corresponding to the source.</returns>
         public Instruction RootImport(Instruction source)
         {
             var instructionCloner = this.InstructionSourceAndTargets.FirstOrDefault(cloner => cloner.Item1== source);
@@ -62,6 +114,11 @@ namespace Bix.Mixers.Fody.ILCloning
             return instructionCloner.Item2;
         }
 
+        /// <summary>
+        /// Root import a variable definition.
+        /// </summary>
+        /// <param name="source">Source variable definition.</param>
+        /// <returns>Target variable definition corresponding to the source.</returns>
         public VariableDefinition RootImport(VariableDefinition source)
         {
             var variableCloner = this.VariableSourceAndTargets.FirstOrDefault(cloner => cloner.Item1 == source);
@@ -72,6 +129,11 @@ namespace Bix.Mixers.Fody.ILCloning
             return variableCloner.Item2;
         }
 
+        /// <summary>
+        /// Root import a parameter definition.
+        /// </summary>
+        /// <param name="source">Source parameter definition.</param>
+        /// <returns>Target parameter definition corresponding to the source.</returns>
         public ParameterDefinition RootImport(ParameterDefinition source)
         {
             if (source == this.ThisParameterSourceAndTarget.Item1)
