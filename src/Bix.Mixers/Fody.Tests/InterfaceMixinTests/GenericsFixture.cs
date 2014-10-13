@@ -450,5 +450,105 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             Assert.That(genericInstanceReturnType.GetProperty("Thing1").GetValue(returnValue), Is.EqualTo("Eaiosn4oil ifhiu 3ybusabu 3byuvsdf yuvaytithomn gfd"));
             Assert.That(genericInstanceReturnType.GetProperty("Thing2").GetValue(returnValue), Is.EqualTo(789437));
         }
+
+        //[Test]
+        //public void CanUseOpenGenericMixinWithoutProvidingTypeArguments()
+        //{
+        //    var config = new BixMixersConfigType();
+
+        //    config.MixCommandConfig = new MixCommandConfigTypeBase[]
+        //    {
+        //        new InterfaceMixinConfigType
+        //        {
+        //            InterfaceMixinMap = new InterfaceMixinMapType[]
+        //            {
+        //                new InterfaceMixinMapType
+        //                {
+        //                    Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+        //                    Mixin = typeof(OpenGenericMixin<>).GetShortAssemblyQualifiedName()
+        //                }
+        //            }
+        //        },
+        //    };
+
+        //    ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+        //}
+
+        //        [Test]
+        //        public void CanUseOpenGenericMixinInterface()
+        //        {
+        //            var config = new BixMixersConfigType();
+
+        //            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+        //            {
+        //                new InterfaceMixinConfigType
+        //                {
+        //                    InterfaceMixinMap = new InterfaceMixinMapType[]
+        //                    {
+        //                        new InterfaceMixinMapType
+        //                        {
+        //                            Interface = typeof(IGenericMixinDefinition<,,,>).GetShortAssemblyQualifiedName(),
+        //                            Mixin = typeof(GenericMethodMixin).GetShortAssemblyQualifiedName()
+        //                        }
+        //                    }
+        //                },
+        //            };
+
+        //            ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+        //        }
+
+        //        [Test]
+        //        public void CanMixOpenGenericMixinIfClosedWithTypeArguments()
+        //        {
+        //            var config = new BixMixersConfigType();
+
+        //            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+        //            {
+        //                new InterfaceMixinConfigType
+        //                {
+        //                    InterfaceMixinMap = new InterfaceMixinMapType[]
+        //                    {
+        //                        new InterfaceMixinMapType
+        //                        {
+        //                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+        //                            Mixin = typeof(OpenGenericMixin<int>).GetShortAssemblyQualifiedName()
+        //                        }
+        //                    }
+        //                },
+        //            };
+
+        //            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+        //            var targetType = assembly.GetType("Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget");
+        //            Assert.That(typeof(Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
+        //            Assert.That(targetType.GetConstructors(TestContent.BindingFlagsForMixedMembers).Length == 1, "Expected 1 constructor");
+        //            Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
+
+        //            var valueField = targetType.GetField("Value", TestContent.BindingFlagsForMixedMembers);
+        //            Assert.That(valueField != null);
+        //            Assert.That(typeof(int) == valueField.FieldType);
+        //        }
+
+        //        [Test]
+        //        public void CanUseClosedGenericMixinInterface()
+        //        {
+        //            var config = new BixMixersConfigType();
+
+        //            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+        //            {
+        //                new InterfaceMixinConfigType
+        //                {
+        //                    InterfaceMixinMap = new InterfaceMixinMapType[]
+        //                    {
+        //                        new InterfaceMixinMapType
+        //                        {
+        //                            Interface = typeof(IGenericMixinDefinition<object, GenericMixinStruct, Stream, UnhandledExceptionEventArgs>).GetShortAssemblyQualifiedName(),
+        //                            Mixin = typeof(GenericMethodMixin).GetShortAssemblyQualifiedName()
+        //                        }
+        //                    }
+        //                },
+        //            };
+
+        //            ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+        //        }
     }
 }

@@ -53,23 +53,23 @@ library if you like.
 
 You have to follow a few rules for the implementation, but it's pretty basic.
 
- * It has to be a `class`.
- * It has to implement the mixin interface.
- * It can't implement other interfaces.
- * It can't inherit from any other type.
- * Don't provide any constructors.
+ * Create a non-generic `class` type.
+ * Implement the mixin interface and only the mixin interface.
+ * Do not inherit from another type.
+ * Do not add any constructors.
 
 Outside of that, you can do what you want. You can include fields, properties, methods,
-events, and even nested types. Visibility will transfer over to the mixin target, as
-will custom attributes, and virtual/abstract (only nested types can be abstract, though).
+events, and even nested types. Methods and nested types can even be generic. Visibility
+will transfer over to the mixin target, as will custom attributes, and virtual/abstract
+modifiers (only nested types can be abstract, though).
 
-There are some unsupported things, such as generic mixin types (generic methods and nested
-generic types are supported as of 0.1.4), but most things will work. Experiment a bit,
-and [create an issue](https://github.com/rileywhite/Bix.Mixers.Fody/issues)
+There are some unsupported things. Although methods and nested types can be generic,
+the implementation class cannot be generic, for example, but most things will work.
+Experiment a bit, and [create an issue](https://github.com/rileywhite/Bix.Mixers.Fody/issues)
 if something you want is missing.
 
 The mixin implementation assembly must reference the mixin definition assembly since the definition
-interface is implemented by your mixin implementation type.
+interface must be implemented.
 
 ##Add an InterfaceMixinAttribute to your target type in a third assembly. Specify the mixin definition interface in the attribute constructor.
 
@@ -104,11 +104,11 @@ to the mixin implementation.
       </Bix.Mixers>
     </Weavers>
 
-You can consider everything by the `InterfaceMap` elements to be boilerplate.
+You can consider everything but the `InterfaceMap` elements to be boilerplate.
 
 Include an `InterfaceMap` element specifying each mixin definition `Interface`. The type you supply for the `Mixin`
 will be used to implement the interface in each mixin target. Use the assembly qualified names of all types. In
-the simplest case, thats just `<My.Namespaces.TypeName>, <AssemblyFilenameWithoutExtension>`, but it can get
+the simplest case, that's just `<My.Namespaces.TypeName>, <AssemblyFilenameWithoutExtension>`, but it can get
 [more complex](http://msdn.microsoft.com/en-us/library/k8xx4k69.aspx).
 
 ##Make sure Fody can find your mixin implementations.
@@ -145,7 +145,7 @@ Code in a fourth assembly that references the target assembly and mixin definiti
 
 #Additional Information
 Bix.Mixers.Fody was originally developed as part of [Bix](https://github.com/rileywhite/Bix).
-Because it is useful outside of that context, it has been made independent. As Bix needs new
+Because it is doing something outside of the scope of Bix, it has been made independent. As Bix needs new
 code weaving functionality, Bix.Mixers.Fody will be expanded to provide it.
 
 I may [blog](http://statisticsandlies.com/tags/bix) about Bix and Bix.Mixers.Fody from time to time.
