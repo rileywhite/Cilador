@@ -196,7 +196,17 @@ namespace Bix.Mixers.Fody.ILCloning
                 return;
             }
 
-            // TODO enforce the rule about no logic in the source's default constructor
+            // enforce the rule about no logic in the source's default constructor
+            for (int i = baseConstructorCallInstructionIndex.Value + 1; i < sourceConstructorBody.Instructions.Count; i++)
+            {
+                sourceInstruction = sourceConstructorBody.Instructions[i];
+                if (sourceInstruction.OpCode != OpCodes.Ret && sourceInstruction.OpCode != OpCodes.Nop)
+                {
+                    throw new WeavingException(string.Format(
+                        "Configured mixin implementation cannot have code in the constructor: [{0}]",
+                        this.ILCloningContext.RootSource.FullName));
+                }
+            }
 
             // sanity check
             Contract.Assert(sourceInitializationInstructions.Count == baseConstructorCallInstructionIndex - 1);

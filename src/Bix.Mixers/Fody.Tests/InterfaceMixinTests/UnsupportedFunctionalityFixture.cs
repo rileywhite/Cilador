@@ -455,5 +455,33 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                     typeof(ConstructorWithParametersMixin).FullName)),
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
+
+        [Test]
+        public void CannotHaveCodeInDefaultConstructor()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
+                    {
+                        new InterfaceMixinMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(ConstructorWithCodeMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            Assert.Throws(
+                Is.TypeOf((typeof(WeavingException)))
+                .And.Message.EqualTo(string.Format(
+                    "Configured mixin implementation cannot have code in the constructor: [{0}]",
+                    typeof(ConstructorWithCodeMixin).FullName)),
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+        }
     }
 }

@@ -33,38 +33,6 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
     internal class ConstructorsFixture
     {
         [Test]
-        public void ParameterlessConstructorIsNotCloned()
-        {
-            var config = new BixMixersConfigType();
-
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
-            {
-                new InterfaceMixinConfigType
-                {
-                    InterfaceMixinMap = new InterfaceMixinMapType[]
-                    {
-                        new InterfaceMixinMapType
-                        {
-                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
-                            Mixin = typeof(ParameterlessConstructorWithLogicMixin).GetShortAssemblyQualifiedName()
-                        }
-                    }
-                },
-            };
-
-            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-            var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget).FullName);
-            Assert.That(typeof(Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
-            targetType.ValidateMemberCountsAre(1, 2, 1, 1, 0, 0);
-            Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
-            var instance = Activator.CreateInstance(targetType, new object[0]);
-            Assert.That(instance is Bix.Mixers.Fody.TestMixinInterfaces.IEmptyInterface);
-            var property = targetType.GetProperty("SomeValue", TestContent.BindingFlagsForMixedMembers);
-            Assert.That(property != null);
-            Assert.That(0.Equals(property.GetValue(instance)));
-        }
-
-        [Test]
         public void NestedTypeConstructorsAreCloned()
         {
             var config = new BixMixersConfigType();

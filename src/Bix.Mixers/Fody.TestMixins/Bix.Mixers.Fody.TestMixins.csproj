@@ -45,11 +45,11 @@
     </Compile>
     <Compile Include="ArraysOfMixedTypeMixin.cs" />
     <Compile Include="ArraysMixin.cs" />
+    <Compile Include="ConstructorWithCodeMixin.cs" />
     <Compile Include="ConstructorWithParametersMixin.cs" />
     <Compile Include="DynamicMixin.cs" />
     <Compile Include="ExtraInterfaceMixin.cs" />
     <Compile Include="GenericMethodMixin.cs" />
-    <Compile Include="IEmptyInterfaceMixin.cs" />
     <Compile Include="IncorrectMixinSpecifyingClassInsteadOfInterface.cs" />
     <Compile Include="InheritingMixin.cs" />
     <Compile Include="InstanceInitializationMixin.cs" />
@@ -57,7 +57,6 @@
     <Compile Include="InterfacelessMixin.cs" />
     <Compile Include="NestedTypeConstructorsMixin.cs" />
     <Compile Include="GenericNestedTypeMixin.cs" />
-    <Compile Include="ParameterlessConstructorWithLogicMixin.cs" />
     <Compile Include="SecurityDeclarationOnMethodMixin.cs" />
     <Compile Include="SecurityDeclarationOnNestedTypeMixin.cs" />
     <Compile Include="SecurityDeclarationMixin.cs" />

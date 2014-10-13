@@ -134,7 +134,6 @@
     <Compile Include="ILCloning\TypeCloner.cs" />
     <Compile Include="Core\CoreExtensions.cs" />
     <Compile Include="Core\IMixCommandData.cs" />
-    <Compile Include="Config\InterfaceMixinConfigType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
