@@ -70,7 +70,7 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 var targetVariable = new VariableDefinition(sourceVariable.Name, voidTypeReference);
                 this.Target.Variables.Add(targetVariable);
-                this.VariableCloners.Add(new VariableCloner(this, targetVariable, sourceVariable));
+                this.VariableCloners.Add(new VariableCloner(this.ILCloningContext, targetVariable, sourceVariable));
             }
         }
 

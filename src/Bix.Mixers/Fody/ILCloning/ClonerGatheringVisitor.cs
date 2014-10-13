@@ -233,6 +233,18 @@ namespace Bix.Mixers.Fody.ILCloning
             //var instructionCloners = new List<InstructionCloner>(sourceInitializationInstructions.Count * initializingTargetConstructors.Count());
             foreach (var initializingTargetConstructor in initializingTargetConstructors)
             {
+                // clone all variables
+                initializingTargetConstructor.Body.InitLocals = initializingTargetConstructor.Body.InitLocals || sourceConstructorBody.InitLocals;
+                var variableCloners = new List<VariableCloner>();
+                var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
+                foreach (var sourceVariable in sourceConstructorBody.Variables)
+                {
+                    var targetVariable = new VariableDefinition(sourceVariable.Name, voidTypeReference);
+                    initializingTargetConstructor.Body.Variables.Add(targetVariable);
+                    variableCloners.Add(new VariableCloner(this.ILCloningContext, targetVariable, sourceVariable));
+                }
+                this.Cloners.AddCloners(variableCloners);
+
                 var ilProcessor = initializingTargetConstructor.Body.GetILProcessor();
                 var firstInstructionInTargetConstructor = initializingTargetConstructor.Body.Instructions[0];
 
@@ -241,9 +253,9 @@ namespace Bix.Mixers.Fody.ILCloning
                 var instructionCloners = new List<InstructionCloner>(sourceInitializationInstructions.Count);
                 MethodContext methodContext = new MethodContext(
                     this.ILCloningContext,
-                    Tuple.Create(sourceConstructor.Body.ThisParameter, initializingTargetConstructor.Body.ThisParameter),
+                    Tuple.Create(sourceConstructorBody.ThisParameter, initializingTargetConstructor.Body.ThisParameter),
                     new List<Tuple<ParameterDefinition, ParameterDefinition>>(),
-                    new List<Tuple<VariableDefinition, VariableDefinition>>(),
+                    variableCloners,
                     instructionCloners);
                 for (int i = sourceInitializationInstructions.Count - 1; i >= 0; i--)
                 {
@@ -252,7 +264,6 @@ namespace Bix.Mixers.Fody.ILCloning
                     ilProcessor.InsertAfter(firstInstructionInTargetConstructor, targetInstruction);
                     instructionCloners.Add(new InstructionCloner(methodContext, targetInstruction, sourceInstruction));
                 }
-
                 this.Cloners.AddCloners(instructionCloners);
             }
         }

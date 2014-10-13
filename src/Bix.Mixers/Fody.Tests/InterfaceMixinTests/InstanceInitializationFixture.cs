@@ -101,7 +101,12 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             Assert.That(instance.GetType().GetField("SomeString").GetValue(instance), Is.EqualTo("Tawhlej oisahoeh 8ohf 4ifh8ohe fni dlgj"));
             Assert.That(instance.GetType().GetField("SomeObject").GetValue(instance), Is.Not.Null);
 
-            Assert.That(instance.GetType().GetField("SomeInnerType").GetValue(instance), Is.Not.Null);
+            var innerTypeInstance = instance.GetType().GetField("SomeInnerType").GetValue(instance);
+            Assert.That(innerTypeInstance, Is.Not.Null);
+            var innerType = innerTypeInstance.GetType();
+            Assert.That(innerType.GetProperty("SomeInt").GetValue(innerTypeInstance), Is.EqualTo(4235));
+            Assert.That(innerType.GetProperty("SomeString").GetValue(innerTypeInstance), Is.EqualTo("JLKOIN  oin aon oingori d"));
+            Assert.That(innerType.GetProperty("SomeObject").GetValue(innerTypeInstance), Is.Not.Null);
 
             var someFunc = instance.GetType().GetField("SomeFunc").GetValue(instance) as Delegate;
             Assert.That(someFunc, Is.Not.Null);

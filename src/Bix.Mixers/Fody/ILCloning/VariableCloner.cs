@@ -32,25 +32,15 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Creates a new <see cref="VariableCloner"/>.
         /// </summary>
-        /// <param name="methodBodyCloner">Method body cloner associated with new variable cloner.</param>
         /// <param name="target">Cloning target.</param>
         /// <param name="source">Cloning source.</param>
-        public VariableCloner(MethodBodyCloner methodBodyCloner, VariableDefinition target, VariableDefinition source)
-            : base(methodBodyCloner.ILCloningContext, target, source)
+        public VariableCloner(ILCloningContext ilCloningContext, VariableDefinition target, VariableDefinition source)
+            : base(ilCloningContext, target, source)
         {
-            Contract.Requires(methodBodyCloner != null);
-            Contract.Requires(methodBodyCloner.ILCloningContext != null);
+            Contract.Requires(ilCloningContext != null);
             Contract.Requires(target != null);
             Contract.Requires(source != null);
-            Contract.Ensures(this.MethodBodyCloner != null);
-
-            this.MethodBodyCloner = methodBodyCloner;
         }
-
-        /// <summary>
-        /// Gets or sets the cloner for the method body associated with this variable cloner.
-        /// </summary>
-        public MethodBodyCloner MethodBodyCloner { get; private set; }
 
         /// <summary>
         /// Clones the variable
