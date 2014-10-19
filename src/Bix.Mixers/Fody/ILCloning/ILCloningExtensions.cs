@@ -40,10 +40,6 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(!cloners.Any(cloner => cloner.IsCloned));
             Contract.Ensures(cloners.All(cloner => cloner.IsCloned));
 
-            // TODO test this parallel version
-            //Parallel.ForEach(
-            //    cloners,
-            //    new Action<ICloner>(cloner => cloner.Clone()));
             foreach (var cloner in cloners) { cloner.Clone(); }
         }
 

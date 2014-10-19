@@ -24,8 +24,24 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.TestMixins
 {
-    public class TypeInitializerMixin : IEmptyInterface
+    public class StaticInitializationMixin : IEmptyInterface
     {
-        static TypeInitializerMixin() { }
+        public static int StaticNumberSetTo832778InInitializer;
+        public static int StaticNumberInitilizedTo7279848InDeclaration = 7279848;
+        public static Tuple<int, string> StaticTupleInitilizedTo485AndBlahInDeclaration = Tuple.Create(485, "Blah");
+        public static InnerType InnerTypeSetTo49874AndBlah2AndNewObjectWithObjectInitilizerInDelcaration =
+            new InnerType { SomeInt = 49874, SomeString = "Blah2", SomeObject = new object() };
+
+        //static StaticInitializationMixin()
+        //{
+        //    StaticNumberSetTo832778InInitializer = 832778;
+        //}
+
+        public class InnerType
+        {
+            public int SomeInt { get; set; }
+            public string SomeString { get; set; }
+            public object SomeObject { get; set; }
+        }
     }
 }

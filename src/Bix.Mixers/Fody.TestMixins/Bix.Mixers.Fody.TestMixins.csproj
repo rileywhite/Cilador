@@ -45,7 +45,6 @@
     </Compile>
     <Compile Include="ArraysOfMixedTypeMixin.cs" />
     <Compile Include="ArraysMixin.cs" />
-    <Compile Include="ConstructorWithCodeMixin.cs" />
     <Compile Include="ConstructorWithParametersMixin.cs" />
     <Compile Include="DynamicMixin.cs" />
     <Compile Include="ExtraInterfaceMixin.cs" />
@@ -63,7 +62,7 @@
     <Compile Include="SelfReferencingMembersMixin.cs" />
     <Compile Include="ThisPameterMixin.cs" />
     <Compile Include="TryCatchFinallyMixin.cs" />
-    <Compile Include="TypeInitializerMixin.cs" />
+    <Compile Include="StaticInitializationMixin.cs" />
     <Compile Include="UnmanagedCallMixin.cs" />
     <Compile Include="ValueTypeMixin.cs" />
     <Compile Include="InterfaceTypeMixin.cs" />

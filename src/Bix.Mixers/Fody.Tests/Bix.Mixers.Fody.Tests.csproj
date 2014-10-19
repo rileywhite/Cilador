@@ -125,6 +125,7 @@
     <Compile Include="InterfaceMixinTests\MemberMixingFixture.cs" />
     <Compile Include="InterfaceMixinTests\ImplicitAndExplicitImplementationFixture.cs" />
     <Compile Include="InterfaceMixinTests\InterfaceWithOnlyPrimitiveTypesFixture.cs" />
+    <Compile Include="InterfaceMixinTests\StaticInitializationFixture.cs" />
     <Compile Include="InterfaceMixinTests\TryCatchFinallyFixture.cs" />
     <Compile Include="InterfaceMixinTests\UnsupportedFunctionalityFixture.cs" />
     <Compile Include="ModuleWeaverGeneralTests\ConfigSerializationTests.cs" />

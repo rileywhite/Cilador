@@ -107,6 +107,7 @@
     <Compile Include="Core\WeavingException.cs" />
     <Compile Include="ILCloning\ClonerGatheringVisitor.cs" />
     <Compile Include="ILCloning\Cloners.cs" />
+    <Compile Include="ILCloning\ConstructorBroadcaster.cs" />
     <Compile Include="ILCloning\EventCloner.cs" />
     <Compile Include="ILCloning\ExceptionHandlerCloner.cs" />
     <Compile Include="ILCloning\GenericParameterAccessor.cs" />

@@ -28,6 +28,13 @@ namespace Bix.Mixers.Fody.TestMixins
         public Func<int, string, object, Tuple<int, string, object>> SomeFunc = InnerType.SomeMethod;
         public SomeMethodDelegate SomeMethodDelegateInstance = InnerType.SomeMethod;
 
+        public int SomeNumberSetTo395493InConstructor;
+
+        //public InstanceInitializationMixin()
+        //{
+        //    this.SomeNumberSetTo395493InConstructor = 395493;
+        //}
+
         public delegate Tuple<int, string, object> SomeMethodDelegate(int i, string j, object k);
         
         public class InnerType

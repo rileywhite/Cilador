@@ -34,6 +34,8 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 new object[0],
                 783535,
                 "KNion wineofn oianweiof nqiognui ndf",
+                68485,
+                "AkolenaAeoi akefnoi ne",
                 "First");
         }
 
@@ -41,10 +43,12 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
         public void FieldsAreInitializedWithConstructorWithArguments()
         {
             this.TestWith(
-                new Type[] { typeof(int), typeof(string), typeof(object) },
-                new object[] { 138785, "SAJio  oioihIouh UIH UIH PUIHG", new object() },
+                new Type[] { typeof(int), typeof(string), typeof(Bix.Mixers.Fody.TestMixinTargets.MultipleConstructorsTarget.OriginalInnerType) },
+                new object[] { 138785, "SAJio  oioihIouh UIH UIH PUIHG", new Bix.Mixers.Fody.TestMixinTargets.MultipleConstructorsTarget.OriginalInnerType { SomeNumber = 21554, SomeString = "Aekl jiN INING" } },
                 138785,
                 "SAJio  oioihIouh UIH UIH PUIHG",
+                21554,
+                "Aekl jiN INING",
                 "Second");
         }
 
@@ -56,6 +60,8 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 new object[] { 684684, ":POIenuiofh oie hioeh goiuh iu g" },
                 684684,
                 ":POIenuiofh oie hioeh goiuh iu g",
+                787465,
+                "LKEnoisnf sdsd",
                 "Second");
         }
 
@@ -67,10 +73,19 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 new object[] { 90874389 },
                 90874389,
                 "A iuohiogfniouhe uihui iu.",
+                89743,
+                "Alkewlkn io",
                 "Second");
         }
 
-        private void TestWith(Type[] constructorTypes, object[] constructorArgs, int intValue, string stringValue, string whichBaseConstructor)
+        private void TestWith(
+            Type[] constructorTypes,
+            object[] constructorArgs,
+            int intValue,
+            string stringValue,
+            int innerIntValue,
+            string innerStringValue,
+            string whichBaseConstructor)
         {
             var config = new BixMixersConfigType();
 
@@ -93,7 +108,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.MultipleConstructorsTarget).FullName);
 
             Assert.That(typeof(IForTargetWithMultipleConstructors).IsAssignableFrom(targetType));
-            targetType.ValidateMemberCountsAre(4, 0, 12, 0, 0, 2);
+            targetType.ValidateMemberCountsAre(4, 0, 13, 0, 0, 3);
 
             var constructor = targetType.GetConstructor(constructorTypes);
             Assert.That(constructor, Is.Not.Null);
@@ -103,28 +118,37 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             Assert.That(instanceObject is IForTargetWithMultipleConstructors);
             var instance = (IForTargetWithMultipleConstructors)instanceObject;
 
-            Assert.That(instance.GetType().GetField("OriginalInitializedInt").GetValue(instance), Is.EqualTo(48685));
-            Assert.That(instance.GetType().GetField("OriginalInitializedString").GetValue(instance), Is.EqualTo("Tion3lao ehiuawh iuh buib ld"));
-            Assert.That(instance.GetType().GetField("OriginalInitializedObject").GetValue(instance), Is.Not.Null);
+            //Assert.That(targetType.GetField("SomeNumberSetTo395493InConstructor").GetValue(instance), Is.EqualTo(395493));
 
-            Assert.That(instance.GetType().GetField("OriginalUninitializedInt").GetValue(instance), Is.EqualTo(intValue));
-            Assert.That(instance.GetType().GetField("OriginalUninitializedString").GetValue(instance), Is.EqualTo(stringValue));
-            Assert.That(instance.GetType().GetField("OriginalUninitializedObject").GetValue(instance), Is.Not.Null);
+            Assert.That(targetType.GetField("OriginalInitializedInt").GetValue(instance), Is.EqualTo(48685));
+            Assert.That(targetType.GetField("OriginalInitializedString").GetValue(instance), Is.EqualTo("Tion3lao ehiuawh iuh buib ld"));
+            var innerObject = (Bix.Mixers.Fody.TestMixinTargets.MultipleConstructorsTarget.OriginalInnerType)targetType.GetField("OriginalInitializedObject").GetValue(instance);
+            Assert.That(innerObject, Is.Not.Null);
+            Assert.That(innerObject.SomeNumber, Is.EqualTo(7834));
+            Assert.That(innerObject.SomeString, Is.EqualTo("aHWOoi Ooih noing"));
 
-            Assert.That(instance.GetType().GetField("WhichConstructor").GetValue(instance), Is.EqualTo(whichBaseConstructor));
+            Assert.That(targetType.GetField("OriginalUninitializedInt").GetValue(instance), Is.EqualTo(intValue));
+            Assert.That(targetType.GetField("OriginalUninitializedString").GetValue(instance), Is.EqualTo(stringValue));
+            Assert.That(innerObject, Is.Not.Null);
+            innerObject = (Bix.Mixers.Fody.TestMixinTargets.MultipleConstructorsTarget.OriginalInnerType)targetType.GetField("OriginalUninitializedObject").GetValue(instance);
+            Assert.That(innerObject, Is.Not.Null);
+            Assert.That(innerObject.SomeNumber, Is.EqualTo(innerIntValue));
+            Assert.That(innerObject.SomeString, Is.EqualTo(innerStringValue));
 
-            Assert.That(instance.GetType().GetField("SomeNumber").GetValue(instance), Is.EqualTo(684865));
-            Assert.That(instance.GetType().GetField("SomeString").GetValue(instance), Is.EqualTo("Tawhlej oisahoeh 8ohf 4ifh8ohe fni dlgj"));
-            Assert.That(instance.GetType().GetField("SomeObject").GetValue(instance), Is.Not.Null);
+            Assert.That(targetType.GetField("WhichConstructor").GetValue(instance), Is.EqualTo(whichBaseConstructor));
 
-            var innerTypeInstance = instance.GetType().GetField("SomeInnerType").GetValue(instance);
+            Assert.That(targetType.GetField("SomeNumber").GetValue(instance), Is.EqualTo(684865));
+            Assert.That(targetType.GetField("SomeString").GetValue(instance), Is.EqualTo("Tawhlej oisahoeh 8ohf 4ifh8ohe fni dlgj"));
+            Assert.That(targetType.GetField("SomeObject").GetValue(instance), Is.Not.Null);
+
+            var innerTypeInstance = targetType.GetField("SomeInnerType").GetValue(instance);
             Assert.That(innerTypeInstance, Is.Not.Null);
             var innerType = innerTypeInstance.GetType();
             Assert.That(innerType.GetProperty("SomeInt").GetValue(innerTypeInstance), Is.EqualTo(4235));
             Assert.That(innerType.GetProperty("SomeString").GetValue(innerTypeInstance), Is.EqualTo("JLKOIN  oin aon oingori d"));
             Assert.That(innerType.GetProperty("SomeObject").GetValue(innerTypeInstance), Is.Not.Null);
 
-            var someFunc = instance.GetType().GetField("SomeFunc").GetValue(instance) as Delegate;
+            var someFunc = targetType.GetField("SomeFunc").GetValue(instance) as Delegate;
             Assert.That(someFunc, Is.Not.Null);
             var result = someFunc.DynamicInvoke(new object[] { 1, "2", new object() }) as Tuple<int, string, object>;
             Assert.That(result, Is.Not.Null);
@@ -132,7 +156,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             Assert.That(result.Item2, Is.EqualTo("2"));
             Assert.That(result.Item3, Is.Not.Null);
 
-            var someMethodDelegateInstance = instance.GetType().GetField("SomeMethodDelegateInstance").GetValue(instance) as Delegate;
+            var someMethodDelegateInstance = targetType.GetField("SomeMethodDelegateInstance").GetValue(instance) as Delegate;
             Assert.That(someMethodDelegateInstance, Is.Not.Null);
             result = someMethodDelegateInstance.DynamicInvoke(new object[] { 3, "4", new object() }) as Tuple<int, string, object>;
             Assert.That(result, Is.Not.Null);
