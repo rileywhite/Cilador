@@ -110,7 +110,7 @@
     <Compile Include="ILCloning\ConstructorBroadcaster.cs" />
     <Compile Include="ILCloning\EventCloner.cs" />
     <Compile Include="ILCloning\ExceptionHandlerCloner.cs" />
-    <Compile Include="ILCloning\GenericParameterAccessor.cs" />
+    <Compile Include="Core\LazyAccessor.cs" />
     <Compile Include="ILCloning\GenericParameterCloner.cs" />
     <Compile Include="ILCloning\ILCloningExtensions.cs" />
     <Compile Include="ILCloning\ICloner.cs" />
@@ -119,6 +119,7 @@
     <Compile Include="Core\IMixCommandAttribute.cs" />
     <Compile Include="Core\IMixCommandContract.cs" />
     <Compile Include="Config\InterfaceMixinMapType.cs" />
+    <Compile Include="ILCloning\LazyClonerBase.cs" />
     <Compile Include="ILCloning\MethodContext.cs" />
     <Compile Include="ILCloning\MethodBodyCloner.cs" />
     <Compile Include="ILCloning\ParameterCloner.cs" />

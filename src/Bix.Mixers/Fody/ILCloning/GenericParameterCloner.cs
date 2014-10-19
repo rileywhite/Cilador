@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Bix.Mixers.Fody.Core;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
@@ -27,32 +28,29 @@ namespace Bix.Mixers.Fody.ILCloning
     /// <summary>
     /// Clones <see cref="GenericParameter"/> contents from a source to a target.
     /// </summary>
-    internal class GenericParameterCloner : ClonerBase<GenericParameterAccessor>
+    internal class GenericParameterCloner : LazyClonerBase<GenericParameter>
     {
+        /// <summary>
+        /// Creates a new <see cref="GenericParameterCloner"/>.
+        /// </summary>
+        /// <param name="ilCloningContext">IL cloning context.</param>
+        /// <param name="targetGetter">Getter method for the target.</param>
+        /// <param name="targetSetter">Setter method for the target.</param>
+        /// <param name="sourceGetter">Getter method for the source.</param>
         public GenericParameterCloner(
             ILCloningContext ilCloningContext,
             Func<GenericParameter> targetGetter,
             Action<GenericParameter> targetSetter,
             Func<GenericParameter> sourceGetter)
-            : this(
+            : base(
             ilCloningContext,
-            new GenericParameterAccessor(getter: targetGetter, setter: targetSetter),
-            new GenericParameterAccessor(getter: sourceGetter))
+            new LazyAccessor<GenericParameter>(getter: targetGetter, setter: targetSetter),
+            new LazyAccessor<GenericParameter>(getter: sourceGetter))
         {
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(targetGetter != null);
             Contract.Requires(targetSetter != null);
             Contract.Requires(sourceGetter != null);
-        }
-
-        public GenericParameterCloner(ILCloningContext ilCloningContext, GenericParameterAccessor target, GenericParameterAccessor source)
-            : base(ilCloningContext, target, source)
-        {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(target != null);
-            Contract.Requires(target.IsGetAccessor && target.IsSetAccessor);
-            Contract.Requires(source != null);
-            Contract.Requires(source.IsGetAccessor);
         }
 
         /// <summary>

@@ -14,33 +14,28 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Mono.Cecil;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Bix.Mixers.Fody.ILCloning
+namespace Bix.Mixers.Fody.Core
 {
     /// <summary>
-    /// A type that allows a generic parameter to be retrieved and/or set.
+    /// A type that allows an item to be retrieved and/or set in a late-bound fashion.
     /// </summary>
     /// <remarks>
-    /// Because the <see cref="GenericParameter.Owner"/> cannot be set outside
-    /// of the constructor of a <see cref="GenericParameter"/>, this type is
-    /// used to delay construction of a final generic parameter until the cloning
-    /// step.
+    /// This allows code to provide Get/Set access to an item that it know how to get
+    /// even if that item cannot yet be created in cases where finding the correct creation
+    /// location might otherwise be difficul.
     /// </remarks>
-    public class GenericParameterAccessor
+    /// <typeparam name="T">Type of item to be accessed.</typeparam>
+    public class LazyAccessor<T>
     {
         /// <summary>
-        /// Creates a new <see cref="GenericParameterAccessor"/>.
+        /// Creates a new <see cref="LazyAccessor"/>.
         /// </summary>
         /// <param name="getter">Optional getter method if the new accessor will be a get accessor.</param>
         /// <param name="setter">Optional setter method if the new accessor will be a set accessor.</param>
-        public GenericParameterAccessor(Func<GenericParameter> getter = null, Action<GenericParameter> setter = null)
+        public LazyAccessor(Func<T> getter = null, Action<T> setter = null)
         {
             Contract.Requires(getter != null || setter != null);
             Contract.Ensures(this.IsGetAccessor || this.IsSetAccessor);
@@ -50,20 +45,18 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Gets whether this <see cref="GenericParameterAccessor"/> provides
-        /// read access to a generic parameter.
+        /// Gets whether this <see cref="LazyAccessor"/> provides read access to an item.
         /// </summary>
         public bool IsGetAccessor
         {
             get { return this.getter != null; }
         }
 
-        private Func<GenericParameter> getter;
+        private Func<T> getter;
         /// <summary>
-        /// Provides read access to a generic parameter if <see cref="IsGetAccessor"/>
-        /// is <c>true</c>.
+        /// Provides read access to an item if <see cref="IsGetAccessor"/> is <c>true</c>.
         /// </summary>
-        public Func<GenericParameter> Getter
+        public Func<T> Getter
         {
             get
             {
@@ -74,20 +67,18 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
-        /// Gets whether this <see cref="GenericParameterAccessor"/> provides
-        /// write access to a generic parameter.
+        /// Gets whether this <see cref="LazyAccessor"/> provides write access to an item.
         /// </summary>
         public bool IsSetAccessor
         {
             get { return this.setter != null; }
         }
 
-        private Action<GenericParameter> setter;
+        private Action<T> setter;
         /// <summary>
-        /// Provides write access to a generic parameter if <see cref="IsSetAccessor"/>
-        /// is <c>true</c>.
+        /// Provides write access to an item if <see cref="IsSetAccessor"/> is <c>true</c>.
         /// </summary>
-        public Action<GenericParameter> Setter
+        public Action<T> Setter
         {
             get
             {
