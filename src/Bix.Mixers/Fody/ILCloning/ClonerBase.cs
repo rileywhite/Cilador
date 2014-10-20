@@ -35,7 +35,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="target">Resolved cloning target.</param>
         /// <param name="source">Resolved cloning source.</param>
-        public ClonerBase(ILCloningContext ilCloningContext, TClonedItem target, TClonedItem source)
+        public ClonerBase(ILCloningContext ilCloningContext, TClonedItem source, TClonedItem target)
             : base(ilCloningContext, source, () => target, item => { return; })
         {
             Contract.Requires(ilCloningContext != null);
