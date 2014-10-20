@@ -93,7 +93,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 MethodContext methodContext = new MethodContext(
                     this.ILCloningContext,
                     Tuple.Create(this.SourceConstructor.Body.ThisParameter, initializingTargetConstructor.Body.ThisParameter),
-                    new List<Tuple<ParameterDefinition, ParameterDefinition>>(),
+                    new List<Tuple<ParameterDefinition, LazyAccessor<ParameterDefinition>>>(),
                     variableCloners,
                     instructionCloners);
                 for (int i = sourceInitializationInstructions.Count - 1; i >= 0; i--)

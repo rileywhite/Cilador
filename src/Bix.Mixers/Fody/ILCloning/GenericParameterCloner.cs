@@ -34,23 +34,34 @@ namespace Bix.Mixers.Fody.ILCloning
         /// Creates a new <see cref="GenericParameterCloner"/>.
         /// </summary>
         /// <param name="ilCloningContext">IL cloning context.</param>
+        /// <param name="source">Cloning source.</param>
         /// <param name="targetGetter">Getter method for the target.</param>
         /// <param name="targetSetter">Setter method for the target.</param>
-        /// <param name="sourceGetter">Getter method for the source.</param>
         public GenericParameterCloner(
             ILCloningContext ilCloningContext,
+            GenericParameter source,
             Func<GenericParameter> targetGetter,
-            Action<GenericParameter> targetSetter,
-            Func<GenericParameter> sourceGetter)
+            Action<GenericParameter> targetSetter)
             : base(
             ilCloningContext,
-            new LazyAccessor<GenericParameter>(getter: targetGetter, setter: targetSetter),
-            new LazyAccessor<GenericParameter>(getter: sourceGetter))
+            source,
+            new LazyAccessor<GenericParameter>(getter: targetGetter, setter: targetSetter))
         {
             Contract.Requires(ilCloningContext != null);
+            Contract.Requires(source != null);
             Contract.Requires(targetGetter != null);
             Contract.Requires(targetSetter != null);
-            Contract.Requires(sourceGetter != null);
+        }
+
+        /// <summary>
+        /// Creates the cloning target.
+        /// </summary>
+        /// <returns>New cloning target.</returns>
+        protected override GenericParameter CreateTarget()
+        {
+            return new GenericParameter(
+                this.Source.Name,
+                this.ILCloningContext.DynamicRootImport(this.Source.Owner));
         }
 
         /// <summary>
@@ -58,13 +69,8 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         public override void Clone()
         {
-            var sourceGenericParameter = this.Source.Getter();
-            if (sourceGenericParameter == null) { throw new InvalidOperationException("Unable to retrieve a generic parameter using a source getter method."); }
-
-            var targetGenericParameter = new GenericParameter(
-                sourceGenericParameter.Name,
-                this.ILCloningContext.DynamicRootImport(sourceGenericParameter.Owner));
-            this.Target.Setter(targetGenericParameter);
+            var sourceGenericParameter = this.Source;
+            var targetGenericParameter = this.Target;
 
             targetGenericParameter.Attributes = sourceGenericParameter.Attributes;
 

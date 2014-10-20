@@ -23,46 +23,137 @@ namespace Bix.Mixers.Fody.ILCloning
     /// <summary>
     /// Provides a way to clone items in such a way that the targets are created a late as possible.
     /// </summary>
+    /// <remarks>
+    /// This type is not thread-safe.
+    /// </remarks>
     /// <typeparam name="TClonedItem">Type of item to be cloned.</typeparam>
-    internal abstract class LazyClonerBase<TClonedItem> : ClonerBase<LazyAccessor<TClonedItem>>
+    [ContractClass(typeof(LazyClonerBaseContract<>))]
+    internal abstract class LazyClonerBase<TClonedItem> : Tuple<TClonedItem, LazyAccessor<TClonedItem>>, ICloner
+        where TClonedItem : class
     {
         /// <summary>
         /// Creates a new <see cref="LazyClonerBase"/>.
         /// </summary>
         /// <param name="ilCloningContext">IL cloning context.</param>
+        /// <param name="source">Cloning source.</param>
         /// <param name="targetGetter">Getter method for the target.</param>
         /// <param name="targetSetter">Setter method for the target.</param>
-        /// <param name="sourceGetter">Getter method for the source.</param>
         public LazyClonerBase(
             ILCloningContext ilCloningContext,
+            TClonedItem source,
             Func<TClonedItem> targetGetter,
-            Action<TClonedItem> targetSetter,
-            Func<TClonedItem> sourceGetter)
+            Action<TClonedItem> targetSetter)
             : this(
             ilCloningContext,
-            new LazyAccessor<TClonedItem>(getter: targetGetter, setter: targetSetter),
-            new LazyAccessor<TClonedItem>(getter: sourceGetter))
+            source,
+            new LazyAccessor<TClonedItem>(getter: targetGetter, setter: targetSetter))
         {
             Contract.Requires(ilCloningContext != null);
+            Contract.Requires(source != null);
             Contract.Requires(targetGetter != null);
             Contract.Requires(targetSetter != null);
-            Contract.Requires(sourceGetter != null);
         }
 
         /// <summary>
         /// Creates a new <see cref="LazyClonerBase"/>.
         /// </summary>
         /// <param name="ilCloningContext">IL cloning context.</param>
-        /// <param name="target">Target's lazy accesser. Must provide a getter and a setter.</param>
-        /// <param name="source">Source's lazy accesser. Must provide a getter.</param>
-        public LazyClonerBase(ILCloningContext ilCloningContext, LazyAccessor<TClonedItem> target, LazyAccessor<TClonedItem> source)
-            : base(ilCloningContext, target, source)
+        /// <param name="source">Cloning source.</param>
+        /// <param name="targetAccessor">Target's lazy accesser. Must provide a getter and a setter.</param>
+        public LazyClonerBase(ILCloningContext ilCloningContext, TClonedItem source, LazyAccessor<TClonedItem> targetAccessor)
+            : base(source, targetAccessor)
         {
             Contract.Requires(ilCloningContext != null);
-            Contract.Requires(target != null);
-            Contract.Requires(target.IsGetAccessor && target.IsSetAccessor);
+            Contract.Requires(targetAccessor != null);
+            Contract.Requires(targetAccessor.IsGetAccessor && targetAccessor.IsSetAccessor);
             Contract.Requires(source != null);
-            Contract.Requires(source.IsGetAccessor);
+
+            this.ILCloningContext = ilCloningContext;
         }
+
+        /// <summary>
+        /// Gets or sets the context for IL cloning.
+        /// </summary>
+        public ILCloningContext ILCloningContext { get; private set; }
+
+        /// <summary>
+        /// Gets the accessor for the cloning target.
+        /// </summary>
+        private LazyAccessor<TClonedItem> TargetAccessor
+        {
+            get { return this.Item2; }
+        }
+
+        /// <summary>
+        /// Whether the target has be set from its accessor.
+        /// </summary>
+        private bool IsTargetCreated { get; set; }
+
+        /// <summary>
+        /// When overridden in a subclass, this method should create the cloning target.
+        /// </summary>
+        /// <returns>New target item.</returns>
+        protected abstract TClonedItem CreateTarget();
+
+        /// <summary>
+        /// Calls the abstract target creation method and sets the target.
+        /// </summary>
+        protected void CreateAndSetTarget()
+        {
+            Contract.Requires(!this.IsTargetCreated);
+            Contract.Ensures(this.IsTargetCreated);
+            Contract.Ensures(this.Target != null);
+
+            TClonedItem target;
+            try
+            {
+                target = this.CreateTarget();
+            }
+            catch (Exception e)
+            {
+                throw new WeavingException(
+                    string.Format("Failed to create a cloning target for source of type [{0}].", typeof(TClonedItem).FullName),
+                    e);
+            }
+
+            if (target == null)
+            {
+                throw new WeavingException(
+                    string.Format("Created cloning target was null for source of type [{0}].", typeof(TClonedItem).FullName));
+            }
+
+            this.TargetAccessor.Setter(target);
+            this.IsTargetCreated = true;
+        }
+
+        /// <summary>
+        /// Gets the resolved cloning target.
+        /// </summary>
+        public TClonedItem Target
+        {
+            get
+            {
+                if (!this.IsTargetCreated) { this.CreateAndSetTarget(); }
+                return this.TargetAccessor.Getter();
+            }
+        }
+
+        /// <summary>
+        /// Gets the resolved cloning source.
+        /// </summary>
+        public TClonedItem Source
+        {
+            get { return this.Item1; }
+        }
+
+        /// <summary>
+        /// Gets or sets whether the item has been cloned.
+        /// </summary>
+        public bool IsCloned { get; protected set; }
+
+        /// <summary>
+        /// Clones the item from the source to the target.
+        /// </summary>
+        public abstract void Clone();
     }
 }

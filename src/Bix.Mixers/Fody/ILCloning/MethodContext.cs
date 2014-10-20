@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Bix.Mixers.Fody.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
@@ -56,9 +57,9 @@ namespace Bix.Mixers.Fody.ILCloning
         public MethodContext(
             ILCloningContext ilCloningContext,
             Tuple<ParameterDefinition, ParameterDefinition> thisParameterSourceAndTarget,
-            IEnumerable<Tuple<ParameterDefinition, ParameterDefinition>> parameterSourceAndTargets,
-            IEnumerable<Tuple<VariableDefinition, VariableDefinition>> variableSourceAndTargets,
-            IEnumerable<Tuple<Instruction, Instruction>> instructionSourceAndTargets)
+            IEnumerable<Tuple<ParameterDefinition, LazyAccessor<ParameterDefinition>>> parameterSourceAndTargets,
+            IEnumerable<Tuple<VariableDefinition, LazyAccessor<VariableDefinition>>> variableSourceAndTargets,
+            IEnumerable<Tuple<Instruction, LazyAccessor<Instruction>>> instructionSourceAndTargets)
         {
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(thisParameterSourceAndTarget != null);
@@ -82,17 +83,17 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Gets or sets the parameter definitions for the source and target.
         /// </summary>
-        private IEnumerable<Tuple<ParameterDefinition, ParameterDefinition>> ParameterSourceAndTargets { get; set; }
+        private IEnumerable<Tuple<ParameterDefinition, LazyAccessor<ParameterDefinition>>> ParameterSourceAndTargets { get; set; }
 
         /// <summary>
         /// Gets or sets the variable definitions for the source and target.
         /// </summary>
-        private IEnumerable<Tuple<VariableDefinition, VariableDefinition>> VariableSourceAndTargets { get; set; }
+        private IEnumerable<Tuple<VariableDefinition, LazyAccessor<VariableDefinition>>> VariableSourceAndTargets { get; set; }
 
         /// <summary>
         /// Gets or sets the instructions for the source and target.
         /// </summary>
-        private IEnumerable<Tuple<Instruction, Instruction>> InstructionSourceAndTargets { get; set; }
+        private IEnumerable<Tuple<Instruction, LazyAccessor<Instruction>>> InstructionSourceAndTargets { get; set; }
 
         /// <summary>
         /// Gets or sets the context for IL cloning.
@@ -113,7 +114,7 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 throw new InvalidOperationException("Could not root import an instruction");
             }
-            return instructionCloner.Item2;
+            return instructionCloner.Item2.Getter();
         }
 
         /// <summary>
@@ -130,7 +131,7 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 throw new InvalidOperationException("Could not root import a variable");
             }
-            return variableCloner.Item2;
+            return variableCloner.Item2.Getter();
         }
 
         /// <summary>
@@ -154,7 +155,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 throw new InvalidOperationException("Could not root import a variable a parameter definition.");
             }
 
-            return parameterCloner.Item2;
+            return parameterCloner.Item2.Getter();
         }
     }
 }

@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Bix.Mixers.Fody.Core;
 using Mono.Cecil;
 using System;
 using System.Diagnostics.Contracts;
@@ -25,7 +26,8 @@ namespace Bix.Mixers.Fody.ILCloning
     /// Base type for all cloners that clone member items.
     /// </summary>
     /// <typeparam name="TClonedItem">Resolved type of the member.</typeparam>
-    internal abstract class ClonerBase<TClonedItem> : Tuple<TClonedItem, TClonedItem>, ICloner
+    internal abstract class ClonerBase<TClonedItem> : LazyClonerBase<TClonedItem>
+        where TClonedItem : class
     {
         /// <summary>
         /// Creates a new <see cref="MemberClonerBase<,>"/>
@@ -34,7 +36,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="target">Resolved cloning target.</param>
         /// <param name="source">Resolved cloning source.</param>
         public ClonerBase(ILCloningContext ilCloningContext, TClonedItem target, TClonedItem source)
-            : base(source, target)
+            : base(ilCloningContext, source, () => target, item => { return; })
         {
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(target != null);
@@ -43,34 +45,22 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Ensures(this.Target != null);
             Contract.Ensures(this.Source != null);
 
-            this.ILCloningContext = ilCloningContext;
-            this.Target = target;
-            this.Source = source;
+            this.ActualTarget = target;
+            this.CreateAndSetTarget();
         }
 
         /// <summary>
-        /// Gets or sets the context for IL cloning.
+        /// Gets or sets the cloning target that was passed into the constructor.
         /// </summary>
-        public ILCloningContext ILCloningContext { get; private set; }
+        private TClonedItem ActualTarget { get; set; }
 
         /// <summary>
-        /// Gets or sets the resolved cloning target.
+        /// Just returns the actual cloning target item.
         /// </summary>
-        public TClonedItem Target { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the resolved cloning source.
-        /// </summary>
-        public TClonedItem Source { get; private set; }
-
-        /// <summary>
-        /// Gets or sets whether the item has been cloned.
-        /// </summary>
-        public bool IsCloned { get; protected set; }
-
-        /// <summary>
-        /// Clones the item from the source to the target.
-        /// </summary>
-        public abstract void Clone();
+        /// <returns>Cloning target.</returns>
+        protected override TClonedItem CreateTarget()
+        {
+            return this.ActualTarget;
+        }
     }
 }

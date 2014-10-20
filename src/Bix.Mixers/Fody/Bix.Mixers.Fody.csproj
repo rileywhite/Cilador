@@ -120,6 +120,7 @@
     <Compile Include="Core\IMixCommandContract.cs" />
     <Compile Include="Config\InterfaceMixinMapType.cs" />
     <Compile Include="ILCloning\LazyClonerBase.cs" />
+    <Compile Include="ILCloning\LazyClonerBaseContract.cs" />
     <Compile Include="ILCloning\MethodContext.cs" />
     <Compile Include="ILCloning\MethodBodyCloner.cs" />
     <Compile Include="ILCloning\ParameterCloner.cs" />

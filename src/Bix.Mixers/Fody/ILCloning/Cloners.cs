@@ -118,12 +118,12 @@ namespace Bix.Mixers.Fody.ILCloning
 
             this.GenericParameterCloners.Clone();
             this.TypeCloners.Clone();
+            this.VariableCloners.Clone();
             this.FieldCloners.Clone();
             this.MethodSignatureCloners.Clone();
             this.MethodParameterCloners.Clone();
             this.PropertyCloners.Clone();
             this.EventCloners.Clone();
-            this.VariableCloners.Clone();
             this.MethodBodyCloners.Clone();
             this.InstructionCloners.Clone();
             this.ExceptionHandlerCloners.Clone();
@@ -196,11 +196,12 @@ namespace Bix.Mixers.Fody.ILCloning
         public void AddCloner(GenericParameterCloner cloner)
         {
             Contract.Requires(cloner != null);
-            Contract.Requires(cloner.Source.IsGetAccessor && cloner.Target.IsGetAccessor);
+            Contract.Requires(cloner.Source != null);
+            Contract.Requires(cloner.Item2.IsGetAccessor);
             Contract.Requires(!this.AreAllClonersAdded);
 
             this.GenericParameterCloners.Add(cloner);
-            this.TargetGenericParameterGetterBySourceOwnerFullNameAndPosition.Add(GetUniqueKeyFor(cloner.Source.Getter()), cloner.Target.Getter);
+            this.TargetGenericParameterGetterBySourceOwnerFullNameAndPosition.Add(GetUniqueKeyFor(cloner.Source), cloner.Item2.Getter);
         }
 
         /// <summary>

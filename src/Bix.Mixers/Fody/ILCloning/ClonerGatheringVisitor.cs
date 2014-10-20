@@ -227,9 +227,9 @@ namespace Bix.Mixers.Fody.ILCloning
                 targetGenericParameterProvider.GenericParameters.Add(new GenericParameter(voidReference)); // this is just a placeholder since null is not allowed
                 this.Cloners.AddCloner(new GenericParameterCloner(
                     this.ILCloningContext,
+                    sourceGenericParameter,
                     () => targetGenericParameterProvider.GenericParameters[sourceGenericParameter.Position],
-                    targetGenericParameter => targetGenericParameterProvider.GenericParameters[sourceGenericParameter.Position] = targetGenericParameter,
-                    () => sourceGenericParameter));
+                    targetGenericParameter => targetGenericParameterProvider.GenericParameters[sourceGenericParameter.Position] = targetGenericParameter));
             }
         }
     }
