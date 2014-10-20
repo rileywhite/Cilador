@@ -32,14 +32,14 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Creates a new <see cref="VariableCloner"/>.
         /// </summary>
-        /// <param name="target">Cloning target.</param>
         /// <param name="source">Cloning source.</param>
-        public VariableCloner(ILCloningContext ilCloningContext, VariableDefinition target, VariableDefinition source)
-            : base(ilCloningContext, target, source)
+        /// <param name="target">Cloning target.</param>
+        public VariableCloner(ILCloningContext ilCloningContext, VariableDefinition source, VariableDefinition target)
+            : base(ilCloningContext, source, target)
         {
             Contract.Requires(ilCloningContext != null);
-            Contract.Requires(target != null);
             Contract.Requires(source != null);
+            Contract.Requires(target != null);
         }
 
         /// <summary>

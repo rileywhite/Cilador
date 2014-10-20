@@ -34,15 +34,15 @@ namespace Bix.Mixers.Fody.ILCloning
         /// Creates a new <see cref="InstructionCloner"/>.
         /// </summary>
         /// <param name="methodBodyCloner">Method body cloner associated with new instruction cloner.</param>
-        /// <param name="target">Cloning target.</param>
         /// <param name="source">Cloning source.</param>
-        public InstructionCloner(MethodBodyCloner methodBodyCloner, Instruction target, Instruction source)
-            : this(new MethodContext(methodBodyCloner), target, source)
+        /// <param name="target">Cloning target.</param>
+        public InstructionCloner(MethodBodyCloner methodBodyCloner, Instruction source, Instruction target)
+            : this(new MethodContext(methodBodyCloner), source, target)
         {
             Contract.Requires(methodBodyCloner != null);
             Contract.Requires(methodBodyCloner.ILCloningContext != null);
-            Contract.Requires(target != null);
             Contract.Requires(source != null);
+            Contract.Requires(target != null);
             Contract.Ensures(this.MethodContext != null);
         }
 
@@ -50,15 +50,15 @@ namespace Bix.Mixers.Fody.ILCloning
         /// Creates a new <see cref="InstructionCloner"/>.
         /// </summary>
         /// <param name="MethodContext">Method context for the new instruction cloner.</param>
-        /// <param name="target">Cloning target.</param>
         /// <param name="source">Cloning source.</param>
-        public InstructionCloner(MethodContext methodContext, Instruction target, Instruction source)
-            : base(methodContext.ILCloningContext, target, source)
+        /// <param name="target">Cloning target.</param>
+        public InstructionCloner(MethodContext methodContext, Instruction source, Instruction target)
+            : base(methodContext.ILCloningContext, source, target)
         {
             Contract.Requires(methodContext != null);
             Contract.Requires(methodContext.ILCloningContext != null);
-            Contract.Requires(target != null);
             Contract.Requires(source != null);
+            Contract.Requires(target != null);
             Contract.Ensures(this.MethodContext != null);
 
             this.MethodContext = methodContext;

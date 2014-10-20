@@ -29,15 +29,15 @@ namespace Bix.Mixers.Fody.ILCloning
         /// Creates a new <see cref="ExceptionHandlerCloner"/>
         /// </summary>
         /// <param name="methodContext">Method context for this cloner.</param>
-        /// <param name="target">Cloning target.</param>
         /// <param name="source">Cloning source.</param>
-        public ExceptionHandlerCloner(MethodContext methodContext, ExceptionHandler target, ExceptionHandler source)
-            : base(methodContext.ILCloningContext, target, source)
+        /// <param name="target">Cloning target.</param>
+        public ExceptionHandlerCloner(MethodContext methodContext, ExceptionHandler source, ExceptionHandler target)
+            : base(methodContext.ILCloningContext, source, target)
         {
             Contract.Requires(methodContext != null);
             Contract.Requires(methodContext.ILCloningContext != null);
-            Contract.Requires(target != null);
             Contract.Requires(source != null);
+            Contract.Requires(target != null);
             Contract.Ensures(this.MethodContext != null);
 
             this.MethodContext = methodContext;

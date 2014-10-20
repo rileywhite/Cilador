@@ -70,7 +70,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(sourceType != null);
             Contract.Requires(targetType != null);
 
-            this.Cloners.AddCloner(new TypeCloner(this.ILCloningContext, targetType, sourceType));
+            this.Cloners.AddCloner(new TypeCloner(this.ILCloningContext, sourceType, targetType));
 
             foreach (var sourceNestedType in sourceType.NestedTypes)
             {
@@ -154,7 +154,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(sourceField != null);
             Contract.Requires(targetField != null);
 
-            this.Cloners.AddCloner(new FieldCloner(this.ILCloningContext, targetField, sourceField));
+            this.Cloners.AddCloner(new FieldCloner(this.ILCloningContext, sourceField, targetField));
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(sourceMethod != null);
             Contract.Requires(targetMethod != null);
 
-            var methodSignatureCloner = new MethodSignatureCloner(this.ILCloningContext, targetMethod, sourceMethod);
+            var methodSignatureCloner = new MethodSignatureCloner(this.ILCloningContext, sourceMethod, targetMethod);
             this.Cloners.AddCloner(methodSignatureCloner);
 
             Contract.Assert(methodSignatureCloner.ParameterCloners != null);
@@ -179,7 +179,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
             if (sourceMethod.HasBody)
             {
-                var methodBodyCloner = new MethodBodyCloner(methodSignatureCloner, targetMethod.Body, sourceMethod.Body);
+                var methodBodyCloner = new MethodBodyCloner(methodSignatureCloner, sourceMethod.Body, targetMethod.Body);
                 this.Cloners.AddCloner(methodBodyCloner);
                 this.Cloners.AddCloners(methodBodyCloner.VariableCloners);
                 this.Cloners.AddCloners(methodBodyCloner.InstructionCloners);
@@ -197,7 +197,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(sourceProperty != null);
             Contract.Requires(targetProperty != null);
 
-            var propertyCloner = new PropertyCloner(this.ILCloningContext, targetProperty, sourceProperty);
+            var propertyCloner = new PropertyCloner(this.ILCloningContext, sourceProperty, targetProperty);
             this.Cloners.AddCloner(propertyCloner);
         }
 
@@ -211,7 +211,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(sourceEvent != null);
             Contract.Requires(targetEvent != null);
 
-            this.Cloners.AddCloner(new EventCloner(this.ILCloningContext, targetEvent, sourceEvent));
+            this.Cloners.AddCloner(new EventCloner(this.ILCloningContext, sourceEvent, targetEvent));
         }
 
         /// <summary>

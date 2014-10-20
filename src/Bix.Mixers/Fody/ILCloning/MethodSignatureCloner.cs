@@ -37,14 +37,14 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="target">Cloning target.</param>
         /// <param name="source">Cloning source.</param>
-        public MethodSignatureCloner(ILCloningContext ilCloningContext, MethodDefinition target, MethodDefinition source)
-            : base(ilCloningContext, target, source)
+        public MethodSignatureCloner(ILCloningContext ilCloningContext, MethodDefinition source, MethodDefinition target)
+            : base(ilCloningContext, source, target)
         {
             Contract.Requires(ilCloningContext != null);
-            Contract.Requires(target != null);
-            Contract.Requires(target.Parameters != null);
             Contract.Requires(source != null);
             Contract.Requires(source.Parameters != null);
+            Contract.Requires(target != null);
+            Contract.Requires(target.Parameters != null);
             Contract.Ensures(this.ParameterCloners != null);
 
             this.PopulateParameterCloners();
@@ -67,7 +67,7 @@ namespace Bix.Mixers.Fody.ILCloning
                     sourceParameter.Attributes,
                     voidTypeReference);
                 this.Target.Parameters.Add(targetParameter);
-                this.ParameterCloners.Add(new ParameterCloner(this, targetParameter, sourceParameter));
+                this.ParameterCloners.Add(new ParameterCloner(this, sourceParameter, targetParameter));
             }
         }
 

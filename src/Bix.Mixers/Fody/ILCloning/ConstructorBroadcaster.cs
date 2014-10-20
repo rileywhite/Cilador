@@ -80,7 +80,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 {
                     var targetVariable = new VariableDefinition(sourceVariable.Name, voidTypeReference);
                     initializingTargetConstructor.Body.Variables.Add(targetVariable);
-                    variableCloners.Add(new VariableCloner(this.ILCloningContext, targetVariable, sourceVariable));
+                    variableCloners.Add(new VariableCloner(this.ILCloningContext, sourceVariable, targetVariable));
                 }
                 this.VariableCloners.AddRange(variableCloners);
 
@@ -101,7 +101,7 @@ namespace Bix.Mixers.Fody.ILCloning
                     var sourceInstruction = sourceInitializationInstructions[i];
                     Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(this.ILCloningContext, ilProcessor, sourceInstruction);
                     ilProcessor.InsertAfter(firstInstructionInTargetConstructor, targetInstruction);
-                    instructionCloners.Add(new InstructionCloner(methodContext, targetInstruction, sourceInstruction));
+                    instructionCloners.Add(new InstructionCloner(methodContext, sourceInstruction, targetInstruction));
                 }
                 this.InstructionCloners.AddRange(instructionCloners);
             }

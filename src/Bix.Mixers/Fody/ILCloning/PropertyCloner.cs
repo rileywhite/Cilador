@@ -31,14 +31,14 @@ namespace Bix.Mixers.Fody.ILCloning
         /// Creates a new <see cref="PropertyCloner"/>
         /// </summary>
         /// <param name="ilCloningContext">IL cloning context.</param>
-        /// <param name="target">Cloning target.</param>
         /// <param name="source">Cloning source.</param>
-        public PropertyCloner(ILCloningContext ilCloningContext, PropertyDefinition target, PropertyDefinition source)
-            : base(ilCloningContext, target, source)
+        /// <param name="target">Cloning target.</param>
+        public PropertyCloner(ILCloningContext ilCloningContext, PropertyDefinition source, PropertyDefinition target)
+            : base(ilCloningContext, source, target)
         {
             Contract.Requires(ilCloningContext != null);
-            Contract.Requires(target != null);
             Contract.Requires(source != null);
+            Contract.Requires(target != null);
         }
 
         /// <summary>

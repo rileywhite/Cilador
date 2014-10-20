@@ -30,14 +30,14 @@ namespace Bix.Mixers.Fody.ILCloning
         /// Creates a new <see cref="EventCloner"/>
         /// </summary>
         /// <param name="ilCloningContext">IL cloning context.</param>
-        /// <param name="target">Cloning target.</param>
         /// <param name="source">Cloning source.</param>
-        public EventCloner(ILCloningContext ilCloningContext, EventDefinition target, EventDefinition source)
-            : base(ilCloningContext, target, source)
+        /// <param name="target">Cloning target.</param>
+        public EventCloner(ILCloningContext ilCloningContext, EventDefinition source, EventDefinition target)
+            : base(ilCloningContext, source, target)
         {
             Contract.Requires(ilCloningContext != null);
-            Contract.Requires(target != null);
             Contract.Requires(source != null);
+            Contract.Requires(target != null);
         }
 
         /// <summary>

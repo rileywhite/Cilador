@@ -34,15 +34,15 @@ namespace Bix.Mixers.Fody.ILCloning
         /// Creates a new <see cref="MethodBodyCloner"/>
         /// </summary>
         /// <param name="signatureCloner">Cloner for the method signature to which this method body is attached.</param>
-        /// <param name="target">Resolved cloning target.</param>
         /// <param name="source">Resolved cloning source.</param>
-        public MethodBodyCloner(MethodSignatureCloner signatureCloner, MethodBody target, MethodBody source)
-            : base(signatureCloner.ILCloningContext, target, source)
+        /// <param name="target">Resolved cloning target.</param>
+        public MethodBodyCloner(MethodSignatureCloner signatureCloner, MethodBody source, MethodBody target)
+            : base(signatureCloner.ILCloningContext, source, target)
         {
             Contract.Requires(signatureCloner != null);
             Contract.Requires(signatureCloner.ILCloningContext != null);
-            Contract.Requires(target != null);
             Contract.Requires(source != null);
+            Contract.Requires(target != null);
             Contract.Ensures(this.SignatureCloner != null);
             Contract.Ensures(this.VariableCloners != null);
 
@@ -71,7 +71,7 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 var targetVariable = new VariableDefinition(sourceVariable.Name, voidTypeReference);
                 this.Target.Variables.Add(targetVariable);
-                this.VariableCloners.Add(new VariableCloner(this.ILCloningContext, targetVariable, sourceVariable));
+                this.VariableCloners.Add(new VariableCloner(this.ILCloningContext, sourceVariable, targetVariable));
             }
         }
 
@@ -98,7 +98,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 // so, where needed, dummy operands are used which will be replaced in the clone step of each instruction cloner
                 Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(this.ILCloningContext, ilProcessor, sourceInstruction);
                 ilProcessor.Append(targetInstruction);
-                this.InstructionCloners.Add(new InstructionCloner(this, targetInstruction, sourceInstruction));
+                this.InstructionCloners.Add(new InstructionCloner(this, sourceInstruction, targetInstruction));
             }
         }
 
@@ -120,7 +120,7 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 var targetExceptionHandler = new ExceptionHandler(sourceExceptionHandler.HandlerType);
                 this.Target.ExceptionHandlers.Add(targetExceptionHandler);
-                this.ExceptionHandlerCloners.Add(new ExceptionHandlerCloner(new MethodContext(this), targetExceptionHandler, sourceExceptionHandler));
+                this.ExceptionHandlerCloners.Add(new ExceptionHandlerCloner(new MethodContext(this), sourceExceptionHandler, targetExceptionHandler));
             }
         }
 

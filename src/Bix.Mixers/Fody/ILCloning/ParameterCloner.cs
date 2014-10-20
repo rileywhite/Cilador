@@ -33,15 +33,15 @@ namespace Bix.Mixers.Fody.ILCloning
         /// Creates a new <see cref="ParameterCloner"/>.
         /// </summary>
         /// <param name="methodSignatureCloner">Cloner for the signature associated with the method body being cloned.</param>
-        /// <param name="target">Cloning target.</param>
         /// <param name="source">Cloning source.</param>
-        public ParameterCloner(MethodSignatureCloner methodSignatureCloner, ParameterDefinition target, ParameterDefinition source)
-            : base(methodSignatureCloner.ILCloningContext, target, source)
+        /// <param name="target">Cloning target.</param>
+        public ParameterCloner(MethodSignatureCloner methodSignatureCloner, ParameterDefinition source, ParameterDefinition target)
+            : base(methodSignatureCloner.ILCloningContext, source, target)
         {
             Contract.Requires(methodSignatureCloner != null);
             Contract.Requires(methodSignatureCloner.ILCloningContext != null);
-            Contract.Requires(target != null);
             Contract.Requires(source != null);
+            Contract.Requires(target != null);
             Contract.Ensures(this.MethodSignatureCloner != null);
 
             this.MethodSignatureCloner = methodSignatureCloner;
