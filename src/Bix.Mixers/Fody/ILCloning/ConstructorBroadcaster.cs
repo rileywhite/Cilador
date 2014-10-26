@@ -100,80 +100,176 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         public void BroadcastConstructor()
         {
-            var multiplexedConstructor = ConstructorMultiplexer.Get(this.ILCloningContext, this.SourceConstructor);
-
-            // we're going to insert the initializing instruction clone targets into the initializing constructors after the first instruction
-            foreach (var initializingTargetConstructor in this.GetInitializingTargetConstructors())
+            var sourceMultiplexedConstructor = ConstructorMultiplexer.Get(this.ILCloningContext, this.SourceConstructor);
+            if (sourceMultiplexedConstructor.HasInitializationItems)
             {
-                // clone all variables
-                initializingTargetConstructor.Body.InitLocals = initializingTargetConstructor.Body.InitLocals || this.SourceConstructor.Body.InitLocals;
-                var preexistingVariableCount = initializingTargetConstructor.Body.Variables.Count;
+                this.InjectInitializationItems(sourceMultiplexedConstructor);
+            }
 
-                var variableCloners = new List<VariableCloner>();
-                var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
-                foreach (var sourceVariable in multiplexedConstructor.InitializationVariables)
-                {
-                    var targetVariable = new VariableDefinition(sourceVariable.Name, voidTypeReference);
-                    initializingTargetConstructor.Body.Variables.Add(targetVariable);
-                    variableCloners.Add(new VariableCloner(this.ILCloningContext, sourceVariable, targetVariable));
-                }
-                this.VariableCloners.AddRange(variableCloners);
-
-                var ilProcessor = initializingTargetConstructor.Body.GetILProcessor();
-                var firstInstructionInTargetConstructor = initializingTargetConstructor.Body.Instructions[0];
-
-                // go backwards through the source initialization instructions
-                // this makes it so that every new instruction is added just after the first instruction in the target
-                var instructionCloners = new List<InstructionCloner>(multiplexedConstructor.InitializationInstructions.Count);
-                MethodContext methodContext = new MethodContext(
-                    this.ILCloningContext,
-                    Tuple.Create(this.SourceConstructor.Body.ThisParameter, initializingTargetConstructor.Body.ThisParameter),
-                    new List<Tuple<ParameterDefinition, LazyAccessor<ParameterDefinition>>>(),
-                    variableCloners,
-                    instructionCloners);
-                for (int i = multiplexedConstructor.InitializationInstructions.Count - 1; i >= 0; i--)
-                {
-                    var sourceInstruction = multiplexedConstructor.InitializationInstructions[i].ApplyLocalVariableTranslation(preexistingVariableCount);
-                    Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(methodContext, ilProcessor, sourceInstruction);
-                    ilProcessor.InsertAfter(firstInstructionInTargetConstructor, targetInstruction);
-                    instructionCloners.Add(new InstructionCloner(methodContext, sourceInstruction, targetInstruction));
-                }
-                this.InstructionCloners.AddRange(instructionCloners);
+            if (sourceMultiplexedConstructor.HasConstructionItems)
+            {
+                this.InjectConstructionItems(sourceMultiplexedConstructor);
             }
         }
 
         /// <summary>
-        /// Looks at the target types constructors, and determines which are initializing constructors,
-        /// meaning that they call into the base type's constructor.
+        /// Adds initialization items to all initializing target constructors.
         /// </summary>
-        /// <returns>Collection of initializing constructors for the target type.</returns>
-        private IEnumerable<MethodDefinition> GetInitializingTargetConstructors()
+        /// <param name="sourceMultiplexedConstructor">Multiplexed source constructor.</param>
+        private void InjectInitializationItems(ConstructorMultiplexer sourceMultiplexedConstructor)
         {
-            // find target constructors that call into their base constructor
-            var targetBaseTypeConstructorFullNames =
-                from method in this.ILCloningContext.RootTarget.BaseType.Resolve().Methods
-                where method.IsConstructor
-                select method.FullName;
+            Contract.Requires(sourceMultiplexedConstructor != null);
+            Contract.Requires(sourceMultiplexedConstructor.HasInitializationItems);
 
-            IEnumerable<MethodDefinition> initializingTargetConstructors;
-            initializingTargetConstructors =
-                from method in this.TargetType.Methods
-                where method.IsConstructor &&
-                    method.HasBody &&
-                    method.Body.Instructions.Any(instruction =>
-                        instruction.OpCode == OpCodes.Call &&
-                        instruction.Operand != null &&
-                        instruction.Operand is MethodReference &&
-                        targetBaseTypeConstructorFullNames.Contains(((MethodReference)instruction.Operand).FullName))
-                select method;
-
-            // a valid type should have at least one constructor that calls into a base constructor
-            if (!initializingTargetConstructors.Any())
+            foreach (var targetConstructor in this.TargetType.Methods.Where(method => method.IsConstructor))
             {
-                throw new InvalidOperationException("Could not find any target constructors that call into a base constructor.");
+                var targetMultiplexedConstructor = ConstructorMultiplexer.Get(this.ILCloningContext, this.SourceConstructor);
+                if (!targetMultiplexedConstructor.IsInitializingConstructor) { continue; }  // skip non-initializing constructors
+
+                this.InjectInitializationItems(sourceMultiplexedConstructor, targetConstructor);
+            }
+        }
+
+        /// <summary>
+        /// Adds initialization variables and/or instructions into a target's constructor.
+        /// </summary>
+        /// <param name="sourceMultiplexedConstructor">Multiplexed source constructor.</param>
+        /// <param name="targetConstructor">Target constructor to inject into.</param>
+        private void InjectInitializationItems(ConstructorMultiplexer sourceMultiplexedConstructor, MethodDefinition targetConstructor)
+        {
+            Contract.Requires(sourceMultiplexedConstructor != null);
+            Contract.Requires(targetConstructor != null);
+            Contract.Requires(sourceMultiplexedConstructor.HasInitializationItems);
+
+            targetConstructor.Body.InitLocals = targetConstructor.Body.InitLocals || sourceMultiplexedConstructor.InitializationVariables.Any();
+            var preexistingVariableCount = targetConstructor.Body.Variables.Count;
+
+            var variableCloners = new List<VariableCloner>();
+            var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
+            var targetVariableIndexBySourceVariableIndex = new Dictionary<int, int>();
+            foreach (var sourceVariable in sourceMultiplexedConstructor.InitializationVariables)
+            {
+                var targetVariable = new VariableDefinition(sourceVariable.Name, voidTypeReference);
+                targetConstructor.Body.Variables.Add(targetVariable);
+                targetVariableIndexBySourceVariableIndex.Add(sourceVariable.Index, targetVariable.Index);
+                variableCloners.Add(new VariableCloner(this.ILCloningContext, sourceVariable, targetVariable));
+            }
+            this.VariableCloners.AddRange(variableCloners);
+
+            var ilProcessor = targetConstructor.Body.GetILProcessor();
+            var firstInstructionInTargetConstructor = targetConstructor.Body.Instructions[0];
+            if (firstInstructionInTargetConstructor.OpCode != OpCodes.Ldarg_0 || firstInstructionInTargetConstructor.Operand != null)
+            {
+                throw new InvalidOperationException("The first instruction in a mixin target's constructor wasn't the expected ldarg.0");
             }
 
-            return initializingTargetConstructors;
+            // go backwards through the source initialization instructions
+            // this makes it so that every new instruction is added just after the first instruction in the target
+            var instructionCloners = new List<InstructionCloner>(sourceMultiplexedConstructor.InitializationInstructions.Count);
+            MethodContext methodContext = new MethodContext(
+                this.ILCloningContext,
+                Tuple.Create(this.SourceConstructor.Body.ThisParameter, targetConstructor.Body.ThisParameter),
+                new List<Tuple<ParameterDefinition, LazyAccessor<ParameterDefinition>>>(),
+                variableCloners,
+                instructionCloners);
+            for (int i = sourceMultiplexedConstructor.InitializationInstructions.Count - 1; i >= 0; i--)
+            {
+                var sourceInstruction = sourceMultiplexedConstructor.InitializationInstructions[i];
+                int translation;
+                int? sourceVariableIndex;
+                if (!sourceInstruction.TryGetVariableIndex(out sourceVariableIndex)) { translation = 0; }
+                else
+                {
+                    int targetVariableIndex;
+                    if (!targetVariableIndexBySourceVariableIndex.TryGetValue(sourceVariableIndex.Value, out targetVariableIndex))
+                    {
+                        throw new InvalidOperationException("No source entry to find target variable index for a construction instruction.");
+                    }
+                    translation = targetVariableIndex - sourceVariableIndex.Value;
+                }
+                var translatedSourceInstruction = sourceInstruction.ApplyLocalVariableTranslation(translation);
+                Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(methodContext, ilProcessor, translatedSourceInstruction);
+                ilProcessor.InsertAfter(firstInstructionInTargetConstructor, targetInstruction);
+                instructionCloners.Add(new InstructionCloner(methodContext, translatedSourceInstruction, targetInstruction));
+            }
+            this.InstructionCloners.AddRange(instructionCloners);
+        }
+
+        /// <summary>
+        /// Adds construction variables and/or instructions into all initializing target constructors.
+        /// </summary>
+        /// <param name="sourceMultiplexedConstructor">Multiplexed source constructor.</param>
+        /// <param name="targetMultiplexedConstructor">Multiplexed target constructor.</param>
+        /// <param name="targetConstructor">Target constructor to inject into.</param>
+        private void InjectConstructionItems(ConstructorMultiplexer sourceMultiplexedConstructor)
+        {
+            Contract.Requires(sourceMultiplexedConstructor != null);
+            Contract.Requires(sourceMultiplexedConstructor.HasConstructionItems);
+
+            // because the source constructor may have multiple exit points, it's not enough to simply copy instructions
+            // from the source into target constructors
+            // the safe way to handle this is to enclose construction items into their own method and invoke that from
+            // every target constructor
+
+            var constructionMethod = new MethodDefinition(
+                string.Format("ctor_{0:N}", Guid.NewGuid()),
+                MethodAttributes.Private,
+                this.ILCloningContext.RootTarget.Module.Import(typeof(void)));
+            this.TargetType.Methods.Add(constructionMethod);
+
+            constructionMethod.Body = new MethodBody(constructionMethod);
+            var variableCloners = new List<VariableCloner>();
+            var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
+            var targetVariableIndexBySourceVariableIndex = new Dictionary<int, int>();
+            foreach (var sourceVariable in sourceMultiplexedConstructor.InitializationVariables)
+            {
+                var targetVariable = new VariableDefinition(sourceVariable.Name, voidTypeReference);
+                constructionMethod.Body.Variables.Add(targetVariable);
+                targetVariableIndexBySourceVariableIndex.Add(sourceVariable.Index, targetVariable.Index);
+                variableCloners.Add(new VariableCloner(this.ILCloningContext, sourceVariable, targetVariable));
+            }
+            this.VariableCloners.AddRange(variableCloners);
+
+            var ilProcessor = constructionMethod.Body.GetILProcessor();
+            var instructionCloners = new List<InstructionCloner>(sourceMultiplexedConstructor.InitializationInstructions.Count);
+            MethodContext methodContext = new MethodContext(
+                this.ILCloningContext,
+                Tuple.Create(this.SourceConstructor.Body.ThisParameter, constructionMethod.Body.ThisParameter),
+                new List<Tuple<ParameterDefinition, LazyAccessor<ParameterDefinition>>>(),
+                variableCloners,
+                instructionCloners);
+            foreach (var sourceInstruction in sourceMultiplexedConstructor.ConstructionInstructions)
+            {
+                int translation;
+                int? sourceVariableIndex;
+                if (!sourceInstruction.TryGetVariableIndex(out sourceVariableIndex)) { translation = 0; }
+                else
+                {
+                    int targetVariableIndex;
+                    if (!targetVariableIndexBySourceVariableIndex.TryGetValue(sourceVariableIndex.Value, out targetVariableIndex))
+                    {
+                        throw new InvalidOperationException("No source entry to find target variable index for a construction instruction.");
+                    }
+                    translation = targetVariableIndex - sourceVariableIndex.Value;
+                }
+                var translatedSourceInstruction = sourceInstruction.ApplyLocalVariableTranslation(translation);
+                Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(methodContext, ilProcessor, translatedSourceInstruction);
+                ilProcessor.Append(targetInstruction);
+                instructionCloners.Add(new InstructionCloner(methodContext, translatedSourceInstruction, targetInstruction));
+            }
+            this.InstructionCloners.AddRange(instructionCloners);
+
+            foreach (var targetConstructor in this.TargetType.Methods.Where(method => method.IsConstructor))
+            {
+                // we can't re-use multiplexed target constructors from initialization because they may have changed
+                var targetMultiplexedConstructor = ConstructorMultiplexer.Get(this.ILCloningContext, this.SourceConstructor);
+                if (!targetMultiplexedConstructor.IsInitializingConstructor) { continue; }  // skip non-initializing constructors
+
+                var boundaryIntruction = targetConstructor.Body.Instructions[targetMultiplexedConstructor.BoundaryInstructionIndex];
+                var targetILProcessor = targetConstructor.Body.GetILProcessor();
+                var callingInstruction = targetILProcessor.Create(OpCodes.Call, constructionMethod);
+                targetILProcessor.InsertAfter(boundaryIntruction, callingInstruction);
+            }
         }
     }
 }

@@ -113,7 +113,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             Assert.That(instanceObject is IForTargetWithMultipleConstructors);
             var instance = (IForTargetWithMultipleConstructors)instanceObject;
 
-            //Assert.That(targetType.GetField("SomeNumberSetTo395493InConstructor").GetValue(instance), Is.EqualTo(395493));
+            Assert.That(targetType.GetField("SomeNumberSetTo395493InConstructor").GetValue(instance), Is.EqualTo(395493));
 
             Assert.That(targetType.GetField("OriginalInitializedInt").GetValue(instance), Is.EqualTo(48685));
             Assert.That(targetType.GetField("OriginalInitializedString").GetValue(instance), Is.EqualTo("Tion3lao ehiuawh iuh buib ld"));

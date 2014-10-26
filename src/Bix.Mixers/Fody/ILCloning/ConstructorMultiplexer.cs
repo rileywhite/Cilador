@@ -60,10 +60,147 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
+        /// Gets or sets the IL cloning context.
+        /// </summary>
+        private ILCloningContext ILCloningContext { get; set; }
+
+        /// <summary>
+        /// Gets whether the constructor is initializing, i.e. whether it runs compiler generated code
+        /// such as initializing instance fields. The indicator in the IL is that it call the base constructor.
+        /// </summary>
+        public bool IsInitializingConstructor { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the index of the constructor instruction that separates compiler-generated initialization
+        /// code, such as field initialization, from developer-written constructor code. This will be the index
+        /// of the instruction that calls the base constructor or that forwards to a different "this" constructor.
+        /// </summary>
+        private int? InnerBoundaryInstructionIndex { get; set; }
+
+        /// <summary>
+        /// Gets the index of the constructor instruction that separates compiler-generated initialization
+        /// code, such as field initialization, from developer-written constructor code. This will be the index
+        /// of the instruction that calls the base constructor or that forwards to a different "this" constructor.
+        /// </summary>
+        public int BoundaryInstructionIndex
+        {
+            get
+            {
+                Contract.Requires(this.InnerBoundaryInstructionIndex.HasValue);
+                return this.InnerBoundaryInstructionIndex.Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the constructor that will be multiplexed.
+        /// </summary>
+        public MethodDefinition Constructor { get; private set; }
+
+        /// <summary>
+        /// Gets or sets variables used in compiler-generated initialization code.
+        /// </summary>
+        private List<VariableDefinition> InnerInitializationVariables { get; set; }
+
+        /// <summary>
+        /// Gets variables used in compiler-generated initialization code.
+        /// </summary>
+        public IReadOnlyList<VariableDefinition> InitializationVariables
+        {
+            get
+            {
+                Contract.Requires(this.InnerInitializationVariables != null);
+                return this.InnerInitializationVariables;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets instructions used in compiler-generated initialization code.
+        /// </summary>
+        private List<Instruction> InnerInitializationInstructions { get; set; }
+
+        /// <summary>
+        /// Gets instructions used in compiler-generated initialization code.
+        /// </summary>
+        public IReadOnlyList<Instruction> InitializationInstructions
+        {
+            get
+            {
+                Contract.Requires(this.InnerInitializationInstructions != null);
+                return this.InnerInitializationInstructions;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets variables used in developer-written constructor code.
+        /// </summary>
+        private List<VariableDefinition> InnerConstructionVariables { get; set; }
+
+        /// <summary>
+        /// Gets variables used in developer-written constructor code.
+        /// </summary>
+        public IReadOnlyList<VariableDefinition> ConstructionVariables
+        {
+            get
+            {
+                Contract.Requires(this.InnerConstructionVariables != null);
+                return this.InnerConstructionVariables;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets instructions used in developer-written constructor code.
+        /// </summary>
+        private List<Instruction> InnerConstructionInstructions { get; set; }
+
+        /// <summary>
+        /// Gets instructions used in developer-written constructor code.
+        /// </summary>
+        public IReadOnlyList<Instruction> ConstructionInstructions
+        {
+            get
+            {
+                Contract.Requires(this.InnerConstructionInstructions != null);
+                return this.InnerConstructionInstructions;
+            }
+        }
+
+        /// <summary>
+        /// Gets whether there are any initialization items in the multiplexed constructor.
+        /// </summary>
+        public bool HasInitializationItems
+        {
+            get
+            {
+                Contract.Requires(this.InnerInitializationVariables != null);
+                Contract.Requires(this.InnerInitializationInstructions != null);
+                return this.InnerInitializationInstructions.Any() || this.InnerInitializationVariables.Any();
+            }
+        }
+
+        /// <summary>
+        /// Gets whether there are any construction items in the multiplexed constructor.
+        /// </summary>
+        public bool HasConstructionItems
+        {
+            get
+            {
+                Contract.Requires(this.InnerConstructionVariables != null);
+                Contract.Requires(this.InnerConstructionInstructions != null);
+                return
+                    this.InnerConstructionVariables.Any() ||
+                    this.InnerConstructionInstructions.Any(
+                    instruction =>
+                        instruction.OpCode.Code != Code.Nop &&
+                        instruction.OpCode.Code != Code.Ret);
+            }
+        }
+
+        /// <summary>
         /// Does the work of multiplexing the constructor.
         /// </summary>
         private void Multiplex()
         {
+            Contract.Ensures(this.InnerBoundaryInstructionIndex.HasValue);
             Contract.Ensures(this.InitializationVariables != null);
             Contract.Ensures(this.InitializationInstructions != null);
             Contract.Ensures(this.ConstructionVariables != null);
@@ -74,23 +211,24 @@ namespace Bix.Mixers.Fody.ILCloning
             this.InnerConstructionVariables = new List<VariableDefinition>(this.Constructor.Body.Variables); // start with the assumption that all variables are construction variables
             this.InnerConstructionInstructions = new List<Instruction>();
 
-            this.PopulateInitializationAndBoundary();
-            this.PopulateConstruction();
+            this.PopulateInitializationItemsAndFindBoundary();
+            this.PopulateConstructionItems();
         }
 
         /// <summary>
         /// Populated the initialization variables and instructions. Also populates the boundary instruction index.
         /// </summary>
-        private void PopulateInitializationAndBoundary()
+        private void PopulateInitializationItemsAndFindBoundary()
         {
             // we want the collection of instructions between the first ldarg and the boundary instruction (base constructor call or forwarding this constructor call).
             var instruction = this.Constructor.Body.Instructions[0];
             if (instruction.OpCode != OpCodes.Ldarg_0 || instruction.Operand != null)
             {
-                throw new InvalidOperationException("The first instruction in a mixin implementation's default constructor wasn't the expected ldarg.0");
+                throw new InvalidOperationException(
+                    "The first instruction in a mixin implementation's parameterless constructor wasn't the expected ldarg.0");
             }
 
-            for (int i = 1; i < this.Constructor.Body.Instructions.Count && !this.BoundaryInstructionIndex.HasValue; i++)
+            for (int i = 1; i < this.Constructor.Body.Instructions.Count && !this.InnerBoundaryInstructionIndex.HasValue; i++)
             {
                 instruction = this.Constructor.Body.Instructions[i];
                 var operandAsMethodReference = instruction.Operand as MethodReference;
@@ -100,7 +238,7 @@ namespace Bix.Mixers.Fody.ILCloning
                     (operandAsMethodReference.DeclaringType.FullName == this.Constructor.DeclaringType.FullName ||
                     operandAsMethodReference.DeclaringType.FullName == this.Constructor.DeclaringType.BaseType.FullName))
                 {
-                    this.BoundaryInstructionIndex = i;
+                    this.InnerBoundaryInstructionIndex = i;
                     this.IsInitializingConstructor =
                         operandAsMethodReference.DeclaringType.FullName == this.Constructor.DeclaringType.BaseType.FullName;
                 }
@@ -128,21 +266,22 @@ namespace Bix.Mixers.Fody.ILCloning
                 }
             }
 
-            if (!this.BoundaryInstructionIndex.HasValue || this.BoundaryInstructionIndex.Value <= 0)
+            if (!this.InnerBoundaryInstructionIndex.HasValue || this.InnerBoundaryInstructionIndex.Value <= 0)
             {
                 throw new InvalidOperationException("Cannot find base or forwarding constructor call in mixin implementation's parameterless constructor.");
             }
 
             // sanity check
-            Contract.Assert(this.InnerInitializationInstructions.Count == this.BoundaryInstructionIndex - 1);
+            Contract.Assert(this.InnerInitializationInstructions.Count == this.InnerBoundaryInstructionIndex - 1);
         }
 
         /// <summary>
         /// Populates construction variables and instructions.
         /// </summary>
-        private void PopulateConstruction()
+        private void PopulateConstructionItems()
         {
-            for (int i = this.BoundaryInstructionIndex.Value + 1; i < this.Constructor.Body.Instructions.Count; i++)
+            bool isCodeOtherThanNoOpFound = false;
+            for (int i = this.InnerBoundaryInstructionIndex.Value + 1; i < this.Constructor.Body.Instructions.Count; i++)
             {
                 var instruction = this.Constructor.Body.Instructions[i];
                 this.InnerConstructionInstructions.Add(instruction);
@@ -189,81 +328,6 @@ namespace Bix.Mixers.Fody.ILCloning
                 }
             }
             return variable != null;
-        }
-
-        /// <summary>
-        /// Gets or sets the IL cloning context.
-        /// </summary>
-        private ILCloningContext ILCloningContext { get; set; }
-
-        /// <summary>
-        /// Gets whether the constructor is initializing, i.e. whether it runs compiler generated code
-        /// such as initializing instance fields. The indicator in the IL is that it call the base constructor.
-        /// </summary>
-        public bool IsInitializingConstructor { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the index of the constructor instruction that separates compiler-generated initialization
-        /// code, such as field initialization, from developer-written constructor code. This will be the index
-        /// of the instruction that calls the base constructor or that forwards to a different "this" constructor.
-        /// </summary>
-        private int? BoundaryInstructionIndex { get; set; }
-
-        /// <summary>
-        /// Gets the constructor that will be multiplexed.
-        /// </summary>
-        public MethodDefinition Constructor { get; private set; }
-
-        /// <summary>
-        /// Gets or sets variables used in compiler-generated initialization code.
-        /// </summary>
-        private List<VariableDefinition> InnerInitializationVariables { get; set; }
-
-        /// <summary>
-        /// Gets variables used in compiler-generated initialization code.
-        /// </summary>
-        public IReadOnlyList<VariableDefinition> InitializationVariables
-        {
-            get { return this.InnerInitializationVariables; }
-        }
-
-        /// <summary>
-        /// Gets or sets instructions used in compiler-generated initialization code.
-        /// </summary>
-        private List<Instruction> InnerInitializationInstructions { get; set; }
-
-        /// <summary>
-        /// Gets instructions used in compiler-generated initialization code.
-        /// </summary>
-        public IReadOnlyList<Instruction> InitializationInstructions
-        {
-            get { return this.InnerInitializationInstructions; }
-        }
-
-        /// <summary>
-        /// Gets or sets variables used in developer-written constructor code.
-        /// </summary>
-        private List<VariableDefinition> InnerConstructionVariables { get; set; }
-
-        /// <summary>
-        /// Gets variables used in developer-written constructor code.
-        /// </summary>
-        public IReadOnlyList<VariableDefinition> ConstructionVariables
-        {
-            get { return this.InnerConstructionVariables; }
-        }
-
-        /// <summary>
-        /// Gets or sets instructions used in developer-written constructor code.
-        /// </summary>
-        private List<Instruction> InnerConstructionInstructions { get; set; }
-
-        /// <summary>
-        /// Gets instructions used in developer-written constructor code.
-        /// </summary>
-        public IReadOnlyList<Instruction> ConstructionInstructions
-        {
-            get { return this.InnerConstructionInstructions; }
         }
     }
 }
