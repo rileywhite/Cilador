@@ -51,6 +51,7 @@
     <Compile Include="MultipleConstructorsTarget.cs" />
     <Compile Include="NonTargetType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StaticConstructorsTarget.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Fody.TestMixinInterfaces\Bix.Mixers.Fody.TestMixinInterfaces.csproj">

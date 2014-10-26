@@ -95,18 +95,9 @@ namespace Bix.Mixers.Fody.ILCloning
 
             foreach (var sourceMethod in sourceType.Methods)
             {
-                if (sourceMethod.Name == ".cctor" &&
-                    sourceMethod.IsStatic &&
-                    sourceMethod.DeclaringType == ILCloningContext.RootSource)
-                {
-                    // TODO should static constructors be supported on the root type?
-                    throw new WeavingException(string.Format(
-                        "Configured mixin implementation cannot have a type initializer (i.e. static constructor): [{0}]",
-                        this.ILCloningContext.RootSource.FullName));
-                }
-
                 if (sourceMethod.IsConstructor &&
-                    sourceMethod.DeclaringType == ILCloningContext.RootSource)
+                    !sourceMethod.IsStatic &&
+                    sourceMethod.DeclaringType == this.ILCloningContext.RootSource)
                 {
                     if (sourceMethod.HasParameters)
                     {
@@ -116,7 +107,7 @@ namespace Bix.Mixers.Fody.ILCloning
                         // but that's a complex and time-consuming task with unknown payoff
                         // so for now we don't support mixin implementations that have constructors with parameters
                         throw new WeavingException(string.Format(
-                            "Configured mixin implementation cannot use constructors: [{0}]",
+                            "Configured mixin implementation cannot use constructors with parameters: [{0}]",
                             this.ILCloningContext.RootSource.FullName));
                     }
 
@@ -129,8 +120,33 @@ namespace Bix.Mixers.Fody.ILCloning
                     continue;
                 }
 
-                var targetMethod = new MethodDefinition(sourceMethod.Name, 0, voidReference);
-                targetType.Methods.Add(targetMethod);
+                MethodDefinition targetMethod = null;
+
+                if (sourceMethod.IsConstructor &&
+                    sourceMethod.IsStatic &&
+                    sourceMethod.DeclaringType == this.ILCloningContext.RootSource)
+                {
+                    var targetStaticConstructor = this.ILCloningContext.RootTarget.Methods.SingleOrDefault(method => method.IsConstructor && method.IsStatic);
+                    // if there is no static constructor in the target, then treat it like any other method
+                    // otherwise we need to merge the methods
+                    if (targetStaticConstructor != null)
+                    {
+                        // if there is already a target static constructor, then redirect the clone to a different method
+                        // and then add a call to the new method into the existing static constructor
+                        targetMethod = new MethodDefinition(
+                            string.Format("cctor_{0:N}", Guid.NewGuid()),
+                            MethodAttributes.Private | MethodAttributes.Static | MethodAttributes.HideBySig,
+                            voidReference);
+                        targetType.Methods.Add(targetMethod);
+                        this.VisitStaticConstructor(targetStaticConstructor, targetMethod);
+                    }
+                }
+
+                if (targetMethod == null)
+                {
+                    targetMethod = new MethodDefinition(sourceMethod.Name, sourceMethod.Attributes, voidReference);
+                    targetType.Methods.Add(targetMethod);
+                }
                 this.Visit(sourceMethod, targetMethod);
             }
 
@@ -236,6 +252,28 @@ namespace Bix.Mixers.Fody.ILCloning
                     () => targetGenericParameterProvider.GenericParameters[sourceGenericParameter.Position],
                     targetGenericParameter => targetGenericParameterProvider.GenericParameters[sourceGenericParameter.Position] = targetGenericParameter));
             }
+        }
+
+        /// <summary>
+        /// Gathers cloners for cloning the source static constructor instructions and variables into the existing
+        /// target static constructor.
+        /// </summary>
+        /// <param name="targetStaticConstructor">Target static constructor.</param>
+        /// <param name="sourceStaticConstructorTarget">New target method which will contain contents of the original source static constructor.</param>
+        private void VisitStaticConstructor(MethodDefinition targetStaticConstructor, MethodDefinition sourceStaticConstructorTarget)
+        {
+            Contract.Requires(targetStaticConstructor != null);
+            Contract.Requires(targetStaticConstructor.IsConstructor);
+            Contract.Requires(targetStaticConstructor.IsStatic);
+            Contract.Requires(targetStaticConstructor.HasBody);
+            Contract.Requires(targetStaticConstructor.DeclaringType == this.ILCloningContext.RootTarget);
+            Contract.Requires(sourceStaticConstructorTarget != null);
+            Contract.Requires(sourceStaticConstructorTarget.DeclaringType == this.ILCloningContext.RootTarget);
+
+            var firstInstruction = targetStaticConstructor.Body.Instructions[0];
+            var targetILProcessor = targetStaticConstructor.Body.GetILProcessor();
+
+            targetILProcessor.InsertBefore(firstInstruction, targetILProcessor.Create(OpCodes.Call, sourceStaticConstructorTarget));
         }
     }
 }

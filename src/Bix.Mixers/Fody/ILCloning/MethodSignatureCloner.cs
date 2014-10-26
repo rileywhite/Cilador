@@ -82,10 +82,8 @@ namespace Bix.Mixers.Fody.ILCloning
         public override void Clone()
         {
             Contract.Assert(this.Target.DeclaringType != null);
-            Contract.Assert(this.Target.Name == this.Source.Name);
             Contract.Assert(this.Target.Parameters.Count == this.Source.Parameters.Count);
 
-            this.Target.Attributes = this.Source.Attributes;
             this.Target.CallingConvention = this.Source.CallingConvention;
             this.Target.ExplicitThis = this.Source.ExplicitThis;
             this.Target.HasThis = this.Source.HasThis;

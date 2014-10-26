@@ -24,9 +24,9 @@ using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.TestMixins
 {
-    public class StaticInitializationMixin : IEmptyInterface
+    public class StaticInitializationMixinForTargetWithStaticConstructor : IForTargetWithStaticConstructors
     {
-        static StaticInitializationMixin()
+        static StaticInitializationMixinForTargetWithStaticConstructor()
         {
             MixedUninitializedInt = 3788448;
             MixedUninitializedString = "APONION ioniosdnfionaiuhg ";

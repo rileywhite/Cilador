@@ -423,7 +423,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             Assert.Throws(
                 Is.TypeOf((typeof(WeavingException)))
                 .And.Message.EqualTo(string.Format(
-                    "Configured mixin implementation cannot use constructors: [{0}]",
+                    "Configured mixin implementation cannot use constructors with parameters: [{0}]",
                     typeof(ConstructorWithParametersMixin).FullName)),
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }

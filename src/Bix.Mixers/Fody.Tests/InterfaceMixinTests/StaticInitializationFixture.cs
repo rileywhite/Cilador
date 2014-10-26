@@ -20,53 +20,104 @@ using Bix.Mixers.Fody.TestMixins;
 using Bix.Mixers.Fody.Tests.Common;
 using NUnit.Framework;
 using System;
+using System.Reflection;
 
 namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
 {
     [TestFixture]
     public class StaticInitializationFixture
     {
-        //[Test]
-        //public void StaticFieldsAreInitialized()
-        //{
-        //    var config = new BixMixersConfigType();
+        [Test]
+        public void StaticConstructorIsClonedForTargetWithoutStaticConstructor()
+        {
+            var config = new BixMixersConfigType();
 
-        //    config.MixCommandConfig = new MixCommandConfigTypeBase[]
-        //    {
-        //        new InterfaceMixinConfigType
-        //        {
-        //            InterfaceMixinMap = new InterfaceMixinMapType[]
-        //            {
-        //                new InterfaceMixinMapType
-        //                {
-        //                    Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
-        //                    Mixin = typeof(StaticInitializationMixin).GetShortAssemblyQualifiedName()
-        //                }
-        //            }
-        //        },
-        //    };
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
+                    {
+                        new InterfaceMixinMapType
+                        {
+                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(StaticInitializationMixin).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
 
-        //    var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
-        //    var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.MultipleConstructorsTarget).FullName);
+            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+            var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.EmptyInterfaceTarget).FullName);
 
-        //    Assert.That(typeof(IForTargetWithMultipleConstructors).IsAssignableFrom(targetType));
-        //    targetType.ValidateMemberCountsAre(0, 0, 0, 4, 0, 1);
+            Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
+            targetType.ValidateMemberCountsAre(2, 0, 6, 0, 0, 0);
 
-        //    Assert.That(targetType.GetField("StaticNumberSetTo832778InInitializer", TestContent.BindingFlagsForMixedMembers), Is.EqualTo(832778));
-        //    Assert.That(targetType.GetField("StaticNumberInitilizedTo7279848InDeclaration", TestContent.BindingFlagsForMixedMembers), Is.EqualTo(7279848));
+            Assert.That(targetType.GetField("MixedUninitializedInt", TestContent.BindingFlagsForMixedMembers).GetValue(null), Is.EqualTo(3788448));
+            Assert.That(targetType.GetField("MixedUninitializedString", TestContent.BindingFlagsForMixedMembers).GetValue(null), Is.EqualTo("APONION ioniosdnfionaiuhg "));
+            var uriBuilder = targetType.GetField("MixedUninitializedObject", TestContent.BindingFlagsForMixedMembers).GetValue(null) as UriBuilder;
+            Assert.That(uriBuilder, Is.Not.Null);
+            Assert.That(uriBuilder.Host, Is.EqualTo("j.k.l"));
 
-        //    var tuple = (Tuple<int, string>)targetType.GetField(
-        //        "StaticTupleInitilizedTo485AndBlahInDeclaration",
-        //        TestContent.BindingFlagsForMixedMembers).GetValue(null);
-        //    Assert.That(tuple.Item1, Is.EqualTo(485));
-        //    Assert.That(tuple.Item2, Is.EqualTo("Blah"));
+            Assert.That(targetType.GetField("MixedInitializedInt", TestContent.BindingFlagsForMixedMembers).GetValue(null), Is.EqualTo(438974789));
+            Assert.That(targetType.GetField("MixedInitializedString", TestContent.BindingFlagsForMixedMembers).GetValue(null), Is.EqualTo("QKLdsionioj ioenu buif"));
+            uriBuilder = targetType.GetField("MixedInitializedObject", TestContent.BindingFlagsForMixedMembers).GetValue(null) as UriBuilder;
+            Assert.That(uriBuilder, Is.Not.Null);
+            Assert.That(uriBuilder.Host, Is.EqualTo("g.h.i"));
+        }
 
-        //    var innerTypeInstance = targetType.GetField(
-        //        "InnerTypeSetTo49874AndBlah2AndNewObjectWithObjectInitilizerInDelcaration",
-        //        TestContent.BindingFlagsForMixedMembers).GetValue(null);
-        //    Assert.That(innerTypeInstance.GetType().GetField("SomeInt").GetValue(innerTypeInstance), Is.EqualTo(49874));
-        //    Assert.That(innerTypeInstance.GetType().GetField("SomeString").GetValue(innerTypeInstance), Is.EqualTo("Blah2"));
-        //    Assert.That(innerTypeInstance.GetType().GetField("SomeObject").GetValue(innerTypeInstance), Is.Not.Null);
-        //}
+        [Test]
+        public void StaticConstructorIsClonedForTargetWithStaticConstructor()
+        {
+            var config = new BixMixersConfigType();
+
+            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            {
+                new InterfaceMixinConfigType
+                {
+                    InterfaceMixinMap = new InterfaceMixinMapType[]
+                    {
+                        new InterfaceMixinMapType
+                        {
+                            Interface = typeof(IForTargetWithStaticConstructors).GetShortAssemblyQualifiedName(),
+                            Mixin = typeof(StaticInitializationMixinForTargetWithStaticConstructor).GetShortAssemblyQualifiedName()
+                        }
+                    }
+                },
+            };
+
+            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+            var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.StaticConstructorsTarget).FullName);
+
+            Assert.That(typeof(IForTargetWithStaticConstructors).IsAssignableFrom(targetType));
+            targetType.ValidateMemberCountsAre(2, 1, 12, 0, 0, 0);
+
+            Assert.That(targetType.BaseType.GetField("SomeNumberSetTo56561InStaticConstructor", TestContent.BindingFlagsForMixedMembers).GetValue(null), Is.EqualTo(56561));
+            Assert.That(targetType.BaseType.GetField("SomeNumberInitializedTo8188", TestContent.BindingFlagsForMixedMembers).GetValue(null), Is.EqualTo(8188));
+
+            Assert.That(targetType.GetField("OriginalUninitializedInt", TestContent.BindingFlagsForMixedMembers).GetValue(null), Is.EqualTo(9834897));
+            Assert.That(targetType.GetField("OriginalUninitializedString", TestContent.BindingFlagsForMixedMembers).GetValue(null), Is.EqualTo("QWEhinIOnsonf nui uif"));
+            var uriBuilder = targetType.GetField("OriginalUninitializedObject", TestContent.BindingFlagsForMixedMembers).GetValue(null) as UriBuilder;
+            Assert.That(uriBuilder, Is.Not.Null);
+            Assert.That(uriBuilder.Host, Is.EqualTo("d.e.f"));
+
+            Assert.That(targetType.GetField("OriginalInitializedInt", TestContent.BindingFlagsForMixedMembers).GetValue(null), Is.EqualTo(35881));
+            Assert.That(targetType.GetField("OriginalInitializedString", TestContent.BindingFlagsForMixedMembers).GetValue(null), Is.EqualTo("Elak Ion fiugrnn"));
+            uriBuilder = targetType.GetField("OriginalInitializedObject", TestContent.BindingFlagsForMixedMembers).GetValue(null) as UriBuilder;
+            Assert.That(uriBuilder, Is.Not.Null);
+            Assert.That(uriBuilder.Host, Is.EqualTo("a.b.c"));
+
+            Assert.That(targetType.GetField("MixedUninitializedInt", TestContent.BindingFlagsForMixedMembers).GetValue(null), Is.EqualTo(3788448));
+            Assert.That(targetType.GetField("MixedUninitializedString", TestContent.BindingFlagsForMixedMembers).GetValue(null), Is.EqualTo("APONION ioniosdnfionaiuhg "));
+            uriBuilder = targetType.GetField("MixedUninitializedObject", TestContent.BindingFlagsForMixedMembers).GetValue(null) as UriBuilder;
+            Assert.That(uriBuilder, Is.Not.Null);
+            Assert.That(uriBuilder.Host, Is.EqualTo("j.k.l"));
+
+            Assert.That(targetType.GetField("MixedInitializedInt", TestContent.BindingFlagsForMixedMembers).GetValue(null), Is.EqualTo(438974789));
+            Assert.That(targetType.GetField("MixedInitializedString", TestContent.BindingFlagsForMixedMembers).GetValue(null), Is.EqualTo("QKLdsionioj ioenu buif"));
+            uriBuilder = targetType.GetField("MixedInitializedObject", TestContent.BindingFlagsForMixedMembers).GetValue(null) as UriBuilder;
+            Assert.That(uriBuilder, Is.Not.Null);
+            Assert.That(uriBuilder.Host, Is.EqualTo("g.h.i"));
+        }
     }
 }

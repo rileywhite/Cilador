@@ -45,6 +45,7 @@
     </Compile>
     <Compile Include="IForTargetWithMultipleConstructors.cs" />
     <Compile Include="IEmptyInterface.cs" />
+    <Compile Include="IForTargetWithStaticConstructors.cs" />
     <Compile Include="IGenericMixinDefinition.cs" />
     <Compile Include="IInterfaceForImplicitExplicitTesting.cs" />
     <Compile Include="IInterfaceWithOnlyPrimitiveTypes.cs" />

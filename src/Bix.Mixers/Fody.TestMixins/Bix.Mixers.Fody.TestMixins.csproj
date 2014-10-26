@@ -60,6 +60,7 @@
     <Compile Include="SecurityDeclarationOnNestedTypeMixin.cs" />
     <Compile Include="SecurityDeclarationMixin.cs" />
     <Compile Include="SelfReferencingMembersMixin.cs" />
+    <Compile Include="StaticInitializationMixinForTargetWithStaticConstructor.cs" />
     <Compile Include="ThisPameterMixin.cs" />
     <Compile Include="TryCatchFinallyMixin.cs" />
     <Compile Include="StaticInitializationMixin.cs" />

@@ -142,7 +142,6 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(sourceMultiplexedConstructor.HasInitializationItems);
 
             targetConstructor.Body.InitLocals = targetConstructor.Body.InitLocals || sourceMultiplexedConstructor.InitializationVariables.Any();
-            var preexistingVariableCount = targetConstructor.Body.Variables.Count;
 
             var variableCloners = new List<VariableCloner>();
             var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
@@ -213,7 +212,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
             var constructionMethod = new MethodDefinition(
                 string.Format("ctor_{0:N}", Guid.NewGuid()),
-                MethodAttributes.Private,
+                MethodAttributes.Private | MethodAttributes.HideBySig,
                 this.ILCloningContext.RootTarget.Module.Import(typeof(void)));
             this.TargetType.Methods.Add(constructionMethod);
 
@@ -266,12 +265,12 @@ namespace Bix.Mixers.Fody.ILCloning
                 var targetMultiplexedConstructor = ConstructorMultiplexer.Get(this.ILCloningContext, targetConstructor);
                 if (!targetMultiplexedConstructor.IsInitializingConstructor) { continue; }  // skip non-initializing constructors
 
-                var boundaryIntruction = targetConstructor.Body.Instructions[targetMultiplexedConstructor.BoundaryInstructionIndex];
+                var boundaryInstruction = targetConstructor.Body.Instructions[targetMultiplexedConstructor.BoundaryInstructionIndex];
                 var targetILProcessor = targetConstructor.Body.GetILProcessor();
 
                 // insert in reverse order
-                targetILProcessor.InsertAfter(boundaryIntruction, targetILProcessor.Create(OpCodes.Call, constructionMethod));
-                targetILProcessor.InsertAfter(boundaryIntruction, targetILProcessor.Create(OpCodes.Ldarg_0));
+                targetILProcessor.InsertAfter(boundaryInstruction, targetILProcessor.Create(OpCodes.Call, constructionMethod));
+                targetILProcessor.InsertAfter(boundaryInstruction, targetILProcessor.Create(OpCodes.Ldarg_0));
             }
         }
     }
