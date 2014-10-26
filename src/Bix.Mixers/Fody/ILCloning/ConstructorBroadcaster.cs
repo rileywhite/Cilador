@@ -100,15 +100,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         public void BroadcastConstructor()
         {
-            List<VariableDefinition> sourceInitializationVariables;
-            List<Instruction> sourceInitializationInstructions;
-            List<VariableDefinition> sourceConstructionVariables;
-            List<Instruction> sourceConstructionInstructions;
-            if (!this.TryMultiplexInitializationAndConstructionItems(
-                out sourceInitializationVariables,
-                out sourceInitializationInstructions,
-                out sourceConstructionVariables,
-                out sourceConstructionInstructions)) { return; }
+            var multiplexedConstructor = ConstructorMultiplexer.Get(this.ILCloningContext, this.SourceConstructor);
 
             // we're going to insert the initializing instruction clone targets into the initializing constructors after the first instruction
             foreach (var initializingTargetConstructor in this.GetInitializingTargetConstructors())
@@ -119,7 +111,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
                 var variableCloners = new List<VariableCloner>();
                 var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
-                foreach (var sourceVariable in sourceInitializationVariables)
+                foreach (var sourceVariable in multiplexedConstructor.InitializationVariables)
                 {
                     var targetVariable = new VariableDefinition(sourceVariable.Name, voidTypeReference);
                     initializingTargetConstructor.Body.Variables.Add(targetVariable);
@@ -132,16 +124,16 @@ namespace Bix.Mixers.Fody.ILCloning
 
                 // go backwards through the source initialization instructions
                 // this makes it so that every new instruction is added just after the first instruction in the target
-                var instructionCloners = new List<InstructionCloner>(sourceInitializationInstructions.Count);
+                var instructionCloners = new List<InstructionCloner>(multiplexedConstructor.InitializationInstructions.Count);
                 MethodContext methodContext = new MethodContext(
                     this.ILCloningContext,
                     Tuple.Create(this.SourceConstructor.Body.ThisParameter, initializingTargetConstructor.Body.ThisParameter),
                     new List<Tuple<ParameterDefinition, LazyAccessor<ParameterDefinition>>>(),
                     variableCloners,
                     instructionCloners);
-                for (int i = sourceInitializationInstructions.Count - 1; i >= 0; i--)
+                for (int i = multiplexedConstructor.InitializationInstructions.Count - 1; i >= 0; i--)
                 {
-                    var sourceInstruction = sourceInitializationInstructions[i].ApplyLocalVariableTranslation(preexistingVariableCount);
+                    var sourceInstruction = multiplexedConstructor.InitializationInstructions[i].ApplyLocalVariableTranslation(preexistingVariableCount);
                     Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(methodContext, ilProcessor, sourceInstruction);
                     ilProcessor.InsertAfter(firstInstructionInTargetConstructor, targetInstruction);
                     instructionCloners.Add(new InstructionCloner(methodContext, sourceInstruction, targetInstruction));
@@ -182,100 +174,6 @@ namespace Bix.Mixers.Fody.ILCloning
             }
 
             return initializingTargetConstructors;
-        }
-
-        /// <summary>
-        /// Multiplexes the single source constructor into component variables and instructions.
-        /// This separates the compiler generated initialization variables and instructions used
-        /// for, as an example, initializing fields from those that run the actual constructor logic.
-        /// </summary>
-        /// <param name="sourceInitializationVariables">Variables used in initialization code that runs before the base constructor call.</param>
-        /// <param name="sourceInitializationInstructions">Instructions used in initialization code that runs before the base constructor call.</param>
-        /// <param name="sourceConstructionVariables">Variables used in constructor code that runs after the base constructor call.</param>
-        /// <param name="sourceConstructionInstructions">Instructions used in constructor code that runs after the base constructor call.</param>
-        /// <returns><c>true</c> if the multiplexing operation was successful, else <c>false</c>.</returns>
-        private bool TryMultiplexInitializationAndConstructionItems(
-            out List<VariableDefinition> sourceInitializationVariables,
-            out List<Instruction> sourceInitializationInstructions,
-            out List<VariableDefinition> sourceConstructionVariables,
-            out List<Instruction> sourceConstructionInstructions)
-        {
-            sourceInitializationVariables = new List<VariableDefinition>();
-            sourceInitializationInstructions = new List<Instruction>();
-            sourceConstructionVariables = new List<VariableDefinition>(this.SourceConstructor.Body.Variables); // start with the assumption that all variables are construction variables
-            sourceConstructionInstructions = new List<Instruction>();
-
-            // we want the collection of instructions between the first ldarg and the call into the base constructor.
-            var sourceInstruction = this.SourceConstructor.Body.Instructions[0];
-            if (sourceInstruction.OpCode != OpCodes.Ldarg_0 || sourceInstruction.Operand != null)
-            {
-                throw new InvalidOperationException("The first instruction in a mixin implementation's default constructor wasn't the expected ldarg.0");
-            }
-
-            var objectConstructorFullName = this.ILCloningContext.RootSource.Module.Import(typeof(object).GetConstructor(new Type[0])).FullName;
-            int? baseConstructorCallInstructionIndex = default(int?);
-            for (int i = 1; i < this.SourceConstructor.Body.Instructions.Count && !baseConstructorCallInstructionIndex.HasValue; i++)
-            {
-                // we have a rule that an implementation must have only a default constructor and that it must inherit from object
-                // all we have to do is find the first call to object's constructor
-                sourceInstruction = this.SourceConstructor.Body.Instructions[i];
-                if (sourceInstruction.OpCode == OpCodes.Call &&
-                    sourceInstruction.Operand != null &&
-                    sourceInstruction.Operand is MethodReference &&
-                    ((MethodReference)sourceInstruction.Operand).FullName == objectConstructorFullName)
-                {
-                    baseConstructorCallInstructionIndex = i;
-                }
-                else
-                {
-                    // add the source instruction to initialization instructions
-                    sourceInitializationInstructions.Add(sourceInstruction);
-
-                    // if the instruction references a variable, then move that from construction to initialization
-                    var sourceVariable = sourceInstruction.Operand as VariableDefinition;
-                    if (sourceVariable == null)
-                    {
-                        int? variableIndex;
-                        if (sourceInstruction.TryGetVariableIndex(out variableIndex))
-                        {
-                            sourceVariable = sourceConstructionVariables.FirstOrDefault(variable => variable.Index == variableIndex.Value);
-                        }
-                    }
-
-                    if (sourceVariable != null && sourceConstructionVariables.Contains(sourceVariable))
-                    {
-                        sourceConstructionVariables.Remove(sourceVariable);
-                        sourceInitializationVariables.Add(sourceVariable);
-                    }
-                }
-            }
-
-            if (!baseConstructorCallInstructionIndex.HasValue || baseConstructorCallInstructionIndex.Value <= 0)
-            {
-                // if more constructors were allowed, this might be possible in constructors that call through to other constructors
-                // under current assumptions, this shouldn't happen
-                // this is not the right place to handle the error, though, so simply return false from the method.
-                sourceInitializationVariables = null;
-                sourceInitializationInstructions = null;
-                sourceConstructionVariables = null;
-                sourceConstructionInstructions = null;
-                return false;
-            }
-
-            // sanity check
-            Contract.Assert(sourceInitializationInstructions.Count == baseConstructorCallInstructionIndex - 1);
-
-            // enforce the rule about no logic in the source's default constructor
-            for (int i = baseConstructorCallInstructionIndex.Value + 1; i < this.SourceConstructor.Body.Instructions.Count; i++)
-            {
-                sourceInstruction = this.SourceConstructor.Body.Instructions[i];
-                if (sourceInstruction.OpCode != OpCodes.Ret && sourceInstruction.OpCode != OpCodes.Nop)
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            return true;
         }
     }
 }

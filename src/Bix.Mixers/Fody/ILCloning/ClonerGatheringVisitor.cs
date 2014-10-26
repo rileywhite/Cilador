@@ -110,12 +110,17 @@ namespace Bix.Mixers.Fody.ILCloning
                 {
                     if (sourceMethod.HasParameters)
                     {
-                        // TODO support constructors for the root type in some meaningful way
+                        // at some point in the future if it becomes clear that it would be useful,
+                        // it may be possible to create all combinations of source and target constructor
+                        // arguments and put them into the final mixed target
+                        // but that's a complex and time-consuming task with unknown payoff
+                        // so for now we don't support mixin implementations that have constructors with parameters
                         throw new WeavingException(string.Format(
                             "Configured mixin implementation cannot use constructors: [{0}]",
                             this.ILCloningContext.RootSource.FullName));
                     }
 
+                    // for a parameterless constructor, we need to inject it into every target constructor
                     var constructorBroadcaster = new ConstructorBroadcaster(this.ILCloningContext, sourceMethod, targetType);
                     constructorBroadcaster.BroadcastConstructor();
                     this.Cloners.AddCloners(constructorBroadcaster.VariableCloners);

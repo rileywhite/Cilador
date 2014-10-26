@@ -108,6 +108,7 @@
     <Compile Include="ILCloning\ClonerGatheringVisitor.cs" />
     <Compile Include="ILCloning\Cloners.cs" />
     <Compile Include="ILCloning\ConstructorBroadcaster.cs" />
+    <Compile Include="ILCloning\ConstructorMultiplexer.cs" />
     <Compile Include="ILCloning\EventCloner.cs" />
     <Compile Include="ILCloning\ExceptionHandlerCloner.cs" />
     <Compile Include="Core\LazyAccessor.cs" />
