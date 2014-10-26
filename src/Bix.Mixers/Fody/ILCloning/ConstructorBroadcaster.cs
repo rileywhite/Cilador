@@ -24,14 +24,28 @@ using System.Linq;
 
 namespace Bix.Mixers.Fody.ILCloning
 {
+    /// <summary>
+    /// Clones a mixin implementation's default constructor into target constructors.
+    /// </summary>
+    /// <remarks>
+    /// There are two classifications of constructors: those that call into a "base"
+    /// constructor and those that call into a different "this" constructor. During
+    /// object initialization, exactly one constructor that calls into a base constructor
+    /// is executed, so these are the constructors that we focus on. Each of these
+    /// "initializing" constructors will get code from the implementation's default
+    /// constructor. They will get both initialization code, i.e. compler generated code
+    /// that runs before the implementation's base constructor call such as field initialization,
+    /// and constructor code, which is code compiled from programmer-written constructor
+    /// code.
+    /// </remarks>
     internal class ConstructorBroadcaster
     {
-        private ILCloningContext ILCloningContext { get; set; }
-        private MethodDefinition SourceConstructor { get; set; }
-        private TypeDefinition TargetType { get; set; }
-        public List<VariableCloner> VariableCloners { get; private set; }
-        public List<InstructionCloner> InstructionCloners { get; private set; }
-
+        /// <summary>
+        /// Creates a new <see cref="ConstructorBroadcaster"/>.
+        /// </summary>
+        /// <param name="ilCloningContext"></param>
+        /// <param name="sourceConstructor"></param>
+        /// <param name="targetType"></param>
         public ConstructorBroadcaster(
             ILCloningContext ilCloningContext,
             MethodDefinition sourceConstructor,
@@ -56,6 +70,34 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Assert(this.SourceConstructor.Body.Instructions.Any());
         }
 
+        /// <summary>
+        /// Gets or sets the IL cloning context.
+        /// </summary>
+        private ILCloningContext ILCloningContext { get; set; }
+
+        /// <summary>
+        /// Source default constructor that will be broadcast into target constructors.
+        /// </summary>
+        private MethodDefinition SourceConstructor { get; set; }
+
+        /// <summary>
+        /// Target type for the constructor broadcast.
+        /// </summary>
+        private TypeDefinition TargetType { get; set; }
+
+        /// <summary>
+        /// Variable cloners that will be added to the collection of all cloners.
+        /// </summary>
+        public List<VariableCloner> VariableCloners { get; private set; }
+
+        /// <summary>
+        /// Instruction cloners that will be added to the collection of all cloners.
+        /// </summary>
+        public List<InstructionCloner> InstructionCloners { get; private set; }
+
+        /// <summary>
+        /// Performs the actual work of cloning the source constructor to target constructors.
+        /// </summary>
         public void BroadcastConstructor()
         {
             List<VariableDefinition> sourceInitializationVariables;
@@ -69,14 +111,15 @@ namespace Bix.Mixers.Fody.ILCloning
                 out sourceConstructionInstructions)) { return; }
 
             // we're going to insert the initializing instruction clone targets into the initializing constructors after the first instruction
-            //var instructionCloners = new List<InstructionCloner>(sourceInitializationInstructions.Count * initializingTargetConstructors.Count());
             foreach (var initializingTargetConstructor in this.GetInitializingTargetConstructors())
             {
                 // clone all variables
                 initializingTargetConstructor.Body.InitLocals = initializingTargetConstructor.Body.InitLocals || this.SourceConstructor.Body.InitLocals;
+                var preexistingVariableCount = initializingTargetConstructor.Body.Variables.Count;
+
                 var variableCloners = new List<VariableCloner>();
                 var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
-                foreach (var sourceVariable in this.SourceConstructor.Body.Variables)
+                foreach (var sourceVariable in sourceInitializationVariables)
                 {
                     var targetVariable = new VariableDefinition(sourceVariable.Name, voidTypeReference);
                     initializingTargetConstructor.Body.Variables.Add(targetVariable);
@@ -98,8 +141,8 @@ namespace Bix.Mixers.Fody.ILCloning
                     instructionCloners);
                 for (int i = sourceInitializationInstructions.Count - 1; i >= 0; i--)
                 {
-                    var sourceInstruction = sourceInitializationInstructions[i];
-                    Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(this.ILCloningContext, ilProcessor, sourceInstruction);
+                    var sourceInstruction = sourceInitializationInstructions[i].ApplyLocalVariableTranslation(preexistingVariableCount);
+                    Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(methodContext, ilProcessor, sourceInstruction);
                     ilProcessor.InsertAfter(firstInstructionInTargetConstructor, targetInstruction);
                     instructionCloners.Add(new InstructionCloner(methodContext, sourceInstruction, targetInstruction));
                 }
@@ -107,6 +150,11 @@ namespace Bix.Mixers.Fody.ILCloning
             }
         }
 
+        /// <summary>
+        /// Looks at the target types constructors, and determines which are initializing constructors,
+        /// meaning that they call into the base type's constructor.
+        /// </summary>
+        /// <returns>Collection of initializing constructors for the target type.</returns>
         private IEnumerable<MethodDefinition> GetInitializingTargetConstructors()
         {
             // find target constructors that call into their base constructor
@@ -136,6 +184,16 @@ namespace Bix.Mixers.Fody.ILCloning
             return initializingTargetConstructors;
         }
 
+        /// <summary>
+        /// Multiplexes the single source constructor into component variables and instructions.
+        /// This separates the compiler generated initialization variables and instructions used
+        /// for, as an example, initializing fields from those that run the actual constructor logic.
+        /// </summary>
+        /// <param name="sourceInitializationVariables">Variables used in initialization code that runs before the base constructor call.</param>
+        /// <param name="sourceInitializationInstructions">Instructions used in initialization code that runs before the base constructor call.</param>
+        /// <param name="sourceConstructionVariables">Variables used in constructor code that runs after the base constructor call.</param>
+        /// <param name="sourceConstructionInstructions">Instructions used in constructor code that runs after the base constructor call.</param>
+        /// <returns><c>true</c> if the multiplexing operation was successful, else <c>false</c>.</returns>
         private bool TryMultiplexInitializationAndConstructionItems(
             out List<VariableDefinition> sourceInitializationVariables,
             out List<Instruction> sourceInitializationInstructions,
@@ -174,11 +232,20 @@ namespace Bix.Mixers.Fody.ILCloning
                     sourceInitializationInstructions.Add(sourceInstruction);
 
                     // if the instruction references a variable, then move that from construction to initialization
-                    var variableOperand = sourceInstruction.Operand as VariableDefinition;
-                    if (variableOperand != null)
+                    var sourceVariable = sourceInstruction.Operand as VariableDefinition;
+                    if (sourceVariable == null)
                     {
-                        sourceInitializationVariables.Remove(variableOperand);
-                        sourceConstructionVariables.Add(variableOperand);
+                        int? variableIndex;
+                        if (sourceInstruction.TryGetVariableIndex(out variableIndex))
+                        {
+                            sourceVariable = sourceConstructionVariables.FirstOrDefault(variable => variable.Index == variableIndex.Value);
+                        }
+                    }
+
+                    if (sourceVariable != null && sourceConstructionVariables.Contains(sourceVariable))
+                    {
+                        sourceConstructionVariables.Remove(sourceVariable);
+                        sourceInitializationVariables.Add(sourceVariable);
                     }
                 }
             }
@@ -195,6 +262,9 @@ namespace Bix.Mixers.Fody.ILCloning
                 return false;
             }
 
+            // sanity check
+            Contract.Assert(sourceInitializationInstructions.Count == baseConstructorCallInstructionIndex - 1);
+
             // enforce the rule about no logic in the source's default constructor
             for (int i = baseConstructorCallInstructionIndex.Value + 1; i < this.SourceConstructor.Body.Instructions.Count; i++)
             {
@@ -204,9 +274,6 @@ namespace Bix.Mixers.Fody.ILCloning
                     throw new NotImplementedException();
                 }
             }
-
-            // sanity check
-            Contract.Assert(sourceInitializationInstructions.Count == baseConstructorCallInstructionIndex - 1);
 
             return true;
         }

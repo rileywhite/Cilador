@@ -42,14 +42,14 @@ namespace Bix.Mixers.Fody.TestMixinTargets
         {
             this.OriginalUninitializedInt = 783535;
             this.OriginalUninitializedString = "KNion wineofn oianweiof nqiognui ndf";
-            this.OriginalUninitializedObject =  new OriginalInnerType { SomeNumber = 68485, SomeString = "AkolenaAeoi akefnoi ne" };
+            this.OriginalUninitializedObject =  new UriBuilder { Host = "j.k.l" };
         }
 
-        public MultipleConstructorsTarget(int i) : this(i, "A iuohiogfniouhe uihui iu.", new OriginalInnerType { SomeNumber = 89743, SomeString = "Alkewlkn io" }) { }
+        public MultipleConstructorsTarget(int i) : this(i, "A iuohiogfniouhe uihui iu.", new UriBuilder { Host = "g.h.i" }) { }
 
-        public MultipleConstructorsTarget(int i, string j) : this(i, j, new OriginalInnerType { SomeNumber = 787465, SomeString = "LKEnoisnf sdsd" }) { }
+        public MultipleConstructorsTarget(int i, string j) : this(i, j, new UriBuilder { Host = "d.e.f" }) { }
 
-        public MultipleConstructorsTarget(int i, string j, OriginalInnerType k)
+        public MultipleConstructorsTarget(int i, string j, UriBuilder k)
             : base(i)
         {
             this.OriginalUninitializedInt = i;
@@ -57,18 +57,12 @@ namespace Bix.Mixers.Fody.TestMixinTargets
             this.OriginalUninitializedObject = k;
         }
 
-        public class OriginalInnerType
-        {
-            public int SomeNumber { get; set; }
-            public string SomeString { get; set; }
-        }
-
         public int OriginalInitializedInt = 48685;
         public string OriginalInitializedString = "Tion3lao ehiuawh iuh buib ld";
-        public OriginalInnerType OriginalInitializedObject = new OriginalInnerType { SomeNumber = 7834, SomeString = "aHWOoi Ooih noing" };
+        public UriBuilder OriginalInitializedObject = new UriBuilder { Host = "a.b.c" };
 
         public int OriginalUninitializedInt;
         public string OriginalUninitializedString;
-        public OriginalInnerType OriginalUninitializedObject;
+        public UriBuilder OriginalUninitializedObject;
     }
 }

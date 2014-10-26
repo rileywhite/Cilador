@@ -287,19 +287,19 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <summary>
         /// Creates a wireframe instruction (i.e. operand not set) to be used as a cloning target for the given source instruction.
         /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the target method body.</param>
         /// <param name="sourceInstruction">Source instruction.</param>
         /// <returns>Wireframe target instruction. The operand will be invalid so that it can be set by instruction cloning later.</returns>
-        public static Instruction CreateCloningTargetFor(ILCloningContext ilCloningContext, ILProcessor ilProcessor, Instruction sourceInstruction)
+        public static Instruction CreateCloningTargetFor(MethodContext methodContext, ILProcessor ilProcessor, Instruction sourceInstruction)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
             Contract.Requires(sourceInstruction != null);
 
             return sourceInstruction.Operand == null ?
                 ilProcessor.Create(sourceInstruction.OpCode) :
-                CreateInstructionWithOperand(ilCloningContext, ilProcessor, sourceInstruction.OpCode, (dynamic)sourceInstruction.Operand);
+                CreateInstructionWithOperand(methodContext, ilProcessor, sourceInstruction.OpCode, (dynamic)sourceInstruction.Operand);
         }
 
         /// <summary>
@@ -313,9 +313,9 @@ namespace Bix.Mixers.Fody.ILCloning
         /// Always raised. This method is only invoked via dynamic dispatch when the operand is not recognized as a supported
         /// operand type. If the operand was recognized as a supported type, a different method would have been invoked.
         /// </exception>
-        private static Instruction CreateInstructionWithOperand(ILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, object unsupportedOperand)
+        private static Instruction CreateInstructionWithOperand(MethodContext methodContext, ILProcessor ilProcessor, OpCode opCode, object unsupportedOperand)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
 
             if (unsupportedOperand == null) { return ilProcessor.Create(opCode); }
@@ -331,9 +331,9 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="value">Operand for instruction</param>
         /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(ILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, byte value)
+        private static Instruction CreateInstructionWithOperand(MethodContext methodContext, ILProcessor ilProcessor, OpCode opCode, byte value)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
 
             return ilProcessor.Create(opCode, value);
@@ -350,9 +350,9 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <exception cref="NotSupportedException">
         /// Always raised. Calling <c>extern</c> methods is not currently supported.
         /// </exception>
-        private static Instruction CreateInstructionWithOperand(ILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, CallSite callSite)
+        private static Instruction CreateInstructionWithOperand(MethodContext methodContext, ILProcessor ilProcessor, OpCode opCode, CallSite callSite)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
 
             // TODO support extern methods and get coverage for this
@@ -368,9 +368,9 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="value">Operand for instruction</param>
         /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(ILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, double value)
+        private static Instruction CreateInstructionWithOperand(MethodContext methodContext, ILProcessor ilProcessor, OpCode opCode, double value)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
 
             return ilProcessor.Create(opCode, value);
@@ -383,12 +383,12 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="field">Operand for instruction</param>
         /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(ILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, FieldReference field)
+        private static Instruction CreateInstructionWithOperand(MethodContext methodContext, ILProcessor ilProcessor, OpCode opCode, FieldReference field)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
 
-            return ilProcessor.Create(opCode, new FieldReference("", ilCloningContext.RootTarget.Module.Import(typeof(void))));
+            return ilProcessor.Create(opCode, new FieldReference("", methodContext.ILCloningContext.RootTarget.Module.Import(typeof(void))));
         }
 
         /// <summary>
@@ -399,9 +399,9 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="value">Operand for instruction</param>
         /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(ILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, float value)
+        private static Instruction CreateInstructionWithOperand(MethodContext methodContext, ILProcessor ilProcessor, OpCode opCode, float value)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
 
             return ilProcessor.Create(opCode, value);
@@ -414,9 +414,9 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="instruction">Operand for instruction</param>
         /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(ILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, Instruction instruction)
+        private static Instruction CreateInstructionWithOperand(MethodContext methodContext, ILProcessor ilProcessor, OpCode opCode, Instruction instruction)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
 
             return ilProcessor.Create(opCode, Instruction.Create(OpCodes.Nop));
@@ -429,9 +429,9 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="instructions">Operand for instruction</param>
         /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(ILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, Instruction[] instructions)
+        private static Instruction CreateInstructionWithOperand(MethodContext methodContext, ILProcessor ilProcessor, OpCode opCode, Instruction[] instructions)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
 
             // TODO get coverage on this line with an inline switch
@@ -446,9 +446,9 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="value">Operand for instruction</param>
         /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(ILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, int value)
+        private static Instruction CreateInstructionWithOperand(MethodContext methodContext, ILProcessor ilProcessor, OpCode opCode, int value)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
 
             return ilProcessor.Create(opCode, value);
@@ -461,9 +461,9 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="value">Operand for instruction</param>
         /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(ILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, long value)
+        private static Instruction CreateInstructionWithOperand(MethodContext methodContext, ILProcessor ilProcessor, OpCode opCode, long value)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
 
             return ilProcessor.Create(opCode, value);
@@ -476,14 +476,14 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="method">Operand for instruction</param>
         /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(ILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, MethodReference method)
+        private static Instruction CreateInstructionWithOperand(MethodContext methodContext, ILProcessor ilProcessor, OpCode opCode, MethodReference method)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
 
             return ilProcessor.Create(
                 opCode,
-                new MethodReference("", ilCloningContext.RootTarget.Module.Import(typeof(void))));
+                new MethodReference("", methodContext.ILCloningContext.RootTarget.Module.Import(typeof(void))));
         }
 
         /// <summary>
@@ -494,12 +494,12 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="parameter">Operand for instruction</param>
         /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(ILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, ParameterDefinition parameter)
+        private static Instruction CreateInstructionWithOperand(MethodContext methodContext, ILProcessor ilProcessor, OpCode opCode, ParameterDefinition parameter)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
 
-            return ilProcessor.Create(opCode, new ParameterDefinition(ilCloningContext.RootTarget.Module.Import(typeof(void))));
+            return ilProcessor.Create(opCode, new ParameterDefinition(methodContext.ILCloningContext.RootTarget.Module.Import(typeof(void))));
         }
 
         /// <summary>
@@ -509,9 +509,9 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="value">Operand for instruction</param>
         /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(ILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, sbyte value)
+        private static Instruction CreateInstructionWithOperand(MethodContext methodContext, ILProcessor ilProcessor, OpCode opCode, sbyte value)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
 
             return ilProcessor.Create(opCode, value);
@@ -524,9 +524,9 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="value">Operand for instruction</param>
         /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(ILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, string value)
+        private static Instruction CreateInstructionWithOperand(MethodContext methodContext, ILProcessor ilProcessor, OpCode opCode, string value)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
 
             return ilProcessor.Create(opCode, value);
@@ -539,12 +539,12 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="type">Operand for instruction</param>
         /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(ILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, TypeReference type)
+        private static Instruction CreateInstructionWithOperand(MethodContext methodContext, ILProcessor ilProcessor, OpCode opCode, TypeReference type)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
 
-            return ilProcessor.Create(opCode, ilCloningContext.RootTarget.Module.Import(typeof(void)));
+            return ilProcessor.Create(opCode, methodContext.ILCloningContext.RootTarget.Module.Import(typeof(void)));
         }
 
         /// <summary>
@@ -554,12 +554,12 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="variable">Operand for instruction</param>
         /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(ILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, VariableDefinition variable)
+        private static Instruction CreateInstructionWithOperand(MethodContext methodContext, ILProcessor ilProcessor, OpCode opCode, VariableDefinition variable)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(methodContext != null);
             Contract.Requires(ilProcessor != null);
 
-            return ilProcessor.Create(opCode, new VariableDefinition(ilCloningContext.RootTarget.Module.Import(typeof(void))));
+            return ilProcessor.Create(opCode, new VariableDefinition(methodContext.ILCloningContext.RootTarget.Module.Import(typeof(void))));
         }
 
         #endregion

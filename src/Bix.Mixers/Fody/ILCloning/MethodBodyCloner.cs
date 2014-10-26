@@ -96,7 +96,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 // the operand is required to create the instruction
                 // but at this stage root resolving is not yet allowed because wireframes of all items do not yet exist
                 // so, where needed, dummy operands are used which will be replaced in the clone step of each instruction cloner
-                Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(this.ILCloningContext, ilProcessor, sourceInstruction);
+                Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(new MethodContext(this), ilProcessor, sourceInstruction);
                 ilProcessor.Append(targetInstruction);
                 this.InstructionCloners.Add(new InstructionCloner(this, sourceInstruction, targetInstruction));
             }

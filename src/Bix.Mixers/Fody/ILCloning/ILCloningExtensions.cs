@@ -15,6 +15,7 @@
 /***************************************************************************/
 
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 using System;
 using System.Collections.Generic;
@@ -155,6 +156,176 @@ namespace Bix.Mixers.Fody.ILCloning
                     }
                 }
                 target.CustomAttributes.Add(targetAttribute);
+            }
+        }
+
+        /// <summary>
+        /// Determines whether in instruction opcode stores a variable.
+        /// </summary>
+        /// <param name="code">OpCode's CIL code</param>
+        /// <returns><c>true</c> if the code is a variable store code, else <c>false</c>.</returns>
+        internal static bool IsStoreVariableOpCode(this Code code)
+        {
+            return
+                code == Code.Stloc ||
+                code == Code.Stloc_S ||
+                code == Code.Stloc_0 ||
+                code == Code.Stloc_1 ||
+                code == Code.Stloc_2 ||
+                code == Code.Stloc_3;
+        }
+
+        /// <summary>
+        /// Determines whether in instruction opcode loads a variable.
+        /// </summary>
+        /// <param name="code">OpCode's CIL code</param>
+        /// <returns><c>true</c> if the code is a variable load code, else <c>false</c>.</returns>
+        internal static bool IsLoadVariableOpCode(this Code code)
+        {
+            return
+                code == Code.Ldloc ||
+                code == Code.Ldloc_S ||
+                code == Code.Ldloc_0 ||
+                code == Code.Ldloc_1 ||
+                code == Code.Ldloc_2 ||
+                code == Code.Ldloc_3;
+        }
+
+        /// <summary>
+        /// Tries to find the index of a variable referenced by an instruction, if any.
+        /// </summary>
+        /// <param name="instruction">Instruction to examine.</param>
+        /// <param name="variableIndex">Index to populate, if found.</param>
+        /// <returns><c>true</c> if a referenced variable was found, otherwise <c>false</c>.</returns>
+        internal static bool TryGetVariableIndex(this Instruction instruction, out int? variableIndex)
+        {
+            Contract.Requires(instruction != null);
+            Contract.Ensures(Contract.ValueAtReturn<int?>(out variableIndex).HasValue || !Contract.Result<bool>());
+
+            switch (instruction.OpCode.Code)
+            {
+                case Code.Ldloc_0:
+                case Code.Stloc_0:
+                    variableIndex = 0;
+                    return true;
+
+                case Code.Ldloc_1:
+                case Code.Stloc_1:
+                    variableIndex = 1;
+                    return true;
+
+                case Code.Ldloc_2:
+                case Code.Stloc_2:
+                    variableIndex = 2;
+                    return true;
+
+                case Code.Ldloc_3:
+                case Code.Stloc_3:
+                    variableIndex = 3;
+                    return true;
+
+                case Code.Ldloc:
+                case Code.Ldloc_S:
+                case Code.Ldloca:
+                case Code.Ldloca_S:
+                case Code.Stloc:
+                case Code.Stloc_S:
+                    variableIndex = (int)instruction.Operand;
+                    return true;
+
+                default:
+                    variableIndex = default(int?);
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Examines the instruction and, if it accesses a local variable by index, provides a new version
+        /// that translates the access by the given count.
+        /// </summary>
+        internal static Instruction ApplyLocalVariableTranslation(this Instruction instruction, int translate)
+        {
+            Contract.Requires(instruction != null);
+
+            int? initialVariableIndex;
+            if (translate == 0 || !instruction.TryGetVariableIndex(out initialVariableIndex)) { return instruction; }
+            Contract.Assert(initialVariableIndex.HasValue);
+
+            var newIndex = initialVariableIndex.Value + translate;
+            if (newIndex < 0)
+            {
+                throw new InvalidOperationException("A variable index less than 0 cannot be used.");
+            }
+            if (newIndex > ushort.MaxValue)
+            {
+                throw new InvalidOperationException(string.Format("A variable index greater than {0} cannot be used.", ushort.MaxValue));
+            }
+
+            if (instruction.OpCode.Code.IsStoreVariableOpCode())
+            {
+                switch(newIndex)
+                {
+                    case 0:
+                        return Instruction.Create(OpCodes.Stloc_0);
+
+                    case 1:
+                        return Instruction.Create(OpCodes.Stloc_1);
+
+                    case 2:
+                        return Instruction.Create(OpCodes.Stloc_2);
+
+                    case 3:
+                        return Instruction.Create(OpCodes.Stloc_3);
+
+                    default:
+                        if (newIndex <= byte.MaxValue)
+                        {
+                            return Instruction.Create(OpCodes.Stloc_S, Convert.ToByte(newIndex));
+                        }
+                        else if(newIndex <= ushort.MaxValue)
+                        {
+                            return Instruction.Create(OpCodes.Stloc_S, Convert.ToUInt16(newIndex));
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("Variable index for store instruction is not in range of byte or ushort.");
+                        }
+                }
+            }
+            else if (instruction.OpCode.Code.IsLoadVariableOpCode())
+            {
+                switch (newIndex)
+                {
+                    case 0:
+                        return Instruction.Create(OpCodes.Ldloc_0);
+
+                    case 1:
+                        return Instruction.Create(OpCodes.Ldloc_1);
+
+                    case 2:
+                        return Instruction.Create(OpCodes.Ldloc_2);
+
+                    case 3:
+                        return Instruction.Create(OpCodes.Ldloc_3);
+
+                    default:
+                        if (newIndex <= byte.MaxValue)
+                        {
+                            return Instruction.Create(OpCodes.Ldloc_S, Convert.ToByte(newIndex));
+                        }
+                        else if (newIndex <= ushort.MaxValue)
+                        {
+                            return Instruction.Create(OpCodes.Ldloc_S, Convert.ToUInt16(newIndex));
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("Variable index for load instruction is not in range of byte or ushort.");
+                        }
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Expected a variable store or load code.");
             }
         }
     }

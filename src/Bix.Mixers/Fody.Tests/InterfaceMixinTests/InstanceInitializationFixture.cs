@@ -34,8 +34,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 new object[0],
                 783535,
                 "KNion wineofn oianweiof nqiognui ndf",
-                68485,
-                "AkolenaAeoi akefnoi ne",
+                "j.k.l",
                 "First");
         }
 
@@ -43,12 +42,11 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
         public void FieldsAreInitializedWithConstructorWithArguments()
         {
             this.TestWith(
-                new Type[] { typeof(int), typeof(string), typeof(Bix.Mixers.Fody.TestMixinTargets.MultipleConstructorsTarget.OriginalInnerType) },
-                new object[] { 138785, "SAJio  oioihIouh UIH UIH PUIHG", new Bix.Mixers.Fody.TestMixinTargets.MultipleConstructorsTarget.OriginalInnerType { SomeNumber = 21554, SomeString = "Aekl jiN INING" } },
+                new Type[] { typeof(int), typeof(string), typeof(UriBuilder) },
+                new object[] { 138785, "SAJio  oioihIouh UIH UIH PUIHG", new UriBuilder { Host = "m.n.o" } },
                 138785,
                 "SAJio  oioihIouh UIH UIH PUIHG",
-                21554,
-                "Aekl jiN INING",
+                "m.n.o",
                 "Second");
         }
 
@@ -60,8 +58,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 new object[] { 684684, ":POIenuiofh oie hioeh goiuh iu g" },
                 684684,
                 ":POIenuiofh oie hioeh goiuh iu g",
-                787465,
-                "LKEnoisnf sdsd",
+                "d.e.f",
                 "Second");
         }
 
@@ -73,8 +70,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
                 new object[] { 90874389 },
                 90874389,
                 "A iuohiogfniouhe uihui iu.",
-                89743,
-                "Alkewlkn io",
+                "g.h.i",
                 "Second");
         }
 
@@ -83,8 +79,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             object[] constructorArgs,
             int intValue,
             string stringValue,
-            int innerIntValue,
-            string innerStringValue,
+            string uriHostValue,
             string whichBaseConstructor)
         {
             var config = new BixMixersConfigType();
@@ -108,7 +103,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.MultipleConstructorsTarget).FullName);
 
             Assert.That(typeof(IForTargetWithMultipleConstructors).IsAssignableFrom(targetType));
-            targetType.ValidateMemberCountsAre(4, 0, 13, 0, 0, 3);
+            targetType.ValidateMemberCountsAre(4, 0, 13, 0, 0, 2);
 
             var constructor = targetType.GetConstructor(constructorTypes);
             Assert.That(constructor, Is.Not.Null);
@@ -122,18 +117,16 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
 
             Assert.That(targetType.GetField("OriginalInitializedInt").GetValue(instance), Is.EqualTo(48685));
             Assert.That(targetType.GetField("OriginalInitializedString").GetValue(instance), Is.EqualTo("Tion3lao ehiuawh iuh buib ld"));
-            var innerObject = (Bix.Mixers.Fody.TestMixinTargets.MultipleConstructorsTarget.OriginalInnerType)targetType.GetField("OriginalInitializedObject").GetValue(instance);
+            var innerObject = (UriBuilder)targetType.GetField("OriginalInitializedObject").GetValue(instance);
             Assert.That(innerObject, Is.Not.Null);
-            Assert.That(innerObject.SomeNumber, Is.EqualTo(7834));
-            Assert.That(innerObject.SomeString, Is.EqualTo("aHWOoi Ooih noing"));
+            Assert.That(innerObject.Host, Is.EqualTo("a.b.c"));
 
             Assert.That(targetType.GetField("OriginalUninitializedInt").GetValue(instance), Is.EqualTo(intValue));
             Assert.That(targetType.GetField("OriginalUninitializedString").GetValue(instance), Is.EqualTo(stringValue));
             Assert.That(innerObject, Is.Not.Null);
-            innerObject = (Bix.Mixers.Fody.TestMixinTargets.MultipleConstructorsTarget.OriginalInnerType)targetType.GetField("OriginalUninitializedObject").GetValue(instance);
+            innerObject = (UriBuilder)targetType.GetField("OriginalUninitializedObject").GetValue(instance);
             Assert.That(innerObject, Is.Not.Null);
-            Assert.That(innerObject.SomeNumber, Is.EqualTo(innerIntValue));
-            Assert.That(innerObject.SomeString, Is.EqualTo(innerStringValue));
+            Assert.That(innerObject.Host, Is.EqualTo(uriHostValue));
 
             Assert.That(targetType.GetField("WhichConstructor").GetValue(instance), Is.EqualTo(whichBaseConstructor));
 
