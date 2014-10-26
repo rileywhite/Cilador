@@ -69,79 +69,126 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Ensures(this.ConstructionVariables != null);
             Contract.Ensures(this.ConstructionInstructions != null);
 
-            var initializationVariables = new List<VariableDefinition>();
-            var initializationInstructions = new List<Instruction>();
-            var constructionVariables = new List<VariableDefinition>(this.Constructor.Body.Variables); // start with the assumption that all variables are construction variables
-            var constructionInstructions = new List<Instruction>();
+            this.InnerInitializationVariables = new List<VariableDefinition>();
+            this.InnerInitializationInstructions = new List<Instruction>();
+            this.InnerConstructionVariables = new List<VariableDefinition>(this.Constructor.Body.Variables); // start with the assumption that all variables are construction variables
+            this.InnerConstructionInstructions = new List<Instruction>();
 
+            this.PopulateInitializationAndBoundary();
+            this.PopulateConstruction();
+        }
+
+        /// <summary>
+        /// Populated the initialization variables and instructions. Also populates the boundary instruction index.
+        /// </summary>
+        private void PopulateInitializationAndBoundary()
+        {
             // we want the collection of instructions between the first ldarg and the boundary instruction (base constructor call or forwarding this constructor call).
-            var sourceInstruction = this.Constructor.Body.Instructions[0];
-            if (sourceInstruction.OpCode != OpCodes.Ldarg_0 || sourceInstruction.Operand != null)
+            var instruction = this.Constructor.Body.Instructions[0];
+            if (instruction.OpCode != OpCodes.Ldarg_0 || instruction.Operand != null)
             {
                 throw new InvalidOperationException("The first instruction in a mixin implementation's default constructor wasn't the expected ldarg.0");
             }
 
-            int? boundaryInstructionIndex = default(int?);
-            for (int i = 1; i < this.Constructor.Body.Instructions.Count && !boundaryInstructionIndex.HasValue; i++)
+            for (int i = 1; i < this.Constructor.Body.Instructions.Count && !this.BoundaryInstructionIndex.HasValue; i++)
             {
-                sourceInstruction = this.Constructor.Body.Instructions[i];
-                var sourceOperandAsMethodReference = sourceInstruction.Operand as MethodReference;
-                if (sourceInstruction.OpCode == OpCodes.Call &&
-                    sourceOperandAsMethodReference != null &&
-                    sourceOperandAsMethodReference.Name == ".ctor" &&
-                    (sourceOperandAsMethodReference.DeclaringType.FullName == this.Constructor.DeclaringType.FullName ||
-                    sourceOperandAsMethodReference.DeclaringType.FullName == this.Constructor.DeclaringType.BaseType.FullName))
+                instruction = this.Constructor.Body.Instructions[i];
+                var operandAsMethodReference = instruction.Operand as MethodReference;
+                if (instruction.OpCode == OpCodes.Call &&
+                    operandAsMethodReference != null &&
+                    operandAsMethodReference.Name == ".ctor" &&
+                    (operandAsMethodReference.DeclaringType.FullName == this.Constructor.DeclaringType.FullName ||
+                    operandAsMethodReference.DeclaringType.FullName == this.Constructor.DeclaringType.BaseType.FullName))
                 {
-                    boundaryInstructionIndex = i;
+                    this.BoundaryInstructionIndex = i;
                     this.IsInitializingConstructor =
-                        sourceOperandAsMethodReference.DeclaringType.FullName == this.Constructor.DeclaringType.BaseType.FullName;
+                        operandAsMethodReference.DeclaringType.FullName == this.Constructor.DeclaringType.BaseType.FullName;
                 }
                 else
                 {
-                    // add the source instruction to initialization instructions
-                    initializationInstructions.Add(sourceInstruction);
+                    // add the instruction to initialization instructions
+                    this.InnerInitializationInstructions.Add(instruction);
 
                     // if the instruction references a variable, then move that from construction to initialization
-                    var sourceVariable = sourceInstruction.Operand as VariableDefinition;
-                    if (sourceVariable == null)
+                    VariableDefinition variable;
+                    if (this.TryGetReferencedVariable(instruction, out variable))
                     {
-                        int? variableIndex;
-                        if (sourceInstruction.TryGetVariableIndex(out variableIndex))
+                        if (this.InnerConstructionVariables.Contains(variable))
                         {
-                            sourceVariable = constructionVariables.FirstOrDefault(variable => variable.Index == variableIndex.Value);
+                            this.InnerConstructionVariables.Remove(variable);
+                            this.InnerInitializationVariables.Add(variable);
                         }
-                    }
-
-                    if (sourceVariable != null && constructionVariables.Contains(sourceVariable))
-                    {
-                        constructionVariables.Remove(sourceVariable);
-                        initializationVariables.Add(sourceVariable);
+                        else if (!this.InnerInitializationVariables.Contains(variable))
+                        {
+                            // variable wasn't found at all
+                            throw new InvalidOperationException(
+                                "An instruction in the initialization part of a multiplexed constructor references a variable that either cannot be found.");
+                        }
                     }
                 }
             }
 
-            if (!boundaryInstructionIndex.HasValue || boundaryInstructionIndex.Value <= 0)
+            if (!this.BoundaryInstructionIndex.HasValue || this.BoundaryInstructionIndex.Value <= 0)
             {
                 throw new InvalidOperationException("Cannot find base or forwarding constructor call in mixin implementation's parameterless constructor.");
             }
 
             // sanity check
-            Contract.Assert(initializationInstructions.Count == boundaryInstructionIndex - 1);
+            Contract.Assert(this.InnerInitializationInstructions.Count == this.BoundaryInstructionIndex - 1);
+        }
 
-            // enforce the rule about no logic in the source's default constructor
-            for (int i = boundaryInstructionIndex.Value + 1; i < this.Constructor.Body.Instructions.Count; i++)
+        /// <summary>
+        /// Populates construction variables and instructions.
+        /// </summary>
+        private void PopulateConstruction()
+        {
+            for (int i = this.BoundaryInstructionIndex.Value + 1; i < this.Constructor.Body.Instructions.Count; i++)
             {
-                sourceInstruction = this.Constructor.Body.Instructions[i];
-                if (sourceInstruction.OpCode != OpCodes.Ret && sourceInstruction.OpCode != OpCodes.Nop)
+                var instruction = this.Constructor.Body.Instructions[i];
+                this.InnerConstructionInstructions.Add(instruction);
+
+                // if the instruction references a variable, then ensure that the variable exists in the collection of construction variables
+                VariableDefinition variable;
+                if (this.TryGetReferencedVariable(instruction, out variable) &&
+                    !this.InnerConstructionVariables.Contains(variable))
                 {
-                    throw new NotImplementedException();
+                    // variable wasn't in the expected place
+                    if (this.InnerInitializationVariables.Contains(variable))
+                    {
+                        // looks like a variable was shared
+                        // this indicates that the code was written with an incorrect assumption that variables are not shared
+                        throw new InvalidOperationException(
+                            "An instruction in the construction part of a multiplexed constructor references a variable that is also referenced by initialization instructions.");
+                    }
+                    else
+                    {
+                        // a variable wasn't found at all
+                        throw new InvalidOperationException(
+                            "An instruction in the construction part of a multiplexed constructor references a variable that either cannot be found.");
+                    }
                 }
             }
+        }
 
-            this.InitializationVariables = initializationVariables;
-            this.InitializationInstructions = initializationInstructions;
-            this.ConstructionVariables = constructionVariables;
-            this.ConstructionInstructions = constructionInstructions;
+        /// <summary>
+        /// Finds a variable, if any, that is referenced by an instruction.
+        /// </summary>
+        /// <param name="instruction">Instruction that may reference a variable.</param>
+        /// <param name="variable">When populated, this is the referenced variable.</param>
+        /// <returns></returns>
+        private bool TryGetReferencedVariable(Instruction instruction, out VariableDefinition variable)
+        {
+            variable = instruction.Operand as VariableDefinition;
+            if (variable == null)
+            {
+                int? variableIndex;
+                if (instruction.TryGetVariableIndex(out variableIndex))
+                {
+                    variable = this.InnerConstructionVariables.FirstOrDefault(
+                        possibleInitializationVariable => possibleInitializationVariable.Index == variableIndex.Value);
+                }
+            }
+            return variable != null;
         }
 
         /// <summary>
@@ -156,28 +203,67 @@ namespace Bix.Mixers.Fody.ILCloning
         public bool IsInitializingConstructor { get; private set; }
 
         /// <summary>
+        /// Gets or sets the index of the constructor instruction that separates compiler-generated initialization
+        /// code, such as field initialization, from developer-written constructor code. This will be the index
+        /// of the instruction that calls the base constructor or that forwards to a different "this" constructor.
+        /// </summary>
+        private int? BoundaryInstructionIndex { get; set; }
+
+        /// <summary>
         /// Gets the constructor that will be multiplexed.
         /// </summary>
         public MethodDefinition Constructor { get; private set; }
 
         /// <summary>
+        /// Gets or sets variables used in compiler-generated initialization code.
+        /// </summary>
+        private List<VariableDefinition> InnerInitializationVariables { get; set; }
+
+        /// <summary>
         /// Gets variables used in compiler-generated initialization code.
         /// </summary>
-        public IReadOnlyList<VariableDefinition> InitializationVariables { get; private set; }
+        public IReadOnlyList<VariableDefinition> InitializationVariables
+        {
+            get { return this.InnerInitializationVariables; }
+        }
+
+        /// <summary>
+        /// Gets or sets instructions used in compiler-generated initialization code.
+        /// </summary>
+        private List<Instruction> InnerInitializationInstructions { get; set; }
 
         /// <summary>
         /// Gets instructions used in compiler-generated initialization code.
         /// </summary>
-        public IReadOnlyList<Instruction> InitializationInstructions { get; private set; }
+        public IReadOnlyList<Instruction> InitializationInstructions
+        {
+            get { return this.InnerInitializationInstructions; }
+        }
+
+        /// <summary>
+        /// Gets or sets variables used in developer-written constructor code.
+        /// </summary>
+        private List<VariableDefinition> InnerConstructionVariables { get; set; }
 
         /// <summary>
         /// Gets variables used in developer-written constructor code.
         /// </summary>
-        public IReadOnlyList<VariableDefinition> ConstructionVariables { get; private set; }
+        public IReadOnlyList<VariableDefinition> ConstructionVariables
+        {
+            get { return this.InnerConstructionVariables; }
+        }
+
+        /// <summary>
+        /// Gets or sets instructions used in developer-written constructor code.
+        /// </summary>
+        private List<Instruction> InnerConstructionInstructions { get; set; }
 
         /// <summary>
         /// Gets instructions used in developer-written constructor code.
         /// </summary>
-        public IReadOnlyList<Instruction> ConstructionInstructions { get; private set; }
+        public IReadOnlyList<Instruction> ConstructionInstructions
+        {
+            get { return this.InnerConstructionInstructions; }
+        }
     }
 }
