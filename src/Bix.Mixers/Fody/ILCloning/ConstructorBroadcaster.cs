@@ -218,6 +218,7 @@ namespace Bix.Mixers.Fody.ILCloning
             this.TargetType.Methods.Add(constructionMethod);
 
             constructionMethod.Body = new MethodBody(constructionMethod);
+            constructionMethod.Body.InitLocals = sourceMultiplexedConstructor.ConstructionVariables.Any();
             var variableCloners = new List<VariableCloner>();
             var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
             var targetVariableIndexBySourceVariableIndex = new Dictionary<int, int>();
@@ -262,13 +263,15 @@ namespace Bix.Mixers.Fody.ILCloning
             foreach (var targetConstructor in this.TargetType.Methods.Where(method => method.IsConstructor))
             {
                 // we can't re-use multiplexed target constructors from initialization because they may have changed
-                var targetMultiplexedConstructor = ConstructorMultiplexer.Get(this.ILCloningContext, this.SourceConstructor);
+                var targetMultiplexedConstructor = ConstructorMultiplexer.Get(this.ILCloningContext, targetConstructor);
                 if (!targetMultiplexedConstructor.IsInitializingConstructor) { continue; }  // skip non-initializing constructors
 
                 var boundaryIntruction = targetConstructor.Body.Instructions[targetMultiplexedConstructor.BoundaryInstructionIndex];
                 var targetILProcessor = targetConstructor.Body.GetILProcessor();
-                var callingInstruction = targetILProcessor.Create(OpCodes.Call, constructionMethod);
-                targetILProcessor.InsertAfter(boundaryIntruction, callingInstruction);
+
+                // insert in reverse order
+                targetILProcessor.InsertAfter(boundaryIntruction, targetILProcessor.Create(OpCodes.Call, constructionMethod));
+                targetILProcessor.InsertAfter(boundaryIntruction, targetILProcessor.Create(OpCodes.Ldarg_0));
             }
         }
     }

@@ -280,7 +280,6 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         private void PopulateConstructionItems()
         {
-            bool isCodeOtherThanNoOpFound = false;
             for (int i = this.InnerBoundaryInstructionIndex.Value + 1; i < this.Constructor.Body.Instructions.Count; i++)
             {
                 var instruction = this.Constructor.Body.Instructions[i];

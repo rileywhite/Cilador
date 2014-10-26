@@ -103,7 +103,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             var targetType = assembly.GetType(typeof(Bix.Mixers.Fody.TestMixinTargets.MultipleConstructorsTarget).FullName);
 
             Assert.That(typeof(IForTargetWithMultipleConstructors).IsAssignableFrom(targetType));
-            targetType.ValidateMemberCountsAre(4, 0, 13, 0, 0, 2);
+            targetType.ValidateMemberCountsAre(4, 1, 13, 0, 0, 2);
 
             var constructor = targetType.GetConstructor(constructorTypes);
             Assert.That(constructor, Is.Not.Null);
