@@ -47,9 +47,11 @@ Mixins with base types other than object
 Value type mixins
 
 Unhandled:
-Naming collisions")]
+Naming collisions
+
+Please consider this version of Bix.Mixers to be pre-release.")]
 
 internal static class CommonAssemblyInfo
 {
-    public const string Version = "0.1.5.0";
+    public const string Version = "0.1.6.0";
 }
