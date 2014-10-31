@@ -40,9 +40,11 @@ namespace Bix.Mixers.Fody.TestMixinTargets
     {
         public MultipleConstructorsTarget()
         {
-            this.OriginalUninitializedInt = 783535;
-            this.OriginalUninitializedString = "KNion wineofn oianweiof nqiognui ndf";
-            this.OriginalUninitializedObject =  new UriBuilder { Host = "j.k.l" };
+            var values = Tuple.Create(783535, "KNion wineofn oianweiof nqiognui ndf", new UriBuilder { Host = "j.k.l" });
+
+            this.OriginalUninitializedInt = values.Item1;
+            this.OriginalUninitializedString = values.Item2;
+            this.OriginalUninitializedObject =  values.Item3;
         }
 
         public MultipleConstructorsTarget(int i) : this(i, "A iuohiogfniouhe uihui iu.", new UriBuilder { Host = "g.h.i" }) { }

@@ -71,23 +71,44 @@ namespace Bix.Mixers.Fody.ILCloning
         public bool IsInitializingConstructor { get; private set; }
 
         /// <summary>
-        /// Gets or sets the index of the constructor instruction that separates compiler-generated initialization
-        /// code, such as field initialization, from developer-written constructor code. This will be the index
-        /// of the instruction that calls the base constructor or that forwards to a different "this" constructor.
+        /// Gets or sets the first index of the set of instructions for the base or chained constructor call
+        /// that separates compiler-generated initialization
+        /// code, such as field initialization, from developer-written constructor code.
         /// </summary>
-        private int? InnerBoundaryInstructionIndex { get; set; }
+        private int? InnerBoundaryFirstInstructionIndex { get; set; }
 
         /// <summary>
-        /// Gets the index of the constructor instruction that separates compiler-generated initialization
-        /// code, such as field initialization, from developer-written constructor code. This will be the index
-        /// of the instruction that calls the base constructor or that forwards to a different "this" constructor.
+        /// Gets the first index of the set of instructions for the base or chained constructor call
+        /// that separates compiler-generated initialization
+        /// code, such as field initialization, from developer-written constructor code.
         /// </summary>
-        public int BoundaryInstructionIndex
+        public int BoundaryFirstInstructionIndex
         {
             get
             {
-                Contract.Requires(this.InnerBoundaryInstructionIndex.HasValue);
-                return this.InnerBoundaryInstructionIndex.Value;
+                Contract.Requires(this.InnerBoundaryFirstInstructionIndex.HasValue);
+                return this.InnerBoundaryFirstInstructionIndex.Value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the last index of the set of instructions for the base or chained constructor call
+        /// that separates compiler-generated initialization
+        /// code, such as field initialization, from developer-written constructor code.
+        /// </summary>
+        private int? InnerBoundaryLastInstructionIndex { get; set; }
+
+        /// <summary>
+        /// Gets the last index of the set of instructions for the base or chained constructor call
+        /// that separates compiler-generated initialization
+        /// code, such as field initialization, from developer-written constructor code.
+        /// </summary>
+        public int BoundaryLastInstructionIndex
+        {
+            get
+            {
+                Contract.Requires(this.InnerBoundaryLastInstructionIndex.HasValue);
+                return this.InnerBoundaryLastInstructionIndex.Value;
             }
         }
 
@@ -200,7 +221,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         private void Multiplex()
         {
-            Contract.Ensures(this.InnerBoundaryInstructionIndex.HasValue);
+            Contract.Ensures(this.InnerBoundaryLastInstructionIndex.HasValue);
             Contract.Ensures(this.InitializationVariables != null);
             Contract.Ensures(this.InitializationInstructions != null);
             Contract.Ensures(this.ConstructionVariables != null);
@@ -216,63 +237,173 @@ namespace Bix.Mixers.Fody.ILCloning
         }
 
         /// <summary>
+        /// This type is used to gather groups of instructions that are potential calls to base or chained constructors.
+        /// </summary>
+        private class InstructionGroup
+        {
+            /// <summary>
+            /// Grabs the next group of instructions that could potentially be a base or chained construtor call.
+            /// </summary>
+            /// <param name="sourceInstructions">Source instructions to look at.</param>
+            /// <param name="firstIndex">Index of the first instruction to look at.</param>
+            /// <param name="instructionGroup">Output parameter to contain the results.</param>
+            /// <returns><c>true</c> if a group was successfully created, else <c>false</c>.</returns>
+            public static bool TryGetNext(IList<Instruction> sourceInstructions, int firstIndex, out InstructionGroup instructionGroup)
+            {
+                Contract.Requires(sourceInstructions != null);
+
+                if (firstIndex < 0 || firstIndex >= sourceInstructions.Count)
+                {
+                    instructionGroup = null;
+                    return false;
+                }
+
+                var instructions = new List<Instruction>();
+                var instruction = sourceInstructions[firstIndex];
+                instructions.Add(instruction);
+
+
+                int lastIndex;
+                if (instruction.OpCode.Code != Code.Ldarg_0) { lastIndex = firstIndex; }
+                else
+                {
+                    int i;
+                    // calls into base and chained constructors start like this
+                    // so we'll look for the next call instruction or any instruction where the next instruction is another ldarg.0
+                    // meaning that the stack was cleared at some point
+                    // there is no assumption that this grouping is generally useful, but the hope is that it will catch constructor calls in this specific case
+                    var isLastInstructionFound = false;
+                    for (i = firstIndex + 1; !isLastInstructionFound && i < sourceInstructions.Count; i++)
+                    {
+                        instruction = sourceInstructions[i];
+                        instructions.Add(instruction);
+                        if (instruction.OpCode.Code == Code.Call ||
+                            instruction.OpCode.Code == Code.Callvirt ||
+                            instruction.OpCode.Code == Code.Calli ||
+                            (instruction.Next != null && instruction.Next.OpCode.Code == Code.Ldarg_0))
+                        {
+                            isLastInstructionFound = true;
+                        }
+                    }
+
+                    lastIndex = i - 1;
+                }
+
+                instructionGroup = new InstructionGroup(firstIndex, lastIndex, instructions);
+                return true;
+            }
+
+            /// <summary>
+            /// Creates a new <see cref="InstructionGroup"/>.
+            /// </summary>
+            /// <param name="firstIndex">Index in the source instructions of the first instruction in this group.</param>
+            /// <param name="lastIndex">Index in the source instructions of the last instruction in this group.</param>
+            /// <param name="instructions">Instructions that have been grouped together.</param>
+            private InstructionGroup(int firstIndex, int lastIndex, List<Instruction> instructions)
+            {
+                Contract.Requires(firstIndex <= lastIndex);
+                Contract.Requires(instructions != null);
+                Contract.Requires(instructions.Any());
+                Contract.Ensures(this.FirstIndex <= this.LastIndex);
+                Contract.Ensures(this.Instructions != null);
+                Contract.Ensures(this.Instructions.Any());
+
+                this.FirstIndex = firstIndex;
+                this.LastIndex = lastIndex;
+                this.Instructions = instructions;
+            }
+
+            /// <summary>
+            /// Gets the collection of instructions that have been grouped together.
+            /// </summary>
+            public List<Instruction> Instructions { get; private set; }
+
+            /// <summary>
+            /// Gets the index in the source instructions of the first instruction in this group.
+            /// </summary>
+            public int FirstIndex { get; private set; }
+
+            /// <summary>
+            /// Gets the index in the source instructions of the last instruction in this group.
+            /// </summary>
+            public int LastIndex { get; private set; }
+
+            /// <summary>
+            /// Gets the last instruction in the group.
+            /// </summary>
+            public Instruction LastInstruction
+            {
+                get { return this.Instructions[this.Instructions.Count - 1]; }
+            }
+
+            /// <summary>
+            /// Gets whether this method group ends in a Call instruction.
+            /// </summary>
+            public bool IsCall
+            {
+                get { return this.LastInstruction.OpCode.Code == Code.Call; }
+            }
+        }
+
+        /// <summary>
         /// Populated the initialization variables and instructions. Also populates the boundary instruction index.
         /// </summary>
         private void PopulateInitializationItemsAndFindBoundary()
         {
-            // we want the collection of instructions between the first ldarg and the boundary instruction (base constructor call or forwarding this constructor call).
-            var instruction = this.Constructor.Body.Instructions[0];
-            if (instruction.OpCode != OpCodes.Ldarg_0 || instruction.Operand != null)
+            // we want the collection of instructions before the boundary instruction (base constructor or chained constructor call)
+            InstructionGroup instructionGroup = null;
+            var isConstructorCallFound = false;
+            while (!isConstructorCallFound && InstructionGroup.TryGetNext(
+                this.Constructor.Body.Instructions,
+                instructionGroup == null ? 0 : instructionGroup.LastIndex + 1,
+                out instructionGroup))
             {
-                throw new InvalidOperationException(
-                    "The first instruction in a mixin implementation's parameterless constructor wasn't the expected ldarg.0");
-            }
-
-            for (int i = 1; i < this.Constructor.Body.Instructions.Count && !this.InnerBoundaryInstructionIndex.HasValue; i++)
-            {
-                instruction = this.Constructor.Body.Instructions[i];
-                var operandAsMethodReference = instruction.Operand as MethodReference;
-                if (instruction.OpCode == OpCodes.Call &&
-                    operandAsMethodReference != null &&
-                    operandAsMethodReference.Name == ".ctor" &&
-                    (operandAsMethodReference.DeclaringType.FullName == this.Constructor.DeclaringType.FullName ||
-                    operandAsMethodReference.DeclaringType.FullName == this.Constructor.DeclaringType.BaseType.FullName))
+                var instructionOperandAsMethodReference = instructionGroup.LastInstruction.Operand as MethodReference;
+                if (instructionGroup.IsCall &&
+                    instructionOperandAsMethodReference != null &&
+                    instructionOperandAsMethodReference.Name == ".ctor" &&
+                    (instructionOperandAsMethodReference.DeclaringType.FullName == this.Constructor.DeclaringType.FullName ||
+                    instructionOperandAsMethodReference.DeclaringType.FullName == this.Constructor.DeclaringType.BaseType.FullName))
                 {
-                    this.InnerBoundaryInstructionIndex = i;
+                    this.InnerBoundaryFirstInstructionIndex = instructionGroup.FirstIndex;
+                    this.InnerBoundaryLastInstructionIndex = instructionGroup.LastIndex;
                     this.IsInitializingConstructor =
-                        operandAsMethodReference.DeclaringType.FullName == this.Constructor.DeclaringType.BaseType.FullName;
+                        instructionOperandAsMethodReference.DeclaringType.FullName == this.Constructor.DeclaringType.BaseType.FullName;
+                    isConstructorCallFound = true;
                 }
                 else
                 {
                     // add the instruction to initialization instructions
-                    this.InnerInitializationInstructions.Add(instruction);
+                    this.InnerInitializationInstructions.AddRange(instructionGroup.Instructions);
+                }
 
-                    // if the instruction references a variable, then move that from construction to initialization
+                // any variables referenced by instructions should be removed from construction variables
+                // and if we have not yet found the constructor call, then the variable should be put into initialization
+                foreach (var instruction in instructionGroup.Instructions)
+                {
                     VariableDefinition variable;
                     if (this.TryGetReferencedVariable(instruction, out variable))
                     {
                         if (this.InnerConstructionVariables.Contains(variable))
                         {
                             this.InnerConstructionVariables.Remove(variable);
-                            this.InnerInitializationVariables.Add(variable);
-                        }
-                        else if (!this.InnerInitializationVariables.Contains(variable))
-                        {
-                            // variable wasn't found at all
-                            throw new InvalidOperationException(
-                                "An instruction in the initialization part of a multiplexed constructor references a variable that either cannot be found.");
+                            if (!isConstructorCallFound)
+                            {
+                                // if an instance arises where a variable is only used in a constructor call
+                                // then it would be dropped
+                                this.InnerInitializationVariables.Add(variable);
+                            }
                         }
                     }
                 }
             }
 
-            if (!this.InnerBoundaryInstructionIndex.HasValue || this.InnerBoundaryInstructionIndex.Value <= 0)
+            if (!isConstructorCallFound)
             {
-                throw new InvalidOperationException("Cannot find base or forwarding constructor call in mixin implementation's parameterless constructor.");
+                throw new InvalidOperationException(string.Format(
+                    "Cannot find base or chained constructor call while multiplexing a constructor: {0}",
+                    this.Constructor.FullName));
             }
-
-            // sanity check
-            Contract.Assert(this.InnerInitializationInstructions.Count == this.InnerBoundaryInstructionIndex - 1);
         }
 
         /// <summary>
@@ -280,7 +411,7 @@ namespace Bix.Mixers.Fody.ILCloning
         /// </summary>
         private void PopulateConstructionItems()
         {
-            for (int i = this.InnerBoundaryInstructionIndex.Value + 1; i < this.Constructor.Body.Instructions.Count; i++)
+            for (int i = this.InnerBoundaryLastInstructionIndex.Value + 1; i < this.Constructor.Body.Instructions.Count; i++)
             {
                 var instruction = this.Constructor.Body.Instructions[i];
                 this.InnerConstructionInstructions.Add(instruction);

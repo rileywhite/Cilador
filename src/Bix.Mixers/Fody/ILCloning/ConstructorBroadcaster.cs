@@ -121,7 +121,7 @@ namespace Bix.Mixers.Fody.ILCloning
             Contract.Requires(sourceMultiplexedConstructor != null);
             Contract.Requires(sourceMultiplexedConstructor.HasInitializationItems);
 
-            foreach (var targetConstructor in this.TargetType.Methods.Where(method => method.IsConstructor))
+            foreach (var targetConstructor in this.TargetType.Methods.Where(method => method.IsConstructor && !method.IsStatic))
             {
                 var targetMultiplexedConstructor = ConstructorMultiplexer.Get(this.ILCloningContext, this.SourceConstructor);
                 if (!targetMultiplexedConstructor.IsInitializingConstructor) { continue; }  // skip non-initializing constructors
@@ -157,13 +157,7 @@ namespace Bix.Mixers.Fody.ILCloning
 
             var ilProcessor = targetConstructor.Body.GetILProcessor();
             var firstInstructionInTargetConstructor = targetConstructor.Body.Instructions[0];
-            if (firstInstructionInTargetConstructor.OpCode != OpCodes.Ldarg_0 || firstInstructionInTargetConstructor.Operand != null)
-            {
-                throw new InvalidOperationException("The first instruction in a mixin target's constructor wasn't the expected ldarg.0");
-            }
 
-            // go backwards through the source initialization instructions
-            // this makes it so that every new instruction is added just after the first instruction in the target
             var instructionCloners = new List<InstructionCloner>(sourceMultiplexedConstructor.InitializationInstructions.Count);
             MethodContext methodContext = new MethodContext(
                 this.ILCloningContext,
@@ -171,9 +165,8 @@ namespace Bix.Mixers.Fody.ILCloning
                 new List<Tuple<ParameterDefinition, LazyAccessor<ParameterDefinition>>>(),
                 variableCloners,
                 instructionCloners);
-            for (int i = sourceMultiplexedConstructor.InitializationInstructions.Count - 1; i >= 0; i--)
+            foreach (var sourceInstruction in sourceMultiplexedConstructor.InitializationInstructions)
             {
-                var sourceInstruction = sourceMultiplexedConstructor.InitializationInstructions[i];
                 int translation;
                 int? sourceVariableIndex;
                 if (!sourceInstruction.TryGetVariableIndex(out sourceVariableIndex)) { translation = 0; }
@@ -188,7 +181,7 @@ namespace Bix.Mixers.Fody.ILCloning
                 }
                 var translatedSourceInstruction = sourceInstruction.ApplyLocalVariableTranslation(translation);
                 Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(methodContext, ilProcessor, translatedSourceInstruction);
-                ilProcessor.InsertAfter(firstInstructionInTargetConstructor, targetInstruction);
+                ilProcessor.InsertBefore(firstInstructionInTargetConstructor, targetInstruction);
                 instructionCloners.Add(new InstructionCloner(methodContext, translatedSourceInstruction, targetInstruction));
             }
             this.InstructionCloners.AddRange(instructionCloners);
@@ -259,13 +252,13 @@ namespace Bix.Mixers.Fody.ILCloning
             }
             this.InstructionCloners.AddRange(instructionCloners);
 
-            foreach (var targetConstructor in this.TargetType.Methods.Where(method => method.IsConstructor))
+            foreach (var targetConstructor in this.TargetType.Methods.Where(method => method.IsConstructor && !method.IsStatic))
             {
                 // we can't re-use multiplexed target constructors from initialization because they may have changed
                 var targetMultiplexedConstructor = ConstructorMultiplexer.Get(this.ILCloningContext, targetConstructor);
                 if (!targetMultiplexedConstructor.IsInitializingConstructor) { continue; }  // skip non-initializing constructors
 
-                var boundaryInstruction = targetConstructor.Body.Instructions[targetMultiplexedConstructor.BoundaryInstructionIndex];
+                var boundaryInstruction = targetConstructor.Body.Instructions[targetMultiplexedConstructor.BoundaryLastInstructionIndex];
                 var targetILProcessor = targetConstructor.Body.GetILProcessor();
 
                 // insert in reverse order
