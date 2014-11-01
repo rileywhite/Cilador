@@ -53,5 +53,5 @@ Please consider this version of Bix.Mixers to be pre-release.")]
 
 internal static class CommonAssemblyInfo
 {
-    public const string Version = "0.1.6.0";
+    public const string Version = "0.1.7.0";
 }
