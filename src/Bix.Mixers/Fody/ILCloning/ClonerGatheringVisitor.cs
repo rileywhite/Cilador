@@ -242,6 +242,9 @@ namespace Bix.Mixers.Fody.ILCloning
         /// <param name="target">Cloning target to gather cloners for.</param>
         private void Visit(IGenericParameterProvider sourceGenericParameterProvider, IGenericParameterProvider targetGenericParameterProvider)
         {
+            Contract.Requires(sourceGenericParameterProvider != null);
+            Contract.Requires(targetGenericParameterProvider != null);
+
             var voidReference = targetGenericParameterProvider.Module.Import(typeof(void));
             foreach (var sourceGenericParameter in sourceGenericParameterProvider.GenericParameters)
             {
