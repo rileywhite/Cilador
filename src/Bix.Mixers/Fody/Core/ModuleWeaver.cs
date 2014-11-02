@@ -75,7 +75,7 @@ namespace Bix.Mixers.Fody.Core
         /// Releases resources used by the <see cref="ModuleWeaver"/>
         /// </summary>
         /// <param name="isDisposing"><c>true</c> if this is being called explicitly through <see cref="Dispose()"/>, else <c>false</c> if being called by the finalizer during garbage collection.</param>
-        protected void Dispose(bool isDisposing)
+        private void Dispose(bool isDisposing)
         {
             if (isDisposing)
             {
