@@ -35,6 +35,7 @@ namespace Bix.Mixers.Fody.Core
     /// since it suppresses the stack trace from being displayed the user and,
     /// therefore, from being passed on in a bug report.
     /// </remarks>
+    [Serializable]
     public sealed class WeavingException : Exception
     {
         /// <summary>

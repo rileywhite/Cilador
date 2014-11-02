@@ -37,7 +37,7 @@ namespace Bix.Mixers.Fody.Core
     /// the configuration of the Fody weaver. It is also passed around as needed to other types
     /// in the aspect of a <see cref="IWeavingContext"/>.
     /// </summary>
-    public class ModuleWeaver : IDisposable, IPartImportsSatisfiedNotification, IWeavingContext
+    public sealed class ModuleWeaver : IDisposable, IPartImportsSatisfiedNotification, IWeavingContext
     {
         #region Construction and Disposal
 
