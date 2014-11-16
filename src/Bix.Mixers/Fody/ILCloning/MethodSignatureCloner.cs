@@ -108,9 +108,6 @@ namespace Bix.Mixers.Fody.ILCloning
             this.Target.NoOptimization = this.Source.NoOptimization;
             this.Target.SemanticsAttributes = this.Source.SemanticsAttributes;
 
-            // TODO research correct usage of method MetadataToken
-            //this.Target.MetadataToken = new MetadataToken(this.Source.MetadataToken.TokenType, this.Source.MetadataToken.RID);
-
             if(this.Source.IsPInvokeImpl)
             {
                 throw new WeavingException(string.Format(
@@ -150,10 +147,6 @@ namespace Bix.Mixers.Fody.ILCloning
             {
                 this.Target.MethodReturnType.MarshalInfo = new MarshalInfo(sourceMethodReturnType.MarshalInfo.NativeType);
             }
-
-            // TODO research correct usage of MethodReturnType.MetadataToken
-            //this.Target.MethodReturnType.MetadataToken =
-            //    new MetadataToken(sourceMethodReturnType.MetadataToken.TokenType, sourceMethodReturnType.MetadataToken.RID);
 
             this.Target.MethodReturnType.CloneAllCustomAttributes(sourceMethodReturnType, this.ILCloningContext);
 

@@ -51,12 +51,6 @@ namespace Bix.Mixers.Fody.ILCloning
             this.Target.Attributes = this.Source.Attributes;
             this.Target.EventType = this.ILCloningContext.RootImport(this.Source.EventType);
 
-            // TODO reseach correct usage of event MetadataToken
-            //this.Target.MetadataToken = new MetadataToken(
-            //    this.Source.MetadataToken.TokenType,
-            //    this.Source.MetadataToken.RID);
-
-
             if (this.Source.AddMethod != null)
             {
                 var targetAddMethod = this.ILCloningContext.RootImport(this.Source.AddMethod) as MethodDefinition;

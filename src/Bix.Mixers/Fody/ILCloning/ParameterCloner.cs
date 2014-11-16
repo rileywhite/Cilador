@@ -77,9 +77,6 @@ namespace Bix.Mixers.Fody.ILCloning
                 this.Target.MarshalInfo = new MarshalInfo(this.Source.MarshalInfo.NativeType);
             }
 
-            // TODO research correct usage
-            //targetParameter.MetadataToken = new MetadataToken(sourceParameter.MetadataToken.TokenType, sourceParameter.MetadataToken.RID);
-
             this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
 
             this.IsCloned = true;

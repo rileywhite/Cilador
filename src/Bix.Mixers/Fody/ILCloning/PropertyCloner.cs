@@ -61,11 +61,6 @@ namespace Bix.Mixers.Fody.ILCloning
 
             this.Target.PropertyType = this.ILCloningContext.RootImport(this.Source.PropertyType);
 
-            // TODO research correct usage of property MetadataToken
-            //this.Target.MetadataToken = new MetadataToken(
-            //    this.Source.MetadataToken.TokenType,
-            //    this.Source.MetadataToken.RID);
-
             // seting the getter and setter methods also sets the parameters for the property
             if (this.Source.GetMethod != null)
             {
