@@ -341,6 +341,13 @@ namespace Bix.Mixers.Fody.ILCloning
 
             // do a root import of the declaring type
             var importedDeclaringType = this.RootImport(method.DeclaringType);
+            if (importedDeclaringType == null)
+            {
+                throw new InvalidOperationException(string.Format(
+                    "Method {0} has declaring type {1} which root-imported as null",
+                    method.FullName,
+                    method.DeclaringType == null ? method.DeclaringType.FullName : "null"));
+            }
 
             // generic instance methods are handled differently
             if (method.IsGenericInstance)
@@ -408,6 +415,17 @@ namespace Bix.Mixers.Fody.ILCloning
                 {
                     // import the method
                     var resolvedMethod = method.Resolve();
+                    var resolvedImportedDeclaringType = importedDeclaringType.Resolve();
+                    if (resolvedImportedDeclaringType == null)
+                    {
+                        // TODO any way to find the referenced assembly from the source reference and copy it over?
+                        throw new InvalidOperationException(string.Format(
+                            "Method {0} has declaring type {1} which root-imported as {2} but which resolved to null. Please make sure that your target project has a direct reference to the assembly containing the root-imported type.",
+                            method.FullName,
+                            method.DeclaringType,
+                            importedDeclaringType.FullName));
+                    }
+
                     var localMethod = importedDeclaringType.Resolve().Methods.FirstOrDefault(possibleMethod => possibleMethod.SignatureEquals(resolvedMethod, this));
 
                     importedMethod = this.RootTarget.Module.Import(localMethod);
