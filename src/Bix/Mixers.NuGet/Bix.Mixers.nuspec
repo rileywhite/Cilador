@@ -16,7 +16,7 @@
     <language>en-US</language>
     <tags>ILWeaving, CodeWeaving, Cloning, Cecil</tags>
     <dependencies>
-      <dependency id="Fody"/>
+      <dependency id="Mono.Cecil"/>
     </dependencies>
   </metadata>
 </package>
