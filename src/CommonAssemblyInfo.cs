@@ -17,39 +17,11 @@
 using System.Reflection;
 
 [assembly: AssemblyCompany("Riley White")]
-[assembly: AssemblyProduct("Bix.Mixers.Fody")]
+[assembly: AssemblyProduct("Bix.Mixers")]
 [assembly: AssemblyCopyright("Copyright © Riley White 2013-2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyVersion(CommonAssemblyInfo.Version)]
 [assembly: AssemblyFileVersion(CommonAssemblyInfo.Version)]
-
-[assembly: AssemblyDescription(
-@"Create your own custom, rich C# mixins with Bix.Mixers! Mixins are the perfect DRY solution for sharing code without abusing inheritance.
-
-Supports:
-Mixins containing fields, methods, properties, events, and nested types.
-Generics mixins and mixin members, so long as the top-level mixin implementation is closed. (Members and nested types can be open.)
-Public, private, protected, internal, and protected internal members.
-Static members.
-Custom attributes on members.
-Virtual members.
-Abstract nested types and abstract members within these nested types.
-Generic nested types and generic members.
-Parameterless constructors for mixin implementations.
-Type initializers (i.e. static constructors) in mixin implementations
-
-Unsupported:
-Parameters on mixin implemenation constructors.
-Unmanaged code calls (extern)
-Security attributes
-Mixins implementing multiple interfaces
-Mixins with base types other than object
-Value type mixins
-
-Unhandled:
-Naming collisions
-
-Please consider this version of Bix.Mixers to be pre-release.")]
 
 internal static class CommonAssemblyInfo
 {

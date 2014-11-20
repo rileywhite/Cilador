@@ -33,3 +33,12 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("44275dee-e9c5-4cf2-9d83-4bd44ed6e7b0")]
+
+[assembly: AssemblyDescription(
+@"High level IL manipulation tools built on top of mono.cecil.
+
+Currently only a very small surface of functionality is exposed which
+is used by Bix.Mixers.Fody to create mixins. As the project evolves, more
+functionality will be exposed.
+
+Please consider this version of Bix.Mixers to be pre-release.")]
