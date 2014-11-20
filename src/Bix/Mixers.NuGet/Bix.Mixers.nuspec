@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata minClientVersion="2.8">
+    <id>Bix.Mixers</id>
+    <version>$version$</version>
+    <title>Bix.Mixers</title>
+    <authors>Riley White</authors>
+    <owners>Riley White</owners>
+    <copyright>Copyright © Riley White 2013-2014</copyright>
+    <developmentDependency>false</developmentDependency>
+    <licenseUrl>https://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
+    <projectUrl>https://github.com/rileywhite/Bix.Mixers</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>Mix it up, post-compile with interassembly code cloning.</summary>
+    <description>$description$</description>
+    <language>en-US</language>
+    <tags>ILWeaving, CodeWeaving, Cloning, Cecil</tags>
+    <dependencies>
+      <dependency id="Fody"/>
+    </dependencies>
+  </metadata>
+</package>

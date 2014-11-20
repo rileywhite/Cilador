@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2013 for Web
-VisualStudioVersion = 12.0.30723.0
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{8E56289D-38E2-402D-A619-E6641BC49B3F}"
 	ProjectSection(SolutionItems) = preProject
@@ -10,20 +10,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{8E5628
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers.Fody", "Bix.Mixers\Fody\Bix.Mixers.Fody.csproj", "{29BB979D-4D47-4E74-9EDC-5F3586F1D591}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers.Fody", "Bix\Mixers.Fody\Bix.Mixers.Fody.csproj", "{29BB979D-4D47-4E74-9EDC-5F3586F1D591}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers.Fody.TestMixinInterfaces", "Bix.Mixers\Fody.TestMixinInterfaces\Bix.Mixers.Fody.TestMixinInterfaces.csproj", "{BF49324E-601F-4D8D-B520-0CD561D11BB4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers.Fody.TestMixinInterfaces", "Bix\Mixers.Fody.TestMixinInterfaces\Bix.Mixers.Fody.TestMixinInterfaces.csproj", "{BF49324E-601F-4D8D-B520-0CD561D11BB4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers.Fody.Tests", "Bix.Mixers\Fody.Tests\Bix.Mixers.Fody.Tests.csproj", "{D22DF5E2-E4A5-4E5A-8664-C961680D267C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers.Fody.Tests", "Bix\Mixers.Fody.Tests\Bix.Mixers.Fody.Tests.csproj", "{D22DF5E2-E4A5-4E5A-8664-C961680D267C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nuget", "NuGet\Nuget.csproj", "{63786CE5-D899-43DF-AD4E-C2CA3BAC3FC2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers.Fody.Nuget", "Bix\Mixers.Fody.NuGet\Bix.Mixers.Fody.Nuget.csproj", "{63786CE5-D899-43DF-AD4E-C2CA3BAC3FC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers.Fody.TestMixins", "Bix.Mixers\Fody.TestMixins\Bix.Mixers.Fody.TestMixins.csproj", "{CC1F40B0-9E5A-42B9-8C67-5F95D4AB2763}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers.Fody.TestMixins", "Bix\Mixers.Fody.TestMixins\Bix.Mixers.Fody.TestMixins.csproj", "{CC1F40B0-9E5A-42B9-8C67-5F95D4AB2763}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers.Fody.TestMixinTargets", "Bix.Mixers\Fody.TestMixinTargets\Bix.Mixers.Fody.TestMixinTargets.csproj", "{F6E6CFAA-5A36-44E7-B75E-41B656232910}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers.Fody.TestMixinTargets", "Bix\Mixers.Fody.TestMixinTargets\Bix.Mixers.Fody.TestMixinTargets.csproj", "{F6E6CFAA-5A36-44E7-B75E-41B656232910}"
 	ProjectSection(ProjectDependencies) = postProject
 		{CC1F40B0-9E5A-42B9-8C67-5F95D4AB2763} = {CC1F40B0-9E5A-42B9-8C67-5F95D4AB2763}
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers", "Bix\Mixers\Bix.Mixers.csproj", "{0E204E18-CAE0-4C25-A0F6-8695D5B27F5D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bix.Mixers.Nuget", "Bix\Mixers.NuGet\Bix.Mixers.Nuget.csproj", "{D37A0060-52C7-4B80-AF70-61ACDC3F92CF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +59,14 @@ Global
 		{F6E6CFAA-5A36-44E7-B75E-41B656232910}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6E6CFAA-5A36-44E7-B75E-41B656232910}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6E6CFAA-5A36-44E7-B75E-41B656232910}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E204E18-CAE0-4C25-A0F6-8695D5B27F5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E204E18-CAE0-4C25-A0F6-8695D5B27F5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E204E18-CAE0-4C25-A0F6-8695D5B27F5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E204E18-CAE0-4C25-A0F6-8695D5B27F5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D37A0060-52C7-4B80-AF70-61ACDC3F92CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D37A0060-52C7-4B80-AF70-61ACDC3F92CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D37A0060-52C7-4B80-AF70-61ACDC3F92CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D37A0060-52C7-4B80-AF70-61ACDC3F92CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
