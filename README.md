@@ -1,15 +1,22 @@
 #Welcome to Bix.Mixers!
 
-Bix.Mixers is a [Fody](http://github.com/Fody/Fody) plugin, available through
+Bix.Mixers has two parts:
+
+1. A [Fody](http://github.com/Fody/Fody) addin, available through
 [NuGet](https://www.nuget.org/packages/Bix.Mixers.Fody/), that provides the
 ability to write custom mixins for C#.
 
-What does this mean? I'm glad you asked.
+2. A toolbox of IL manipulation tools built on top of
+[cecil](https://github.com/jbevain/cecil). This part has been only recently
+been made independent from the addin, so the rest of the information below
+is about the Fody addin.
+
 
 #Concept
 
 "Mixin" is a term that means different things to different people. For the purposes of this project,
-the term denotes a behavior that is added to potentially unrelated types without using inheritence.
+the term denotes a state and set of related behaviors that are added to potentially unrelated types
+without using inheritence.
 
 There are two parts to a Bix.Mixers mixin.
 
