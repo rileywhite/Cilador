@@ -8,7 +8,7 @@
     <TargetFrameworkProfile />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
-    <NuGetPackageImportStamp>a207675e</NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>c8f7a6b0</NuGetPackageImportStamp>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -71,8 +71,6 @@
     <Copy SourceFiles="$(ProjectDir)Bix.Mixers.nuspec" DestinationFolder="$(SolutionDir)..\bin\Bix.Mixers.NuGet" />
     <Copy SourceFiles="$(SolutionDir)Bix\Mixers\bin\$(ConfigurationName)\Bix.Mixers.dll" DestinationFolder="$(SolutionDir)..\bin\Bix.Mixers.NuGet\lib\net45" />
     <Copy SourceFiles="$(SolutionDir)Bix\Mixers\bin\$(ConfigurationName)\Bix.Mixers.pdb" DestinationFolder="$(SolutionDir)..\bin\Bix.Mixers.NuGet\lib\net45" />
-    <Copy SourceFiles="$(SolutionDir)Bix\Mixers\bin\$(ConfigurationName)\Bix.Mixers.dll" DestinationFolder="$(SolutionDir)..\bin\Bix.Mixers.NuGet" />
-    <Copy SourceFiles="$(SolutionDir)Bix\Mixers\bin\$(ConfigurationName)\Bix.Mixers.pdb" DestinationFolder="$(SolutionDir)..\bin\Bix.Mixers.NuGet" />
     <PepitaPackage.CreatePackageTask NuGetBuildDirectory="$(SolutionDir)..\bin\Bix.Mixers.NuGet" MetadataAssembly="$(SolutionDir)Bix\Mixers\bin\$(ConfigurationName)\Bix.Mixers.dll" />
   </Target>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
@@ -82,6 +80,8 @@
     </PropertyGroup>
     <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
     <Error Condition="!Exists('..\packages\PepitaPackage.1.21.3\build\PepitaPackage.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\PepitaPackage.1.21.3\build\PepitaPackage.targets'))" />
+    <Error Condition="!Exists('..\..\packages\PepitaPackage.1.21.3\build\PepitaPackage.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\PepitaPackage.1.21.3\build\PepitaPackage.targets'))" />
   </Target>
   <Import Project="..\packages\PepitaPackage.1.21.3\build\PepitaPackage.targets" Condition="Exists('..\packages\PepitaPackage.1.21.3\build\PepitaPackage.targets')" />
+  <Import Project="..\..\packages\PepitaPackage.1.21.3\build\PepitaPackage.targets" Condition="Exists('..\..\packages\PepitaPackage.1.21.3\build\PepitaPackage.targets')" />
 </Project>
