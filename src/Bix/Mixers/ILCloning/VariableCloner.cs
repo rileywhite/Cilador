@@ -34,7 +34,7 @@ namespace Bix.Mixers.ILCloning
         /// </summary>
         /// <param name="source">Cloning source.</param>
         /// <param name="target">Cloning target.</param>
-        public VariableCloner(ILCloningContext ilCloningContext, VariableDefinition source, VariableDefinition target)
+        public VariableCloner(IILCloningContext ilCloningContext, VariableDefinition source, VariableDefinition target)
             : base(ilCloningContext, source, target)
         {
             Contract.Requires(ilCloningContext != null);

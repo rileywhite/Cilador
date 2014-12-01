@@ -26,7 +26,7 @@ namespace Bix.Mixers.ILCloning
     /// Base type for all cloners that clone member items.
     /// </summary>
     /// <typeparam name="TClonedItem">Resolved type of the member.</typeparam>
-    internal abstract class ClonerBase<TClonedItem> : LazyClonerBase<TClonedItem>
+    public abstract class ClonerBase<TClonedItem> : LazyClonerBase<TClonedItem>
         where TClonedItem : class
     {
         /// <summary>
@@ -35,7 +35,7 @@ namespace Bix.Mixers.ILCloning
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="target">Resolved cloning target.</param>
         /// <param name="source">Resolved cloning source.</param>
-        public ClonerBase(ILCloningContext ilCloningContext, TClonedItem source, TClonedItem target)
+        public ClonerBase(IILCloningContext ilCloningContext, TClonedItem source, TClonedItem target)
             : base(ilCloningContext, source, () => target, item => { return; })
         {
             Contract.Requires(ilCloningContext != null);

@@ -28,7 +28,7 @@ namespace Bix.Mixers.ILCloning
     /// </remarks>
     /// <typeparam name="TClonedItem">Type of item to be cloned.</typeparam>
     [ContractClass(typeof(LazyClonerBaseContract<>))]
-    internal abstract class LazyClonerBase<TClonedItem> : Tuple<TClonedItem, LazyAccessor<TClonedItem>>, ICloner
+    public abstract class LazyClonerBase<TClonedItem> : Tuple<TClonedItem, LazyAccessor<TClonedItem>>, ICloner
         where TClonedItem : class
     {
         /// <summary>
@@ -39,7 +39,7 @@ namespace Bix.Mixers.ILCloning
         /// <param name="targetGetter">Getter method for the target.</param>
         /// <param name="targetSetter">Setter method for the target.</param>
         public LazyClonerBase(
-            ILCloningContext ilCloningContext,
+            IILCloningContext ilCloningContext,
             TClonedItem source,
             Func<TClonedItem> targetGetter,
             Action<TClonedItem> targetSetter)
@@ -60,7 +60,7 @@ namespace Bix.Mixers.ILCloning
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="source">Cloning source.</param>
         /// <param name="targetAccessor">Target's lazy accesser. Must provide a getter and a setter.</param>
-        public LazyClonerBase(ILCloningContext ilCloningContext, TClonedItem source, LazyAccessor<TClonedItem> targetAccessor)
+        public LazyClonerBase(IILCloningContext ilCloningContext, TClonedItem source, LazyAccessor<TClonedItem> targetAccessor)
             : base(source, targetAccessor)
         {
             Contract.Requires(ilCloningContext != null);
@@ -74,7 +74,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets or sets the context for IL cloning.
         /// </summary>
-        public ILCloningContext ILCloningContext { get; private set; }
+        public IILCloningContext ILCloningContext { get; private set; }
 
         /// <summary>
         /// Gets the accessor for the cloning target.
@@ -114,12 +114,6 @@ namespace Bix.Mixers.ILCloning
                 throw new InvalidOperationException(
                     string.Format("Failed to create a cloning target for source of type [{0}].", typeof(TClonedItem).FullName),
                     e);
-            }
-
-            if (target == null)
-            {
-                throw new InvalidOperationException(
-                    string.Format("Created cloning target was null for source of type [{0}].", typeof(TClonedItem).FullName));
             }
 
             this.TargetAccessor.Setter(target);

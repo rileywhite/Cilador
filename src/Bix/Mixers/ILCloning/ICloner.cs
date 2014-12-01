@@ -28,7 +28,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets the context for IL cloning.
         /// </summary>
-        ILCloningContext ILCloningContext { get; }
+        IILCloningContext ILCloningContext { get; }
 
         /// <summary>
         /// Gets whether the item has been cloned.

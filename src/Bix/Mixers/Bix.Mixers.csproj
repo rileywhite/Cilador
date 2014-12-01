@@ -155,6 +155,7 @@
     <Compile Include="ILCloning\GenericParameterCloner.cs" />
     <Compile Include="ILCloning\ICloner.cs" />
     <Compile Include="ILCloning\IClonerContract.cs" />
+    <Compile Include="ILCloning\IILCloningContext.cs" />
     <Compile Include="ILCloning\ILCloningContext.cs" />
     <Compile Include="ILCloning\ILCloningExtensions.cs" />
     <Compile Include="ILCloning\InstructionCloner.cs" />

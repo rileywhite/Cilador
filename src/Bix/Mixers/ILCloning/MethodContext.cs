@@ -55,7 +55,7 @@ namespace Bix.Mixers.ILCloning
         /// <param name="variableSourceAndTargets">Variable definitions for the source and target methods.</param>
         /// <param name="instructionSourceAndTargets">Instructiosn for the source and target methods.</param>
         public MethodContext(
-            ILCloningContext ilCloningContext,
+            IILCloningContext ilCloningContext,
             Tuple<ParameterDefinition, ParameterDefinition> thisParameterSourceAndTarget,
             IEnumerable<Tuple<ParameterDefinition, LazyAccessor<ParameterDefinition>>> parameterSourceAndTargets,
             IEnumerable<Tuple<VariableDefinition, LazyAccessor<VariableDefinition>>> variableSourceAndTargets,
@@ -98,7 +98,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets or sets the context for IL cloning.
         /// </summary>
-        public ILCloningContext ILCloningContext { get; set; }
+        public IILCloningContext ILCloningContext { get; set; }
 
         /// <summary>
         /// Root import an instruction.

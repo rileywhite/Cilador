@@ -20,16 +20,21 @@ using System;
 
 namespace Bix.Mixers.Tests.CoreTests
 {
+    /// <summary>
+    /// Tests <see cref="LazyAccessor"/>, which is used for lazy cloning.
+    /// </summary>
     [TestFixture]
     internal class LazyAccessorFixture
     {
+        /// <summary>
+        /// Tests a get-only accessor.
+        /// </summary>
         [Test]
         public void GetAccessorTest()
         {
             int localInt = 55;
             var accessor = new LazyAccessor<int>(getter: () => localInt);
 
-            Assert.IsNotNull(accessor);
             Assert.IsTrue(accessor.IsGetAccessor);
             Assert.IsFalse(accessor.IsSetAccessor);
 
@@ -40,13 +45,15 @@ namespace Bix.Mixers.Tests.CoreTests
             Assert.Catch(() => accessor.Setter(23));
         }
 
+        /// <summary>
+        /// Tests a set-only accessor.
+        /// </summary>
         [Test]
         public void SetAccessorTest()
         {
             int localInt = 0;
-            var accessor = new LazyAccessor<int>(setter: (i) => localInt = i);
+            var accessor = new LazyAccessor<int>(setter: i => localInt = i);
 
-            Assert.IsNotNull(accessor);
             Assert.IsFalse(accessor.IsGetAccessor);
             Assert.IsTrue(accessor.IsSetAccessor);
 
@@ -57,15 +64,17 @@ namespace Bix.Mixers.Tests.CoreTests
             Assert.Catch(() => accessor.Getter());
         }
 
+        /// <summary>
+        /// Tests a get/set accessor.
+        /// </summary>
         [Test]
         public void GetSetAccessorTest()
         {
             int localInt = 533;
             var accessor = new LazyAccessor<int>(
                 getter: () => localInt,
-                setter: (i) => localInt = i);
+                setter: i => localInt = i);
 
-            Assert.IsNotNull(accessor);
             Assert.IsTrue(accessor.IsGetAccessor);
             Assert.IsTrue(accessor.IsSetAccessor);
 

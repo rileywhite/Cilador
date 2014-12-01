@@ -35,7 +35,7 @@ namespace Bix.Mixers.ILCloning
     /// is certainly in need of change. For now it works, but it will be rewritten when full
     /// mixin generic support is added.
     /// </remarks>
-    public class ILCloningContext
+    public class ILCloningContext : IILCloningContext
     {
         /// <summary>
         /// Creates a new <see cref="ILCloningContext"/>

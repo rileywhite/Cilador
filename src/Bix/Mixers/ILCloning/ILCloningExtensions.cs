@@ -115,7 +115,7 @@ namespace Bix.Mixers.ILCloning
         public static void CloneAllCustomAttributes(
             this ICustomAttributeProvider target,
             ICustomAttributeProvider source,
-            ILCloningContext ilCloningContext)
+            IILCloningContext ilCloningContext)
         {
             Contract.Requires(target != null);
             Contract.Requires(target.CustomAttributes != null);

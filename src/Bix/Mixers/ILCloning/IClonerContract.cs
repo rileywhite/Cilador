@@ -28,11 +28,11 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets the context for IL cloning.
         /// </summary>
-        public ILCloningContext ILCloningContext
+        public IILCloningContext ILCloningContext
         {
             get
             {
-                Contract.Ensures(Contract.Result<ILCloningContext>() != null);
+                Contract.Ensures(Contract.Result<IILCloningContext>() != null);
                 throw new NotSupportedException();
             }
         }
