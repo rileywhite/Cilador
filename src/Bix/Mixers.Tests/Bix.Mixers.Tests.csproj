@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CoreTests\LazyAccessorFixture.cs" />
+    <Compile Include="ILCloningTests\ILCloningExtensionsFixture.cs" />
     <Compile Include="ILCloningTests\LazyClonerBaseFixture.cs" />
     <Compile Include="ILCloningTests\ClonerBaseFixture.cs" />
     <Compile Include="Program.cs" />

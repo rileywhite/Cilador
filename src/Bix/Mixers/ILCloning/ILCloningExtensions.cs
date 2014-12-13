@@ -29,13 +29,13 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Extension methods used for IL cloning
     /// </summary>
-    internal static class ILCloningExtensions
+    public static class ILCloningExtensions
     {
         /// <summary>
         /// Invokes clone on each item
         /// </summary>
         /// <param name="cloners"></param>
-        public static void Clone(this IEnumerable<ICloner> cloners)
+        public static void CloneAll(this IEnumerable<ICloner> cloners)
         {
             Contract.Requires(cloners != null);
             Contract.Requires(!cloners.Any(cloner => cloner.IsCloned));

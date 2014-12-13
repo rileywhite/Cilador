@@ -116,17 +116,17 @@ namespace Bix.Mixers.ILCloning
 
             this.AreClonersInvoking = true;
 
-            this.GenericParameterCloners.Clone();
-            this.TypeCloners.Clone();
-            this.VariableCloners.Clone();
-            this.FieldCloners.Clone();
-            this.MethodSignatureCloners.Clone();
-            this.MethodParameterCloners.Clone();
-            this.PropertyCloners.Clone();
-            this.EventCloners.Clone();
-            this.MethodBodyCloners.Clone();
-            this.InstructionCloners.Clone();
-            this.ExceptionHandlerCloners.Clone();
+            this.GenericParameterCloners.CloneAll();
+            this.TypeCloners.CloneAll();
+            this.VariableCloners.CloneAll();
+            this.FieldCloners.CloneAll();
+            this.MethodSignatureCloners.CloneAll();
+            this.MethodParameterCloners.CloneAll();
+            this.PropertyCloners.CloneAll();
+            this.EventCloners.CloneAll();
+            this.MethodBodyCloners.CloneAll();
+            this.InstructionCloners.CloneAll();
+            this.ExceptionHandlerCloners.CloneAll();
 
             this.AreClonersInvoked = true;
             this.AreClonersInvoking = false;
