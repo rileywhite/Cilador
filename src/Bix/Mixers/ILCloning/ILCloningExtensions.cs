@@ -47,6 +47,11 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Determines whether a type is nested within another type, even deeply.
         /// </summary>
+        /// <remarks>
+        /// Because <paramref name="possibleAncestorType"/> is a type definition, generic type arguments are ignored.
+        /// Even if you begin with a closed or partially closed type reference, resolving it strips away all
+        /// generic arguments.
+        /// </remarks>
         /// <param name="type">Type that may be nested within <paramref name="possibleAncestorType"/></param>
         /// <param name="possibleAncestorType">Type that may contain <paramref name="type"/>.</param>
         /// <returns><c>true</c> if <paramref name="type"/> is nested within <paramref name="possibleAncestorType"/>, else <c>false</c>.</returns>
