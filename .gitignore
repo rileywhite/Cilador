@@ -214,6 +214,6 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 
-/src/NuGetBuild
-/src/packages
-/src/Bix.Mixers/Fody/Config/MixCommandConfig.cs
+src/NuGetBuild
+src/packages
+src/Bix.Mixers/Fody/Config/MixCommandConfig.cs
