@@ -22,7 +22,7 @@ using System;
 namespace Bix.Mixers.Tests.ILCloningTests
 {
     /// <summary>
-    /// Tests <see cref="ClonerBase"/>. Since it inherits from <see cref="LazyClonerBase"/>,
+    /// Tests <see cref="ClonerBase{TClonedItem}"/>. Since it inherits from <see cref="LazyClonerBase{TClonedItem}"/>,
     /// only the added functionality is tested.
     /// </summary>
     [TestFixture]

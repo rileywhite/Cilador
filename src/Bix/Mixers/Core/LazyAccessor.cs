@@ -31,7 +31,7 @@ namespace Bix.Mixers.Core
     public class LazyAccessor<T>
     {
         /// <summary>
-        /// Creates a new <see cref="LazyAccessor"/>.
+        /// Creates a new <see cref="LazyAccessor{T}"/>.
         /// </summary>
         /// <param name="getter">Optional getter method if the new accessor will be a get accessor.</param>
         /// <param name="setter">Optional setter method if the new accessor will be a set accessor.</param>
@@ -45,7 +45,7 @@ namespace Bix.Mixers.Core
         }
 
         /// <summary>
-        /// Gets whether this <see cref="LazyAccessor"/> provides read access to an item.
+        /// Gets whether this <see cref="LazyAccessor{T}"/> provides read access to an item.
         /// </summary>
         public bool IsGetAccessor
         {
@@ -67,7 +67,7 @@ namespace Bix.Mixers.Core
         }
 
         /// <summary>
-        /// Gets whether this <see cref="LazyAccessor"/> provides write access to an item.
+        /// Gets whether this <see cref="LazyAccessor{T}"/> provides write access to an item.
         /// </summary>
         public bool IsSetAccessor
         {

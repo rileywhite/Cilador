@@ -16,13 +16,10 @@
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Collections.Generic;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -73,7 +70,7 @@ namespace Bix.Mixers.ILCloning
         /// <param name="argumentsSearchType">Type to look for generic arguments that are nested within it.</param>
         /// <returns><c>true</c> if <paramref name="member"/> is requires the use of a type within <paramref name="argumentsSearchType"/> for a generic argument, else <c>false</c>.</returns>
         [Pure]
-        public static bool IsAnyTypeAncestorAGenericInstanceWithArgumentsIn(this MemberReference member, TypeDefinition argumentsSearchType)
+        public static bool IsDeclaredWithinAGenericInstanceWithArgumentsIn(this MemberReference member, TypeDefinition argumentsSearchType)
         {
             if (member == null || member.DeclaringType == null)
             {
@@ -89,7 +86,7 @@ namespace Bix.Mixers.ILCloning
             {
                 return
                     member.DeclaringType != null &&
-                    member.DeclaringType.IsAnyTypeAncestorAGenericInstanceWithArgumentsIn(argumentsSearchType);
+                    member.DeclaringType.IsDeclaredWithinAGenericInstanceWithArgumentsIn(argumentsSearchType);
             }
         }
 

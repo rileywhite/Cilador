@@ -19,9 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -147,8 +144,10 @@ namespace Bix.Mixers.ILCloning
             TypeReference newDeclaringType;
             if (type.FullName != this.RootSource.FullName &&
                 !type.IsNestedWithin(this.RootSource) &&
-                type.IsAnyTypeAncestorAGenericInstanceWithArgumentsIn(this.RootSource))
+                type.IsDeclaredWithinAGenericInstanceWithArgumentsIn(this.RootSource))
             {
+                // TODO: this branch is not taken in any tests; is it necessary for any reason?
+
                 // not within the clone targets, so import from outside of clone source/targets
 
                 // because types outside of the clone source/target may be closed generic types, we have to make sure that

@@ -18,17 +18,32 @@ using Bix.Mixers.ILCloning;
 using Mono.Cecil;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 
 namespace Bix.Mixers.Tests.ILCloningTests
 {
     [TestFixture]
     internal class ILCloningExtensionsFixture
     {
+        private IAssemblyResolver Resolver { get; set; }
+        private AssemblyDefinition CurrentAssembly { get; set; }
+        private ModuleDefinition CurrentModule { get; set; }
+
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            this.Resolver = new DefaultAssemblyResolver();
+            this.CurrentAssembly = this.Resolver.Resolve(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
+            Assert.That(this.CurrentAssembly, Is.Not.Null);
+            this.CurrentModule = this.CurrentAssembly.MainModule;
+            Assert.That(this.CurrentModule, Is.Not.Null);
+        }
+
         private class TestCloner : ICloner
         {
             public IILCloningContext ILCloningContext { get; set; }
 
-            public bool IsCloned { get; set; }
+            public bool IsCloned { get; private set; }
 
             public void Clone()
             {
@@ -66,9 +81,6 @@ namespace Bix.Mixers.Tests.ILCloningTests
                     {
                     }
                 }
-                public class Level1_1_2
-                {
-                }
             }
 
             public class Level1_2
@@ -77,6 +89,7 @@ namespace Bix.Mixers.Tests.ILCloningTests
                 {
                     public class Level1_2_1_1
                     {
+                        public int SomeInt;
                     }
                 }
             }
@@ -85,25 +98,18 @@ namespace Bix.Mixers.Tests.ILCloningTests
         [Test]
         public void IsNestedWithinTest()
         {
-            var resolver = new DefaultAssemblyResolver();
-            var currentAssembly = resolver.Resolve(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
-            Assert.That(currentAssembly, Is.Not.Null);
-            var currentModule = currentAssembly.MainModule;
-            Assert.That(currentModule, Is.Not.Null);
+            var nestedType = this.CurrentModule.Import(typeof(Nested)).Resolve();
+            var level1_1Type = this.CurrentModule.Import(typeof(Nested.Level1_1)).Resolve();
+            var level1_1_1Type = this.CurrentModule.Import(typeof(Nested.Level1_1.Level1_1_1)).Resolve();
+            var level1_1_1_1Type = this.CurrentModule.Import(typeof(Nested.Level1_1.Level1_1_1.Level1_1_1_1)).Resolve();
+            var level1_2Type = this.CurrentModule.Import(typeof(Nested.Level1_2)).Resolve();
+            var level1_2_1TType = this.CurrentModule.Import(typeof(Nested.Level1_2.Level1_2_1<>)).Resolve();
+            var level1_2_1TTypeReference = this.CurrentModule.Import(typeof(Nested.Level1_2.Level1_2_1<>));
+            var level1_2_1T_1Type = this.CurrentModule.Import(typeof(Nested.Level1_2.Level1_2_1<>.Level1_2_1_1)).Resolve();
+            var level1_2_1T_1TypeReference = this.CurrentModule.Import(typeof(Nested.Level1_2.Level1_2_1<>.Level1_2_1_1));
 
-            var nestedType = currentModule.Import(typeof(Nested)).Resolve();
-            var level1_1Type = currentModule.Import(typeof(Nested.Level1_1)).Resolve();
-            var level1_1_1Type = currentModule.Import(typeof(Nested.Level1_1.Level1_1_1)).Resolve();
-            var level1_1_1_1Type = currentModule.Import(typeof(Nested.Level1_1.Level1_1_1.Level1_1_1_1)).Resolve();
-            var level1_1_2Type = currentModule.Import(typeof(Nested.Level1_1.Level1_1_2)).Resolve();
-            var level1_2Type = currentModule.Import(typeof(Nested.Level1_2)).Resolve();
-            var level1_2_1TType = currentModule.Import(typeof(Nested.Level1_2.Level1_2_1<>)).Resolve();
-            var level1_2_1TTypeReference = currentModule.Import(typeof(Nested.Level1_2.Level1_2_1<>));
-            var level1_2_1T_1Type = currentModule.Import(typeof(Nested.Level1_2.Level1_2_1<>.Level1_2_1_1)).Resolve();
-            var level1_2_1T_1TypeReference = currentModule.Import(typeof(Nested.Level1_2.Level1_2_1<>.Level1_2_1_1));
-
-            var level1_2_1IntTypeReference = currentModule.Import(typeof(Nested.Level1_2.Level1_2_1<int>));
-            var level1_2_1Int_1TypeReference = currentModule.Import(typeof(Nested.Level1_2.Level1_2_1<int>.Level1_2_1_1));
+            var level1_2_1IntTypeReference = this.CurrentModule.Import(typeof(Nested.Level1_2.Level1_2_1<int>));
+            var level1_2_1Int_1TypeReference = this.CurrentModule.Import(typeof(Nested.Level1_2.Level1_2_1<int>.Level1_2_1_1));
 
             // not nested within self
             Assert.That(nestedType.IsNestedWithin(nestedType), Is.False);
@@ -146,6 +152,17 @@ namespace Bix.Mixers.Tests.ILCloningTests
             Assert.That(level1_2_1Int_1TypeReference.IsNestedWithin(level1_2_1TType), Is.True);
             Assert.That(level1_2_1Int_1TypeReference.IsNestedWithin(level1_2Type), Is.True);
             Assert.That(level1_2_1Int_1TypeReference.IsNestedWithin(nestedType), Is.True);
+        }
+
+        [Test]
+        public void IsDeclaredWithinAGenericInstanceWithArgumentsInTest()
+        {
+            var nestedType = this.CurrentModule.Import(typeof(Nested)).Resolve();
+
+            Assert.That(!this.CurrentModule.Import(typeof(List<>)).IsDeclaredWithinAGenericInstanceWithArgumentsIn(nestedType));
+            Assert.That(!this.CurrentModule.Import(typeof(List<Nested>)).IsDeclaredWithinAGenericInstanceWithArgumentsIn(nestedType));
+            Assert.That(!this.CurrentModule.Import(typeof(Nested.Level1_2.Level1_2_1<>.Level1_2_1_1)).IsDeclaredWithinAGenericInstanceWithArgumentsIn(nestedType));
+            Assert.That(this.CurrentModule.Import(typeof(Nested.Level1_2.Level1_2_1<int>.Level1_2_1_1)).IsDeclaredWithinAGenericInstanceWithArgumentsIn(nestedType));
         }
     }
 }

@@ -116,6 +116,8 @@ namespace Bix.Mixers.ILCloning
                     e);
             }
 
+            if (target == null) { throw new InvalidOperationException("CreateTarget delegate returned a null value.");}
+
             this.TargetAccessor.Setter(target);
             this.IsTargetCreated = true;
         }

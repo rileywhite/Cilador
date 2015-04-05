@@ -27,7 +27,7 @@ namespace Bix.Mixers.ILCloning
         where TClonedItem : class
     {
         /// <summary>
-        /// Unused constructor for <see cref="LazyClonerBaseContract"/>.
+        /// Unused constructor for <see cref="LazyClonerBaseContract{TClonedItem}"/>.
         /// </summary>
         private LazyClonerBaseContract() : base(null, null, null) { }
 

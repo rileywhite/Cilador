@@ -14,16 +14,15 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Bix.Mixers.Core;
+using System;
 using Bix.Mixers.ILCloning;
 using Mono.Cecil;
 using NUnit.Framework;
-using System;
 
 namespace Bix.Mixers.Tests.ILCloningTests
 {
     /// <summary>
-    /// Tests <see cref="LazyClonerBase"/>.
+    /// Tests <see cref="LazyClonerBase{T}"/>.
     /// </summary>
     [TestFixture]
     internal class LazyClonerBaseFixture
@@ -31,7 +30,7 @@ namespace Bix.Mixers.Tests.ILCloningTests
         /// <summary>
         /// Used in the create method of a fake cloner
         /// </summary>
-        private static object FakeTarget = new object();
+        private static readonly object FakeTarget = new object();
 
         /// <summary>
         /// Fake cloner for testing
@@ -43,7 +42,7 @@ namespace Bix.Mixers.Tests.ILCloningTests
 
             protected override object CreateTarget()
             {
-                return FakeTarget;
+                return LazyClonerBaseFixture.FakeTarget;
             }
 
             public override void Clone()
@@ -129,10 +128,10 @@ namespace Bix.Mixers.Tests.ILCloningTests
             Assert.IsNull(cloner.Item2.Getter());
             Assert.IsTrue(hasGetBeenCalled);
             Assert.IsFalse(hasSetBeenCalled);
-            Assert.AreSame(FakeTarget, cloner.Target);
+            Assert.AreSame(LazyClonerBaseFixture.FakeTarget, cloner.Target);
             Assert.IsNotNull(target);
-            Assert.AreSame(FakeTarget, target);
-            Assert.AreSame(FakeTarget, cloner.Item2.Getter());
+            Assert.AreSame(LazyClonerBaseFixture.FakeTarget, target);
+            Assert.AreSame(LazyClonerBaseFixture.FakeTarget, cloner.Item2.Getter());
             Assert.IsTrue(hasSetBeenCalled);
         }
 
@@ -156,8 +155,8 @@ namespace Bix.Mixers.Tests.ILCloningTests
             Assert.IsFalse(hasGetBeenCalled);
             Assert.IsFalse(hasSetBeenCalled);
             Assert.Catch(() => { var t = cloner.Target; });
-            Assert.IsTrue(hasGetBeenCalled);
-            Assert.IsTrue(hasSetBeenCalled);
+            Assert.IsFalse(hasGetBeenCalled);
+            Assert.IsFalse(hasSetBeenCalled);
         }
     }
 }
