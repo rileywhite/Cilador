@@ -14,10 +14,9 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Mono.Cecil;
 using System;
 using System.Diagnostics.Contracts;
-using System.Reflection;
+using Mono.Cecil;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -53,14 +52,7 @@ namespace Bix.Mixers.ILCloning
             this.Target.Offset = this.Source.Offset;
 
             // TODO research correct usage of field MarshalInfo
-            if (this.Source.MarshalInfo == null)
-            {
-                this.Target.MarshalInfo = null;
-            }
-            else
-            {
-                this.Target.MarshalInfo = new MarshalInfo(this.Source.MarshalInfo.NativeType);
-            }
+            this.Target.MarshalInfo = this.Source.MarshalInfo == null ? null : new MarshalInfo(this.Source.MarshalInfo.NativeType);
 
             // TODO research correct usage of field InitialValue
             if (this.Source.InitialValue != null)

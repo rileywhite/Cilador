@@ -14,22 +14,17 @@
 // limitations under the License.
 /***************************************************************************/
 
+using System;
+using System.Diagnostics.Contracts;
 using Bix.Mixers.Fody.Config;
 using Mono.Cecil;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace Bix.Mixers.Fody.Core
 {
     /// <summary>
     /// Interface that must be implemented for all mix commands.
     /// </summary>
-    [ContractClass(typeof(IMixCommandContract))]
+    [ContractClass(typeof(MixCommandContract))]
     public interface IMixCommand
     {
         /// <summary>

@@ -15,15 +15,13 @@
 /***************************************************************************/
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.Composition;
+using Bix.Mixers.Fody.Config;
 
 namespace Bix.Mixers.Fody.Core
 {
     /// <summary>
-    /// Holds information from <see cref="ExportMetadataAttribute"/> items on <see cref="ImixCommand"/> MEF exports.
+    /// Holds information from <see cref="ExportMetadataAttribute"/> items on <see cref="IMixCommand"/> MEF exports.
     /// </summary>
     public interface IMixCommandData
     {

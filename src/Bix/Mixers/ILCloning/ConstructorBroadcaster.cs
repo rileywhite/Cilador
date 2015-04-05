@@ -14,13 +14,13 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Bix.Mixers.Core;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using Bix.Mixers.Core;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -172,6 +172,8 @@ namespace Bix.Mixers.ILCloning
                 if (!sourceInstruction.TryGetVariableIndex(out sourceVariableIndex)) { translation = 0; }
                 else
                 {
+                    Contract.Assert(sourceVariableIndex.HasValue);
+
                     int targetVariableIndex;
                     if (!targetVariableIndexBySourceVariableIndex.TryGetValue(sourceVariableIndex.Value, out targetVariableIndex))
                     {
@@ -191,8 +193,6 @@ namespace Bix.Mixers.ILCloning
         /// Adds construction variables and/or instructions into all initializing target constructors.
         /// </summary>
         /// <param name="sourceMultiplexedConstructor">Multiplexed source constructor.</param>
-        /// <param name="targetMultiplexedConstructor">Multiplexed target constructor.</param>
-        /// <param name="targetConstructor">Target constructor to inject into.</param>
         private void InjectConstructionItems(ConstructorMultiplexer sourceMultiplexedConstructor)
         {
             Contract.Requires(sourceMultiplexedConstructor != null);
@@ -209,8 +209,11 @@ namespace Bix.Mixers.ILCloning
                 this.ILCloningContext.RootTarget.Module.Import(typeof(void)));
             this.TargetType.Methods.Add(constructionMethod);
 
-            constructionMethod.Body = new MethodBody(constructionMethod);
-            constructionMethod.Body.InitLocals = sourceMultiplexedConstructor.ConstructionVariables.Any();
+            constructionMethod.Body = new MethodBody(constructionMethod)
+            {
+                InitLocals = sourceMultiplexedConstructor.ConstructionVariables.Any()
+            };
+
             var variableCloners = new List<VariableCloner>();
             var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
             var targetVariableIndexBySourceVariableIndex = new Dictionary<int, int>();
@@ -238,6 +241,8 @@ namespace Bix.Mixers.ILCloning
                 if (!sourceInstruction.TryGetVariableIndex(out sourceVariableIndex)) { translation = 0; }
                 else
                 {
+                    Contract.Assert(sourceVariableIndex.HasValue);
+
                     int targetVariableIndex;
                     if (!targetVariableIndexBySourceVariableIndex.TryGetValue(sourceVariableIndex.Value, out targetVariableIndex))
                     {

@@ -14,13 +14,9 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Mono.Cecil;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Mono.Cecil;
 
 namespace Bix.Mixers.Fody.Core
 {
@@ -64,7 +60,7 @@ namespace Bix.Mixers.Fody.Core
         /// <returns>Resolved assembly.</returns>
         public AssemblyDefinition Resolve(string fullName, ReaderParameters parameters)
         {
-            foreach (var resolver in new IAssemblyResolver[] { this.Resolver1, this.Resolver2 })
+            foreach (var resolver in new[] { this.Resolver1, this.Resolver2 })
             {
                 if (resolver != null)
                 {
@@ -73,7 +69,7 @@ namespace Bix.Mixers.Fody.Core
                         var assembly = resolver.Resolve(fullName, parameters);
                         if (assembly != null) { return assembly; }
                     }
-                    catch { }
+                    catch { /* Fail silently */ }
                 }
             }
 
@@ -98,7 +94,7 @@ namespace Bix.Mixers.Fody.Core
         /// <returns>Resolved assembly.</returns>
         public AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters)
         {
-            foreach (var resolver in new IAssemblyResolver[] { this.Resolver1, this.Resolver2 })
+            foreach (var resolver in new[] { this.Resolver1, this.Resolver2 })
             {
                 if (resolver != null)
                 {
@@ -107,7 +103,7 @@ namespace Bix.Mixers.Fody.Core
                         var assembly = resolver.Resolve(name, parameters);
                         if (assembly != null) { return assembly; }
                     }
-                    catch { }
+                    catch { /* Fail silently */ }
                 }
             }
 

@@ -14,11 +14,8 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Bix.Mixers.Core;
-using Mono.Cecil;
 using System;
 using System.Diagnostics.Contracts;
-using System.Reflection;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -30,13 +27,13 @@ namespace Bix.Mixers.ILCloning
         where TClonedItem : class
     {
         /// <summary>
-        /// Creates a new <see cref="MemberClonerBase<,>"/>
+        /// Creates a new <see cref="ClonerBase{TClonedItem}"/>
         /// </summary>
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="target">Resolved cloning target.</param>
         /// <param name="source">Resolved cloning source.</param>
-        public ClonerBase(IILCloningContext ilCloningContext, TClonedItem source, TClonedItem target)
-            : base(ilCloningContext, source, () => target, item => { return; })
+        protected ClonerBase(IILCloningContext ilCloningContext, TClonedItem source, TClonedItem target)
+            : base(ilCloningContext, source, () => target, item => { })
         {
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(target != null);

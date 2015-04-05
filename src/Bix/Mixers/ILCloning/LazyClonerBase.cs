@@ -14,9 +14,9 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Bix.Mixers.Core;
 using System;
 using System.Diagnostics.Contracts;
+using Bix.Mixers.Core;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -32,13 +32,13 @@ namespace Bix.Mixers.ILCloning
         where TClonedItem : class
     {
         /// <summary>
-        /// Creates a new <see cref="LazyClonerBase"/>.
+        /// Creates a new <see cref="LazyClonerBase{TClonedItem}"/>.
         /// </summary>
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="source">Cloning source.</param>
         /// <param name="targetGetter">Getter method for the target.</param>
         /// <param name="targetSetter">Setter method for the target.</param>
-        public LazyClonerBase(
+        protected LazyClonerBase(
             IILCloningContext ilCloningContext,
             TClonedItem source,
             Func<TClonedItem> targetGetter,
@@ -55,12 +55,12 @@ namespace Bix.Mixers.ILCloning
         }
 
         /// <summary>
-        /// Creates a new <see cref="LazyClonerBase"/>.
+        /// Creates a new <see cref="LazyClonerBase{TClonedItem}"/>.
         /// </summary>
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="source">Cloning source.</param>
         /// <param name="targetAccessor">Target's lazy accesser. Must provide a getter and a setter.</param>
-        public LazyClonerBase(IILCloningContext ilCloningContext, TClonedItem source, LazyAccessor<TClonedItem> targetAccessor)
+        protected LazyClonerBase(IILCloningContext ilCloningContext, TClonedItem source, LazyAccessor<TClonedItem> targetAccessor)
             : base(source, targetAccessor)
         {
             Contract.Requires(ilCloningContext != null);

@@ -14,20 +14,16 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Bix.Mixers.Fody.Config;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
-using System.Xml.Serialization;
+using Bix.Mixers.Fody.Config;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Bix.Mixers.Fody.Core
 {
@@ -81,7 +77,7 @@ namespace Bix.Mixers.Fody.Core
             {
                 lock (this.containerLock)
                 {
-                    if (container != null) { container.Dispose(); }
+                    if (this.container != null) { this.container.Dispose(); }
                 }
             }
         }
@@ -93,7 +89,7 @@ namespace Bix.Mixers.Fody.Core
         /// <summary>
         /// Handles locking for MEF lookup
         /// </summary>
-        private object containerLock = new object();
+        private readonly object containerLock = new object();
 
         private CompositionContainer container;
         /// <summary>
@@ -150,6 +146,7 @@ namespace Bix.Mixers.Fody.Core
         /// Gets or sets the collection of mix commands found in the MEF container catalogs.
         /// </summary>
         [ImportMany(typeof(IMixCommand), AllowRecomposition = true)]
+        // ReSharper disable once UnusedAutoPropertyAccessor.Local
         private IEnumerable<Lazy<IMixCommand, IMixCommandData>> MixCommands { get; set; }
 
         private XElement config;
@@ -169,7 +166,7 @@ namespace Bix.Mixers.Fody.Core
                 Contract.Ensures(this.Container != null);
 
                 this.config = value;
-                this.BixMixersConfig = ReadBixMixersConfig(value);
+                this.BixMixersConfig = ModuleWeaver.ReadBixMixersConfig(value);
 
                 this.Container.ComposeParts(this);
             }
@@ -228,7 +225,8 @@ namespace Bix.Mixers.Fody.Core
             Contract.Requires(config != null);
             Contract.Ensures(Contract.Result<BixMixersConfigType>() != null);
 
-            var children = config.Elements();
+            var childElements = config.Elements();
+            var children = childElements as XElement[] ?? childElements.ToArray();
             if (children.Count() != 1)
             {
                 throw new WeavingException("Bix.Mixers config in FodyWeavers.xml should have exactly one child");
@@ -312,7 +310,7 @@ namespace Bix.Mixers.Fody.Core
 
         #region Target Assembly Data
 
-        private DualAssemblyResolver assemblyResolver;
+        private readonly DualAssemblyResolver assemblyResolver;
         /// <summary>
         /// Gets or sets the object that can find and load assemblies.
         /// </summary>
@@ -350,11 +348,11 @@ namespace Bix.Mixers.Fody.Core
         {
             this.assemblyResolver.Resolver2 = new WeavingContextAssemblyResolver(this);
 
-            foreach (var mixCommandAttributesByTargetType in ExtractMixCommandAttributesByTargetTypes())
+            foreach (var mixCommandAttributesByTargetType in this.ExtractMixCommandAttributesByTargetTypes())
             {
                 Contract.Assert(mixCommandAttributesByTargetType.Key != null);
                 Contract.Assert(mixCommandAttributesByTargetType.Value != null);
-                Contract.Assert(!mixCommandAttributesByTargetType.Value.Any(customAttribute => customAttribute == null));
+                Contract.Assert(mixCommandAttributesByTargetType.Value.All(customAttribute => customAttribute != null));
 
                 this.FindAndInvokeMixCommands(mixCommandAttributesByTargetType.Key, mixCommandAttributesByTargetType.Value);
             }
@@ -367,14 +365,13 @@ namespace Bix.Mixers.Fody.Core
         /// <returns>Collection keyed by types the are annotated with at least one mix command attribute. Values are the collection of mix commands on the key item.</returns>
         private Dictionary<TypeDefinition, List<CustomAttribute>> ExtractMixCommandAttributesByTargetTypes()
         {
-            Contract.Ensures(!Contract.Result<Dictionary<TypeDefinition, List<CustomAttribute>>>().Keys.Any(type => type == null));
+            Contract.Ensures(Contract.Result<Dictionary<TypeDefinition, List<CustomAttribute>>>().Keys.All(type => type != null));
             Contract.Ensures(!Contract.Result<Dictionary<TypeDefinition, List<CustomAttribute>>>().Values.Any(
                 customAttributes => customAttributes == null || customAttributes.Any(customAttribute => customAttribute == null)));
 
             var mixCommandAttributeInterfaceType = this.ModuleDefinition.Import(typeof(IMixCommandAttribute)).Resolve();
 
-            Dictionary<TypeDefinition, List<CustomAttribute>> mixCommandAttributesByTargetTypes;
-            mixCommandAttributesByTargetTypes = new Dictionary<TypeDefinition, List<CustomAttribute>>();
+            var mixCommandAttributesByTargetTypes = new Dictionary<TypeDefinition, List<CustomAttribute>>();
             foreach (var type in this.ModuleDefinition.Types)
             {
                 Contract.Assert(type != null);
@@ -400,8 +397,6 @@ namespace Bix.Mixers.Fody.Core
 
                             mixAttributesForType.Add(attribute);
                             type.CustomAttributes.RemoveAt(i);
-
-                            continue;
                         }
                     }
                 }
@@ -421,7 +416,7 @@ namespace Bix.Mixers.Fody.Core
         {
             Contract.Requires(targetType != null);
             Contract.Requires(mixCommandAttributes != null);
-            Contract.Requires(!mixCommandAttributes.Any(customAttribute => customAttribute == null));
+            Contract.Requires(mixCommandAttributes.All(customAttribute => customAttribute != null));
 
             foreach (var mixCommandAttribute in mixCommandAttributes)
             {

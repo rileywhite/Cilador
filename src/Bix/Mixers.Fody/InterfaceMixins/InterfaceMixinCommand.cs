@@ -14,14 +14,13 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Bix.Mixers.Fody.Config;
-using Bix.Mixers.Fody.Core;
-using Mono.Cecil;
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Xml.Linq;
+using Bix.Mixers.Fody.Config;
+using Bix.Mixers.Fody.Core;
+using Mono.Cecil;
 
 namespace Bix.Mixers.Fody.InterfaceMixins
 {
@@ -43,8 +42,8 @@ namespace Bix.Mixers.Fody.InterfaceMixins
         /// Initializes the command using context and configuration information.
         /// </summary>
         /// <param name="weavingContext">Context information for configuration.</param>
-        /// <param name="config">Command configuration information. For this command type, the value must be of type <see cref="InterfaceMixinConfig"/>.</param>
-        /// <exception cref="ArgumentException">The <paramref name="config"/> is not of type <see cref="InterfaceMixinConfig"/></exception>
+        /// <param name="config">Command configuration information. For this command type, the value must be of type <see cref="MixCommandConfigTypeBase"/>.</param>
+        /// <exception cref="ArgumentException">The <paramref name="config"/> is not of type <see cref="MixCommandConfigTypeBase"/></exception>
         public void Initialize(IWeavingContext weavingContext, MixCommandConfigTypeBase config)
         {
             this.Config = config as InterfaceMixinConfigType;

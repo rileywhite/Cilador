@@ -14,15 +14,10 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Bix.Mixers.Core;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
-using Mono.Collections.Generic;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Reflection;
+using Mono.Cecil;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -136,11 +131,13 @@ namespace Bix.Mixers.ILCloning
 
             var sourceMethodReturnType = this.Source.MethodReturnType;
             Contract.Assert(sourceMethodReturnType != null);
-            this.Target.MethodReturnType = new MethodReturnType(this.Target);
-            this.Target.MethodReturnType.ReturnType = this.ILCloningContext.RootImport(sourceMethodReturnType.ReturnType);
-            this.Target.MethodReturnType.Attributes = sourceMethodReturnType.Attributes;
-            this.Target.MethodReturnType.Constant = sourceMethodReturnType.Constant;
-            this.Target.MethodReturnType.HasConstant = sourceMethodReturnType.HasConstant;
+            this.Target.MethodReturnType = new MethodReturnType(this.Target)
+            {
+                ReturnType = this.ILCloningContext.RootImport(sourceMethodReturnType.ReturnType),
+                Attributes = sourceMethodReturnType.Attributes,
+                Constant = sourceMethodReturnType.Constant,
+                HasConstant = sourceMethodReturnType.HasConstant
+            };
 
             // TODO research correct usage of MethodReturnType.MarshalInfo
             if (sourceMethodReturnType.MarshalInfo != null)

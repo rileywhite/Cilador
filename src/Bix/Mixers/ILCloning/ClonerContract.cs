@@ -23,7 +23,7 @@ namespace Bix.Mixers.ILCloning
     /// Contracts for <see cref="ICloner"/>.
     /// </summary>
     [ContractClassFor(typeof(ICloner))]
-    internal abstract class IClonerContract : ICloner
+    internal abstract class ClonerContract : ICloner
     {
         /// <summary>
         /// Gets the context for IL cloning.

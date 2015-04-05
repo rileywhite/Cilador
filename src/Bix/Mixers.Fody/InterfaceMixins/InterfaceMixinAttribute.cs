@@ -14,14 +14,9 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Bix.Mixers.Fody.Core;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Bix.Mixers.Fody.Core;
 
 namespace Bix.Mixers.Fody.InterfaceMixins
 {

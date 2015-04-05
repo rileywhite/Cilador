@@ -14,15 +14,11 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Bix.Mixers.Core;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -63,8 +59,8 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <param name="source">Cloning source to gather cloners for.</param>
-        /// <param name="target">Cloning target to gather cloners for.</param>
+        /// <param name="sourceType">Cloning source to gather cloners for.</param>
+        /// <param name="targetType">Cloning target to gather cloners for.</param>
         public void Visit(TypeDefinition sourceType, TypeDefinition targetType)
         {
             Contract.Requires(sourceType != null);
@@ -168,8 +164,8 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <param name="source">Cloning source to gather cloners for.</param>
-        /// <param name="target">Cloning target to gather cloners for.</param>
+        /// <param name="sourceField">Cloning source to gather cloners for.</param>
+        /// <param name="targetField">Cloning target to gather cloners for.</param>
         private void Visit(FieldDefinition sourceField, FieldDefinition targetField)
         {
             Contract.Requires(sourceField != null);
@@ -181,8 +177,8 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <param name="source">Cloning source to gather cloners for.</param>
-        /// <param name="target">Cloning target to gather cloners for.</param>
+        /// <param name="sourceMethod">Cloning source to gather cloners for.</param>
+        /// <param name="targetMethod">Cloning target to gather cloners for.</param>
         private void Visit(MethodDefinition sourceMethod, MethodDefinition targetMethod)
         {
             Contract.Requires(sourceMethod != null);
@@ -211,8 +207,8 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <param name="source">Cloning source to gather cloners for.</param>
-        /// <param name="target">Cloning target to gather cloners for.</param>
+        /// <param name="sourceProperty">Cloning source to gather cloners for.</param>
+        /// <param name="targetProperty">Cloning target to gather cloners for.</param>
         private void Visit(PropertyDefinition sourceProperty, PropertyDefinition targetProperty)
         {
             Contract.Requires(sourceProperty != null);
@@ -225,8 +221,8 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <param name="source">Cloning source to gather cloners for.</param>
-        /// <param name="target">Cloning target to gather cloners for.</param>
+        /// <param name="sourceEvent">Cloning source to gather cloners for.</param>
+        /// <param name="targetEvent">Cloning target to gather cloners for.</param>
         private void Visit(EventDefinition sourceEvent, EventDefinition targetEvent)
         {
             Contract.Requires(sourceEvent != null);
@@ -238,8 +234,8 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target.
         /// </summary>
-        /// <param name="source">Cloning source to gather cloners for.</param>
-        /// <param name="target">Cloning target to gather cloners for.</param>
+        /// <param name="sourceGenericParameterProvider">Cloning source to gather cloners for.</param>
+        /// <param name="targetGenericParameterProvider">Cloning target to gather cloners for.</param>
         private void Visit(IGenericParameterProvider sourceGenericParameterProvider, IGenericParameterProvider targetGenericParameterProvider)
         {
             Contract.Requires(sourceGenericParameterProvider != null);
@@ -248,12 +244,16 @@ namespace Bix.Mixers.ILCloning
             var voidReference = targetGenericParameterProvider.Module.Import(typeof(void));
             foreach (var sourceGenericParameter in sourceGenericParameterProvider.GenericParameters)
             {
+                // save the parameter in a local variable
+                // because compiler versions differ on handling of foreach parameters within closures
+                var currentSourceGenericParameter = sourceGenericParameter;
+
                 targetGenericParameterProvider.GenericParameters.Add(new GenericParameter(voidReference)); // this is just a placeholder since null is not allowed
                 this.Cloners.AddCloner(new GenericParameterCloner(
                     this.ILCloningContext,
-                    sourceGenericParameter,
-                    () => targetGenericParameterProvider.GenericParameters[sourceGenericParameter.Position],
-                    targetGenericParameter => targetGenericParameterProvider.GenericParameters[sourceGenericParameter.Position] = targetGenericParameter));
+                    currentSourceGenericParameter,
+                    () => targetGenericParameterProvider.GenericParameters[currentSourceGenericParameter.Position],
+                    targetGenericParameter => targetGenericParameterProvider.GenericParameters[currentSourceGenericParameter.Position] = targetGenericParameter));
             }
         }
 

@@ -14,15 +14,10 @@
 // limitations under the License.
 /***************************************************************************/
 
+using System;
+using System.Diagnostics.Contracts;
 using Bix.Mixers.Fody.Config;
 using Mono.Cecil;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace Bix.Mixers.Fody.Core
 {
@@ -30,7 +25,7 @@ namespace Bix.Mixers.Fody.Core
     /// Contracts for <see cref="IMixCommand"/> implementations.
     /// </summary>
     [ContractClassFor(typeof(IMixCommand))]
-    internal abstract class IMixCommandContract : IMixCommand
+    internal abstract class MixCommandContract : IMixCommand
     {
         /// <summary>
         /// Contracts for <see cref="IMixCommand.IsInitialized"/>

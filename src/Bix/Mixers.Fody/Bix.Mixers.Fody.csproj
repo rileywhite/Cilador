@@ -159,7 +159,7 @@
     <Compile Include="Core\WeavingException.cs" />
     <Compile Include="Core\IMixCommand.cs" />
     <Compile Include="Core\IMixCommandAttribute.cs" />
-    <Compile Include="Core\IMixCommandContract.cs" />
+    <Compile Include="Core\MixCommandContract.cs" />
     <Compile Include="Config\InterfaceMixinMapType.cs" />
     <Compile Include="InterfaceMixins\InterfaceMixinCommandMixer.cs" />
     <Compile Include="Core\ModuleWeaver.cs" />

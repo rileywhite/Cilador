@@ -143,6 +143,7 @@
     <Compile Include="..\..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Core\CoreExtensions.cs" />
     <Compile Include="Core\LazyAccessor.cs" />
     <Compile Include="ILCloning\ClonerBase.cs" />
     <Compile Include="ILCloning\ClonerGatheringVisitor.cs" />
@@ -154,7 +155,7 @@
     <Compile Include="ILCloning\FieldCloner.cs" />
     <Compile Include="ILCloning\GenericParameterCloner.cs" />
     <Compile Include="ILCloning\ICloner.cs" />
-    <Compile Include="ILCloning\IClonerContract.cs" />
+    <Compile Include="ILCloning\ClonerContract.cs" />
     <Compile Include="ILCloning\IILCloningContext.cs" />
     <Compile Include="ILCloning\ILCloningContext.cs" />
     <Compile Include="ILCloning\ILCloningExtensions.cs" />

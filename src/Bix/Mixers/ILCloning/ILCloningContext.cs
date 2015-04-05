@@ -14,11 +14,11 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using Mono.Cecil;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -125,10 +125,12 @@ namespace Bix.Mixers.ILCloning
         /// <returns>Root imported type.</returns>
         public TypeReference RootImport(TypeReference type)
         {
+            Contract.Ensures(condition: (type == null) == (Contract.Result<TypeReference>() == null));
+
             if (type == null) { return null; }
             if (type.IsGenericParameter)
             {
-                return this.RootImport((GenericParameter)type); ;
+                return this.RootImport((GenericParameter)type);
             }
 
             // if root import has already occurred, then return the previous result
@@ -345,8 +347,9 @@ namespace Bix.Mixers.ILCloning
                 throw new InvalidOperationException(string.Format(
                     "Method {0} has declaring type {1} which root-imported as null",
                     method.FullName,
-                    method.DeclaringType == null ? method.DeclaringType.FullName : "null"));
+                    method.DeclaringType != null ? method.DeclaringType.FullName : "null"));
             }
+            Contract.Assert(importedDeclaringType != null);
 
             // generic instance methods are handled differently
             if (method.IsGenericInstance)
@@ -354,6 +357,13 @@ namespace Bix.Mixers.ILCloning
                 // find the local method with a matching signature
                 var resolvedMethod = method.Resolve();
                 var localMethod = importedDeclaringType.Resolve().Methods.FirstOrDefault(possibleMethod => possibleMethod.SignatureEquals(resolvedMethod, this));
+
+                if (localMethod == null)
+                {
+                    throw new InvalidOperationException(string.Format(
+                        "Could not find an imported method with matching signature for generic instance method {0}",
+                        method.FullName));
+                }
 
                 Contract.Assert(localMethod.GenericParameters.Count > 0);
 

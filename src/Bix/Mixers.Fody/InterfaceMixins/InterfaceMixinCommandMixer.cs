@@ -14,15 +14,12 @@
 // limitations under the License.
 /***************************************************************************/
 
+using System;
+using System.Diagnostics.Contracts;
+using System.Linq;
 using Bix.Mixers.Fody.Core;
 using Bix.Mixers.ILCloning;
 using Mono.Cecil;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.InterfaceMixins
 {
@@ -61,7 +58,7 @@ namespace Bix.Mixers.Fody.InterfaceMixins
                 throw new WeavingException(string.Format("Configured mixin definition interface type is not an interface: [{0}]", interfaceType.FullName));
             }
 
-            if (!mixinType.Interfaces.Any(@interface => @interface.FullName == interfaceType.FullName))
+            if (mixinType.Interfaces.All(@interface => @interface.FullName != interfaceType.FullName))
             {
                 throw new WeavingException(string.Format(
                     "Configured mixin implementation type [{0}] must implement the interface specified mixin interface definition [{1}]",

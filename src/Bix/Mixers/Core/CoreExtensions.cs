@@ -15,29 +15,27 @@
 /***************************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 
-namespace Bix.Mixers.ILCloning
+namespace Bix.Mixers.Core
 {
     /// <summary>
-    /// Interface implemented by all item cloners.
+    /// Extension methods used through Bix.Mixers
     /// </summary>
-    [ContractClass(typeof(ClonerContract))]
-    public interface ICloner
+    public static class CoreExtensions
     {
         /// <summary>
-        /// Gets the context for IL cloning.
+        /// Checks whether an enumeration contains any null items.
         /// </summary>
-        IILCloningContext ILCloningContext { get; }
-
-        /// <summary>
-        /// Gets whether the item has been cloned.
-        /// </summary>
-        bool IsCloned { get; }
-
-        /// <summary>
-        /// Clones the item.
-        /// </summary>
-        void Clone();
+        /// <param name="items">Items to check. Items may be traversed.</param>
+        /// <returns><c>true</c> if any null items are found, else <c>false</c>.</returns>
+        [Pure]
+        public static bool AreAnyNull<T>(this IEnumerable<T> items)
+            where T: class
+        {
+            return items.Any(item => item == null);
+        }
     }
 }

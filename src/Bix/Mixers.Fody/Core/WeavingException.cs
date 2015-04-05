@@ -15,11 +15,7 @@
 /***************************************************************************/
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.Core
 {
@@ -33,7 +29,7 @@ namespace Bix.Mixers.Fody.Core
     /// This should only be thrown for errors whose cause is known, such as
     /// for unsupported behavior. It should not be used a a catchall exception
     /// since it suppresses the stack trace from being displayed the user and,
-    /// therefore, from being passed on in a bug report.
+    /// therefore, from being passed on in a reported issue.
     /// </remarks>
     [Serializable]
     public sealed class WeavingException : Exception
@@ -41,8 +37,7 @@ namespace Bix.Mixers.Fody.Core
         /// <summary>
         /// Creates a new <see cref="WeavingException"/>
         /// </summary>
-        public WeavingException()
-            : base() { }
+        public WeavingException() { }
 
         /// <summary>
         /// Creates a new <see cref="WeavingException"/> with the given message

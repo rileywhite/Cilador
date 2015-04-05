@@ -14,14 +14,11 @@
 // limitations under the License.
 /***************************************************************************/
 
+using System;
+using System.Collections.Generic;
 using Bix.Mixers.Fody.Config;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.Core
 {

@@ -14,13 +14,9 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Bix.Mixers.Core;
-using Mono.Cecil;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Reflection;
+using Mono.Cecil;
 
 namespace Bix.Mixers.ILCloning
 {

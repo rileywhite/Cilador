@@ -14,19 +14,11 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using System;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using MethodBase = System.Reflection.MethodBase;
-using ParameterInfo = System.Reflection.ParameterInfo;
-using PropertyInfo = System.Reflection.PropertyInfo;
-using System.Runtime.CompilerServices;
-using System.Collections.Generic;
-using Mono.Collections.Generic;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using Mono.Cecil;
 
 namespace Bix.Mixers.Fody.Core
 {
@@ -102,22 +94,22 @@ namespace Bix.Mixers.Fody.Core
             Contract.Requires(assemblyQualifiedTypeName != null);
             Contract.Ensures(Contract.Result<TypeDefinition>() != null);
 
-            var nameParts = assemblyQualifiedTypeName.Split(new char[] { ',' }, 2, StringSplitOptions.None);
+            var nameParts = assemblyQualifiedTypeName.Split(new[] { ',' }, 2, StringSplitOptions.None);
             if (nameParts.Length != 2)
             {
-                throw new ArgumentException("Expected type name and assembly name separated by a comma: " + assemblyQualifiedTypeName, "type");
+                throw new ArgumentException("Expected type name and assembly name separated by a comma: " + assemblyQualifiedTypeName, "assemblyQualifiedTypeName");
             }
 
             var assemblyDefinition = weavingContext.AssemblyResolver.Resolve(nameParts[1]);
             if (assemblyDefinition == null)
             {
-                throw new ArgumentException("Cannot resolve assembly for type: " + assemblyQualifiedTypeName, "type");
+                throw new ArgumentException("Cannot resolve assembly for type: " + assemblyQualifiedTypeName, "assemblyQualifiedTypeName");
             }
 
             var typeDefinition = assemblyDefinition.MainModule.GetType(nameParts[0]);
             if (typeDefinition == null)
             {
-                throw new ArgumentException("Cannot find type within resolved assembly: " + assemblyQualifiedTypeName, "type");
+                throw new ArgumentException("Cannot find type within resolved assembly: " + assemblyQualifiedTypeName, "assemblyQualifiedTypeName");
             }
 
             return typeDefinition;

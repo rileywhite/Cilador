@@ -14,14 +14,12 @@
 // limitations under the License.
 /***************************************************************************/
 
+using System;
+using System.Diagnostics.Contracts;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+// ReSharper disable UnusedParameter.Local
 
 namespace Bix.Mixers.ILCloning
 {
@@ -49,7 +47,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new <see cref="InstructionCloner"/>.
         /// </summary>
-        /// <param name="MethodContext">Method context for the new instruction cloner.</param>
+        /// <param name="methodContext">Method context for the new instruction cloner.</param>
         /// <param name="source">Cloning source.</param>
         /// <param name="target">Cloning target.</param>
         public InstructionCloner(MethodContext methodContext, Instruction source, Instruction target)
@@ -89,8 +87,6 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Catch-all method for dynamically dispatched instruction creation calls where the operand type is unrecognized
         /// </summary>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="unsupportedOperand">Operand for instruction</param>
         /// <returns>Nothing. This method always raises an exception.</returns>
         /// <exception cref="NotSupportedException">
@@ -305,6 +301,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Catch-all method for dynamically dispatched instruction creation calls where the operand type is unrecognized
         /// </summary>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="unsupportedOperand">Operand for instruction</param>
@@ -327,6 +324,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new method with the given operand
         /// </summary>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="value">Operand for instruction</param>
@@ -343,6 +341,7 @@ namespace Bix.Mixers.ILCloning
         /// Creates an instruction for invoking Calling <c>extern</c> methods using a <see cref="CallSite"/> operand.
         /// (Currently this is not supported.)
         /// </summary>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="callSite">Operand for instruction</param>
@@ -364,6 +363,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new method with the given operand
         /// </summary>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="value">Operand for instruction</param>
@@ -379,6 +379,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new method with the given operand
         /// </summary>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="field">Operand for instruction</param>
@@ -395,6 +396,7 @@ namespace Bix.Mixers.ILCloning
         /// Creates a new method with the given operand
         /// Gets or sets the collection of instruction cloners for the method body.
         /// </summary>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="value">Operand for instruction</param>
@@ -410,6 +412,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new method with the given operand
         /// </summary>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="instruction">Operand for instruction</param>
@@ -425,6 +428,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new method with the given operand
         /// </summary>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="instructions">Operand for instruction</param>
@@ -442,6 +446,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new method with the given operand
         /// </summary>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="value">Operand for instruction</param>
@@ -457,6 +462,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new method with the given operand
         /// </summary>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="value">Operand for instruction</param>
@@ -472,6 +478,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new method with the given operand
         /// </summary>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="method">Operand for instruction</param>
@@ -490,6 +497,7 @@ namespace Bix.Mixers.ILCloning
         /// Creates a new method with the given operand
         /// Clones the method body from the source to the target.
         /// </summary>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="parameter">Operand for instruction</param>
@@ -505,6 +513,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new method with the given operand
         /// </summary>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="value">Operand for instruction</param>
@@ -520,6 +529,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new method with the given operand
         /// </summary>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="value">Operand for instruction</param>
@@ -535,6 +545,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new method with the given operand
         /// </summary>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="type">Operand for instruction</param>
@@ -550,6 +561,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new method with the given operand
         /// </summary>
+        /// <param name="methodContext">Cloning context.</param>
         /// <param name="ilProcessor">IL processor for the method body being cloned</param>
         /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
         /// <param name="variable">Operand for instruction</param>

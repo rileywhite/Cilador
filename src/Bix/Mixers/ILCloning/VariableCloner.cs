@@ -14,13 +14,9 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Mono.Cecil.Cil;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Mono.Cecil.Cil;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -32,6 +28,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new <see cref="VariableCloner"/>.
         /// </summary>
+        /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="source">Cloning source.</param>
         /// <param name="target">Cloning target.</param>
         public VariableCloner(IILCloningContext ilCloningContext, VariableDefinition source, VariableDefinition target)
