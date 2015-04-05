@@ -14,12 +14,12 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -87,6 +87,7 @@ namespace Bix.Mixers.ILCloning
             get
             {
                 Contract.Requires(this.InnerBoundaryFirstInstructionIndex.HasValue);
+                // ReSharper disable once PossibleInvalidOperationException
                 return this.InnerBoundaryFirstInstructionIndex.Value;
             }
         }
@@ -108,6 +109,7 @@ namespace Bix.Mixers.ILCloning
             get
             {
                 Contract.Requires(this.InnerBoundaryLastInstructionIndex.HasValue);
+                // ReSharper disable once PossibleInvalidOperationException
                 return this.InnerBoundaryLastInstructionIndex.Value;
             }
         }
@@ -411,6 +413,8 @@ namespace Bix.Mixers.ILCloning
         /// </summary>
         private void PopulateConstructionItems()
         {
+            Contract.Assert(this.InnerBoundaryLastInstructionIndex.HasValue);
+
             for (int i = this.InnerBoundaryLastInstructionIndex.Value + 1; i < this.Constructor.Body.Instructions.Count; i++)
             {
                 var instruction = this.Constructor.Body.Instructions[i];
@@ -444,19 +448,45 @@ namespace Bix.Mixers.ILCloning
         /// </summary>
         /// <param name="instruction">Instruction that may reference a variable.</param>
         /// <param name="variable">When populated, this is the referenced variable.</param>
-        /// <returns></returns>
+        /// <returns><c>true</c> if a variable referenced by the instruction was found, else <c>false</c>.</returns>
         private bool TryGetReferencedVariable(Instruction instruction, out VariableDefinition variable)
         {
+            return
+                ConstructorMultiplexer.TryGetVariableDefinitionOperand(instruction, out variable) ||
+                ConstructorMultiplexer.TryGetIndexedVariableOperand(instruction, this.InnerConstructionVariables, ref variable);
+        }
+
+        /// <summary>
+        /// If the <paramref name="instruction"/> has a variable operand, retrieves it.
+        /// </summary>
+        /// <param name="instruction"><see cref="Instruction"/> to look at</param>
+        /// <param name="variable"><see cref="VariableDefinition"/> to populate with the operand, if possible.</param>
+        /// <returns><c>true</c> if the operand is a <see cref="VariableDefinition"/>, else <c>false</c>.</returns>
+        private static bool TryGetVariableDefinitionOperand(Instruction instruction, out VariableDefinition variable)
+        {
             variable = instruction.Operand as VariableDefinition;
-            if (variable == null)
-            {
-                int? variableIndex;
-                if (instruction.TryGetVariableIndex(out variableIndex))
-                {
-                    variable = this.InnerConstructionVariables.FirstOrDefault(
-                        possibleInitializationVariable => possibleInitializationVariable.Index == variableIndex.Value);
-                }
-            }
+            return variable != null;
+        }
+
+        /// <summary>
+        /// If the <paramref name="instruction"/> has a variable operand, retrieves it.
+        /// </summary>
+        /// <param name="instruction"><see cref="Instruction"/> to look at</param>
+        /// <param name="indexedVariables">Collection of variables that are potentiall referenced by the operand</param>
+        /// <param name="variable"><see cref="VariableDefinition"/> to populate with the referenced indexed variable, if possible.</param>
+        /// <returns><c>true</c> if the operand is an index for a variable in the <paramref name="indexedVariables"/>, else <c>false</c>.</returns>
+        private static bool TryGetIndexedVariableOperand(
+            Instruction instruction,
+            IEnumerable<VariableDefinition> indexedVariables,
+            ref VariableDefinition variable)
+        {
+            int? variableIndex;
+            if (!instruction.TryGetVariableIndex(out variableIndex)) { return false; }
+
+            Contract.Assert(variableIndex.HasValue);
+            variable = indexedVariables.FirstOrDefault(
+                possibleInitializationVariable => possibleInitializationVariable.Index == variableIndex.Value);
+
             return variable != null;
         }
     }
