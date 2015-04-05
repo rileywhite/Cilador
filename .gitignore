@@ -216,4 +216,4 @@ pip-log.txt
 
 src/NuGetBuild
 src/packages
-src/Bix.Mixers/Fody/Config/MixCommandConfig.cs
+src/Bix/Mixers.Fody/Config/MixCommandConfig.cs
