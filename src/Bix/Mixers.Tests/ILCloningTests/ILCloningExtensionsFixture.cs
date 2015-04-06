@@ -153,16 +153,5 @@ namespace Bix.Mixers.Tests.ILCloningTests
             Assert.That(level1_2_1Int_1TypeReference.IsNestedWithin(level1_2Type), Is.True);
             Assert.That(level1_2_1Int_1TypeReference.IsNestedWithin(nestedType), Is.True);
         }
-
-        [Test]
-        public void IsDeclaredWithinAGenericInstanceWithArgumentsInTest()
-        {
-            var nestedType = this.CurrentModule.Import(typeof(Nested)).Resolve();
-
-            Assert.That(!this.CurrentModule.Import(typeof(List<>)).IsDeclaredWithinAGenericInstanceWithArgumentsIn(nestedType));
-            Assert.That(!this.CurrentModule.Import(typeof(List<Nested>)).IsDeclaredWithinAGenericInstanceWithArgumentsIn(nestedType));
-            Assert.That(!this.CurrentModule.Import(typeof(Nested.Level1_2.Level1_2_1<>.Level1_2_1_1)).IsDeclaredWithinAGenericInstanceWithArgumentsIn(nestedType));
-            Assert.That(this.CurrentModule.Import(typeof(Nested.Level1_2.Level1_2_1<int>.Level1_2_1_1)).IsDeclaredWithinAGenericInstanceWithArgumentsIn(nestedType));
-        }
     }
 }

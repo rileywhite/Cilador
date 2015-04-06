@@ -61,36 +61,6 @@ namespace Bix.Mixers.ILCloning
         }
 
         /// <summary>
-        /// Determines whether a member that
-        /// (1) is a generic instance or is contained within a generic instance that
-        /// (2) has any generic argument that
-        /// (3) is a nested type within another given type.
-        /// </summary>
-        /// <param name="member">Member to check.</param>
-        /// <param name="argumentsSearchType">Type to look for generic arguments that are nested within it.</param>
-        /// <returns><c>true</c> if <paramref name="member"/> is requires the use of a type within <paramref name="argumentsSearchType"/> for a generic argument, else <c>false</c>.</returns>
-        [Pure]
-        public static bool IsDeclaredWithinAGenericInstanceWithArgumentsIn(this MemberReference member, TypeDefinition argumentsSearchType)
-        {
-            if (member == null || member.DeclaringType == null)
-            {
-                return false;
-            }
-            else if (member.DeclaringType.IsGenericInstance &&
-                     ((GenericInstanceType)member.DeclaringType).GenericArguments.Any(
-                        genericArgument => genericArgument.IsNestedWithin(argumentsSearchType)))
-            {
-                return true;
-            }
-            else
-            {
-                return
-                    member.DeclaringType != null &&
-                    member.DeclaringType.IsDeclaredWithinAGenericInstanceWithArgumentsIn(argumentsSearchType);
-            }
-        }
-
-        /// <summary>
         /// Determines whether a target and source method reference have equivalent signatures within the context
         /// of IL cloning.
         /// </summary>

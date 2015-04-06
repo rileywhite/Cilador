@@ -141,35 +141,9 @@ namespace Bix.Mixers.ILCloning
                 return importedType;
             }
 
-            bool isDeclaringTypeReplaced;
-
-            TypeReference newDeclaringType;
-            if (type.FullName != this.RootSource.FullName &&
-                !type.IsNestedWithin(this.RootSource) &&
-                type.IsDeclaredWithinAGenericInstanceWithArgumentsIn(this.RootSource))
-            {
-                // TODO: this branch is not taken in any tests; is it necessary for any reason?
-
-                // not within the clone targets, so import from outside of clone source/targets
-
-                // because types outside of the clone source/target may be closed generic types, we have to make sure that
-                // the type is imported with the correct generic arguments for an arbitrary list of declaring type ancestors
-
-                isDeclaringTypeReplaced = true;
-                newDeclaringType = this.RootImport(type.DeclaringType);
-            }
-            else
-            {
-                // this will be either a mixed type or a non-mixed type with no generic argument reference to a mixed type
-                isDeclaringTypeReplaced = false;
-                newDeclaringType = null;
-            }
-
             if (type.IsArray)
             {
                 // an array type needs to have its element type root imported
-                Contract.Assert(!isDeclaringTypeReplaced);
-
                 var arrayType = (ArrayType)type;
                 importedType = new ArrayType(this.RootImport(arrayType.ElementType), arrayType.Rank);
             }
@@ -178,8 +152,6 @@ namespace Bix.Mixers.ILCloning
                 // root import the generic definition and all generic arguments
                 var genericInstanceType = (GenericInstanceType)type;
                 var importedGenericInstanceType = new GenericInstanceType(this.RootImport(genericInstanceType.ElementType));
-
-                if (isDeclaringTypeReplaced) { importedGenericInstanceType.DeclaringType = newDeclaringType; }
 
                 foreach (var genericArgument in genericInstanceType.GenericArguments)
                 {
@@ -190,24 +162,12 @@ namespace Bix.Mixers.ILCloning
             }
             else
             {
-                if (isDeclaringTypeReplaced)
-                {
-                    // here we are working with an external type with a generic argument of a mixed type
-                    importedType = this.RootTarget.Module.Import(
-                        new TypeReference(type.Namespace, type.Name, type.Module, type.Module)
-                        {
-                            DeclaringType = newDeclaringType,
-                        });
-                }
-                else
-                {
-                    // either return the found mixed target (for mixed types) or do a straight import of the type (for non-mixed types)
-                    TypeDefinition foundTargetType;
-                    importedType =
-                        this.Cloners.TryGetTargetFor(type, out foundTargetType) ?
-                        foundTargetType :
-                        this.RootTarget.Module.Import(type);
-                }
+                // either return the found mixed target (for mixed types) or do a straight import of the type (for non-mixed types)
+                TypeDefinition foundTargetType;
+                importedType =
+                    this.Cloners.TryGetTargetFor(type, out foundTargetType) ?
+                    foundTargetType :
+                    this.RootTarget.Module.Import(type);
             }
 
             Contract.Assert(importedType != null);
