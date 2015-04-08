@@ -43,43 +43,7 @@ namespace Bix.Mixers.Tests.ILCloningTests
         }
 
         /// <summary>
-        /// Fake IL cloning context.
-        /// </summary>
-        private class FakeILCloningConext : IILCloningContext
-        {
-            public TypeDefinition RootSource
-            {
-                get { throw new NotSupportedException(); }
-            }
-
-            public TypeDefinition RootTarget
-            {
-                get { throw new NotSupportedException(); }
-            }
-
-            public TItem DynamicRootImport<TItem>(TItem item)
-            {
-                throw new NotSupportedException();
-            }
-
-            public TypeReference RootImport(TypeReference type)
-            {
-                throw new NotSupportedException();
-            }
-
-            public MethodReference RootImport(MethodReference method)
-            {
-                throw new NotSupportedException();
-            }
-
-            public FieldReference RootImport(FieldReference field)
-            {
-                throw new NotSupportedException();
-            }
-        }
-
-        /// <summary>
-        /// Tests the the target is populated immediately.
+        /// Tests that the target is populated immediately.
         /// </summary>
         public void ActualTargetTest()
         {

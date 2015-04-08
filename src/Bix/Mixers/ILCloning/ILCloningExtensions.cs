@@ -69,7 +69,7 @@ namespace Bix.Mixers.ILCloning
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <returns><c>true</c> if the signatures are equivalent within the root target and source, else <c>false</c></returns>
         [Pure]
-        public static bool SignatureEquals(this MethodReference target, MethodReference source, ILCloningContext ilCloningContext)
+        public static bool SignatureEquals(this MethodReference target, MethodReference source, IILCloningContext ilCloningContext)
         {
             Contract.Requires(ilCloningContext != null);
 

@@ -20,6 +20,7 @@ using Mono.Cecil.Cil;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Bix.Mixers.Tests.ILCloningTests
@@ -159,7 +160,37 @@ namespace Bix.Mixers.Tests.ILCloningTests
         [Test]
         public void SignatureEqualsTest()
         {
-          Assert.Fail();
+            // just check some existing methods that match and fail expectations
+            var ilCloningContext = new FakeILCloningConext
+            {
+                RootSource = this.CurrentModule.Import(typeof(int)).Resolve(),
+                RootTarget = this.CurrentModule.Import(typeof(double)).Resolve(),
+            };
+
+            var intTryParseMethod = this.CurrentModule.Import(typeof(int).GetMethod("Parse", new Type[] { typeof(string) }));
+            var intTryParseWithExtraParametersMethod = this.CurrentModule.Import(typeof(double).GetMethod("Parse", new Type[] { typeof(string), typeof(IFormatProvider) }));
+            var doubleTryParseMethod = this.CurrentModule.Import(typeof(double).GetMethod("Parse", new Type[] { typeof(string) }));
+            var decimalTryParseMethod = this.CurrentModule.Import(typeof(decimal).GetMethod("Parse", new Type[] { typeof(string) }));
+
+            Assert.IsTrue(doubleTryParseMethod.SignatureEquals(intTryParseMethod, ilCloningContext));
+            Assert.IsFalse(doubleTryParseMethod.SignatureEquals(intTryParseWithExtraParametersMethod, ilCloningContext));
+            Assert.IsFalse(intTryParseMethod.SignatureEquals(doubleTryParseMethod, ilCloningContext));
+            Assert.IsFalse(doubleTryParseMethod.SignatureEquals(decimalTryParseMethod, ilCloningContext));
+
+            // now use a generic method
+            ilCloningContext = new FakeILCloningConext
+            {
+                RootSource = this.CurrentModule.Import(typeof(List<>)).Resolve(),
+                RootTarget = this.CurrentModule.Import(typeof(Queue<>)).Resolve(),
+            };
+
+            var listMethod = this.CurrentModule.Import(typeof(List<>).GetMethods().First(method => method.Name == "GetEnumerator" && method.ContainsGenericParameters));
+            var queueMethod = this.CurrentModule.Import(typeof(Queue<>).GetMethods().First(method => method.Name == "GetEnumerator" && method.ContainsGenericParameters));
+            var queueClosedMethod = this.CurrentModule.Import(typeof(Queue<int>).GetMethod("GetEnumerator"));
+
+            Assert.IsTrue(queueMethod.SignatureEquals(listMethod, ilCloningContext));
+            Assert.IsFalse(listMethod.SignatureEquals(queueMethod, ilCloningContext));
+            Assert.IsFalse(queueMethod.SignatureEquals(queueClosedMethod, ilCloningContext));
         }
 
         [Test]
