@@ -472,7 +472,7 @@ namespace Bix.Mixers.ILCloning
         /// If the <paramref name="instruction"/> has a variable operand, retrieves it.
         /// </summary>
         /// <param name="instruction"><see cref="Instruction"/> to look at</param>
-        /// <param name="indexedVariables">Collection of variables that are potentiall referenced by the operand</param>
+        /// <param name="indexedVariables">Collection of variables that are potentially referenced by the operand</param>
         /// <param name="variable"><see cref="VariableDefinition"/> to populate with the referenced indexed variable, if possible.</param>
         /// <returns><c>true</c> if the operand is an index for a variable in the <paramref name="indexedVariables"/>, else <c>false</c>.</returns>
         private static bool TryGetIndexedVariableOperand(

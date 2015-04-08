@@ -181,7 +181,7 @@ namespace Bix.Mixers.ILCloning
                     }
                     translation = targetVariableIndex - sourceVariableIndex.Value;
                 }
-                var translatedSourceInstruction = sourceInstruction.ApplyLocalVariableTranslation(translation);
+                var translatedSourceInstruction = sourceInstruction.ApplyLocalVariableTranslation(translation, this.SourceConstructor.Body.Variables);
                 Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(methodContext, ilProcessor, translatedSourceInstruction);
                 ilProcessor.InsertBefore(firstInstructionInTargetConstructor, targetInstruction);
                 instructionCloners.Add(new InstructionCloner(methodContext, translatedSourceInstruction, targetInstruction));
@@ -250,7 +250,7 @@ namespace Bix.Mixers.ILCloning
                     }
                     translation = targetVariableIndex - sourceVariableIndex.Value;
                 }
-                var translatedSourceInstruction = sourceInstruction.ApplyLocalVariableTranslation(translation);
+                var translatedSourceInstruction = sourceInstruction.ApplyLocalVariableTranslation(translation, this.SourceConstructor.Body.Variables);
                 Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(methodContext, ilProcessor, translatedSourceInstruction);
                 ilProcessor.Append(targetInstruction);
                 instructionCloners.Add(new InstructionCloner(methodContext, translatedSourceInstruction, targetInstruction));
