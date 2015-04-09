@@ -23,20 +23,39 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Clones <see cref="PropertyDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class PropertyCloner : OldClonerBase<PropertyDefinition>
+    internal class PropertyCloner : ClonerBase<PropertyDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="PropertyCloner"/>
         /// </summary>
-        /// <param name="ilCloningContext">IL cloning context.</param>
+        /// <param name="parent">Cloner for type that contains the property being cloned.</param>
         /// <param name="source">Cloning source.</param>
-        /// <param name="target">Cloning target.</param>
-        public PropertyCloner(ILCloningContext ilCloningContext, PropertyDefinition source, PropertyDefinition target)
-            : base(ilCloningContext, source, target)
+        public PropertyCloner(ClonerBase<TypeDefinition> parent, PropertyDefinition source)
+            : base(parent.ILCloningContext, source)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(parent != null);
+            Contract.Requires(parent.ILCloningContext != null);
             Contract.Requires(source != null);
-            Contract.Requires(target != null);
+            Contract.Ensures(this.Parent != null);
+
+            this.Parent = parent;
+        }
+
+        /// <summary>
+        /// Gets or sets the cloner for the type that contains the property being cloned.
+        /// </summary>
+        private ClonerBase<TypeDefinition> Parent { get; set; }
+
+        /// <summary>
+        /// Creates the target property.
+        /// </summary>
+        /// <returns>Created target.</returns>
+        protected override PropertyDefinition CreateTarget()
+        {
+            var voidReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));  // TODO get rid of void ref
+            var targetProperty = new PropertyDefinition(this.Source.Name, 0, voidReference);
+            this.Parent.Target.Properties.Add(targetProperty);
+            return targetProperty;
         }
 
         /// <summary>

@@ -168,9 +168,9 @@ namespace Bix.Mixers.ILCloning
 
             foreach (var sourceProperty in sourceType.Properties)
             {
-                var targetProperty = new PropertyDefinition(sourceProperty.Name, 0, voidReference);
-                targetType.Properties.Add(targetProperty);
-                this.Visit(sourceProperty, targetProperty);
+                var propertyCloner = new PropertyCloner(typeCloner, sourceProperty);
+                this.Cloners.AddCloner(propertyCloner);
+                this.Visit(propertyCloner);
             }
 
             foreach (var sourceEvent in sourceType.Events)
@@ -223,15 +223,10 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <param name="sourceProperty">Cloning source to gather cloners for.</param>
-        /// <param name="targetProperty">Cloning target to gather cloners for.</param>
-        private void Visit(PropertyDefinition sourceProperty, PropertyDefinition targetProperty)
+        /// <param name="propertyCloner">Cloner for the property.</param>
+        private void Visit(PropertyCloner propertyCloner)
         {
-            Contract.Requires(sourceProperty != null);
-            Contract.Requires(targetProperty != null);
-
-            var propertyCloner = new PropertyCloner(this.ILCloningContext, sourceProperty, targetProperty);
-            this.Cloners.AddCloner(propertyCloner);
+            Contract.Requires(propertyCloner != null);
         }
 
         /// <summary>
