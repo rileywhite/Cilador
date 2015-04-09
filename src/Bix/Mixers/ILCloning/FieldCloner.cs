@@ -44,7 +44,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets or sets the cloner for the type that owns the field being cloned.
         /// </summary>
-        public ClonerBase<TypeDefinition> Parent { get; set; }
+        private ClonerBase<TypeDefinition> Parent { get; set; }
 
         /// <summary>
         /// Creates the target.

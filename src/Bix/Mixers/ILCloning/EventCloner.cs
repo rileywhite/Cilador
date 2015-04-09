@@ -21,22 +21,41 @@ using Mono.Cecil;
 namespace Bix.Mixers.ILCloning
 {
     /// <summary>
-    /// Clones <see cref="FieldDefinition"/> contents from a source to a target.
+    /// Clones <see cref="EventDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class EventCloner : OldClonerBase<EventDefinition>
+    internal class EventCloner : ClonerBase<EventDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="EventCloner"/>
         /// </summary>
-        /// <param name="ilCloningContext">IL cloning context.</param>
+        /// <param name="parent">Cloner for type containing the event being cloned.</param>
         /// <param name="source">Cloning source.</param>
-        /// <param name="target">Cloning target.</param>
-        public EventCloner(ILCloningContext ilCloningContext, EventDefinition source, EventDefinition target)
-            : base(ilCloningContext, source, target)
+        public EventCloner(ClonerBase<TypeDefinition> parent, EventDefinition source)
+            : base(parent.ILCloningContext, source)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(parent != null);
+            Contract.Requires(parent.ILCloningContext != null);
             Contract.Requires(source != null);
-            Contract.Requires(target != null);
+            Contract.Ensures(this.Parent != null);
+
+            this.Parent = parent;
+        }
+
+        /// <summary>
+        /// Gets or sets the cloner for the type containing the event being cloned.
+        /// </summary>
+        private ClonerBase<TypeDefinition> Parent { get; set; }
+
+        /// <summary>
+        /// Creates the target event.
+        /// </summary>
+        /// <returns>Created target.</returns>
+        protected override EventDefinition CreateTarget()
+        {
+            var voidReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));  // TODO get rid of void ref
+            var targetEvent = new EventDefinition(this.Source.Name, 0, voidReference);
+            this.Parent.Target.Events.Add(targetEvent);
+            return targetEvent;
         }
 
         /// <summary>

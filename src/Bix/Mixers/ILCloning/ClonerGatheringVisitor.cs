@@ -175,9 +175,9 @@ namespace Bix.Mixers.ILCloning
 
             foreach (var sourceEvent in sourceType.Events)
             {
-                var targetEvent = new EventDefinition(sourceEvent.Name, 0, voidReference);
-                targetType.Events.Add(targetEvent);
-                this.Visit(sourceEvent, targetEvent);
+                var eventCloner = new EventCloner(typeCloner, sourceEvent);
+                this.Cloners.AddCloner(eventCloner);
+                this.Visit(eventCloner);
             }
         }
 
@@ -232,14 +232,10 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <param name="sourceEvent">Cloning source to gather cloners for.</param>
-        /// <param name="targetEvent">Cloning target to gather cloners for.</param>
-        private void Visit(EventDefinition sourceEvent, EventDefinition targetEvent)
+        /// <param name="sourceEvent">Cloner for event.</param>
+        private void Visit(EventCloner sourceEvent)
         {
             Contract.Requires(sourceEvent != null);
-            Contract.Requires(targetEvent != null);
-
-            this.Cloners.AddCloner(new EventCloner(this.ILCloningContext, sourceEvent, targetEvent));
         }
 
         /// <summary>
