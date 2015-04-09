@@ -23,7 +23,7 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Clones <see cref="ExceptionHandler"/> contents from a source to a target.
     /// </summary>
-    internal class ExceptionHandlerCloner : ClonerBase<ExceptionHandler>
+    internal class ExceptionHandlerCloner : OldClonerBase<ExceptionHandler>
     {
         /// <summary>
         /// Creates a new <see cref="ExceptionHandlerCloner"/>

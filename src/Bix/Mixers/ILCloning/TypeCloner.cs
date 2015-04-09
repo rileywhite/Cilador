@@ -23,6 +23,10 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Clones <see cref="TypeDefinition"/> contents from a source to a target.
     /// </summary>
+    /// <remarks>
+    /// This is used by nested types. The root cloned type should use
+    /// a <see cref="RootTypeCloner"/>.
+    /// </remarks>
     internal class TypeCloner : ClonerBase<TypeDefinition>
     {
         /// <summary>
@@ -30,13 +34,32 @@ namespace Bix.Mixers.ILCloning
         /// </summary>
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="source">Cloning source.</param>
-        /// <param name="target">Cloning target.</param>
-        public TypeCloner(ILCloningContext ilCloningContext, TypeDefinition source, TypeDefinition target)
-            : base(ilCloningContext, source, target)
+        public TypeCloner(ClonerBase<TypeDefinition> parentTypeCloner, TypeDefinition source)
+            : base(parentTypeCloner.ILCloningContext, source)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(parentTypeCloner != null);
+            Contract.Requires(parentTypeCloner.ILCloningContext != null);
             Contract.Requires(source != null);
-            Contract.Requires(target != null);
+            Contract.Ensures(this.ParentTypeCloner != null);
+
+            this.ParentTypeCloner = parentTypeCloner;
+        }
+
+        /// <summary>
+        /// Gets or sets the cloner for the parent type.
+        /// All types should have parent types.
+        /// </summary>
+        private ClonerBase<TypeDefinition> ParentTypeCloner { get; set; }
+
+        /// <summary>
+        /// Creates the new target.
+        /// </summary>
+        /// <returns>Newly created target.</returns>
+        protected override TypeDefinition CreateTarget()
+        {
+            var target = new TypeDefinition(this.Source.Namespace, this.Source.Name, 0);
+            this.ParentTypeCloner.Target.NestedTypes.Add(target);
+            return target;
         }
 
         /// <summary>
@@ -44,65 +67,32 @@ namespace Bix.Mixers.ILCloning
         /// </summary>
         public override void Clone()
         {
-            if (this.Target == this.ILCloningContext.RootTarget)
+            Contract.Assert(this.Target != this.ILCloningContext.RootTarget);
+            Contract.Assert(this.Target.IsNested);
+            Contract.Assert(this.Source.IsNested);
+
+            if (this.Source.HasSecurityDeclarations)
             {
-                if (!(this.Source.IsClass && !this.Source.IsValueType))
-                {
-                    throw new InvalidOperationException(string.Format("Configured mixin implementation type must be a reference type: [{0}]", this.Source.FullName));
-                }
-
-                if (this.Source.IsAbstract)
-                {
-                    throw new InvalidOperationException(string.Format("Configured mixin implementation type cannot be abstract: [{0}]", this.Source.FullName));
-                }
-
-                if (this.Source.HasGenericParameters)
-                {
-                    throw new InvalidOperationException(string.Format("Configured mixin implementation type cannot be an open generic type: [{0}]", this.Source.FullName));
-                }
-
-                if (this.Source.HasSecurityDeclarations)
-                {
-                    throw new InvalidOperationException(string.Format(
-                        "Configured mixin implementation may not be annotated with security attributes: [{0}]",
-                        this.Source.FullName));
-                }
-
-                if (this.Source.BaseType.Resolve().FullName != this.Source.Module.Import(typeof(object)).Resolve().FullName)
-                {
-                    throw new InvalidOperationException(string.Format(
-                        "Configured mixin implementation cannot have a base type other than System.Object: [{0}]",
-                        this.Source.FullName));
-                }
+                // TODO Nested type security declarations
+                throw new InvalidOperationException(string.Format(
+                    "Configured mixin implementation may not contain nested types annotated with security attributes: [{0}]",
+                    this.ILCloningContext.RootSource.FullName));
             }
-            else
+
+            this.Target.Attributes = this.Source.Attributes;
+            this.Target.DeclaringType = this.ILCloningContext.RootImport(this.Source.DeclaringType).Resolve();
+            this.Target.BaseType = this.ILCloningContext.RootImport(this.Source.BaseType);
+
+            foreach (var interfaceType in this.Source.Interfaces)
             {
-                Contract.Assert(this.Target.IsNested);
-                Contract.Assert(this.Source.IsNested);
-
-                if (this.Source.HasSecurityDeclarations)
-                {
-                    // TODO Nested type security declarations
-                    throw new InvalidOperationException(string.Format(
-                        "Configured mixin implementation may not contain nested types annotated with security attributes: [{0}]",
-                        this.ILCloningContext.RootSource.FullName));
-                }
-
-                this.Target.Attributes = this.Source.Attributes;
-                this.Target.DeclaringType = this.ILCloningContext.RootImport(this.Source.DeclaringType).Resolve();
-                this.Target.BaseType = this.ILCloningContext.RootImport(this.Source.BaseType);
-
-                foreach (var interfaceType in this.Source.Interfaces)
-                {
-                    this.Target.Interfaces.Add(this.ILCloningContext.RootImport(interfaceType));
-                }
-
-                // TODO look more closely at type packing size
-                this.Target.PackingSize = this.Source.PackingSize;
-
-                // TODO look more closely at type class size
-                this.Target.ClassSize = this.Source.ClassSize;
+                this.Target.Interfaces.Add(this.ILCloningContext.RootImport(interfaceType));
             }
+
+            // TODO look more closely at type packing size
+            this.Target.PackingSize = this.Source.PackingSize;
+
+            // TODO look more closely at type class size
+            this.Target.ClassSize = this.Source.ClassSize;
 
             this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
 

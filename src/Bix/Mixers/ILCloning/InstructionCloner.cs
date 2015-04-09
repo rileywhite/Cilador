@@ -26,7 +26,7 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Clones a source instruction to a target instruction
     /// </summary>
-    internal class InstructionCloner : ClonerBase<Instruction>
+    internal class InstructionCloner : OldClonerBase<Instruction>
     {
         /// <summary>
         /// Creates a new <see cref="InstructionCloner"/>.

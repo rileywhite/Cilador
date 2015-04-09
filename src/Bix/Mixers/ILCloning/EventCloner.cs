@@ -23,7 +23,7 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Clones <see cref="FieldDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class EventCloner : ClonerBase<EventDefinition>
+    internal class EventCloner : OldClonerBase<EventDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="EventCloner"/>

@@ -23,7 +23,7 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Clones a parameter
     /// </summary>
-    internal class ParameterCloner : ClonerBase<ParameterDefinition>
+    internal class ParameterCloner : OldClonerBase<ParameterDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="ParameterCloner"/>.

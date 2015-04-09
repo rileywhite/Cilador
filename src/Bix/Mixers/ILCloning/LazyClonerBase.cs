@@ -52,6 +52,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(source != null);
             Contract.Requires(targetGetter != null);
             Contract.Requires(targetSetter != null);
+            Contract.Ensures(this.ILCloningContext != null);
         }
 
         /// <summary>
@@ -67,6 +68,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(targetAccessor != null);
             Contract.Requires(targetAccessor.IsGetAccessor && targetAccessor.IsSetAccessor);
             Contract.Requires(source != null);
+            Contract.Ensures(this.ILCloningContext != null);
 
             this.ILCloningContext = ilCloningContext;
         }

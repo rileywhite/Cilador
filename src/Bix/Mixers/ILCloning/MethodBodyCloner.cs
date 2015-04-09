@@ -24,7 +24,7 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Clones a method body from a source to a target.
     /// </summary>
-    internal class MethodBodyCloner : ClonerBase<MethodBody>
+    internal class MethodBodyCloner : OldClonerBase<MethodBody>
     {
         /// <summary>
         /// Creates a new <see cref="MethodBodyCloner"/>

@@ -63,7 +63,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(this.RootSource != null);
             Contract.Requires(this.RootTarget != null);
 
-            this.ClonerGatheringVisitor.Visit(this.RootSource, this.RootTarget);
+            this.ClonerGatheringVisitor.Visit(new RootTypeCloner(this, this.RootSource, this.RootTarget));
             this.Cloners.SetAllClonersAdded();
             this.Cloners.InvokeCloners();
         }

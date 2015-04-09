@@ -24,7 +24,7 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Clones <see cref="MethodDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class MethodSignatureCloner : ClonerBase<MethodDefinition>
+    internal class MethodSignatureCloner : OldClonerBase<MethodDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="MethodSignatureCloner"/>

@@ -146,6 +146,8 @@
     <Compile Include="Core\CoreExtensions.cs" />
     <Compile Include="Core\LazyAccessor.cs" />
     <Compile Include="ILCloning\ClonerBase.cs" />
+    <Compile Include="ILCloning\ClonerBaseContract.cs" />
+    <Compile Include="ILCloning\OldClonerBase.cs" />
     <Compile Include="ILCloning\ClonerGatheringVisitor.cs" />
     <Compile Include="ILCloning\Cloners.cs" />
     <Compile Include="ILCloning\ConstructorBroadcaster.cs" />
@@ -168,6 +170,7 @@
     <Compile Include="ILCloning\MethodSignatureCloner.cs" />
     <Compile Include="ILCloning\ParameterCloner.cs" />
     <Compile Include="ILCloning\PropertyCloner.cs" />
+    <Compile Include="ILCloning\RootTypeCloner.cs" />
     <Compile Include="ILCloning\TypeCloner.cs" />
     <Compile Include="ILCloning\VariableCloner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

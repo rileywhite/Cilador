@@ -16,36 +16,39 @@
 
 using System;
 using System.Diagnostics.Contracts;
-using Mono.Cecil.Cil;
 
 namespace Bix.Mixers.ILCloning
 {
     /// <summary>
-    /// Clones a source variable to a target variable
+    /// Contracts for <see cref="ClonerBase{TItem}"/>.
     /// </summary>
-    internal class VariableCloner : OldClonerBase<VariableDefinition>
+    [ContractClassFor(typeof(ClonerBase<>))]
+    internal abstract class ClonerBaseContract<TClonedItem> : ClonerBase<TClonedItem>
+        where TClonedItem : class
     {
         /// <summary>
-        /// Creates a new <see cref="VariableCloner"/>.
+        /// Unused constructor for <see cref="LazyClonerBaseContract{TClonedItem}"/>.
         /// </summary>
-        /// <param name="ilCloningContext">IL cloning context.</param>
-        /// <param name="source">Cloning source.</param>
-        /// <param name="target">Cloning target.</param>
-        public VariableCloner(IILCloningContext ilCloningContext, VariableDefinition source, VariableDefinition target)
-            : base(ilCloningContext, source, target)
+        private ClonerBaseContract() : base(null, null) { }
+
+        /// <summary>
+        /// Contracts for <see cref="CreateTarget()"/>
+        /// </summary>
+        /// <returns></returns>
+        protected override TClonedItem CreateTarget()
         {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(source != null);
-            Contract.Requires(target != null);
+            Contract.Ensures(Contract.Result<TClonedItem>() != null);
+            throw new NotSupportedException();
         }
 
         /// <summary>
-        /// Clones the variable
+        /// Contracts for <see cref="Clone()"/>.
         /// </summary>
         public override void Clone()
         {
-            this.Target.VariableType = this.ILCloningContext.RootImport(this.Source.VariableType);
-            this.IsCloned = true;
+            Contract.Requires(!this.IsCloned);
+            Contract.Ensures(this.IsCloned);
+            throw new NotSupportedException();
         }
     }
 }

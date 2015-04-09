@@ -23,7 +23,7 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Clones <see cref="PropertyDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class PropertyCloner : ClonerBase<PropertyDefinition>
+    internal class PropertyCloner : OldClonerBase<PropertyDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="PropertyCloner"/>

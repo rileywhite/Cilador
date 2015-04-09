@@ -50,7 +50,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Ensures(this.TargetPropertyBySourceFullName != null);
             Contract.Ensures(this.TargetEventBySourceFullName != null);
 
-            this.TypeCloners = new List<TypeCloner>();
+            this.TypeCloners = new List<ClonerBase<TypeDefinition>>();
             this.FieldCloners = new List<FieldCloner>();
             this.MethodSignatureCloners = new List<MethodSignatureCloner>();
             this.MethodParameterCloners = new List<ParameterCloner>();
@@ -142,13 +142,13 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets or sets cloners for all types to be cloned.
         /// </summary>
-        private List<TypeCloner> TypeCloners { get; set; }
+        private List<ClonerBase<TypeDefinition>> TypeCloners { get; set; }
 
         /// <summary>
         /// Adds a cloner to the collection.
         /// </summary>
         /// <param name="cloner">Cloner to add to the collection.</param>
-        public void AddCloner(TypeCloner cloner)
+        public void AddCloner(ClonerBase<TypeDefinition> cloner)
         {
             Contract.Requires(cloner != null);
             Contract.Requires(!this.AreAllClonersAdded);

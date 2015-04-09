@@ -59,28 +59,38 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <param name="sourceType">Cloning source to gather cloners for.</param>
-        /// <param name="targetType">Cloning target to gather cloners for.</param>
-        public void Visit(TypeDefinition sourceType, TypeDefinition targetType)
+        /// <param name="rootTypeCloner">Cloner to gather child cloners for.</param>
+        public void Visit(RootTypeCloner rootTypeCloner)
         {
-            Contract.Requires(sourceType != null);
-            Contract.Requires(targetType != null);
+            Contract.Requires(rootTypeCloner != null);
+            this.Cloners.AddCloner(rootTypeCloner);
+            this.Visit((ClonerBase<TypeDefinition>)rootTypeCloner);
+        }
 
-            this.Cloners.AddCloner(new TypeCloner(this.ILCloningContext, sourceType, targetType));
+        /// <summary>
+        /// Gathers all cloners for the given cloning source and target
+        /// </summary>
+        /// <param name="typeCloner">Cloner to gather child cloners for.</param>
+        private void Visit(ClonerBase<TypeDefinition> typeCloner)
+        {
+            Contract.Requires(typeCloner != null);
+
+            var sourceType = typeCloner.Source;
 
             foreach (var sourceNestedType in sourceType.NestedTypes)
             {
-                var targetNestedType = new TypeDefinition(sourceNestedType.Namespace, sourceNestedType.Name, 0);
-                targetType.NestedTypes.Add(targetNestedType);
+                var nestedTypeCloner = new TypeCloner(typeCloner, sourceNestedType);
+                this.Cloners.AddCloner(nestedTypeCloner);
 
                 this.Visit(
                     (IGenericParameterProvider)sourceNestedType,
-                    (IGenericParameterProvider)targetNestedType);
+                    (IGenericParameterProvider)nestedTypeCloner.Target);
                 
-                this.Visit(sourceNestedType, targetNestedType);
+                this.Visit(nestedTypeCloner);
             }
 
-            var voidReference = targetType.Module.Import(typeof(void));
+            var targetType = typeCloner.Target;     // TODO eventually remove the need for this
+            var voidReference = typeCloner.ILCloningContext.RootTarget.Module.Import(typeof(void));
 
             foreach (var sourceField in sourceType.Fields)
             {
