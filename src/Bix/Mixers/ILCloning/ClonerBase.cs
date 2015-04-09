@@ -26,19 +26,19 @@ namespace Bix.Mixers.ILCloning
     /// <remarks>
     /// This type is not thread-safe.
     /// </remarks>
-    /// <typeparam name="TClonedItem">Type of item to be cloned.</typeparam>
+    /// <typeparam name="TCloned">Type of item to be cloned.</typeparam>
     [ContractClass(typeof(ClonerBaseContract<>))]
-    public abstract class ClonerBase<TClonedItem> : ICloner
-        where TClonedItem : class
+    public abstract class ClonerBase<TCloned> : ICloner
+        where TCloned : class
     {
         /// <summary>
-        /// Creates a new <see cref="ClonerBase{TClonedItem}"/>.
+        /// Creates a new <see cref="ClonerBase{TCloned}"/>.
         /// </summary>
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="source">Cloning source.</param>
         protected ClonerBase(
             IILCloningContext ilCloningContext,
-            TClonedItem source)
+            TCloned source)
         {
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(source != null);
@@ -63,7 +63,7 @@ namespace Bix.Mixers.ILCloning
         /// When overridden in a subclass, this method should create the cloning target.
         /// </summary>
         /// <returns>New target item.</returns>
-        protected abstract TClonedItem CreateTarget();
+        protected abstract TCloned CreateTarget();
 
         /// <summary>
         /// Calls the abstract target creation method and sets the target.
@@ -74,7 +74,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Ensures(this.IsTargetCreated);
             Contract.Ensures(this.Target != null);
 
-            TClonedItem target;
+            TCloned target;
             try
             {
                 target = this.CreateTarget();
@@ -82,7 +82,7 @@ namespace Bix.Mixers.ILCloning
             catch (Exception e)
             {
                 throw new InvalidOperationException(
-                    string.Format("Failed to create a cloning target for source of type [{0}].", typeof(TClonedItem).FullName),
+                    string.Format("Failed to create a cloning target for source of type [{0}].", typeof(TCloned).FullName),
                     e);
             }
 
@@ -92,11 +92,11 @@ namespace Bix.Mixers.ILCloning
             this.IsTargetCreated = true;
         }
 
-        private TClonedItem target;
+        private TCloned target;
         /// <summary>
         /// Gets the resolved cloning target.
         /// </summary>
-        public TClonedItem Target
+        public TCloned Target
         {
             get
             {
@@ -113,7 +113,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets the resolved cloning source.
         /// </summary>
-        public TClonedItem Source { get; set; }
+        public TCloned Source { get; set; }
 
         /// <summary>
         /// Gets or sets whether the item has been cloned.

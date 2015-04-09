@@ -171,7 +171,7 @@
     <Compile Include="ILCloning\ParameterCloner.cs" />
     <Compile Include="ILCloning\PropertyCloner.cs" />
     <Compile Include="ILCloning\RootTypeCloner.cs" />
-    <Compile Include="ILCloning\TypeCloner.cs" />
+    <Compile Include="ILCloning\NestedTypeCloner.cs" />
     <Compile Include="ILCloning\VariableCloner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

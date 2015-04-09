@@ -27,29 +27,29 @@ namespace Bix.Mixers.ILCloning
     /// This is used by nested types. The root cloned type should use
     /// a <see cref="RootTypeCloner"/>.
     /// </remarks>
-    internal class TypeCloner : ClonerBase<TypeDefinition>
+    internal class NestedTypeCloner : ClonerBase<TypeDefinition>
     {
         /// <summary>
-        /// Creates a new <see cref="TypeCloner"/>.
+        /// Creates a new <see cref="NestedTypeCloner"/>.
         /// </summary>
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="source">Cloning source.</param>
-        public TypeCloner(ClonerBase<TypeDefinition> parentTypeCloner, TypeDefinition source)
-            : base(parentTypeCloner.ILCloningContext, source)
+        public NestedTypeCloner(ClonerBase<TypeDefinition> parent, TypeDefinition source)
+            : base(parent.ILCloningContext, source)
         {
-            Contract.Requires(parentTypeCloner != null);
-            Contract.Requires(parentTypeCloner.ILCloningContext != null);
+            Contract.Requires(parent != null);
+            Contract.Requires(parent.ILCloningContext != null);
             Contract.Requires(source != null);
-            Contract.Ensures(this.ParentTypeCloner != null);
+            Contract.Ensures(this.Parent != null);
 
-            this.ParentTypeCloner = parentTypeCloner;
+            this.Parent = parent;
         }
 
         /// <summary>
         /// Gets or sets the cloner for the parent type.
         /// All types should have parent types.
         /// </summary>
-        private ClonerBase<TypeDefinition> ParentTypeCloner { get; set; }
+        private ClonerBase<TypeDefinition> Parent { get; set; }
 
         /// <summary>
         /// Creates the new target.
@@ -58,7 +58,7 @@ namespace Bix.Mixers.ILCloning
         protected override TypeDefinition CreateTarget()
         {
             var target = new TypeDefinition(this.Source.Namespace, this.Source.Name, 0);
-            this.ParentTypeCloner.Target.NestedTypes.Add(target);
+            this.Parent.Target.NestedTypes.Add(target);
             return target;
         }
 

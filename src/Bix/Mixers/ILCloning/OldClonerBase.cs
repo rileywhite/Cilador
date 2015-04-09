@@ -27,7 +27,7 @@ namespace Bix.Mixers.ILCloning
         where TClonedItem : class
     {
         /// <summary>
-        /// Creates a new <see cref="ClonerBase{TClonedItem}"/>
+        /// Creates a new <see cref="ClonerBase{TCloned}"/>
         /// </summary>
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="target">Resolved cloning target.</param>

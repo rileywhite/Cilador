@@ -23,20 +23,39 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Clones <see cref="FieldDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class FieldCloner : OldClonerBase<FieldDefinition>
+    internal class FieldCloner : ClonerBase<FieldDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="FieldCloner"/>
         /// </summary>
-        /// <param name="ilCloningContext">IL cloning context.</param>
+        /// <param name="parent">Cloner for the type that owns the field being cloned.</param>
         /// <param name="source">Cloning source.</param>
-        /// <param name="target">Cloning target.</param>
-        public FieldCloner(ILCloningContext ilCloningContext, FieldDefinition source, FieldDefinition target)
-            : base(ilCloningContext, source, target)
+        public FieldCloner(ClonerBase<TypeDefinition> parent, FieldDefinition source)
+            : base(parent.ILCloningContext, source)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(parent != null);
+            Contract.Requires(parent.ILCloningContext != null);
             Contract.Requires(source != null);
-            Contract.Requires(target != null);
+            Contract.Ensures(this.Parent != null);
+
+            this.Parent = parent;
+        }
+
+        /// <summary>
+        /// Gets or sets the cloner for the type that owns the field being cloned.
+        /// </summary>
+        public ClonerBase<TypeDefinition> Parent { get; set; }
+
+        /// <summary>
+        /// Creates the target.
+        /// </summary>
+        /// <returns></returns>
+        protected override FieldDefinition CreateTarget()
+        {
+            var voidReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));  // TODO get rid of void ref
+            var targetField = new FieldDefinition(this.Source.Name, 0, voidReference);
+            this.Parent.Target.Fields.Add(targetField);
+            return targetField;
         }
 
         /// <summary>

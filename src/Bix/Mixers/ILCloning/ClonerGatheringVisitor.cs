@@ -70,6 +70,21 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
+        /// <param name="rootTypeCloner">Cloner to gather child cloners for.</param>
+        private void Visit(NestedTypeCloner typeCloner)
+        {
+            Contract.Requires(typeCloner != null);
+
+            this.Visit((ClonerBase<TypeDefinition>)typeCloner);
+
+            this.Visit(
+                (IGenericParameterProvider)typeCloner.Source,
+                (IGenericParameterProvider)typeCloner.Target); // TODO don't access target
+        }
+
+        /// <summary>
+        /// Gathers all cloners for the given cloning source and target
+        /// </summary>
         /// <param name="typeCloner">Cloner to gather child cloners for.</param>
         private void Visit(ClonerBase<TypeDefinition> typeCloner)
         {
@@ -79,24 +94,19 @@ namespace Bix.Mixers.ILCloning
 
             foreach (var sourceNestedType in sourceType.NestedTypes)
             {
-                var nestedTypeCloner = new TypeCloner(typeCloner, sourceNestedType);
+                var nestedTypeCloner = new NestedTypeCloner(typeCloner, sourceNestedType);
                 this.Cloners.AddCloner(nestedTypeCloner);
-
-                this.Visit(
-                    (IGenericParameterProvider)sourceNestedType,
-                    (IGenericParameterProvider)nestedTypeCloner.Target);
-                
                 this.Visit(nestedTypeCloner);
             }
 
-            var targetType = typeCloner.Target;     // TODO eventually remove the need for this
-            var voidReference = typeCloner.ILCloningContext.RootTarget.Module.Import(typeof(void));
+            var targetType = typeCloner.Target;     // TODO Don't access Target
+            var voidReference = typeCloner.ILCloningContext.RootTarget.Module.Import(typeof(void)); // TODO get rid of void ref
 
             foreach (var sourceField in sourceType.Fields)
             {
-                var targetField = new FieldDefinition(sourceField.Name, 0, voidReference);
-                targetType.Fields.Add(targetField);
-                this.Visit(sourceField, targetField);
+                var fieldCloner = new FieldCloner(typeCloner, sourceField);
+                this.Cloners.AddCloner(fieldCloner);
+                this.Visit(fieldCloner);
             }
 
             foreach (var sourceMethod in sourceType.Methods)
@@ -174,14 +184,10 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <param name="sourceField">Cloning source to gather cloners for.</param>
-        /// <param name="targetField">Cloning target to gather cloners for.</param>
-        private void Visit(FieldDefinition sourceField, FieldDefinition targetField)
+        /// <param name="fieldCloner">Cloner for a field being cloned.</param>
+        private void Visit(FieldCloner fieldCloner)
         {
-            Contract.Requires(sourceField != null);
-            Contract.Requires(targetField != null);
-
-            this.Cloners.AddCloner(new FieldCloner(this.ILCloningContext, sourceField, targetField));
+            Contract.Requires(fieldCloner != null);
         }
 
         /// <summary>
