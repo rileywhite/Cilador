@@ -150,6 +150,7 @@
     <Compile Include="ILCloning\Cloners.cs" />
     <Compile Include="ILCloning\ConstructorBroadcaster.cs" />
     <Compile Include="ILCloning\ConstructorMultiplexer.cs" />
+    <Compile Include="ILCloning\CustomAttributeCloner.cs" />
     <Compile Include="ILCloning\EventCloner.cs" />
     <Compile Include="ILCloning\ExceptionHandlerCloner.cs" />
     <Compile Include="ILCloning\FieldCloner.cs" />

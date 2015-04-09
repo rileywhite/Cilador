@@ -43,6 +43,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Ensures(this.PropertyCloners != null);
             Contract.Ensures(this.EventCloners != null);
             Contract.Ensures(this.GenericParameterCloners != null);
+            Contract.Ensures(this.CustomAttributeCloners != null);
             Contract.Ensures(this.TargetTypeBySourceFullName != null);
             Contract.Ensures(this.TargetFieldBySourceFullName != null);
             Contract.Ensures(this.TargetMethodBySourceFullName != null);
@@ -60,6 +61,7 @@ namespace Bix.Mixers.ILCloning
             this.PropertyCloners = new List<PropertyCloner>();
             this.EventCloners = new List<EventCloner>();
             this.GenericParameterCloners = new List<GenericParameterCloner>();
+            this.CustomAttributeCloners = new List<CustomAttributeCloner>();
 
             this.TargetTypeBySourceFullName = new Dictionary<string, TypeDefinition>();
             this.TargetGenericParameterGetterBySourceOwnerFullNameAndPosition = new Dictionary<string, Func<GenericParameter>>();
@@ -124,6 +126,7 @@ namespace Bix.Mixers.ILCloning
             this.MethodBodyCloners.CloneAll();
             this.InstructionCloners.CloneAll();
             this.ExceptionHandlerCloners.CloneAll();
+            this.CustomAttributeCloners.CloneAll();
 
             this.AreClonersInvoked = true;
             this.AreClonersInvoking = false;
@@ -229,7 +232,7 @@ namespace Bix.Mixers.ILCloning
             // but because target generic parameters are not created until clone time,
             // we need to be more careful here
 
-            // this check has a dependency on the implementation deatil of using a dummy
+            // this check has a dependency on the implementation detail of using a dummy
             // generic parameter with the owner set to the void type
             var owner = target.Owner as TypeReference;
             if (owner != null && owner.FullName == typeof(void).FullName)
@@ -489,6 +492,29 @@ namespace Bix.Mixers.ILCloning
 
             this.EventCloners.Add(cloner);
             this.TargetEventBySourceFullName.Add(Cloners.GetUniqueKeyFor(cloner.Source), cloner.Target);
+        }
+
+        #endregion
+
+        #region Custom Attributes
+
+        /// <summary>
+        /// Gets or sets cloners for all custom attributes to be cloned.
+        /// </summary>
+        private List<CustomAttributeCloner> CustomAttributeCloners { get; set; }
+
+        /// <summary>
+        /// Adds a cloner to the collection.
+        /// </summary>
+        /// <param name="cloner">Cloner to add to the collection.</param>
+        public void AddCloner(CustomAttributeCloner cloner)
+        {
+            Contract.Requires(cloner != null);
+            Contract.Requires(cloner.Source != null);
+            Contract.Requires(cloner.Item2.IsGetAccessor);
+            Contract.Requires(!this.AreAllClonersAdded);
+
+            this.CustomAttributeCloners.Add(cloner);
         }
 
         #endregion

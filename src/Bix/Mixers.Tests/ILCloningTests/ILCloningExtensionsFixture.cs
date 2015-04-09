@@ -194,12 +194,6 @@ namespace Bix.Mixers.Tests.ILCloningTests
         }
 
         [Test]
-        public void CloneAllCustomAttributesTest()
-        {
-            Assert.Fail();
-        }
-
-        [Test]
         public void IsStoreVariableOpCodeTest()
         {
             foreach (var code in Enum.GetValues(typeof(Code)))
