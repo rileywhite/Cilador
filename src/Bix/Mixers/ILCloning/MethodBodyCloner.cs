@@ -24,52 +24,34 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Clones a method body from a source to a target.
     /// </summary>
-    internal class MethodBodyCloner : OldClonerBase<MethodBody>
+    internal class MethodBodyCloner : ClonerBase<MethodBody>
     {
         /// <summary>
         /// Creates a new <see cref="MethodBodyCloner"/>
         /// </summary>
-        /// <param name="signatureCloner">Cloner for the method signature to which this method body is attached.</param>
+        /// <param name="parent">Cloner for the method signature to which this method body is attached.</param>
         /// <param name="source">Resolved cloning source.</param>
-        /// <param name="target">Resolved cloning target.</param>
-        public MethodBodyCloner(MethodSignatureCloner signatureCloner, MethodBody source, MethodBody target)
-            : base(signatureCloner.ILCloningContext, source, target)
+        public MethodBodyCloner(MethodSignatureCloner parent, MethodBody source)
+            : base(parent.ILCloningContext, source)
         {
-            Contract.Requires(signatureCloner != null);
-            Contract.Requires(signatureCloner.ILCloningContext != null);
+            Contract.Requires(parent != null);
+            Contract.Requires(parent.ILCloningContext != null);
             Contract.Requires(source != null);
-            Contract.Requires(target != null);
-            Contract.Ensures(this.SignatureCloner != null);
+            Contract.Ensures(this.Parent != null);
             Contract.Ensures(this.VariableCloners != null);
+            Contract.Ensures(this.InstructionCloners != null);
+            Contract.Ensures(this.ExceptionHandlerCloners != null);
 
-            this.SignatureCloner = signatureCloner;
-            this.PopulateVariableCloners();
-            this.PopulateInstructionCloners();
-            this.PopulateExceptionHandlerCloners();
+            this.Parent = parent;
+            this.VariableCloners = new List<VariableCloner>();
+            this.InstructionCloners = new List<InstructionCloner>();
+            this.ExceptionHandlerCloners = new List<ExceptionHandlerCloner>();
         }
 
         /// <summary>
         /// Gets or sets the method signature cloner with which this method body cloner is associated
         /// </summary>
-        public MethodSignatureCloner SignatureCloner { get; private set; }
-
-        /// <summary>
-        /// Populates <see cref="VariableCloners"/>.
-        /// </summary>
-        private void PopulateVariableCloners()
-        {
-            Contract.Ensures(this.VariableCloners != null);
-
-            this.VariableCloners = new List<VariableCloner>();
-
-            var voidTypeReference = this.Target.Method.Module.Import(typeof(void));
-            foreach (var sourceVariable in this.Source.Variables)
-            {
-                var targetVariable = new VariableDefinition(sourceVariable.Name, voidTypeReference);
-                this.Target.Variables.Add(targetVariable);
-                this.VariableCloners.Add(new VariableCloner(this.ILCloningContext, sourceVariable, targetVariable));
-            }
-        }
+        public MethodSignatureCloner Parent { get; private set; }
 
         /// <summary>
         /// Gets or sets the collection of variable cloners for the method body.
@@ -77,53 +59,23 @@ namespace Bix.Mixers.ILCloning
         public List<VariableCloner> VariableCloners { get; private set; }
 
         /// <summary>
-        /// Populates <see cref="InstructionCloners"/>.
-        /// </summary>
-        private void PopulateInstructionCloners()
-        {
-            Contract.Ensures(this.InstructionCloners != null);
-
-            var ilProcessor = this.Target.GetILProcessor();
-
-            this.InstructionCloners = new List<InstructionCloner>();
-
-            foreach (var sourceInstruction in this.Source.Instructions)
-            {
-                // the operand is required to create the instruction
-                // but at this stage root resolving is not yet allowed because wireframes of all items do not yet exist
-                // so, where needed, dummy operands are used which will be replaced in the clone step of each instruction cloner
-                Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(new MethodContext(this), ilProcessor, sourceInstruction);
-                ilProcessor.Append(targetInstruction);
-                this.InstructionCloners.Add(new InstructionCloner(this, sourceInstruction, targetInstruction));
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the collection of instruction cloners for the method body.
         /// </summary>
         public List<InstructionCloner> InstructionCloners { get; private set; }
 
         /// <summary>
-        /// Populates <see cref="ExceptionHandlerCloners"/>.
-        /// </summary>
-        private void PopulateExceptionHandlerCloners()
-        {
-            Contract.Ensures(this.ExceptionHandlerCloners != null);
-
-            this.ExceptionHandlerCloners = new List<ExceptionHandlerCloner>();
-
-            foreach (var sourceExceptionHandler in this.Source.ExceptionHandlers)
-            {
-                var targetExceptionHandler = new ExceptionHandler(sourceExceptionHandler.HandlerType);
-                this.Target.ExceptionHandlers.Add(targetExceptionHandler);
-                this.ExceptionHandlerCloners.Add(new ExceptionHandlerCloner(new MethodContext(this), sourceExceptionHandler, targetExceptionHandler));
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the collection of exception handler cloners for the method body.
         /// </summary>
         public List<ExceptionHandlerCloner> ExceptionHandlerCloners { get; private set; }
+
+        /// <summary>
+        /// The method body already exists, attached to the parent cloner.
+        /// </summary>
+        /// <returns>Parent cloner's target body.</returns>
+        protected override MethodBody CreateTarget()
+        {
+            return this.Parent.Target.Body;
+        }
 
         /// <summary>
         /// Clones the method body from the source to the target.

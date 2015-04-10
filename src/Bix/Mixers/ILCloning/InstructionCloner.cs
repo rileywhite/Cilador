@@ -42,6 +42,8 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(source != null);
             Contract.Requires(target != null);
             Contract.Ensures(this.MethodContext != null);
+
+            methodBodyCloner.InstructionCloners.Add(this);
         }
 
         /// <summary>

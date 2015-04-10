@@ -195,11 +195,46 @@ namespace Bix.Mixers.ILCloning
 
             if (methodSignatureCloner.Source.HasBody)
             {
-                var methodBodyCloner = new MethodBodyCloner(methodSignatureCloner, methodSignatureCloner.Source.Body, methodSignatureCloner.Target.Body);
+                var methodBodyCloner = new MethodBodyCloner(methodSignatureCloner, methodSignatureCloner.Source.Body);
                 this.Cloners.AddCloner(methodBodyCloner);
-                this.Cloners.AddCloners(methodBodyCloner.VariableCloners);
-                this.Cloners.AddCloners(methodBodyCloner.InstructionCloners);
-                this.Cloners.AddCloners(methodBodyCloner.ExceptionHandlerCloners);
+                this.Visit(methodBodyCloner);
+            }
+        }
+
+        /// <summary>
+        /// Gathers all cloners for the given cloning source and target.
+        /// </summary>
+        /// <param name="methodBodyCloner">Cloner for the method body.</param>
+        private void Visit(MethodBodyCloner methodBodyCloner)
+        {
+            var voidTypeReference = methodBodyCloner.Target.Method.Module.Import(typeof(void)); // TODO get rid of void ref
+
+            foreach (var sourceVariable in methodBodyCloner.Source.Variables)
+            {
+                var targetVariable = new VariableDefinition(sourceVariable.Name, voidTypeReference);
+                methodBodyCloner.Target.Variables.Add(targetVariable);
+                var variableCloner = new VariableCloner(methodBodyCloner, sourceVariable, targetVariable);
+                this.Cloners.AddCloner(variableCloner);
+            }
+
+            var ilProcessor = methodBodyCloner.Target.GetILProcessor();
+            foreach (var sourceInstruction in methodBodyCloner.Source.Instructions)
+            {
+                // the operand is required to create the instruction
+                // but at this stage root resolving is not yet allowed because wireframes of all items do not yet exist
+                // so, where needed, dummy operands are used which will be replaced in the clone step of each instruction cloner
+                Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(new MethodContext(methodBodyCloner), ilProcessor, sourceInstruction);
+                ilProcessor.Append(targetInstruction);
+                var instructionCloner = new InstructionCloner(methodBodyCloner, sourceInstruction, targetInstruction);
+                this.Cloners.AddCloner(instructionCloner);
+            }
+
+            foreach (var sourceExceptionHandler in methodBodyCloner.Source.ExceptionHandlers)
+            {
+                var targetExceptionHandler = new ExceptionHandler(sourceExceptionHandler.HandlerType);
+                methodBodyCloner.Target.ExceptionHandlers.Add(targetExceptionHandler);
+                var exceptionHandlerCloner = new ExceptionHandlerCloner(new MethodContext(methodBodyCloner), sourceExceptionHandler, targetExceptionHandler);
+                this.Cloners.AddCloner(exceptionHandlerCloner);
             }
         }
 

@@ -28,16 +28,41 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new <see cref="VariableCloner"/>.
         /// </summary>
+        /// <param name="ilCloningContext">Cloner for the method body that contains the variable being cloned</param>
+        /// <param name="source">Cloning source.</param>
+        /// <param name="target">Cloning target.</param>
+        public VariableCloner(MethodBodyCloner parent, VariableDefinition source, VariableDefinition target)
+            : this(parent.ILCloningContext, source, target)
+        {
+            Contract.Requires(parent != null);
+            Contract.Requires(parent.ILCloningContext != null);
+            Contract.Requires(source != null);
+            Contract.Requires(target != null);
+            Contract.Ensures(this.Parent != null);
+
+            this.Parent = parent;
+            this.Parent.VariableCloners.Add(this);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="VariableCloner"/>.
+        /// </summary>
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="source">Cloning source.</param>
         /// <param name="target">Cloning target.</param>
         public VariableCloner(IILCloningContext ilCloningContext, VariableDefinition source, VariableDefinition target)
             : base(ilCloningContext, source, target)
         {
+            // TODO get rid of this constructor...somehow...? it's used in constructor broadcasting
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(source != null);
             Contract.Requires(target != null);
         }
+
+        /// <summary>
+        /// Gets or sets the cloner for the method body that contains the variable being cloned.
+        /// </summary>
+        private MethodBodyCloner Parent { get; set; }
 
         /// <summary>
         /// Clones the variable

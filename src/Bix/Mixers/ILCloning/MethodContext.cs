@@ -36,7 +36,7 @@ namespace Bix.Mixers.ILCloning
         public MethodContext(MethodBodyCloner methodBodyCloner) : this(
             methodBodyCloner.ILCloningContext,
             Tuple.Create(methodBodyCloner.Source.ThisParameter, methodBodyCloner.Target.ThisParameter),
-            methodBodyCloner.SignatureCloner.ParameterCloners,
+            methodBodyCloner.Parent.ParameterCloners,
             methodBodyCloner.VariableCloners,
             methodBodyCloner.InstructionCloners)
         {

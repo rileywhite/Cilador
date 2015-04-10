@@ -28,6 +28,23 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new <see cref="ExceptionHandlerCloner"/>
         /// </summary>
+        /// <param name="parent">Cloner for the method body that contains this exception handler.</param>
+        /// <param name="source">Cloning source.</param>
+        /// <param name="target">Cloning target.</param>
+        public ExceptionHandlerCloner(MethodBodyCloner parent, ExceptionHandler source, ExceptionHandler target)
+            : this(new MethodContext(parent), source, target)
+        {
+            Contract.Requires(parent != null);
+            Contract.Requires(parent.ILCloningContext != null);
+            Contract.Requires(source != null);
+            Contract.Requires(target != null);
+
+            parent.ExceptionHandlerCloners.Add(this);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="ExceptionHandlerCloner"/>
+        /// </summary>
         /// <param name="methodContext">Method context for this cloner.</param>
         /// <param name="source">Cloning source.</param>
         /// <param name="target">Cloning target.</param>

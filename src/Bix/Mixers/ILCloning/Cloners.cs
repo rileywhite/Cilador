@@ -385,6 +385,18 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Adds a cloner to the collection.
         /// </summary>
+        /// <param name="cloner">Cloner to add to the collection.</param>
+        public void AddCloner(VariableCloner cloner)
+        {
+            Contract.Requires(cloner != null);
+            Contract.Requires(!this.AreAllClonersAdded);
+
+            this.VariableCloners.Add(cloner);
+        }
+
+        /// <summary>
+        /// Adds a cloner to the collection.
+        /// </summary>
         /// <param name="cloners">Cloners to add to the collection.</param>
         public void AddCloners(IEnumerable<VariableCloner> cloners)
         {
@@ -406,6 +418,18 @@ namespace Bix.Mixers.ILCloning
 
         /// <summary>
         /// Adds a cloner to the collection.
+        /// </summary>
+        /// <param name="cloner">Cloner to add to the collection.</param>
+        public void AddCloner(InstructionCloner cloner)
+        {
+            Contract.Requires(cloner != null);
+            Contract.Requires(!this.AreAllClonersAdded);
+
+            this.InstructionCloners.Add(cloner);
+        }
+
+        /// <summary>
+        /// Adds a cloners to the collection.
         /// </summary>
         /// <param name="cloners">Cloners to add to the collection.</param>
         public void AddCloners(IEnumerable<InstructionCloner> cloners)
@@ -429,14 +453,13 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Adds a cloner to the collection.
         /// </summary>
-        /// <param name="cloners">Cloners to add to the collection.</param>
-        public void AddCloners(IEnumerable<ExceptionHandlerCloner> cloners)
+        /// <param name="cloner">Cloner to add to the collection.</param>
+        public void AddCloner(ExceptionHandlerCloner cloner)
         {
-            Contract.Requires(cloners != null);
-            Contract.Requires(!cloners.AreAnyNull());
+            Contract.Requires(cloner != null);
             Contract.Requires(!this.AreAllClonersAdded);
 
-            this.ExceptionHandlerCloners.AddRange(cloners);
+            this.ExceptionHandlerCloners.Add(cloner);
         }
 
         #endregion
