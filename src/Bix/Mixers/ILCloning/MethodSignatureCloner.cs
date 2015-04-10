@@ -111,7 +111,6 @@ namespace Bix.Mixers.ILCloning
         public override void Clone()
         {
             Contract.Assert(this.Target.DeclaringType != null);
-            Contract.Assert(this.Target.Parameters.Count == this.Source.Parameters.Count);
 
             if (this.IsRedirectedStaticConstructor)
             {

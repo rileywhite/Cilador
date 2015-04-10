@@ -147,6 +147,8 @@
     <Compile Include="Core\LazyAccessor.cs" />
     <Compile Include="ILCloning\ClonerBase.cs" />
     <Compile Include="ILCloning\ClonerBaseContract.cs" />
+    <Compile Include="ILCloning\SourceAndTarget.cs" />
+    <Compile Include="ILCloning\ISourceAndTarget.cs" />
     <Compile Include="ILCloning\OldClonerBase.cs" />
     <Compile Include="ILCloning\ClonerGatheringVisitor.cs" />
     <Compile Include="ILCloning\Cloners.cs" />

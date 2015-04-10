@@ -161,8 +161,8 @@ namespace Bix.Mixers.ILCloning
             var instructionCloners = new List<InstructionCloner>(sourceMultiplexedConstructor.InitializationInstructions.Count);
             MethodContext methodContext = new MethodContext(
                 this.ILCloningContext,
-                Tuple.Create(this.SourceConstructor.Body.ThisParameter, targetConstructor.Body.ThisParameter),
-                new List<Tuple<ParameterDefinition, LazyAccessor<ParameterDefinition>>>(),
+                new SourceAndTarget<ParameterDefinition>(this.SourceConstructor.Body.ThisParameter, targetConstructor.Body.ThisParameter),
+                new List<SourceAndTarget<ParameterDefinition>>(),
                 variableCloners,
                 instructionCloners);
             foreach (var sourceInstruction in sourceMultiplexedConstructor.InitializationInstructions)
@@ -230,8 +230,8 @@ namespace Bix.Mixers.ILCloning
             var instructionCloners = new List<InstructionCloner>(sourceMultiplexedConstructor.InitializationInstructions.Count);
             MethodContext methodContext = new MethodContext(
                 this.ILCloningContext,
-                Tuple.Create(this.SourceConstructor.Body.ThisParameter, constructionMethod.Body.ThisParameter),
-                new List<Tuple<ParameterDefinition, LazyAccessor<ParameterDefinition>>>(),
+                new SourceAndTarget<ParameterDefinition>(this.SourceConstructor.Body.ThisParameter, constructionMethod.Body.ThisParameter),
+                new List<SourceAndTarget<ParameterDefinition>>(),
                 variableCloners,
                 instructionCloners);
             foreach (var sourceInstruction in sourceMultiplexedConstructor.ConstructionInstructions)

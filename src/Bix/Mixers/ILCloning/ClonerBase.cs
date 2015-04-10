@@ -28,7 +28,7 @@ namespace Bix.Mixers.ILCloning
     /// </remarks>
     /// <typeparam name="TCloned">Type of item to be cloned.</typeparam>
     [ContractClass(typeof(ClonerBaseContract<>))]
-    public abstract class ClonerBase<TCloned> : ICloner<TCloned>
+    public abstract class ClonerBase<TCloned> : ICloner<TCloned>, ISourceAndTarget<TCloned>
         where TCloned : class
     {
         /// <summary>

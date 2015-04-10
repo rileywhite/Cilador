@@ -28,7 +28,7 @@ namespace Bix.Mixers.ILCloning
     /// </remarks>
     /// <typeparam name="TClonedItem">Type of item to be cloned.</typeparam>
     [ContractClass(typeof(LazyClonerBaseContract<>))]
-    public abstract class LazyClonerBase<TClonedItem> : Tuple<TClonedItem, LazyAccessor<TClonedItem>>, ICloner
+    public abstract class LazyClonerBase<TClonedItem> : Tuple<TClonedItem, LazyAccessor<TClonedItem>>, ICloner, ISourceAndTarget<TClonedItem>
         where TClonedItem : class
     {
         /// <summary>

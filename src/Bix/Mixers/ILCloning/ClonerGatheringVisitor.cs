@@ -108,7 +108,6 @@ namespace Bix.Mixers.ILCloning
             }
 
             var targetType = typeCloner.Target;     // TODO Don't access Target
-            var voidReference = typeCloner.ILCloningContext.RootTarget.Module.Import(typeof(void)); // TODO get rid of void ref
 
             foreach (var sourceField in sourceType.Fields)
             {
@@ -181,19 +180,13 @@ namespace Bix.Mixers.ILCloning
         {
             Contract.Requires(methodSignatureCloner != null);
 
-            var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void)); // TODO get rid of void ref
-
-            var parameterCloners = new List<ParameterCloner>();
+            ParameterCloner previousParameterCloner = null;
             foreach (var sourceParameter in methodSignatureCloner.Source.Parameters)
             {
-                var targetParameter = new ParameterDefinition(
-                    sourceParameter.Name,
-                    sourceParameter.Attributes,
-                    voidTypeReference);
-                methodSignatureCloner.Target.Parameters.Add(targetParameter);
-
-                var parameterCloner = new ParameterCloner(methodSignatureCloner, sourceParameter, targetParameter);
+                var parameterCloner = new ParameterCloner(methodSignatureCloner, previousParameterCloner, sourceParameter);
                 this.Cloners.AddCloner(parameterCloner);
+                this.Visit(parameterCloner);
+                previousParameterCloner = parameterCloner;
             }
 
             GenericParameterCloner previousGenericParameterCloner = null;
@@ -221,7 +214,9 @@ namespace Bix.Mixers.ILCloning
         /// <param name="methodBodyCloner">Cloner for the method body.</param>
         private void Visit(MethodBodyCloner methodBodyCloner)
         {
-            var voidTypeReference = methodBodyCloner.Target.Method.Module.Import(typeof(void)); // TODO get rid of void ref
+            Contract.Requires(methodBodyCloner!= null);
+
+            var voidTypeReference = methodBodyCloner.ILCloningContext.RootTarget.Module.Import(typeof(void)); // TODO get rid of void ref
 
             foreach (var sourceVariable in methodBodyCloner.Source.Variables)
             {
@@ -235,7 +230,7 @@ namespace Bix.Mixers.ILCloning
             foreach (var sourceInstruction in methodBodyCloner.Source.Instructions)
             {
                 // the operand is required to create the instruction
-                // but at this stage root resolving is not yet allowed because wireframes of all items do not yet exist
+                // but at this stage root resolving is not yet allowed because the tree of cloners is not yet completed
                 // so, where needed, dummy operands are used which will be replaced in the clone step of each instruction cloner
                 Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(new MethodContext(methodBodyCloner), ilProcessor, sourceInstruction);
                 ilProcessor.Append(targetInstruction);
@@ -277,6 +272,15 @@ namespace Bix.Mixers.ILCloning
         private void Visit(GenericParameterCloner genericParameterCloner)
         {
             Contract.Requires(genericParameterCloner != null);
+        }
+
+        /// <summary>
+        /// Gathers all cloners for the given cloning source and target.
+        /// </summary>
+        /// <param name="parameterCloner">Cloner for the parameter.</param>
+        private void Visit(ParameterCloner parameterCloner)
+        {
+            Contract.Requires(parameterCloner != null);
         }
     }
 }

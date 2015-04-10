@@ -35,7 +35,7 @@ namespace Bix.Mixers.ILCloning
         /// <param name="methodBodyCloner">Cloner for the method.</param>
         public MethodContext(MethodBodyCloner methodBodyCloner) : this(
             methodBodyCloner.ILCloningContext,
-            Tuple.Create(methodBodyCloner.Source.ThisParameter, methodBodyCloner.Target.ThisParameter),
+            new SourceAndTarget<ParameterDefinition>(methodBodyCloner.Source.ThisParameter, methodBodyCloner.Target.ThisParameter),
             methodBodyCloner.Parent.ParameterCloners,
             methodBodyCloner.VariableCloners,
             methodBodyCloner.InstructionCloners)
@@ -53,13 +53,13 @@ namespace Bix.Mixers.ILCloning
         /// <param name="thisParameterSourceAndTarget">This parameter definition for the source and target methods.</param>
         /// <param name="parameterSourceAndTargets">Parameter definitions for the source and target methods.</param>
         /// <param name="variableSourceAndTargets">Variable definitions for the source and target methods.</param>
-        /// <param name="instructionSourceAndTargets">Instructiosn for the source and target methods.</param>
+        /// <param name="instructionSourceAndTargets">Instructions for the source and target methods.</param>
         public MethodContext(
             IILCloningContext ilCloningContext,
-            Tuple<ParameterDefinition, ParameterDefinition> thisParameterSourceAndTarget,
-            IEnumerable<Tuple<ParameterDefinition, LazyAccessor<ParameterDefinition>>> parameterSourceAndTargets,
-            IEnumerable<Tuple<VariableDefinition, LazyAccessor<VariableDefinition>>> variableSourceAndTargets,
-            IEnumerable<Tuple<Instruction, LazyAccessor<Instruction>>> instructionSourceAndTargets)
+            ISourceAndTarget<ParameterDefinition> thisParameterSourceAndTarget,
+            IEnumerable<ISourceAndTarget<ParameterDefinition>> parameterSourceAndTargets,
+            IEnumerable<ISourceAndTarget<VariableDefinition>> variableSourceAndTargets,
+            IEnumerable<ISourceAndTarget<Instruction>> instructionSourceAndTargets)
         {
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(thisParameterSourceAndTarget != null);
@@ -78,22 +78,22 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets or sets the This parameter definition for the source and target.
         /// </summary>
-        private Tuple<ParameterDefinition, ParameterDefinition> ThisParameterSourceAndTarget { get; set; }
+        private ISourceAndTarget<ParameterDefinition> ThisParameterSourceAndTarget { get; set; }
 
         /// <summary>
         /// Gets or sets the parameter definitions for the source and target.
         /// </summary>
-        private IEnumerable<Tuple<ParameterDefinition, LazyAccessor<ParameterDefinition>>> ParameterSourceAndTargets { get; set; }
+        private IEnumerable<ISourceAndTarget<ParameterDefinition>> ParameterSourceAndTargets { get; set; }
 
         /// <summary>
         /// Gets or sets the variable definitions for the source and target.
         /// </summary>
-        private IEnumerable<Tuple<VariableDefinition, LazyAccessor<VariableDefinition>>> VariableSourceAndTargets { get; set; }
+        private IEnumerable<ISourceAndTarget<VariableDefinition>> VariableSourceAndTargets { get; set; }
 
         /// <summary>
         /// Gets or sets the instructions for the source and target.
         /// </summary>
-        private IEnumerable<Tuple<Instruction, LazyAccessor<Instruction>>> InstructionSourceAndTargets { get; set; }
+        private IEnumerable<ISourceAndTarget<Instruction>> InstructionSourceAndTargets { get; set; }
 
         /// <summary>
         /// Gets or sets the context for IL cloning.
@@ -109,12 +109,12 @@ namespace Bix.Mixers.ILCloning
         {
             if (source == null) { return null; }
 
-            var instructionCloner = this.InstructionSourceAndTargets.FirstOrDefault(cloner => cloner.Item1 == source);
+            var instructionCloner = this.InstructionSourceAndTargets.FirstOrDefault(cloner => cloner.Source == source);
             if (instructionCloner == null)
             {
                 throw new InvalidOperationException("Could not root import an instruction");
             }
-            return instructionCloner.Item2.Getter();
+            return instructionCloner.Target;
         }
 
         /// <summary>
@@ -126,12 +126,12 @@ namespace Bix.Mixers.ILCloning
         {
             if (source == null) { return null; }
 
-            var variableCloner = this.VariableSourceAndTargets.FirstOrDefault(cloner => cloner.Item1 == source);
+            var variableCloner = this.VariableSourceAndTargets.FirstOrDefault(cloner => cloner.Source == source);
             if (variableCloner == null)
             {
                 throw new InvalidOperationException("Could not root import a variable");
             }
-            return variableCloner.Item2.Getter();
+            return variableCloner.Target;
         }
 
         /// <summary>
@@ -143,19 +143,19 @@ namespace Bix.Mixers.ILCloning
         {
             if (source == null) { return null; }
 
-            if (source == this.ThisParameterSourceAndTarget.Item1)
+            if (source == this.ThisParameterSourceAndTarget.Source)
             {
-                return this.ThisParameterSourceAndTarget.Item2;
+                return this.ThisParameterSourceAndTarget.Target;
             }
 
             var parameterCloner =
-                this.ParameterSourceAndTargets.FirstOrDefault(cloner => cloner.Item1 == source);
+                this.ParameterSourceAndTargets.FirstOrDefault(cloner => cloner.Source == source);
             if (parameterCloner == null)
             {
                 throw new InvalidOperationException("Could not root import a variable a parameter definition.");
             }
 
-            return parameterCloner.Item2.Getter();
+            return parameterCloner.Target;
         }
     }
 }

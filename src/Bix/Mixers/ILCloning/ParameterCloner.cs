@@ -23,31 +23,56 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Clones a parameter
     /// </summary>
-    internal class ParameterCloner : OldClonerBase<ParameterDefinition>
+    internal class ParameterCloner : ClonerBase<ParameterDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="ParameterCloner"/>.
         /// </summary>
-        /// <param name="methodSignatureCloner">Cloner for the signature associated with the method body being cloned.</param>
+        /// <param name="parent">Cloner for the signature associated with the method body being cloned.</param>
+        /// <param name="previous">Cloner for the previous instruction, if any.</param>
         /// <param name="source">Cloning source.</param>
-        /// <param name="target">Cloning target.</param>
-        public ParameterCloner(MethodSignatureCloner methodSignatureCloner, ParameterDefinition source, ParameterDefinition target)
-            : base(methodSignatureCloner.ILCloningContext, source, target)
+        public ParameterCloner(MethodSignatureCloner parent, ParameterCloner previous, ParameterDefinition source)
+            : base(parent.ILCloningContext, source)
         {
-            Contract.Requires(methodSignatureCloner != null);
-            Contract.Requires(methodSignatureCloner.ILCloningContext != null);
+            Contract.Requires(parent != null);
+            Contract.Requires(parent.ILCloningContext != null);
             Contract.Requires(source != null);
-            Contract.Requires(target != null);
-            Contract.Ensures(this.MethodSignatureCloner != null);
+            Contract.Ensures(this.Parent != null);
 
-            this.MethodSignatureCloner = methodSignatureCloner;
-            this.MethodSignatureCloner.ParameterCloners.Add(this);
+            this.Parent = parent;
+            this.Parent.ParameterCloners.Add(this);
+            this.Previous = previous;
         }
 
         /// <summary>
         /// Gets or sets the method signature cloner assiciated with the parameter cloners
         /// </summary>
-        public MethodSignatureCloner MethodSignatureCloner { get; private set; }
+        public MethodSignatureCloner Parent { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the cloner for the previous instruction, if any.
+        /// </summary>
+        public ParameterCloner Previous { get; set; }
+
+        /// <summary>
+        /// Creates the target parameter definition.
+        /// </summary>
+        /// <returns>Created target.</returns>
+        protected override ParameterDefinition CreateTarget()
+        {
+            // order matters for parameters, so make sure the previous has already been created before creating this one
+            if (this.Previous != null) { this.Previous.EnsureTargetIsCreatedAndSet(); }
+
+            // now create the target
+            var voidReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));  // TODO get rid of void ref
+            var target = new ParameterDefinition(
+                this.Source.Name,
+                this.Source.Attributes,
+                voidReference);
+            this.Parent.Target.Parameters.Add(target);
+
+            return target;
+        }
 
         /// <summary>
         /// Clones the parameter
