@@ -17,53 +17,87 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Bix.Mixers.ILCloning
 {
     /// <summary>
     /// Clones <see cref="MethodDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class MethodSignatureCloner : OldClonerBase<MethodDefinition>
+    internal class MethodSignatureCloner : ClonerBase<MethodDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="MethodSignatureCloner"/>
         /// </summary>
-        /// <param name="ilCloningContext">IL cloning context.</param>
-        /// <param name="target">Cloning target.</param>
+        /// <param name="parent">Cloner for the type that contains the method to be cloned.</param>
         /// <param name="source">Cloning source.</param>
-        public MethodSignatureCloner(ILCloningContext ilCloningContext, MethodDefinition source, MethodDefinition target)
-            : base(ilCloningContext, source, target)
+        public MethodSignatureCloner(ClonerBase<TypeDefinition> parent, MethodDefinition source)
+            : base(parent.ILCloningContext, source)
         {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(source != null);
-            Contract.Requires(source.Parameters != null);
-            Contract.Requires(target != null);
-            Contract.Requires(target.Parameters != null);
+            Contract.Requires(parent != null);
+            Contract.Requires(parent.ILCloningContext != null);
+            Contract.Ensures(this.Parent != null);
             Contract.Ensures(this.ParameterCloners != null);
 
-            this.PopulateParameterCloners();
+            this.Parent = parent;
+            this.ParameterCloners = new List<ParameterCloner>();
         }
 
         /// <summary>
-        /// Populates <see cref="ParameterCloners"/>
+        /// Gets or sets the cloner for the type that contains the method to be cloned.
         /// </summary>
-        private void PopulateParameterCloners()
+        private ClonerBase<TypeDefinition> Parent { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this cloning operation is redirecting a static constructor.
+        /// </summary>
+        /// <remarks>
+        /// This will be <c>true</c> when a root source and root target both have static constructors.
+        /// To deal with the case, the source static constructor is cloned into a different target static
+        /// method, and an operation to call that new method is inserted at the beginning of the
+        /// target's existing static constructor.
+        /// </remarks>
+        private bool IsRedirectedStaticConstructor { get; set; }
+
+        /// <summary>
+        /// Creates the target method.
+        /// </summary>
+        /// <returns>Created target.</returns>
+        protected override MethodDefinition CreateTarget()
         {
-            Contract.Ensures(this.ParameterCloners != null);
+            MethodDefinition targetMethod = null;
+            var voidReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));  // TODO get rid of void ref
 
-            this.ParameterCloners = new List<ParameterCloner>();
-
-            var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
-            foreach (var sourceParameter in this.Source.Parameters)
+            if (this.Source.IsConstructor &&
+                this.Source.IsStatic &&
+                this.Source.DeclaringType == this.ILCloningContext.RootSource)
             {
-                var targetParameter = new ParameterDefinition(
-                    sourceParameter.Name,
-                    sourceParameter.Attributes,
-                    voidTypeReference);
-                this.Target.Parameters.Add(targetParameter);
-                this.ParameterCloners.Add(new ParameterCloner(this, sourceParameter, targetParameter));
+                var targetStaticConstructor = this.ILCloningContext.RootTarget.Methods.SingleOrDefault(method => method.IsConstructor && method.IsStatic);
+
+                // if there is no static constructor in the target, then treat it like any other method
+                // otherwise we need to merge the methods
+                if (targetStaticConstructor != null)
+                {
+                    // if there is already a target static constructor, then redirect the clone to a different method
+                    // and then add a call to the new method into the existing static constructor
+                    targetMethod = new MethodDefinition(
+                        string.Format("cctor_{0:N}", Guid.NewGuid()),
+                        MethodAttributes.Private | MethodAttributes.Static | MethodAttributes.HideBySig,
+                        voidReference);
+                    this.Parent.Target.Methods.Add(targetMethod);
+                    this.IsRedirectedStaticConstructor = true;
+                }
             }
+
+            if (targetMethod == null)
+            {
+                targetMethod = new MethodDefinition(this.Source.Name, this.Source.Attributes, voidReference);
+                this.Parent.Target.Methods.Add(targetMethod);
+            }
+
+            return targetMethod;
         }
 
         /// <summary>
@@ -78,6 +112,11 @@ namespace Bix.Mixers.ILCloning
         {
             Contract.Assert(this.Target.DeclaringType != null);
             Contract.Assert(this.Target.Parameters.Count == this.Source.Parameters.Count);
+
+            if (this.IsRedirectedStaticConstructor)
+            {
+                this.AddCallToRedirectedStaticConstructor();
+            }
 
             this.Target.CallingConvention = this.Source.CallingConvention;
             this.Target.ExplicitThis = this.Source.ExplicitThis;
@@ -148,6 +187,27 @@ namespace Bix.Mixers.ILCloning
             this.Target.MethodReturnType.CloneAllCustomAttributes(sourceMethodReturnType, this.ILCloningContext);
 
             this.IsCloned = true;
+        }
+
+        /// <summary>
+        /// Adds an instruction into the beginning of the target's existing static constructor
+        /// to call this cloning target method.
+        /// </summary>
+        private void AddCallToRedirectedStaticConstructor()
+        {
+            Contract.Requires(this.IsRedirectedStaticConstructor);
+
+            var targetStaticConstructor =
+                this.Parent.Target.Methods.SingleOrDefault(method => method.IsConstructor && method.IsStatic);
+            Contract.Assert(targetStaticConstructor.IsConstructor);
+            Contract.Assert(targetStaticConstructor.IsStatic);
+            Contract.Assert(targetStaticConstructor.HasBody);
+            Contract.Assert(targetStaticConstructor.DeclaringType == this.ILCloningContext.RootTarget);
+
+            var firstInstruction = targetStaticConstructor.Body.Instructions[0];
+            var targetILProcessor = targetStaticConstructor.Body.GetILProcessor();
+
+            targetILProcessor.InsertBefore(firstInstruction, targetILProcessor.Create(OpCodes.Call, this.Target));
         }
     }
 }

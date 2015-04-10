@@ -19,6 +19,7 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System.Collections.Generic;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -136,34 +137,9 @@ namespace Bix.Mixers.ILCloning
                     continue;
                 }
 
-                MethodDefinition targetMethod = null;
-
-                if (sourceMethod.IsConstructor &&
-                    sourceMethod.IsStatic &&
-                    sourceMethod.DeclaringType == this.ILCloningContext.RootSource)
-                {
-                    var targetStaticConstructor = this.ILCloningContext.RootTarget.Methods.SingleOrDefault(method => method.IsConstructor && method.IsStatic);
-                    // if there is no static constructor in the target, then treat it like any other method
-                    // otherwise we need to merge the methods
-                    if (targetStaticConstructor != null)
-                    {
-                        // if there is already a target static constructor, then redirect the clone to a different method
-                        // and then add a call to the new method into the existing static constructor
-                        targetMethod = new MethodDefinition(
-                            string.Format("cctor_{0:N}", Guid.NewGuid()),
-                            MethodAttributes.Private | MethodAttributes.Static | MethodAttributes.HideBySig,
-                            voidReference);
-                        targetType.Methods.Add(targetMethod);
-                        this.VisitStaticConstructor(targetStaticConstructor, targetMethod);
-                    }
-                }
-
-                if (targetMethod == null)
-                {
-                    targetMethod = new MethodDefinition(sourceMethod.Name, sourceMethod.Attributes, voidReference);
-                    targetType.Methods.Add(targetMethod);
-                }
-                this.Visit(sourceMethod, targetMethod);
+                var methodSignatureCloner = new MethodSignatureCloner(typeCloner, sourceMethod);
+                this.Cloners.AddCloner(methodSignatureCloner);
+                this.Visit(methodSignatureCloner);
             }
 
             foreach (var sourceProperty in sourceType.Properties)
@@ -193,26 +169,33 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <param name="sourceMethod">Cloning source to gather cloners for.</param>
-        /// <param name="targetMethod">Cloning target to gather cloners for.</param>
-        private void Visit(MethodDefinition sourceMethod, MethodDefinition targetMethod)
+        /// <param name="methodSignatureCloner">Cloner for the method</param>
+        private void Visit(MethodSignatureCloner methodSignatureCloner)
         {
-            Contract.Requires(sourceMethod != null);
-            Contract.Requires(targetMethod != null);
+            Contract.Requires(methodSignatureCloner != null);
 
-            var methodSignatureCloner = new MethodSignatureCloner(this.ILCloningContext, sourceMethod, targetMethod);
-            this.Cloners.AddCloner(methodSignatureCloner);
+            var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void)); // TODO get rid of void ref
 
-            Contract.Assert(methodSignatureCloner.ParameterCloners != null);
-            this.Cloners.AddCloners(methodSignatureCloner.ParameterCloners);
+            var parameterCloners = new List<ParameterCloner>();
+            foreach (var sourceParameter in methodSignatureCloner.Source.Parameters)
+            {
+                var targetParameter = new ParameterDefinition(
+                    sourceParameter.Name,
+                    sourceParameter.Attributes,
+                    voidTypeReference);
+                methodSignatureCloner.Target.Parameters.Add(targetParameter);
+
+                var parameterCloner = new ParameterCloner(methodSignatureCloner, sourceParameter, targetParameter);
+                this.Cloners.AddCloner(parameterCloner);
+            }
 
             this.Visit(
-                (IGenericParameterProvider)sourceMethod,
-                (IGenericParameterProvider)targetMethod);
+                (IGenericParameterProvider)methodSignatureCloner.Source,
+                (IGenericParameterProvider)methodSignatureCloner.Target);   // TODO remove Target access
 
-            if (sourceMethod.HasBody)
+            if (methodSignatureCloner.Source.HasBody)
             {
-                var methodBodyCloner = new MethodBodyCloner(methodSignatureCloner, sourceMethod.Body, targetMethod.Body);
+                var methodBodyCloner = new MethodBodyCloner(methodSignatureCloner, methodSignatureCloner.Source.Body, methodSignatureCloner.Target.Body);
                 this.Cloners.AddCloner(methodBodyCloner);
                 this.Cloners.AddCloners(methodBodyCloner.VariableCloners);
                 this.Cloners.AddCloners(methodBodyCloner.InstructionCloners);
@@ -262,28 +245,6 @@ namespace Bix.Mixers.ILCloning
                     () => targetGenericParameterProvider.GenericParameters[currentSourceGenericParameter.Position],
                     targetGenericParameter => targetGenericParameterProvider.GenericParameters[currentSourceGenericParameter.Position] = targetGenericParameter));
             }
-        }
-
-        /// <summary>
-        /// Gathers cloners for cloning the source static constructor instructions and variables into the existing
-        /// target static constructor.
-        /// </summary>
-        /// <param name="targetStaticConstructor">Target static constructor.</param>
-        /// <param name="sourceStaticConstructorTarget">New target method which will contain contents of the original source static constructor.</param>
-        private void VisitStaticConstructor(MethodDefinition targetStaticConstructor, MethodDefinition sourceStaticConstructorTarget)
-        {
-            Contract.Requires(targetStaticConstructor != null);
-            Contract.Requires(targetStaticConstructor.IsConstructor);
-            Contract.Requires(targetStaticConstructor.IsStatic);
-            Contract.Requires(targetStaticConstructor.HasBody);
-            Contract.Requires(targetStaticConstructor.DeclaringType == this.ILCloningContext.RootTarget);
-            Contract.Requires(sourceStaticConstructorTarget != null);
-            Contract.Requires(sourceStaticConstructorTarget.DeclaringType == this.ILCloningContext.RootTarget);
-
-            var firstInstruction = targetStaticConstructor.Body.Instructions[0];
-            var targetILProcessor = targetStaticConstructor.Body.GetILProcessor();
-
-            targetILProcessor.InsertBefore(firstInstruction, targetILProcessor.Create(OpCodes.Call, sourceStaticConstructorTarget));
         }
     }
 }

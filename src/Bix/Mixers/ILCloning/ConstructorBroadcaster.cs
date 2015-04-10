@@ -33,7 +33,7 @@ namespace Bix.Mixers.ILCloning
     /// object initialization, exactly one constructor that calls into a base constructor
     /// is executed, so these are the constructors that we focus on. Each of these
     /// "initializing" constructors will get code from the implementation's default
-    /// constructor. They will get both initialization code, i.e. compler generated code
+    /// constructor. They will get both initialization code, i.e. compiler generated code
     /// that runs before the implementation's base constructor call such as field initialization,
     /// and constructor code, which is code compiled from programmer-written constructor
     /// code.

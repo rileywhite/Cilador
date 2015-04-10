@@ -343,14 +343,13 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Adds a cloner to the collection.
         /// </summary>
-        /// <param name="cloners">Cloners to add to the collection.</param>
-        public void AddCloners(IEnumerable<ParameterCloner> cloners)
+        /// <param name="cloner">Cloner to add to the collection.</param>
+        public void AddCloner(ParameterCloner cloner)
         {
-            Contract.Requires(cloners != null);
-            Contract.Requires(!cloners.AreAnyNull());
+            Contract.Requires(cloner != null);
             Contract.Requires(!this.AreAllClonersAdded);
 
-            this.MethodParameterCloners.AddRange(cloners);
+            this.MethodParameterCloners.Add(cloner);
         }
 
         #endregion

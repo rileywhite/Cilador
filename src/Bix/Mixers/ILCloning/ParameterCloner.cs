@@ -41,6 +41,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Ensures(this.MethodSignatureCloner != null);
 
             this.MethodSignatureCloner = methodSignatureCloner;
+            this.MethodSignatureCloner.ParameterCloners.Add(this);
         }
 
         /// <summary>
