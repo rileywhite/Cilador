@@ -71,16 +71,23 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <param name="rootTypeCloner">Cloner to gather child cloners for.</param>
-        private void Visit(NestedTypeCloner typeCloner)
+        /// <param name="nestedTypeCloner">Cloner to gather child cloners for.</param>
+        private void Visit(NestedTypeCloner nestedTypeCloner)
         {
-            Contract.Requires(typeCloner != null);
+            Contract.Requires(nestedTypeCloner != null);
 
-            this.Visit((ClonerBase<TypeDefinition>)typeCloner);
+            this.Visit((ClonerBase<TypeDefinition>)nestedTypeCloner);
 
-            this.Visit(
-                (IGenericParameterProvider)typeCloner.Source,
-                (IGenericParameterProvider)typeCloner.Target); // TODO don't access target
+            GenericParameterCloner previousGenericParameterCloner = null;
+            foreach (var sourceGenericParameter in nestedTypeCloner.Source.GenericParameters)
+            {
+                var genericParameterCloner = new GenericParameterCloner(
+                    nestedTypeCloner,
+                    previousGenericParameterCloner,
+                    sourceGenericParameter);
+                this.Cloners.AddCloner(genericParameterCloner);
+                this.Visit(genericParameterCloner);
+            }
         }
 
         /// <summary>
@@ -189,9 +196,16 @@ namespace Bix.Mixers.ILCloning
                 this.Cloners.AddCloner(parameterCloner);
             }
 
-            this.Visit(
-                (IGenericParameterProvider)methodSignatureCloner.Source,
-                (IGenericParameterProvider)methodSignatureCloner.Target);   // TODO remove Target access
+            GenericParameterCloner previousGenericParameterCloner = null;
+            foreach (var sourceGenericParameter in methodSignatureCloner.Source.GenericParameters)
+            {
+                var genericParameterCloner = new GenericParameterCloner(
+                    methodSignatureCloner,
+                    previousGenericParameterCloner,
+                    sourceGenericParameter);
+                this.Cloners.AddCloner(genericParameterCloner);
+                this.Visit(genericParameterCloner);
+            }
 
             if (methodSignatureCloner.Source.HasBody)
             {
@@ -259,27 +273,10 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gathers all cloners for the given cloning source and target.
         /// </summary>
-        /// <param name="sourceGenericParameterProvider">Cloning source to gather cloners for.</param>
-        /// <param name="targetGenericParameterProvider">Cloning target to gather cloners for.</param>
-        private void Visit(IGenericParameterProvider sourceGenericParameterProvider, IGenericParameterProvider targetGenericParameterProvider)
+        /// <param name="genericParameterCloner">Cloner to visit.</param>
+        private void Visit(GenericParameterCloner genericParameterCloner)
         {
-            Contract.Requires(sourceGenericParameterProvider != null);
-            Contract.Requires(targetGenericParameterProvider != null);
-
-            var voidReference = targetGenericParameterProvider.Module.Import(typeof(void));
-            foreach (var sourceGenericParameter in sourceGenericParameterProvider.GenericParameters)
-            {
-                // save the parameter in a local variable
-                // because compiler versions differ on handling of foreach parameters within closures
-                var currentSourceGenericParameter = sourceGenericParameter;
-
-                targetGenericParameterProvider.GenericParameters.Add(new GenericParameter(voidReference)); // this is just a placeholder since null is not allowed
-                this.Cloners.AddCloner(new GenericParameterCloner(
-                    this.ILCloningContext,
-                    currentSourceGenericParameter,
-                    () => targetGenericParameterProvider.GenericParameters[currentSourceGenericParameter.Position],
-                    targetGenericParameter => targetGenericParameterProvider.GenericParameters[currentSourceGenericParameter.Position] = targetGenericParameter));
-            }
+            Contract.Requires(genericParameterCloner != null);
         }
     }
 }

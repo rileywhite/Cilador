@@ -64,7 +64,7 @@ namespace Bix.Mixers.ILCloning
             this.CustomAttributeCloners = new List<CustomAttributeCloner>();
 
             this.TargetTypeBySourceFullName = new Dictionary<string, TypeDefinition>();
-            this.TargetGenericParameterGetterBySourceOwnerFullNameAndPosition = new Dictionary<string, Func<GenericParameter>>();
+            this.TargetGenericParameterBySourceOwnerFullNameAndPosition = new Dictionary<string, GenericParameter>();
             this.TargetFieldBySourceFullName = new Dictionary<string, FieldDefinition>();
             this.TargetMethodBySourceFullName = new Dictionary<string, MethodDefinition>();
             this.TargetPropertyBySourceFullName = new Dictionary<string, PropertyDefinition>();
@@ -182,7 +182,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets or sets the collection of target generic parameters indexed by full owner name and position of the cloning source.
         /// </summary>
-        private Dictionary<string, Func<GenericParameter>> TargetGenericParameterGetterBySourceOwnerFullNameAndPosition { get; set; }
+        private Dictionary<string, GenericParameter> TargetGenericParameterBySourceOwnerFullNameAndPosition { get; set; }
 
         /// <summary>
         /// Gets or sets cloners for all generic parameters to be cloned.
@@ -197,11 +197,10 @@ namespace Bix.Mixers.ILCloning
         {
             Contract.Requires(cloner != null);
             Contract.Requires(cloner.Source != null);
-            Contract.Requires(cloner.Item2.IsGetAccessor);
             Contract.Requires(!this.AreAllClonersAdded);
 
             this.GenericParameterCloners.Add(cloner);
-            this.TargetGenericParameterGetterBySourceOwnerFullNameAndPosition.Add(Cloners.GetUniqueKeyFor(cloner.Source), cloner.Item2.Getter);
+            this.TargetGenericParameterBySourceOwnerFullNameAndPosition.Add(Cloners.GetUniqueKeyFor(cloner.Source), cloner.Target);
         }
 
         /// <summary>
@@ -216,33 +215,13 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(this.AreAllClonersAdded);
             Contract.Ensures(Contract.ValueAtReturn(out target) != null || !Contract.Result<bool>());
 
-            Func<GenericParameter> targetGetter;
-            if (!this.TargetGenericParameterGetterBySourceOwnerFullNameAndPosition.TryGetValue(Cloners.GetUniqueKeyFor(source), out targetGetter))
+            if (!this.TargetGenericParameterBySourceOwnerFullNameAndPosition.TryGetValue(Cloners.GetUniqueKeyFor(source), out target))
             {
                 target = null;
                 return false;
             }
 
-            Contract.Assert(targetGetter != null);
-
-            target = targetGetter();
-            if (target == null) { return false; }
-
-            // most cloned items have target object created at cloner gathering time,
-            // but because target generic parameters are not created until clone time,
-            // we need to be more careful here
-
-            // this check has a dependency on the implementation detail of using a dummy
-            // generic parameter with the owner set to the void type
-            var owner = target.Owner as TypeReference;
-            if (owner != null && owner.FullName == typeof(void).FullName)
-            {
-                throw new InvalidOperationException(string.Format(
-                    "Tried to find target for source [{0}] with owner [{1}], but it has not yet be cloned.",
-                    source.Name,
-                    ((MemberReference)source.Owner).FullName));
-            }
-
+            Contract.Assert(target != null);
             return true;
         }
 

@@ -24,30 +24,40 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Clones <see cref="GenericParameter"/> contents from a source to a target.
     /// </summary>
-    internal class GenericParameterCloner : LazyClonerBase<GenericParameter>
+    internal class GenericParameterCloner : ClonerBase<GenericParameter>
     {
         /// <summary>
         /// Creates a new <see cref="GenericParameterCloner"/>.
         /// </summary>
-        /// <param name="ilCloningContext">IL cloning context.</param>
+        /// <param name="parent">Cloner for member that contains the generic parameter to be cloned.</param>
+        /// <param name="previous">Cloner for the generic parameter, if any, that comes before the generic parameter being cloned.</param>
         /// <param name="source">Cloning source.</param>
         /// <param name="targetGetter">Getter method for the target.</param>
         /// <param name="targetSetter">Setter method for the target.</param>
         public GenericParameterCloner(
-            ILCloningContext ilCloningContext,
-            GenericParameter source,
-            Func<GenericParameter> targetGetter,
-            Action<GenericParameter> targetSetter)
-            : base(
-            ilCloningContext,
-            source,
-            new LazyAccessor<GenericParameter>(getter: targetGetter, setter: targetSetter))
+            ICloner<IGenericParameterProvider> parent,
+            GenericParameterCloner previous,
+            GenericParameter source)
+            : base(parent.ILCloningContext, source)
         {
-            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(parent != null);
+            Contract.Requires(parent.ILCloningContext != null);
             Contract.Requires(source != null);
-            Contract.Requires(targetGetter != null);
-            Contract.Requires(targetSetter != null);
+            Contract.Ensures(this.Parent != null);
+
+            this.Parent = parent;
+            this.Previous = previous;
         }
+
+        /// <summary>
+        /// Gets or sets the cloner for member that contains the generic parameter to be cloned.
+        /// </summary>
+        private ICloner<IGenericParameterProvider> Parent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cloner for the generic parameter, if any, that comes before the generic parameter being cloned.
+        /// </summary>
+        private GenericParameterCloner Previous { get; set; }
 
         /// <summary>
         /// Creates the cloning target.
@@ -55,9 +65,13 @@ namespace Bix.Mixers.ILCloning
         /// <returns>New cloning target.</returns>
         protected override GenericParameter CreateTarget()
         {
-            return new GenericParameter(
-                this.Source.Name,
-                this.ILCloningContext.DynamicRootImport(this.Source.Owner));
+            // order matters on generic parameters, so make sure they are created in order
+            if (this.Previous != null) { this.Previous.EnsureTargetIsCreatedAndSet(); }
+
+            // now create the generic parameter and add it to the parent collection
+            var genericParameter = new GenericParameter(this.Source.Name, this.Parent.Target);
+            this.Parent.Target.GenericParameters.Add(genericParameter);
+            return genericParameter;
         }
 
         /// <summary>

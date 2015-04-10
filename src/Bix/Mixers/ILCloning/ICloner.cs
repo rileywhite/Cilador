@@ -40,4 +40,20 @@ namespace Bix.Mixers.ILCloning
         /// </summary>
         void Clone();
     }
+
+    /// <summary>
+    /// Interface implemented by all item cloners.
+    /// </summary>
+    public interface ICloner<out TCloned> : ICloner
+    {
+        /// <summary>
+        /// Gets the cloning source.
+        /// </summary>
+        TCloned Source { get; }
+
+        /// <summary>
+        /// Gets the cloning target.
+        /// </summary>
+        TCloned Target { get; }
+    }
 }

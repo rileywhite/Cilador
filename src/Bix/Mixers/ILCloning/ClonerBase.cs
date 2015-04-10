@@ -28,7 +28,7 @@ namespace Bix.Mixers.ILCloning
     /// </remarks>
     /// <typeparam name="TCloned">Type of item to be cloned.</typeparam>
     [ContractClass(typeof(ClonerBaseContract<>))]
-    public abstract class ClonerBase<TCloned> : ICloner
+    public abstract class ClonerBase<TCloned> : ICloner<TCloned>
         where TCloned : class
     {
         /// <summary>
@@ -57,7 +57,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Whether the target has be set from its accessor.
         /// </summary>
-        private bool IsTargetCreated { get; set; }
+        protected bool IsTargetCreated { get; private set; }
 
         /// <summary>
         /// When overridden in a subclass, this method should create the cloning target.
@@ -66,9 +66,19 @@ namespace Bix.Mixers.ILCloning
         protected abstract TCloned CreateTarget();
 
         /// <summary>
+        /// Checks whether the cloning target exists, and, if it doesn't, calls
+        /// the method to create and set the target.
+        /// </summary>
+        protected void EnsureTargetIsCreatedAndSet()
+        {
+            Contract.Ensures(this.IsTargetCreated);
+            if (!this.IsTargetCreated) { this.CreateAndSetTarget(); }
+        }
+
+        /// <summary>
         /// Calls the abstract target creation method and sets the target.
         /// </summary>
-        protected void CreateAndSetTarget()
+        private void CreateAndSetTarget()
         {
             Contract.Requires(!this.IsTargetCreated);
             Contract.Ensures(this.IsTargetCreated);
@@ -100,7 +110,7 @@ namespace Bix.Mixers.ILCloning
         {
             get
             {
-                if (!this.IsTargetCreated) { this.CreateAndSetTarget(); }
+                this.EnsureTargetIsCreatedAndSet();
                 return this.target;
             }
             private set
