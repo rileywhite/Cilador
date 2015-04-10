@@ -61,6 +61,7 @@ namespace Bix.Mixers.ILCloning
             IEnumerable<ISourceAndTarget<VariableDefinition>> variableSourceAndTargets,
             IEnumerable<ISourceAndTarget<Instruction>> instructionSourceAndTargets)
         {
+            // TODO add exception handlers
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(thisParameterSourceAndTarget != null);
             Contract.Requires(parameterSourceAndTargets != null);

@@ -240,10 +240,9 @@ namespace Bix.Mixers.ILCloning
 
             foreach (var sourceExceptionHandler in methodBodyCloner.Source.ExceptionHandlers)
             {
-                var targetExceptionHandler = new ExceptionHandler(sourceExceptionHandler.HandlerType);
-                methodBodyCloner.Target.ExceptionHandlers.Add(targetExceptionHandler);
-                var exceptionHandlerCloner = new ExceptionHandlerCloner(new MethodContext(methodBodyCloner), sourceExceptionHandler, targetExceptionHandler);
+                var exceptionHandlerCloner = new ExceptionHandlerCloner(methodBodyCloner, sourceExceptionHandler);
                 this.Cloners.AddCloner(exceptionHandlerCloner);
+                this.Visit(exceptionHandlerCloner);
             }
         }
 
@@ -281,6 +280,15 @@ namespace Bix.Mixers.ILCloning
         private void Visit(ParameterCloner parameterCloner)
         {
             Contract.Requires(parameterCloner != null);
+        }
+
+        /// <summary>
+        /// Gathers all cloners for the given cloning source and target.
+        /// </summary>
+        /// <param name="exceptionHandlerCloner">Cloner for the exception handler.</param>
+        private void Visit(ExceptionHandlerCloner exceptionHandlerCloner)
+        {
+            Contract.Requires(exceptionHandlerCloner != null);
         }
     }
 }
