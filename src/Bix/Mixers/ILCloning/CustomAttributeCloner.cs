@@ -24,38 +24,32 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Clones a custom attribute.
     /// </summary>
-    internal class CustomAttributeCloner : LazyClonerBase<CustomAttribute>
+    internal class CustomAttributeCloner : ClonerBase<CustomAttribute>
     {
         /// <summary>
         /// Creates a new <see cref="ParameterCloner"/>.
         /// </summary>
-        /// <param name="genericParameterProvider">Cloner for the class/method/etc that the custom attribute is attached to.</param>
+        /// <param name="genericParameterProvider">Cloner for the member that the custom attribute is attached to.</param>
         /// <param name="source">Cloning source.</param>
-        /// <param name="target">Cloning target.</param>
         public CustomAttributeCloner(
-            LazyClonerBase<ICustomAttributeProvider> customAttributeProviderCloner,
+            LazyClonerBase<ICustomAttributeProvider> parent,
             CustomAttribute source,
             Func<CustomAttribute> targetGetter,
             Action<CustomAttribute> targetSetter)
-            : base(
-            customAttributeProviderCloner.ILCloningContext,
-            source,
-            new LazyAccessor<CustomAttribute>(getter: targetGetter, setter: targetSetter))
+            : base(parent.ILCloningContext, source)
         {
-            Contract.Requires(customAttributeProviderCloner != null);
-            Contract.Requires(customAttributeProviderCloner.ILCloningContext != null);
+            Contract.Requires(parent != null);
+            Contract.Requires(parent.ILCloningContext != null);
             Contract.Requires(source != null);
-            Contract.Requires(targetGetter != null);
-            Contract.Requires(targetSetter != null);
-            Contract.Ensures(this.CustomAttributeProviderCloner != null);
+            Contract.Ensures(this.Parent != null);
 
-            this.CustomAttributeProviderCloner = customAttributeProviderCloner;
+            this.Parent = parent;
         }
 
         /// <summary>
         /// Gets or sets the cloner for the class/method/etc that the custom attribute is attached to.
         /// </summary>
-        public LazyClonerBase<ICustomAttributeProvider> CustomAttributeProviderCloner { get; private set; }
+        public LazyClonerBase<ICustomAttributeProvider> Parent { get; private set; }
 
         /// <summary>
         /// Creates the target custom attribute.
@@ -63,7 +57,9 @@ namespace Bix.Mixers.ILCloning
         /// <returns>Custom attribute to attach to the target provider.</returns>
         protected override CustomAttribute CreateTarget()
         {
-            return new CustomAttribute(this.ILCloningContext.RootImport(this.Source.Constructor));
+            var target = new CustomAttribute(this.ILCloningContext.RootImport(this.Source.Constructor));
+            this.Parent.Target.CustomAttributes.Add(target);
+            return target;
         }
 
         /// <summary>

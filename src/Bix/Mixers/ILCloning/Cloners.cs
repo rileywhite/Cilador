@@ -512,7 +512,6 @@ namespace Bix.Mixers.ILCloning
         {
             Contract.Requires(cloner != null);
             Contract.Requires(cloner.Source != null);
-            Contract.Requires(cloner.Item2.IsGetAccessor);
             Contract.Requires(!this.AreAllClonersAdded);
 
             this.CustomAttributeCloners.Add(cloner);
