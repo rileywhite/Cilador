@@ -30,7 +30,7 @@ namespace Bix.Mixers.ILCloning
         /// </summary>
         /// <param name="parent">Cloner for type containing the event being cloned.</param>
         /// <param name="source">Cloning source.</param>
-        public EventCloner(ClonerBase<TypeDefinition> parent, EventDefinition source)
+        public EventCloner(ICloner<TypeDefinition> parent, EventDefinition source)
             : base(parent.ILCloningContext, source)
         {
             Contract.Requires(parent != null);
@@ -44,7 +44,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets or sets the cloner for the type containing the event being cloned.
         /// </summary>
-        private ClonerBase<TypeDefinition> Parent { get; set; }
+        private ICloner<TypeDefinition> Parent { get; set; }
 
         /// <summary>
         /// Creates the target event.

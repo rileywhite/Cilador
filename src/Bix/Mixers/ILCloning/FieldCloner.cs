@@ -30,7 +30,7 @@ namespace Bix.Mixers.ILCloning
         /// </summary>
         /// <param name="parent">Cloner for the type that owns the field being cloned.</param>
         /// <param name="source">Cloning source.</param>
-        public FieldCloner(ClonerBase<TypeDefinition> parent, FieldDefinition source)
+        public FieldCloner(ICloner<TypeDefinition> parent, FieldDefinition source)
             : base(parent.ILCloningContext, source)
         {
             Contract.Requires(parent != null);
@@ -44,7 +44,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets or sets the cloner for the type that owns the field being cloned.
         /// </summary>
-        private ClonerBase<TypeDefinition> Parent { get; set; }
+        private ICloner<TypeDefinition> Parent { get; set; }
 
         /// <summary>
         /// Creates the target.

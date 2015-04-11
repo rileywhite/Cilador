@@ -94,7 +94,7 @@ namespace Bix.Mixers.ILCloning
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
         /// <param name="typeCloner">Cloner to gather child cloners for.</param>
-        private void Visit(ClonerBase<TypeDefinition> typeCloner)
+        private void Visit(ICloner<TypeDefinition> typeCloner)
         {
             Contract.Requires(typeCloner != null);
 
@@ -216,14 +216,13 @@ namespace Bix.Mixers.ILCloning
         {
             Contract.Requires(methodBodyCloner!= null);
 
-            var voidTypeReference = methodBodyCloner.ILCloningContext.RootTarget.Module.Import(typeof(void)); // TODO get rid of void ref
-
+            VariableCloner previousVariableCloner = null;
             foreach (var sourceVariable in methodBodyCloner.Source.Variables)
             {
-                var targetVariable = new VariableDefinition(sourceVariable.Name, voidTypeReference);
-                methodBodyCloner.Target.Variables.Add(targetVariable);
-                var variableCloner = new VariableCloner(methodBodyCloner, sourceVariable, targetVariable);
+                var variableCloner = new VariableCloner(methodBodyCloner, previousVariableCloner, sourceVariable);
                 this.Cloners.AddCloner(variableCloner);
+                this.Visit(variableCloner);
+                previousVariableCloner = variableCloner;
             }
 
             var ilProcessor = methodBodyCloner.Target.GetILProcessor();
@@ -289,6 +288,15 @@ namespace Bix.Mixers.ILCloning
         private void Visit(ExceptionHandlerCloner exceptionHandlerCloner)
         {
             Contract.Requires(exceptionHandlerCloner != null);
+        }
+
+        /// <summary>
+        /// Gathers all cloners for the given cloning source and target.
+        /// </summary>
+        /// <param name="variableCloner">Cloner for the variable.</param>
+        private void Visit(VariableCloner variableCloner)
+        {
+            Contract.Requires(variableCloner != null);
         }
     }
 }

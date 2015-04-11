@@ -30,7 +30,7 @@ namespace Bix.Mixers.ILCloning
         /// </summary>
         /// <param name="parent">Cloner for type that contains the property being cloned.</param>
         /// <param name="source">Cloning source.</param>
-        public PropertyCloner(ClonerBase<TypeDefinition> parent, PropertyDefinition source)
+        public PropertyCloner(ICloner<TypeDefinition> parent, PropertyDefinition source)
             : base(parent.ILCloningContext, source)
         {
             Contract.Requires(parent != null);
@@ -44,7 +44,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets or sets the cloner for the type that contains the property being cloned.
         /// </summary>
-        private ClonerBase<TypeDefinition> Parent { get; set; }
+        private ICloner<TypeDefinition> Parent { get; set; }
 
         /// <summary>
         /// Creates the target property.

@@ -33,7 +33,7 @@ namespace Bix.Mixers.ILCloning
         /// </summary>
         /// <param name="parent">Cloner for the type that contains the method to be cloned.</param>
         /// <param name="source">Cloning source.</param>
-        public MethodSignatureCloner(ClonerBase<TypeDefinition> parent, MethodDefinition source)
+        public MethodSignatureCloner(ICloner<TypeDefinition> parent, MethodDefinition source)
             : base(parent.ILCloningContext, source)
         {
             Contract.Requires(parent != null);
@@ -48,7 +48,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets or sets the cloner for the type that contains the method to be cloned.
         /// </summary>
-        private ClonerBase<TypeDefinition> Parent { get; set; }
+        private ICloner<TypeDefinition> Parent { get; set; }
 
         /// <summary>
         /// Gets or sets whether this cloning operation is redirecting a static constructor.

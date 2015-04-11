@@ -32,9 +32,9 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new <see cref="NestedTypeCloner"/>.
         /// </summary>
-        /// <param name="ilCloningContext">IL cloning context.</param>
+        /// <param name="parent">Cloner for the parent type of the nested type being cloned.</param>
         /// <param name="source">Cloning source.</param>
-        public NestedTypeCloner(ClonerBase<TypeDefinition> parent, TypeDefinition source)
+        public NestedTypeCloner(ICloner<TypeDefinition> parent, TypeDefinition source)
             : base(parent.ILCloningContext, source)
         {
             Contract.Requires(parent != null);
@@ -49,7 +49,7 @@ namespace Bix.Mixers.ILCloning
         /// Gets or sets the cloner for the parent type.
         /// All types should have parent types.
         /// </summary>
-        private ClonerBase<TypeDefinition> Parent { get; set; }
+        private ICloner<TypeDefinition> Parent { get; set; }
 
         /// <summary>
         /// Creates the new target.

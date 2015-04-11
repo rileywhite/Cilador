@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using Bix.Mixers.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -146,12 +145,16 @@ namespace Bix.Mixers.ILCloning
             var variableCloners = new List<VariableCloner>();
             var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
             var targetVariableIndexBySourceVariableIndex = new Dictionary<int, int>();
+
+            VariableCloner previousVariableCloner = null;
             foreach (var sourceVariable in sourceMultiplexedConstructor.InitializationVariables)
             {
                 var targetVariable = new VariableDefinition(sourceVariable.Name, voidTypeReference);
                 targetConstructor.Body.Variables.Add(targetVariable);
                 targetVariableIndexBySourceVariableIndex.Add(sourceVariable.Index, targetVariable.Index);
-                variableCloners.Add(new VariableCloner(this.ILCloningContext, sourceVariable, targetVariable));
+                var variableCloner = new VariableCloner(this.ILCloningContext, previousVariableCloner, sourceVariable, targetVariable);
+                variableCloners.Add(variableCloner);
+                previousVariableCloner = variableCloner;
             }
             this.VariableCloners.AddRange(variableCloners);
 
@@ -217,12 +220,15 @@ namespace Bix.Mixers.ILCloning
             var variableCloners = new List<VariableCloner>();
             var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
             var targetVariableIndexBySourceVariableIndex = new Dictionary<int, int>();
+            VariableCloner previousVariableCloner = null;
             foreach (var sourceVariable in sourceMultiplexedConstructor.InitializationVariables)
             {
                 var targetVariable = new VariableDefinition(sourceVariable.Name, voidTypeReference);
                 constructionMethod.Body.Variables.Add(targetVariable);
                 targetVariableIndexBySourceVariableIndex.Add(sourceVariable.Index, targetVariable.Index);
-                variableCloners.Add(new VariableCloner(this.ILCloningContext, sourceVariable, targetVariable));
+                var variableCloner = new VariableCloner(this.ILCloningContext, previousVariableCloner, sourceVariable, targetVariable);
+                variableCloners.Add(variableCloner);
+                previousVariableCloner = variableCloner;
             }
             this.VariableCloners.AddRange(variableCloners);
 
