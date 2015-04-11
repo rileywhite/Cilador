@@ -452,8 +452,8 @@ namespace Bix.Mixers.ILCloning
         private bool TryGetReferencedVariable(Instruction instruction, out VariableDefinition variable)
         {
             return
-                ConstructorMultiplexer.TryGetVariableDefinitionOperand(instruction, out variable) ||
-                ConstructorMultiplexer.TryGetIndexedVariableOperand(instruction, this.InnerConstructionVariables, ref variable);
+                TryGetVariableDefinitionOperand(instruction, out variable) ||
+                TryGetIndexedVariableOperand(instruction, this.InnerConstructionVariables, ref variable);
         }
 
         /// <summary>

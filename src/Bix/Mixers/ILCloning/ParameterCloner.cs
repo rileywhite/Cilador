@@ -99,8 +99,6 @@ namespace Bix.Mixers.ILCloning
                 this.Target.MarshalInfo = new MarshalInfo(this.Source.MarshalInfo.NativeType);
             }
 
-            this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
-
             this.IsCloned = true;
         }
     }

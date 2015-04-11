@@ -83,8 +83,6 @@ namespace Bix.Mixers.ILCloning
 
             this.Target.FieldType = this.ILCloningContext.RootImport(this.Source.FieldType);
 
-            this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
-
             this.IsCloned = true;
         }
     }

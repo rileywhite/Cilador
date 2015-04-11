@@ -157,8 +157,6 @@ namespace Bix.Mixers.ILCloning
                 }
             }
 
-            this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
-
             if (this.Source.HasSecurityDeclarations)
             {
                 // TODO method security declarations
@@ -166,24 +164,6 @@ namespace Bix.Mixers.ILCloning
                     "Configured mixin implementation may not contain methods annotated with security attributes: [{0}]",
                     this.ILCloningContext.RootSource.FullName));
             }
-
-            var sourceMethodReturnType = this.Source.MethodReturnType;
-            Contract.Assert(sourceMethodReturnType != null);
-            this.Target.MethodReturnType = new MethodReturnType(this.Target)
-            {
-                ReturnType = this.ILCloningContext.RootImport(sourceMethodReturnType.ReturnType),
-                Attributes = sourceMethodReturnType.Attributes,
-                Constant = sourceMethodReturnType.Constant,
-                HasConstant = sourceMethodReturnType.HasConstant
-            };
-
-            // TODO research correct usage of MethodReturnType.MarshalInfo
-            if (sourceMethodReturnType.MarshalInfo != null)
-            {
-                this.Target.MethodReturnType.MarshalInfo = new MarshalInfo(sourceMethodReturnType.MarshalInfo.NativeType);
-            }
-
-            this.Target.MethodReturnType.CloneAllCustomAttributes(sourceMethodReturnType, this.ILCloningContext);
 
             this.IsCloned = true;
         }
@@ -197,7 +177,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(this.IsRedirectedStaticConstructor);
 
             var targetStaticConstructor =
-                this.Parent.Target.Methods.SingleOrDefault(method => method.IsConstructor && method.IsStatic);
+                this.Parent.Target.Methods.Single(method => method.IsConstructor && method.IsStatic);
             Contract.Assert(targetStaticConstructor.IsConstructor);
             Contract.Assert(targetStaticConstructor.IsStatic);
             Contract.Assert(targetStaticConstructor.HasBody);

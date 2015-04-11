@@ -16,7 +16,6 @@
 
 using System;
 using System.Diagnostics.Contracts;
-using Bix.Mixers.Core;
 using Mono.Cecil;
 
 namespace Bix.Mixers.ILCloning
@@ -88,8 +87,6 @@ namespace Bix.Mixers.ILCloning
             {
                 targetGenericParameter.Constraints.Add(this.ILCloningContext.RootImport(sourceConstraint));
             }
-
-            targetGenericParameter.CloneAllCustomAttributes(sourceGenericParameter, this.ILCloningContext);
 
             this.IsCloned = true;
         }

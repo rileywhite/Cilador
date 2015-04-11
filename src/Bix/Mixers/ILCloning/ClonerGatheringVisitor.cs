@@ -74,18 +74,8 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(nestedTypeCloner != null);
 
             this.Visit((ClonerBase<TypeDefinition>)nestedTypeCloner);
-
-            GenericParameterCloner previousGenericParameterCloner = null;
-            foreach (var sourceGenericParameter in nestedTypeCloner.Source.GenericParameters)
-            {
-                var genericParameterCloner = new GenericParameterCloner(
-                    nestedTypeCloner,
-                    previousGenericParameterCloner,
-                    sourceGenericParameter);
-                this.Cloners.AddCloner(genericParameterCloner);
-                this.Visit(genericParameterCloner);
-                previousGenericParameterCloner = genericParameterCloner;
-            }
+            this.GatherAndVisitGenericParameterClonersFrom(nestedTypeCloner);
+            this.GatherAndVisitCustomAttributeClonersFrom(nestedTypeCloner);
         }
 
         /// <summary>
@@ -169,6 +159,8 @@ namespace Bix.Mixers.ILCloning
         private void Visit(FieldCloner fieldCloner)
         {
             Contract.Requires(fieldCloner != null);
+
+            this.GatherAndVisitCustomAttributeClonersFrom(fieldCloner);
         }
 
         /// <summary>
@@ -188,17 +180,14 @@ namespace Bix.Mixers.ILCloning
                 previousParameterCloner = parameterCloner;
             }
 
-            GenericParameterCloner previousGenericParameterCloner = null;
-            foreach (var sourceGenericParameter in methodSignatureCloner.Source.GenericParameters)
-            {
-                var genericParameterCloner = new GenericParameterCloner(
-                    methodSignatureCloner,
-                    previousGenericParameterCloner,
-                    sourceGenericParameter);
-                this.Cloners.AddCloner(genericParameterCloner);
-                this.Visit(genericParameterCloner);
-                previousGenericParameterCloner = genericParameterCloner;
-            }
+            this.GatherAndVisitGenericParameterClonersFrom(methodSignatureCloner);
+            this.GatherAndVisitCustomAttributeClonersFrom(methodSignatureCloner);
+
+            var methodReturnTypeCloner = new MethodReturnTypeCloner(
+                methodSignatureCloner,
+                methodSignatureCloner.Source.MethodReturnType);
+            this.Cloners.AddCloner(methodReturnTypeCloner);
+            this.Visit(methodReturnTypeCloner);
 
             if (methodSignatureCloner.Source.HasBody)
             {
@@ -252,24 +241,30 @@ namespace Bix.Mixers.ILCloning
         private void Visit(PropertyCloner propertyCloner)
         {
             Contract.Requires(propertyCloner != null);
+
+            this.GatherAndVisitCustomAttributeClonersFrom(propertyCloner);
         }
 
         /// <summary>
         /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <param name="sourceEvent">Cloner for event.</param>
-        private void Visit(EventCloner sourceEvent)
+        /// <param name="eventCloner">Cloner for event.</param>
+        private void Visit(EventCloner eventCloner)
         {
-            Contract.Requires(sourceEvent != null);
+            Contract.Requires(eventCloner != null);
+
+            this.GatherAndVisitCustomAttributeClonersFrom(eventCloner);
         }
 
         /// <summary>
-        /// Gathers all cloners for the given cloning source and target.
+        /// Gathers all cloners for the given cloning source and target
         /// </summary>
-        /// <param name="genericParameterCloner">Cloner to visit.</param>
+        /// <param name="genericParameterCloner">Cloner for generic parameter.</param>
         private void Visit(GenericParameterCloner genericParameterCloner)
         {
             Contract.Requires(genericParameterCloner != null);
+
+            this.GatherAndVisitCustomAttributeClonersFrom(genericParameterCloner);
         }
 
         /// <summary>
@@ -279,33 +274,75 @@ namespace Bix.Mixers.ILCloning
         private void Visit(ParameterCloner parameterCloner)
         {
             Contract.Requires(parameterCloner != null);
+
+            this.GatherAndVisitCustomAttributeClonersFrom(parameterCloner);
         }
 
         /// <summary>
         /// Gathers all cloners for the given cloning source and target.
         /// </summary>
-        /// <param name="exceptionHandlerCloner">Cloner for the exception handler.</param>
-        private void Visit(ExceptionHandlerCloner exceptionHandlerCloner)
+        /// <param name="methodReturnTypeCloner">Cloner for the method return type.</param>
+        private void Visit(MethodReturnTypeCloner methodReturnTypeCloner)
         {
-            Contract.Requires(exceptionHandlerCloner != null);
+            Contract.Requires(methodReturnTypeCloner != null);
+
+            this.GatherAndVisitCustomAttributeClonersFrom(methodReturnTypeCloner);
         }
 
         /// <summary>
-        /// Gathers all cloners for the given cloning source and target.
+        /// A catch-all visit method that handles visits to cloners that need
+        /// no special handling. This allows us to keep the pattern of always
+        /// calling a visit method on every cloner without having to maintain
+        /// several empty visit methods. If logic needs to be added for visiting
+        /// any particular type of cloner, the method can be added, and the
+        /// existing call will bind to the new method on recompile.
         /// </summary>
-        /// <param name="variableCloner">Cloner for the variable.</param>
-        private void Visit(VariableCloner variableCloner)
+        /// <param name="cloner">Cloner that requires no special visit logic.</param>
+        // ReSharper disable once UnusedParameter.Local
+        private void Visit(ICloner<object> cloner)
         {
-            Contract.Requires(variableCloner != null);
+            Contract.Requires(cloner != null);
         }
 
         /// <summary>
-        /// Gathers all cloners for the given cloning source and target.
+        /// Gathers and visits all generic parameter cloners from the given
+        /// generic parameter provider cloner.
         /// </summary>
-        /// <param name="instructionCloner">Cloner for the instruction.</param>
-        private void Visit(InstructionCloner instructionCloner)
+        /// <param name="genericParameterProviderCloner">Cloner to look at.</param>
+        private void GatherAndVisitGenericParameterClonersFrom(ICloner<IGenericParameterProvider> genericParameterProviderCloner)
         {
-            Contract.Requires(instructionCloner != null);
+            Contract.Requires(genericParameterProviderCloner != null);
+
+            GenericParameterCloner previousGenericParameterCloner = null;
+            foreach (var sourceGenericParameter in genericParameterProviderCloner.Source.GenericParameters)
+            {
+                var genericParameterCloner = new GenericParameterCloner(
+                    genericParameterProviderCloner,
+                    previousGenericParameterCloner,
+                    sourceGenericParameter);
+                this.Cloners.AddCloner(genericParameterCloner);
+                this.Visit(genericParameterCloner);
+                previousGenericParameterCloner = genericParameterCloner;
+            }
+        }
+
+        /// <summary>
+        /// Gathers and visits all custom attribute cloners from the given
+        /// custom attribute provider cloner.
+        /// </summary>
+        /// <param name="customAttributeProviderCloner">Cloner to look at.</param>
+        private void GatherAndVisitCustomAttributeClonersFrom(ICloner<ICustomAttributeProvider> customAttributeProviderCloner)
+        {
+            Contract.Requires(customAttributeProviderCloner != null);
+
+            foreach (var sourceCustomAttribute in customAttributeProviderCloner.Source.CustomAttributes)
+            {
+                var genericParameterCloner = new CustomAttributeCloner(
+                    customAttributeProviderCloner,
+                    sourceCustomAttribute);
+                this.Cloners.AddCloner(genericParameterCloner);
+                this.Visit(genericParameterCloner);
+            }
         }
     }
 }

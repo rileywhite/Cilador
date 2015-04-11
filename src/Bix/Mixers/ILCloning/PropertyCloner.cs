@@ -100,8 +100,6 @@ namespace Bix.Mixers.ILCloning
                 this.Target.OtherMethods.Add(targetOtherMethod);
             }
 
-            this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
-
             this.IsCloned = true;
 
             Contract.Assert((this.Target.GetMethod == null) == (this.Source.GetMethod == null));

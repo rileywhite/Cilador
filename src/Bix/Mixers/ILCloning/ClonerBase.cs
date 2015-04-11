@@ -16,7 +16,6 @@
 
 using System;
 using System.Diagnostics.Contracts;
-using Bix.Mixers.Core;
 
 namespace Bix.Mixers.ILCloning
 {

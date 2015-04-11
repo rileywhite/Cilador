@@ -79,59 +79,6 @@ namespace Bix.Mixers.ILCloning
         }
 
         /// <summary>
-        /// Clones all custom attributes from a source to a target.
-        /// </summary>
-        /// <param name="target">Cloning target.</param>
-        /// <param name="source">Cloning source.</param>
-        /// <param name="ilCloningContext">Context for IL cloning.</param>
-        public static void CloneAllCustomAttributes(
-            this ICustomAttributeProvider target,
-            ICustomAttributeProvider source,
-            IILCloningContext ilCloningContext)
-        {
-            Contract.Requires(target != null);
-            Contract.Requires(target.CustomAttributes != null);
-            Contract.Requires(target.CustomAttributes.Count == 0 || target == ilCloningContext.RootTarget);
-            Contract.Requires(source != null);
-            Contract.Requires(source.CustomAttributes != null);
-            Contract.Requires(target != source);
-            Contract.Requires(ilCloningContext != null);
-            Contract.Ensures(
-                target.CustomAttributes.Count == source.CustomAttributes.Count ||
-                (target == ilCloningContext.RootTarget && target.CustomAttributes.Count > source.CustomAttributes.Count));
-
-            foreach (var sourceAttribute in source.CustomAttributes)
-            {
-                // TODO what is the blob argument for custom attributes?
-                var targetAttribute = new CustomAttribute(ilCloningContext.RootImport(sourceAttribute.Constructor));
-                if (sourceAttribute.HasConstructorArguments)
-                {
-                    foreach (var sourceArgument in sourceAttribute.ConstructorArguments)
-                    {
-                        targetAttribute.ConstructorArguments.Add(
-                            new CustomAttributeArgument(
-                                ilCloningContext.RootImport(sourceArgument.Type),
-                                ilCloningContext.DynamicRootImport(sourceArgument.Value)));
-                    }
-                }
-
-                if (sourceAttribute.HasProperties)
-                {
-                    foreach (var sourceProperty in sourceAttribute.Properties)
-                    {
-                        targetAttribute.Properties.Add(
-                            new CustomAttributeNamedArgument(
-                                sourceProperty.Name,
-                                new CustomAttributeArgument(
-                                    ilCloningContext.RootImport(sourceProperty.Argument.Type),
-                                    ilCloningContext.DynamicRootImport(sourceProperty.Argument.Value))));
-                    }
-                }
-                target.CustomAttributes.Add(targetAttribute);
-            }
-        }
-
-        /// <summary>
         /// Determines whether in instruction opcode stores a variable.
         /// </summary>
         /// <param name="code">OpCode's CIL code</param>

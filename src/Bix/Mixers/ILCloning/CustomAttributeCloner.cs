@@ -14,9 +14,9 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Mono.Cecil;
 using System;
 using System.Diagnostics.Contracts;
+using Mono.Cecil;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -31,7 +31,7 @@ namespace Bix.Mixers.ILCloning
         /// <param name="parent">Cloner for the member that the custom attribute is attached to.</param>
         /// <param name="source">Cloning source.</param>
         public CustomAttributeCloner(
-            ClonerBase<ICustomAttributeProvider> parent,
+            ICloner<ICustomAttributeProvider> parent,
             CustomAttribute source)
             : base(parent.ILCloningContext, source)
         {

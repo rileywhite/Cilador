@@ -54,6 +54,7 @@ namespace Bix.Mixers.ILCloning
             this.FieldCloners = new List<FieldCloner>();
             this.MethodSignatureCloners = new List<MethodSignatureCloner>();
             this.MethodParameterCloners = new List<ParameterCloner>();
+            this.MethodReturnTypeCloners = new List<MethodReturnTypeCloner>();
             this.MethodBodyCloners = new List<MethodBodyCloner>();
             this.VariableCloners = new List<VariableCloner>();
             this.InstructionCloners = new List<InstructionCloner>();
@@ -120,6 +121,7 @@ namespace Bix.Mixers.ILCloning
             this.VariableCloners.CloneAll();
             this.FieldCloners.CloneAll();
             this.MethodSignatureCloners.CloneAll();
+            this.MethodReturnTypeCloners.CloneAll();
             this.MethodParameterCloners.CloneAll();
             this.PropertyCloners.CloneAll();
             this.EventCloners.CloneAll();
@@ -154,7 +156,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(!this.AreAllClonersAdded);
 
             this.TypeCloners.Add(cloner);
-            this.TargetTypeBySourceFullName.Add(Cloners.GetUniqueKeyFor(cloner.Source), cloner.Target);
+            this.TargetTypeBySourceFullName.Add(GetUniqueKeyFor(cloner.Source), cloner.Target);
         }
 
         /// <summary>
@@ -172,7 +174,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(this.AreAllClonersAdded);
             Contract.Ensures(Contract.ValueAtReturn(out target) != null || !Contract.Result<bool>());
 
-            return this.TargetTypeBySourceFullName.TryGetValue(Cloners.GetUniqueKeyFor(source.Resolve()), out target);
+            return this.TargetTypeBySourceFullName.TryGetValue(GetUniqueKeyFor(source.Resolve()), out target);
         }
 
         #endregion
@@ -200,7 +202,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(!this.AreAllClonersAdded);
 
             this.GenericParameterCloners.Add(cloner);
-            this.TargetGenericParameterBySourceOwnerFullNameAndPosition.Add(Cloners.GetUniqueKeyFor(cloner.Source), cloner.Target);
+            this.TargetGenericParameterBySourceOwnerFullNameAndPosition.Add(GetUniqueKeyFor(cloner.Source), cloner.Target);
         }
 
         /// <summary>
@@ -215,7 +217,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(this.AreAllClonersAdded);
             Contract.Ensures(Contract.ValueAtReturn(out target) != null || !Contract.Result<bool>());
 
-            if (!this.TargetGenericParameterBySourceOwnerFullNameAndPosition.TryGetValue(Cloners.GetUniqueKeyFor(source), out target))
+            if (!this.TargetGenericParameterBySourceOwnerFullNameAndPosition.TryGetValue(GetUniqueKeyFor(source), out target))
             {
                 target = null;
                 return false;
@@ -249,7 +251,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(!this.AreAllClonersAdded);
 
             this.FieldCloners.Add(cloner);
-            this.TargetFieldBySourceFullName.Add(Cloners.GetUniqueKeyFor(cloner.Source), cloner.Target);
+            this.TargetFieldBySourceFullName.Add(GetUniqueKeyFor(cloner.Source), cloner.Target);
         }
 
         /// <summary>
@@ -264,7 +266,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(this.AreAllClonersAdded);
             Contract.Ensures(Contract.ValueAtReturn(out target) != null || !Contract.Result<bool>());
 
-            return this.TargetFieldBySourceFullName.TryGetValue(Cloners.GetUniqueKeyFor(source.Resolve()), out target);
+            return this.TargetFieldBySourceFullName.TryGetValue(GetUniqueKeyFor(source.Resolve()), out target);
         }
 
         #endregion
@@ -291,7 +293,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(!this.AreAllClonersAdded);
 
             this.MethodSignatureCloners.Add(cloner);
-            this.TargetMethodBySourceFullName.Add(Cloners.GetUniqueKeyFor(cloner.Source), cloner.Target);
+            this.TargetMethodBySourceFullName.Add(GetUniqueKeyFor(cloner.Source), cloner.Target);
         }
 
         /// <summary>
@@ -307,7 +309,28 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(this.AreAllClonersAdded);
             Contract.Ensures(Contract.ValueAtReturn(out target) != null || !Contract.Result<bool>());
 
-            return this.TargetMethodBySourceFullName.TryGetValue(Cloners.GetUniqueKeyFor(source.Resolve()), out target);
+            return this.TargetMethodBySourceFullName.TryGetValue(GetUniqueKeyFor(source.Resolve()), out target);
+        }
+
+        #endregion
+
+        #region Method Return Types
+
+        /// <summary>
+        /// Gets or sets cloners for all method parameters to be cloned.
+        /// </summary>
+        private List<MethodReturnTypeCloner> MethodReturnTypeCloners { get; set; }
+
+        /// <summary>
+        /// Adds a cloner to the collection.
+        /// </summary>
+        /// <param name="cloner">Cloner to add to the collection.</param>
+        public void AddCloner(MethodReturnTypeCloner cloner)
+        {
+            Contract.Requires(cloner != null);
+            Contract.Requires(!this.AreAllClonersAdded);
+
+            this.MethodReturnTypeCloners.Add(cloner);
         }
 
         #endregion
@@ -465,7 +488,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(!this.AreAllClonersAdded);
 
             this.PropertyCloners.Add(cloner);
-            this.TargetPropertyBySourceFullName.Add(Cloners.GetUniqueKeyFor(cloner.Source), cloner.Target);
+            this.TargetPropertyBySourceFullName.Add(GetUniqueKeyFor(cloner.Source), cloner.Target);
         }
 
         #endregion
@@ -492,7 +515,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(!this.AreAllClonersAdded);
 
             this.EventCloners.Add(cloner);
-            this.TargetEventBySourceFullName.Add(Cloners.GetUniqueKeyFor(cloner.Source), cloner.Target);
+            this.TargetEventBySourceFullName.Add(GetUniqueKeyFor(cloner.Source), cloner.Target);
         }
 
         #endregion

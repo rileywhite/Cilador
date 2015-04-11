@@ -94,8 +94,6 @@ namespace Bix.Mixers.ILCloning
             // TODO look more closely at type class size
             this.Target.ClassSize = this.Source.ClassSize;
 
-            this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
-
             this.IsCloned = true;
         }
     }

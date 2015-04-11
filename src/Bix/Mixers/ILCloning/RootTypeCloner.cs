@@ -90,8 +90,6 @@ namespace Bix.Mixers.ILCloning
                     this.Source.FullName));
             }
 
-            this.Target.CloneAllCustomAttributes(this.Source, this.ILCloningContext);
-
             this.IsCloned = true;
         }
     }

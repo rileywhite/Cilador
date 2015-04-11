@@ -103,7 +103,7 @@ namespace Bix.Mixers.ILCloning
             // now create the target
             if (this.ExistingTarget != null) { return this.ExistingTarget; }
 
-            Instruction target = InstructionCloner.CreateCloningTargetFor(
+            Instruction target = CreateCloningTargetFor(
                 this.MethodContext,
                 this.Parent.TargetILProcessor,
                 this.Source);
