@@ -26,24 +26,27 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Clones a source instruction to a target instruction
     /// </summary>
-    internal class InstructionCloner : OldClonerBase<Instruction>
+    internal class InstructionCloner : ClonerBase<Instruction>
     {
         /// <summary>
         /// Creates a new <see cref="InstructionCloner"/>.
         /// </summary>
-        /// <param name="methodBodyCloner">Method body cloner associated with new instruction cloner.</param>
+        /// <param name="parent">Method body cloner associated with new instruction cloner.</param>
+        /// <param name="previous">Cloner for the previous instruction, if any.</param>
         /// <param name="source">Cloning source.</param>
-        /// <param name="target">Cloning target.</param>
-        public InstructionCloner(MethodBodyCloner methodBodyCloner, Instruction source, Instruction target)
-            : this(new MethodContext(methodBodyCloner), source, target)
+        public InstructionCloner(MethodBodyCloner parent, InstructionCloner previous, Instruction source)
+            : base(parent.ILCloningContext, source)
         {
-            Contract.Requires(methodBodyCloner != null);
-            Contract.Requires(methodBodyCloner.ILCloningContext != null);
+            Contract.Requires(parent != null);
+            Contract.Requires(parent.ILCloningContext != null);
             Contract.Requires(source != null);
-            Contract.Requires(target != null);
+            Contract.Ensures(this.Parent != null);
             Contract.Ensures(this.MethodContext != null);
 
-            methodBodyCloner.InstructionCloners.Add(this);
+            this.Parent = parent;
+            this.Parent.InstructionCloners.Add(this);
+            this.MethodContext = new MethodContext(parent);
+            this.Previous = previous;
         }
 
         /// <summary>
@@ -53,8 +56,9 @@ namespace Bix.Mixers.ILCloning
         /// <param name="source">Cloning source.</param>
         /// <param name="target">Cloning target.</param>
         public InstructionCloner(MethodContext methodContext, Instruction source, Instruction target)
-            : base(methodContext.ILCloningContext, source, target)
+            : base(methodContext.ILCloningContext, source)
         {
+            // TODO remove this...it's only used by the constructor broadcaster
             Contract.Requires(methodContext != null);
             Contract.Requires(methodContext.ILCloningContext != null);
             Contract.Requires(source != null);
@@ -62,12 +66,50 @@ namespace Bix.Mixers.ILCloning
             Contract.Ensures(this.MethodContext != null);
 
             this.MethodContext = methodContext;
+            this.ExistingTarget = target;
         }
 
         /// <summary>
         /// Gets or sets the context for the method associated with this cloner.
         /// </summary>
+        private MethodBodyCloner Parent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the context for the method associated with this cloner.
+        /// </summary>
         public MethodContext MethodContext { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the existing target instruction.
+        /// </summary>
+        /// <remarks>
+        /// TODO remove this...it's only used by the constructor broadcaster
+        /// </remarks>
+        private Instruction ExistingTarget { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cloner for the previous instruction, if any.
+        /// </summary>
+        private InstructionCloner Previous { get; set; }
+
+        /// <summary>
+        /// Creates the target instruction.
+        /// </summary>
+        /// <returns>Created target.</returns>
+        protected override Instruction CreateTarget()
+        {
+            if (this.Previous != null) { this.Previous.EnsureTargetIsCreatedAndSet(); }
+
+            // now create the target
+            if (this.ExistingTarget != null) { return this.ExistingTarget; }
+
+            Instruction target = InstructionCloner.CreateCloningTargetFor(
+                this.MethodContext,
+                this.Parent.TargetILProcessor,
+                this.Source);
+            this.Parent.TargetILProcessor.Append(target);
+            return target;
+        }
 
         /// <summary>
         /// Clones the instruction

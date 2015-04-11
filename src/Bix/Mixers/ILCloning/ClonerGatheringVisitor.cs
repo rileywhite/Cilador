@@ -16,10 +16,7 @@
 
 using System;
 using System.Diagnostics.Contracts;
-using System.Linq;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
-using System.Collections.Generic;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -87,6 +84,7 @@ namespace Bix.Mixers.ILCloning
                     sourceGenericParameter);
                 this.Cloners.AddCloner(genericParameterCloner);
                 this.Visit(genericParameterCloner);
+                previousGenericParameterCloner = genericParameterCloner;
             }
         }
 
@@ -106,8 +104,6 @@ namespace Bix.Mixers.ILCloning
                 this.Cloners.AddCloner(nestedTypeCloner);
                 this.Visit(nestedTypeCloner);
             }
-
-            var targetType = typeCloner.Target;     // TODO Don't access Target
 
             foreach (var sourceField in sourceType.Fields)
             {
@@ -135,7 +131,10 @@ namespace Bix.Mixers.ILCloning
                     }
 
                     // for a parameterless constructor, we need to inject it into every target constructor
-                    var constructorBroadcaster = new ConstructorBroadcaster(this.ILCloningContext, sourceMethod, targetType);
+                    var constructorBroadcaster = new ConstructorBroadcaster(
+                        this.ILCloningContext,
+                        sourceMethod,
+                        typeCloner.Target); // TODO Don't access Target
                     constructorBroadcaster.BroadcastConstructor();
                     this.Cloners.AddCloners(constructorBroadcaster.VariableCloners);
                     this.Cloners.AddCloners(constructorBroadcaster.InstructionCloners);
@@ -198,6 +197,7 @@ namespace Bix.Mixers.ILCloning
                     sourceGenericParameter);
                 this.Cloners.AddCloner(genericParameterCloner);
                 this.Visit(genericParameterCloner);
+                previousGenericParameterCloner = genericParameterCloner;
             }
 
             if (methodSignatureCloner.Source.HasBody)
@@ -225,16 +225,16 @@ namespace Bix.Mixers.ILCloning
                 previousVariableCloner = variableCloner;
             }
 
-            var ilProcessor = methodBodyCloner.Target.GetILProcessor();
+            InstructionCloner previousInstructionCloner = null;
             foreach (var sourceInstruction in methodBodyCloner.Source.Instructions)
             {
                 // the operand is required to create the instruction
                 // but at this stage root resolving is not yet allowed because the tree of cloners is not yet completed
                 // so, where needed, dummy operands are used which will be replaced in the clone step of each instruction cloner
-                Instruction targetInstruction = InstructionCloner.CreateCloningTargetFor(new MethodContext(methodBodyCloner), ilProcessor, sourceInstruction);
-                ilProcessor.Append(targetInstruction);
-                var instructionCloner = new InstructionCloner(methodBodyCloner, sourceInstruction, targetInstruction);
+                var instructionCloner = new InstructionCloner(methodBodyCloner, previousInstructionCloner, sourceInstruction);
                 this.Cloners.AddCloner(instructionCloner);
+                this.Visit(instructionCloner);
+                previousInstructionCloner = instructionCloner;
             }
 
             foreach (var sourceExceptionHandler in methodBodyCloner.Source.ExceptionHandlers)
@@ -297,6 +297,15 @@ namespace Bix.Mixers.ILCloning
         private void Visit(VariableCloner variableCloner)
         {
             Contract.Requires(variableCloner != null);
+        }
+
+        /// <summary>
+        /// Gathers all cloners for the given cloning source and target.
+        /// </summary>
+        /// <param name="instructionCloner">Cloner for the instruction.</param>
+        private void Visit(InstructionCloner instructionCloner)
+        {
+            Contract.Requires(instructionCloner != null);
         }
     }
 }

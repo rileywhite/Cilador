@@ -41,11 +41,13 @@ namespace Bix.Mixers.ILCloning
             Contract.Ensures(this.VariableCloners != null);
             Contract.Ensures(this.InstructionCloners != null);
             Contract.Ensures(this.ExceptionHandlerCloners != null);
+            Contract.Ensures(this.TargetILProcessor != null);
 
             this.Parent = parent;
             this.VariableCloners = new List<VariableCloner>();
             this.InstructionCloners = new List<InstructionCloner>();
             this.ExceptionHandlerCloners = new List<ExceptionHandlerCloner>();
+            this.TargetILProcessor = this.Parent.Target.Body.GetILProcessor();
         }
 
         /// <summary>
@@ -76,6 +78,11 @@ namespace Bix.Mixers.ILCloning
         {
             return this.Parent.Target.Body;
         }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ILProcessor"/> for accesing IL instructions.
+        /// </summary>
+        internal ILProcessor TargetILProcessor { get; private set; }
 
         /// <summary>
         /// Clones the method body from the source to the target.
