@@ -22,8 +22,8 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Interface implemented by all item cloners.
     /// </summary>
-    [ContractClass(typeof(ClonerContract))]
-    public interface ICloner
+    [ContractClass(typeof(ClonerContract<>))]
+    public interface ICloner<out TCloned>
     {
         /// <summary>
         /// Gets the context for IL cloning.
@@ -39,13 +39,7 @@ namespace Bix.Mixers.ILCloning
         /// Clones the item.
         /// </summary>
         void Clone();
-    }
 
-    /// <summary>
-    /// Interface implemented by all item cloners.
-    /// </summary>
-    public interface ICloner<out TCloned> : ICloner
-    {
         /// <summary>
         /// Gets the cloning source.
         /// </summary>

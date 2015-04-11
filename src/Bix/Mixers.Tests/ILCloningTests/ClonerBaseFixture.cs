@@ -1,59 +1,115 @@
-﻿///***************************************************************************/
-//// Copyright 2013-2015 Riley White
-//// 
-//// Licensed under the Apache License, Version 2.0 (the "License");
-//// you may not use this file except in compliance with the License.
-//// You may obtain a copy of the License at
-//// 
-////     http://www.apache.org/licenses/LICENSE-2.0
-//// 
-//// Unless required by applicable law or agreed to in writing, software
-//// distributed under the License is distributed on an "AS IS" BASIS,
-//// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//// See the License for the specific language governing permissions and
-//// limitations under the License.
-///***************************************************************************/
+﻿/***************************************************************************/
+// Copyright 2013-2015 Riley White
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+/***************************************************************************/
 
-//using Bix.Mixers.ILCloning;
-//using Mono.Cecil;
-//using NUnit.Framework;
-//using System;
+using System;
+using Bix.Mixers.ILCloning;
+using Mono.Cecil;
+using NUnit.Framework;
 
-//namespace Bix.Mixers.Tests.ILCloningTests
-//{
-//    /// <summary>
-//    /// Tests <see cref="ClonerBase{TClonedItem}"/>. Since it inherits from <see cref="LazyClonerBase{TClonedItem}"/>,
-//    /// only the added functionality is tested.
-//    /// </summary>
-//    [TestFixture]
-//    internal class ClonerBaseFixture
-//    {
-//        /// <summary>
-//        /// Used for testing the cloner functionality.
-//        /// </summary>
-//        private class SomethingCloner : ClonerBase<object>
-//        {
-//            public SomethingCloner(IILCloningContext ilCloningContext, object source, object target)
-//                : base(ilCloningContext, source, target) { }
+namespace Bix.Mixers.Tests.ILCloningTests
+{
+    /// <summary>
+    /// Tests <see cref="ClonerBase{T}"/>.
+    /// </summary>
+    [TestFixture]
+    internal class ClonerBaseFixture
+    {
+        /// <summary>
+        /// Used in the create method of a fake cloner
+        /// </summary>
+        private static readonly object FakeTarget = new object();
 
-//            public override void Clone()
-//            {
-//                this.IsCloned = true;
-//            }
-//        }
+        /// <summary>
+        /// Fake cloner for testing
+        /// </summary>
+        private class SomethingCloner : ClonerBase<object>
+        {
+            public SomethingCloner(IILCloningContext ilCloningContext, object source)
+                : base(ilCloningContext, source) { }
 
-//        /// <summary>
-//        /// Tests that the target is populated immediately.
-//        /// </summary>
-//        public void ActualTargetTest()
-//        {
-//            var source = new object();
-//            var target = new object();
+            public int CreateCallCount { get; set; }
 
-//            var cloner = new SomethingCloner(new FakeILCloningConext(), source, target);
+            protected override object CreateTarget()
+            {
+                ++this.CreateCallCount;
+                return ClonerBaseFixture.FakeTarget;
+            }
 
-//            Assert.AreSame(target, cloner.Item2.Getter());
-//            Assert.AreSame(target, cloner.Target);
-//        }
-//    }
-//}
+            public override void Clone()
+            {
+                this.IsCloned = true;
+            }
+        }
+
+        /// <summary>
+        /// Fake cloner for testing that will fail on the create step
+        /// </summary>
+        private class BadCloner : ClonerBase<object>
+        {
+            public BadCloner(IILCloningContext ilCloningContext, object source)
+                : base(ilCloningContext, source) { }
+
+            protected override object CreateTarget()
+            {
+                return null;
+            }
+
+            public override void Clone()
+            {
+                this.IsCloned = true;
+            }
+        }
+
+        /// <summary>
+        /// Tests that the target is created on access.
+        /// </summary>
+        [Test]
+        public void CreatesTargetTest()
+        {
+            var source = new object();
+
+            var cloner = new SomethingCloner(
+                new FakeILCloningConext(),
+                source);
+
+            Assert.AreSame(source, cloner.Source);
+
+            Assert.IsFalse(cloner.IsTargetCreated);
+            Assert.AreEqual(0, cloner.CreateCallCount);
+
+            var target = cloner.Target;
+            Assert.IsTrue(cloner.IsTargetCreated);
+            Assert.AreEqual(1, cloner.CreateCallCount);
+
+            Assert.IsNotNull(target);
+            Assert.AreSame(target, cloner.Target);
+
+            target = cloner.Target; // third call, at this point
+            Assert.AreEqual(1, cloner.CreateCallCount); // should only have been invoked once
+        }
+
+        /// <summary>
+        /// Tests that a cloner that returns null on create will cause an error.
+        /// </summary>
+        [Test]
+        public void MustCreateTargetTest()
+        {
+            var source = new object();
+            var cloner = new BadCloner(new FakeILCloningConext(), source);
+            Assert.Catch(() => { var t = cloner.Target; });
+        }
+    }
+}

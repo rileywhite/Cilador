@@ -149,7 +149,6 @@
     <Compile Include="ILCloning\ClonerBaseContract.cs" />
     <Compile Include="ILCloning\SourceAndTarget.cs" />
     <Compile Include="ILCloning\ISourceAndTarget.cs" />
-    <Compile Include="ILCloning\OldClonerBase.cs" />
     <Compile Include="ILCloning\ClonerGatheringVisitor.cs" />
     <Compile Include="ILCloning\Cloners.cs" />
     <Compile Include="ILCloning\ConstructorBroadcaster.cs" />
@@ -165,8 +164,6 @@
     <Compile Include="ILCloning\ILCloningContext.cs" />
     <Compile Include="ILCloning\ILCloningExtensions.cs" />
     <Compile Include="ILCloning\InstructionCloner.cs" />
-    <Compile Include="ILCloning\LazyClonerBase.cs" />
-    <Compile Include="ILCloning\LazyClonerBaseContract.cs" />
     <Compile Include="ILCloning\MethodBodyCloner.cs" />
     <Compile Include="ILCloning\MethodContext.cs" />
     <Compile Include="ILCloning\MethodSignatureCloner.cs" />

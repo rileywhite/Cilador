@@ -14,7 +14,6 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Bix.Mixers.Core;
 using Mono.Cecil;
 using System;
 using System.Diagnostics.Contracts;
@@ -29,13 +28,11 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Creates a new <see cref="ParameterCloner"/>.
         /// </summary>
-        /// <param name="genericParameterProvider">Cloner for the member that the custom attribute is attached to.</param>
+        /// <param name="parent">Cloner for the member that the custom attribute is attached to.</param>
         /// <param name="source">Cloning source.</param>
         public CustomAttributeCloner(
-            LazyClonerBase<ICustomAttributeProvider> parent,
-            CustomAttribute source,
-            Func<CustomAttribute> targetGetter,
-            Action<CustomAttribute> targetSetter)
+            ClonerBase<ICustomAttributeProvider> parent,
+            CustomAttribute source)
             : base(parent.ILCloningContext, source)
         {
             Contract.Requires(parent != null);
@@ -49,7 +46,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets or sets the cloner for the class/method/etc that the custom attribute is attached to.
         /// </summary>
-        public LazyClonerBase<ICustomAttributeProvider> Parent { get; private set; }
+        public ICloner<ICustomAttributeProvider> Parent { get; private set; }
 
         /// <summary>
         /// Creates the target custom attribute.

@@ -57,7 +57,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Whether the target has be set from its accessor.
         /// </summary>
-        protected bool IsTargetCreated { get; private set; }
+        public bool IsTargetCreated { get; private set; }
 
         /// <summary>
         /// When overridden in a subclass, this method should create the cloning target.

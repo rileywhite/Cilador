@@ -32,7 +32,7 @@ namespace Bix.Mixers.ILCloning
         /// Invokes clone on each item
         /// </summary>
         /// <param name="cloners"></param>
-        public static void CloneAll(this IEnumerable<ICloner> cloners)
+        public static void CloneAll(this IEnumerable<ICloner<object>> cloners)
         {
             Contract.Requires(cloners != null);
             Contract.Requires(!cloners.Any(cloner => cloner.IsCloned));

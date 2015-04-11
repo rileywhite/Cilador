@@ -42,7 +42,7 @@ namespace Bix.Mixers.Tests.ILCloningTests
             Assert.That(this.CurrentModule, Is.Not.Null);
         }
 
-        private class TestCloner : ICloner
+        private class TestCloner : ICloner<object>
         {
             public IILCloningContext ILCloningContext { get; set; }
 
@@ -51,6 +51,16 @@ namespace Bix.Mixers.Tests.ILCloningTests
             public void Clone()
             {
                 this.IsCloned = true;
+            }
+
+            public object Source
+            {
+                get { return new object(); }
+            }
+
+            public object Target
+            {
+                get { return new object(); }
             }
         }
 
