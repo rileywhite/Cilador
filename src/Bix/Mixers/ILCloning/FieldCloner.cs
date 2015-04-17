@@ -50,7 +50,7 @@ namespace Bix.Mixers.ILCloning
         /// Creates the target.
         /// </summary>
         /// <returns></returns>
-        protected override FieldDefinition CreateTarget()
+        protected override FieldDefinition GetTarget()
         {
             var voidReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));  // TODO get rid of void ref
             var targetField = new FieldDefinition(this.Source.Name, 0, voidReference);
@@ -61,10 +61,8 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Clones the field in its entirety
         /// </summary>
-        public override void Clone()
+        protected override void DoClone()
         {
-            Contract.Requires(this.Target.Name == this.Source.Name);
-
             this.Target.Attributes = this.Source.Attributes;
             this.Target.Constant = this.Source.Constant;
             this.Target.HasConstant = this.Source.HasConstant;
@@ -82,8 +80,6 @@ namespace Bix.Mixers.ILCloning
             }
 
             this.Target.FieldType = this.ILCloningContext.RootImport(this.Source.FieldType);
-
-            this.IsCloned = true;
         }
     }
 }

@@ -62,10 +62,10 @@ namespace Bix.Mixers.ILCloning
         /// Creates the cloning target.
         /// </summary>
         /// <returns>New cloning target.</returns>
-        protected override GenericParameter CreateTarget()
+        protected override GenericParameter GetTarget()
         {
             // order matters on generic parameters, so make sure they are created in order
-            if (this.Previous != null) { this.Previous.EnsureTargetIsCreatedAndSet(); }
+            if (this.Previous != null) { this.Previous.EnsureTargetIsSet(); }
 
             // now create the generic parameter and add it to the parent collection
             var genericParameter = new GenericParameter(this.Source.Name, this.Parent.Target);
@@ -76,7 +76,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Clones the <see cref="GenericParameter"/>.
         /// </summary>
-        public override void Clone()
+        protected override void DoClone()
         {
             var sourceGenericParameter = this.Source;
             var targetGenericParameter = this.Target;
@@ -87,8 +87,6 @@ namespace Bix.Mixers.ILCloning
             {
                 targetGenericParameter.Constraints.Add(this.ILCloningContext.RootImport(sourceConstraint));
             }
-
-            this.IsCloned = true;
         }
     }
 }

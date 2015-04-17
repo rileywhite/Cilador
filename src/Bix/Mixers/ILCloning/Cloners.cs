@@ -17,8 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using Bix.Mixers.Core;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -35,7 +37,11 @@ namespace Bix.Mixers.ILCloning
             Contract.Ensures(this.TypeCloners != null);
             Contract.Ensures(this.FieldCloners != null);
             Contract.Ensures(this.MethodSignatureCloners != null);
+            Contract.Ensures(this.ConstructorLogicSignatureCloners != null);
             Contract.Ensures(this.MethodParameterCloners != null);
+            Contract.Ensures(this.MethodReturnTypeCloners != null);
+            Contract.Ensures(this.ConstructorLogicBodyCloners != null);
+            Contract.Ensures(this.ConstructorInitializationCloners != null);
             Contract.Ensures(this.MethodBodyCloners != null);
             Contract.Ensures(this.VariableCloners != null);
             Contract.Ensures(this.InstructionCloners != null);
@@ -53,8 +59,11 @@ namespace Bix.Mixers.ILCloning
             this.TypeCloners = new List<ClonerBase<TypeDefinition>>();
             this.FieldCloners = new List<FieldCloner>();
             this.MethodSignatureCloners = new List<MethodSignatureCloner>();
+            this.ConstructorLogicSignatureCloners = new List<ConstructorLogicSignatureCloner>();
             this.MethodParameterCloners = new List<ParameterCloner>();
             this.MethodReturnTypeCloners = new List<MethodReturnTypeCloner>();
+            this.ConstructorLogicBodyCloners = new List<ConstructorLogicBodyCloner>();
+            this.ConstructorInitializationCloners = new List<ConstructorInitializationCloner>();
             this.MethodBodyCloners = new List<MethodBodyCloner>();
             this.VariableCloners = new List<VariableCloner>();
             this.InstructionCloners = new List<InstructionCloner>();
@@ -120,11 +129,14 @@ namespace Bix.Mixers.ILCloning
             this.TypeCloners.CloneAll();
             this.VariableCloners.CloneAll();
             this.FieldCloners.CloneAll();
+            this.ConstructorLogicSignatureCloners.CloneAll();
             this.MethodSignatureCloners.CloneAll();
             this.MethodReturnTypeCloners.CloneAll();
             this.MethodParameterCloners.CloneAll();
             this.PropertyCloners.CloneAll();
             this.EventCloners.CloneAll();
+            this.ConstructorLogicBodyCloners.CloneAll();
+            this.ConstructorInitializationCloners.CloneAll();
             this.MethodBodyCloners.CloneAll();
             this.InstructionCloners.CloneAll();
             this.ExceptionHandlerCloners.CloneAll();
@@ -314,6 +326,27 @@ namespace Bix.Mixers.ILCloning
 
         #endregion
 
+        #region Constructor Logic Signatures
+
+        /// <summary>
+        /// Gets or sets cloners for all method signatures to be cloned.
+        /// </summary>
+        private List<ConstructorLogicSignatureCloner> ConstructorLogicSignatureCloners { get; set; }
+
+        /// <summary>
+        /// Adds a cloner to the collection.
+        /// </summary>
+        /// <param name="cloner">Cloner to add to the collection.</param>
+        public void AddCloner(ConstructorLogicSignatureCloner cloner)
+        {
+            Contract.Requires(cloner != null);
+            Contract.Requires(!this.AreAllClonersAdded);
+
+            this.ConstructorLogicSignatureCloners.Add(cloner);
+        }
+
+        #endregion
+
         #region Method Return Types
 
         /// <summary>
@@ -352,6 +385,75 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(!this.AreAllClonersAdded);
 
             this.MethodParameterCloners.Add(cloner);
+        }
+
+        /// <summary>
+        /// Attempt to retrieve the cloning target for a given source.
+        /// </summary>
+        /// <param name="source">Source to find target for.</param>
+        /// <param name="target">Target for the given source if it exists, else <c>null</c>.</param>
+        /// <returns><c>true</c> if a target was found, else <c>false</c>.</returns>
+        public bool TryGetTargetFor(ParameterDefinition source, out ParameterDefinition target)
+        {
+            Contract.Requires(source != null);
+            Contract.Requires(this.AreAllClonersAdded);
+            Contract.Ensures(Contract.ValueAtReturn(out target) != null || !Contract.Result<bool>());
+
+            // this is not fast, but we'll fix that if performance becomes an issue
+            var parameterCloner = this.MethodParameterCloners.SingleOrDefault(cloner => cloner.Source == source);
+
+            if (parameterCloner == null)
+            {
+                target = null;
+                return false;
+            }
+            else
+            {
+                target = parameterCloner.Target;
+                return true;
+            }
+        }
+
+        #endregion
+
+        #region Constructor Initializations
+
+        /// <summary>
+        /// Gets or sets cloners for all method bodies to be cloned.
+        /// </summary>
+        private List<ConstructorLogicBodyCloner> ConstructorLogicBodyCloners { get; set; }
+
+        /// <summary>
+        /// Adds a cloner to the collection.
+        /// </summary>
+        /// <param name="cloner">Cloner to add to the collection.</param>
+        public void AddCloner(ConstructorLogicBodyCloner cloner)
+        {
+            Contract.Requires(cloner != null);
+            Contract.Requires(!this.AreAllClonersAdded);
+
+            this.ConstructorLogicBodyCloners.Add(cloner);
+        }
+
+        #endregion
+
+        #region Constructor Initializations
+
+        /// <summary>
+        /// Gets or sets cloners for all method bodies to be cloned.
+        /// </summary>
+        private List<ConstructorInitializationCloner> ConstructorInitializationCloners { get; set; }
+
+        /// <summary>
+        /// Adds a cloner to the collection.
+        /// </summary>
+        /// <param name="cloner">Cloner to add to the collection.</param>
+        public void AddCloner(ConstructorInitializationCloner cloner)
+        {
+            Contract.Requires(cloner != null);
+            Contract.Requires(!this.AreAllClonersAdded);
+
+            this.ConstructorInitializationCloners.Add(cloner);
         }
 
         #endregion
@@ -409,6 +511,33 @@ namespace Bix.Mixers.ILCloning
             this.VariableCloners.AddRange(cloners);
         }
 
+        /// <summary>
+        /// Attempt to retrieve the cloning target for a given source.
+        /// </summary>
+        /// <param name="source">Source to find target for.</param>
+        /// <param name="target">Target for the given source if it exists, else <c>null</c>.</param>
+        /// <returns><c>true</c> if a target was found, else <c>false</c>.</returns>
+        public bool TryGetTargetFor(VariableDefinition source, out VariableDefinition target)
+        {
+            Contract.Requires(source != null);
+            Contract.Requires(this.AreAllClonersAdded);
+            Contract.Ensures(Contract.ValueAtReturn(out target) != null || !Contract.Result<bool>());
+
+            // this is not fast, but we'll fix that if performance becomes an issue
+            var variableCloner = this.VariableCloners.SingleOrDefault(cloner => cloner.Source == source);
+
+            if (variableCloner == null)
+            {
+                target = null;
+                return false;
+            }
+            else
+            {
+                target = variableCloner.Target;
+                return true;
+            }
+        }
+
         #endregion
 
         #region Method Body Instructions
@@ -441,6 +570,33 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(!this.AreAllClonersAdded);
 
             this.InstructionCloners.AddRange(cloners);
+        }
+
+        /// <summary>
+        /// Attempt to retrieve the cloning target for a given source.
+        /// </summary>
+        /// <param name="source">Source to find target for.</param>
+        /// <param name="target">Target for the given source if it exists, else <c>null</c>.</param>
+        /// <returns><c>true</c> if a target was found, else <c>false</c>.</returns>
+        public bool TryGetTargetFor(Instruction source, out Instruction target)
+        {
+            Contract.Requires(source != null);
+            Contract.Requires(this.AreAllClonersAdded);
+            Contract.Ensures(Contract.ValueAtReturn(out target) != null || !Contract.Result<bool>());
+
+            // this is not fast, but we'll fix that if performance becomes an issue
+            var instructionCloner = this.InstructionCloners.SingleOrDefault(cloner => cloner.Source == source);
+
+            if (instructionCloner == null)
+            {
+                target = null;
+                return false;
+            }
+            else
+            {
+                target = instructionCloner.Target;
+                return true;
+            }
         }
 
         #endregion

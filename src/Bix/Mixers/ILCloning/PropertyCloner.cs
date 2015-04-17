@@ -50,7 +50,7 @@ namespace Bix.Mixers.ILCloning
         /// Creates the target property.
         /// </summary>
         /// <returns>Created target.</returns>
-        protected override PropertyDefinition CreateTarget()
+        protected override PropertyDefinition GetTarget()
         {
             var voidReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));  // TODO get rid of void ref
             var targetProperty = new PropertyDefinition(this.Source.Name, 0, voidReference);
@@ -61,7 +61,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Clones the property in its entirety
         /// </summary>
-        public override void Clone()
+        protected override void DoClone()
         {
             Contract.Ensures(this.Target.Parameters.Count == this.Source.Parameters.Count);
 
@@ -99,8 +99,6 @@ namespace Bix.Mixers.ILCloning
                 Contract.Assert(targetOtherMethod != null); // this should always be the case because the method is internal to the target
                 this.Target.OtherMethods.Add(targetOtherMethod);
             }
-
-            this.IsCloned = true;
 
             Contract.Assert((this.Target.GetMethod == null) == (this.Source.GetMethod == null));
             Contract.Assert((this.Target.SetMethod == null) == (this.Source.SetMethod == null));

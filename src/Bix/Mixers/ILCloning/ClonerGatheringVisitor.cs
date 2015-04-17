@@ -15,8 +15,11 @@
 /***************************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -55,14 +58,201 @@ namespace Bix.Mixers.ILCloning
         public Cloners Cloners { get; private set; }
 
         /// <summary>
-        /// Gathers all cloners for the given cloning source and target
+        /// Gathers all cloners for the given cloning source and target.
         /// </summary>
         /// <param name="rootTypeCloner">Cloner to gather child cloners for.</param>
         public void Visit(RootTypeCloner rootTypeCloner)
         {
             Contract.Requires(rootTypeCloner != null);
             this.Cloners.AddCloner(rootTypeCloner);
+
+            if (this.ILCloningContext.RootTarget.Methods.Any(
+                sourceMethod => sourceMethod.IsConstructor && !sourceMethod.IsStatic && sourceMethod.HasParameters))
+            {
+                // at some point in the future if it becomes clear that it would be useful,
+                // it may be possible to create all combinations of source and target constructor
+                // arguments and put them into the final mixed target
+                // but that's a complex and time-consuming task with unknown payoff
+                // so for now we don't support mixin implementations that have constructors with parameters
+                throw new InvalidOperationException(
+                    string.Format(
+                        "Configured mixin implementation cannot have constructors with parameters: [{0}]",
+                        this.ILCloningContext.RootSource.FullName));
+            }
+
+            var sourceConstructor = this.ILCloningContext.RootTarget.Methods.SingleOrDefault(
+                sourceMethod => sourceMethod.IsConstructor && !sourceMethod.IsStatic && !sourceMethod.HasParameters);
+
+            var sourceMultiplexedConstructor = MultiplexedConstructor.Get(this.ILCloningContext, sourceConstructor);
+
+            ConstructorLogicSignatureCloner constructorLogicSignatureCloner = null;
+            if (sourceMultiplexedConstructor.HasConstructionItems)
+            {
+                constructorLogicSignatureCloner =
+                    new ConstructorLogicSignatureCloner(rootTypeCloner, sourceMultiplexedConstructor);
+                this.Cloners.AddCloner(constructorLogicSignatureCloner);
+                this.Visit(constructorLogicSignatureCloner);
+            }
+
+            if (sourceMultiplexedConstructor.HasInitializationItems)
+            {
+                foreach (var targetConstructor in
+                    this.ILCloningContext.RootTarget.Methods.Where(
+                        targetMethod => targetMethod.IsConstructor && !targetMethod.IsStatic))
+                {
+                    var targetMultiplexedConstructor = MultiplexedConstructor.Get(
+                        this.ILCloningContext,
+                        targetConstructor);
+                    if (!targetMultiplexedConstructor.IsInitializingConstructor)
+                    {
+                        // skip non-initializing constructors because they will eventually call into an initializing constructor
+                        continue;
+                    }
+
+                    Contract.Assert(targetConstructor.HasBody);
+                    var constructorCloner = new ConstructorInitializationCloner(
+                        rootTypeCloner,
+                        constructorLogicSignatureCloner,
+                        sourceMultiplexedConstructor,
+                        targetConstructor.Body);
+
+                    this.Cloners.AddCloner(constructorCloner);
+                    this.Visit(constructorCloner);
+                }
+            }
+
+            // continue visiting the items common to root and nested types
             this.Visit((ClonerBase<TypeDefinition>)rootTypeCloner);
+        }
+
+        /// <summary>
+        /// Gathers all cloners for the given cloning source and target.
+        /// </summary>
+        /// <param name="constructorLogicSignatureCloner">Cloner to gather child cloners for.</param>
+        private void Visit(ConstructorLogicSignatureCloner constructorLogicSignatureCloner)
+        {
+            var constructorLogicBodyCloner =
+                new ConstructorLogicBodyCloner(constructorLogicSignatureCloner, constructorLogicSignatureCloner.Source);
+            this.Cloners.AddCloner(constructorLogicBodyCloner);
+            this.Visit(constructorLogicBodyCloner);
+        }
+
+        /// <summary>
+        /// Gathers all cloners for the given cloning source and target.
+        /// </summary>
+        /// <param name="constructorLogicBodyCloner">Cloner to gather child cloners for.</param>
+        private void Visit(ConstructorLogicBodyCloner constructorLogicBodyCloner)
+        {
+            var targetVariableIndexBySourceVariableIndex = new Dictionary<int, int>();
+            VariableCloner previousVariableCloner = null;
+            foreach (var sourceVariable in constructorLogicBodyCloner.Source.InitializationVariables)
+            {
+                var variableCloner = new VariableCloner(constructorLogicBodyCloner, previousVariableCloner, sourceVariable);
+                targetVariableIndexBySourceVariableIndex.Add(sourceVariable.Index, variableCloner.Target.Index); // TODO remove target access
+                this.Cloners.AddCloner(variableCloner);
+                this.Visit(variableCloner);
+                previousVariableCloner = variableCloner;
+            }
+
+            InstructionCloner previousInstructionCloner = null;
+            foreach (var sourceInstruction in constructorLogicBodyCloner.Source.ConstructionInstructions)
+            {
+                int translation;
+                int? sourceVariableIndex;
+                if (!sourceInstruction.TryGetVariableIndex(out sourceVariableIndex)) { translation = 0; }
+                else
+                {
+                    Contract.Assert(sourceVariableIndex.HasValue);
+
+                    int targetVariableIndex;
+                    if (!targetVariableIndexBySourceVariableIndex.TryGetValue(sourceVariableIndex.Value, out targetVariableIndex))
+                    {
+                        throw new InvalidOperationException(
+                            "No source entry to find target variable index for a construction instruction.");
+                    }
+                    translation = targetVariableIndex - sourceVariableIndex.Value;
+                }
+
+                var instructionCloner = new InstructionCloner(
+                    constructorLogicBodyCloner,
+                    previousInstructionCloner,
+                    sourceInstruction,
+                    constructorLogicBodyCloner.Source.Constructor.Body.Variables,
+                    translation);
+                this.Cloners.AddCloner(instructionCloner);
+                this.Visit(instructionCloner);
+                previousInstructionCloner = instructionCloner;
+            }
+
+            // all exception handlers will be in the constructor logic code rather than initialization code
+            foreach (var sourceExceptionHandler in constructorLogicBodyCloner.Source.Constructor.Body.ExceptionHandlers)
+            {
+                var exceptionHandlerCloner = new ExceptionHandlerCloner(constructorLogicBodyCloner, sourceExceptionHandler);
+                this.Cloners.AddCloner(exceptionHandlerCloner);
+                this.Visit(exceptionHandlerCloner);
+            }
+        }
+
+        /// <summary>
+        /// Gathers all cloners for the given cloning source and target
+        /// </summary>
+        /// <param name="constructorInitializationCloner">Cloner to gather child cloners for.</param>
+        public void Visit(ConstructorInitializationCloner constructorInitializationCloner)
+        {
+            var targetVariableIndexBySourceVariableIndex = new Dictionary<int, int>();
+            VariableCloner previousVariableCloner = null;
+            foreach (var sourceVariable in constructorInitializationCloner.Source.InitializationVariables)
+            {
+                var variableCloner = new VariableCloner(constructorInitializationCloner, previousVariableCloner, sourceVariable);
+                targetVariableIndexBySourceVariableIndex.Add(sourceVariable.Index, variableCloner.Target.Index); // TODO remove target access
+                this.Cloners.AddCloner(variableCloner);
+                this.Visit(variableCloner);
+                previousVariableCloner = variableCloner;
+            }
+
+            Action<ILProcessor, ICloner<object, MethodBody>, InstructionCloner, Instruction, Instruction> instructionInsertAction =
+                (ilProcessor, parent, previous, source, target) =>
+            {
+                if (previous != null) { ilProcessor.InsertAfter(previous.Target, target); }
+                else
+                {
+                    var firstInstructionInTargetConstructor = parent.Target.Instructions[0];
+                    ilProcessor.InsertBefore(firstInstructionInTargetConstructor, target);
+                }
+            };
+
+            InstructionCloner previousInstructionCloner = null;
+            foreach (var sourceInstruction in constructorInitializationCloner.Source.InitializationInstructions)
+            {
+                // determine translation of variable operand, if any
+                int translation;
+                int? sourceVariableIndex;
+                if (!sourceInstruction.TryGetVariableIndex(out sourceVariableIndex)) { translation = 0; }
+                else
+                {
+                    Contract.Assert(sourceVariableIndex.HasValue);
+
+                    int targetVariableIndex;
+                    if (!targetVariableIndexBySourceVariableIndex.TryGetValue(sourceVariableIndex.Value, out targetVariableIndex))
+                    {
+                        throw new InvalidOperationException("No source entry to find target variable index for a construction instruction.");
+                    }
+                    translation = targetVariableIndex - sourceVariableIndex.Value;
+                }
+
+                // create the cloner
+                var instructionCloner = new InstructionCloner(
+                    constructorInitializationCloner,
+                    previousInstructionCloner,
+                    sourceInstruction,
+                    constructorInitializationCloner.Source.Constructor.Body.Variables,
+                    translation,
+                    instructionInsertAction);
+                this.Cloners.AddCloner(instructionCloner);
+                previousInstructionCloner = instructionCloner;
+            }
+
+            // no exception handlers in the initialization section of code
         }
 
         /// <summary>
@@ -73,9 +263,11 @@ namespace Bix.Mixers.ILCloning
         {
             Contract.Requires(nestedTypeCloner != null);
 
-            this.Visit((ClonerBase<TypeDefinition>)nestedTypeCloner);
             this.GatherAndVisitGenericParameterClonersFrom(nestedTypeCloner);
             this.GatherAndVisitCustomAttributeClonersFrom(nestedTypeCloner);
+
+            // continue visiting the items common to root and nested types
+            this.Visit((ClonerBase<TypeDefinition>)nestedTypeCloner);
         }
 
         /// <summary>
@@ -108,27 +300,7 @@ namespace Bix.Mixers.ILCloning
                     !sourceMethod.IsStatic &&
                     sourceMethod.DeclaringType == this.ILCloningContext.RootSource)
                 {
-                    if (sourceMethod.HasParameters)
-                    {
-                        // at some point in the future if it becomes clear that it would be useful,
-                        // it may be possible to create all combinations of source and target constructor
-                        // arguments and put them into the final mixed target
-                        // but that's a complex and time-consuming task with unknown payoff
-                        // so for now we don't support mixin implementations that have constructors with parameters
-                        throw new InvalidOperationException(string.Format(
-                            "Configured mixin implementation cannot use constructors with parameters: [{0}]",
-                            this.ILCloningContext.RootSource.FullName));
-                    }
-
-                    // for a parameterless constructor, we need to inject it into every target constructor
-                    var constructorBroadcaster = new ConstructorBroadcaster(
-                        this.ILCloningContext,
-                        sourceMethod,
-                        typeCloner.Target); // TODO Don't access Target
-                    constructorBroadcaster.BroadcastConstructor();
-                    this.Cloners.AddCloners(constructorBroadcaster.VariableCloners);
-                    this.Cloners.AddCloners(constructorBroadcaster.InstructionCloners);
-
+                    // this case is handled by the root type visitor
                     continue;
                 }
 
@@ -299,7 +471,7 @@ namespace Bix.Mixers.ILCloning
         /// </summary>
         /// <param name="cloner">Cloner that requires no special visit logic.</param>
         // ReSharper disable once UnusedParameter.Local
-        private void Visit(ICloner<object> cloner)
+        private void Visit(ICloner<object, object> cloner)
         {
             Contract.Requires(cloner != null);
         }

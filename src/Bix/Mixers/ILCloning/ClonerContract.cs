@@ -20,10 +20,12 @@ using System.Diagnostics.Contracts;
 namespace Bix.Mixers.ILCloning
 {
     /// <summary>
-    /// Contracts for <see cref="ICloner{TCloned}"/>.
+    /// Contracts for <see cref="ICloner{TSource, TTarget}"/>.
     /// </summary>
-    [ContractClassFor(typeof(ICloner<>))]
-    internal abstract class ClonerContract<TCloned> : ICloner<TCloned>
+    [ContractClassFor(typeof(ICloner<,>))]
+    internal abstract class ClonerContract<TSource, TTarget> : ICloner<TSource, TTarget>
+        where TSource : class
+        where TTarget : class
     {
         /// <summary>
         /// Gets the context for IL cloning.
@@ -38,7 +40,17 @@ namespace Bix.Mixers.ILCloning
         }
 
         /// <summary>
-        /// Contracts for <see cref="ICloner{TCloned}.IsCloned"/>.
+        /// Contracts for <see cref="CreateTarget()"/>
+        /// </summary>
+        /// <returns></returns>
+        protected TTarget CreateTarget()
+        {
+            Contract.Ensures(Contract.Result<TTarget>() != null);
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Contracts for <see cref="ICloner{TSource, TTarget}.IsCloned"/>.
         /// </summary>
         public bool IsCloned
         {
@@ -46,7 +58,7 @@ namespace Bix.Mixers.ILCloning
         }
 
         /// <summary>
-        /// Contracts for <see cref="ICloner{TCloned}.Clone()"/>.
+        /// Contracts for <see cref="ICloner{TSource,TTarget}.Clone"/>.
         /// </summary>
         public void Clone()
         {
@@ -56,25 +68,25 @@ namespace Bix.Mixers.ILCloning
         }
 
         /// <summary>
-        /// Contracts for <see cref="ICloner{TCloned}.Source"/>
+        /// Contracts for <see cref="ICloner{TSource, TTarget}.Source"/>
         /// </summary>
-        public TCloned Source
+        public TSource Source
         {
             get
             {
-                Contract.Ensures(Contract.Result<TCloned>() != null);
+                Contract.Ensures(Contract.Result<TSource>() != null);
                 throw new NotImplementedException();
             }
         }
 
         /// <summary>
-        /// Contracts for <see cref="ICloner{TCloned}.Target"/>
+        /// Contracts for <see cref="ICloner{TSource, TTarget}.Target"/>
         /// </summary>
-        public TCloned Target
+        public TTarget Target
         {
             get
             {
-                Contract.Ensures(Contract.Result<TCloned>() != null);
+                Contract.Ensures(Contract.Result<TTarget>() != null);
                 throw new NotImplementedException();
             }
         }

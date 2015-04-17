@@ -65,7 +65,7 @@ namespace Bix.Mixers.ILCloning
         /// Creates the target method.
         /// </summary>
         /// <returns>Created target.</returns>
-        protected override MethodDefinition CreateTarget()
+        protected override MethodDefinition GetTarget()
         {
             MethodDefinition targetMethod = null;
             var voidReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));  // TODO get rid of void ref
@@ -108,7 +108,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Clones the method with the exception of the method body
         /// </summary>
-        public override void Clone()
+        protected override void DoClone()
         {
             Contract.Assert(this.Target.DeclaringType != null);
 
@@ -164,8 +164,6 @@ namespace Bix.Mixers.ILCloning
                     "Configured mixin implementation may not contain methods annotated with security attributes: [{0}]",
                     this.ILCloningContext.RootSource.FullName));
             }
-
-            this.IsCloned = true;
         }
 
         /// <summary>

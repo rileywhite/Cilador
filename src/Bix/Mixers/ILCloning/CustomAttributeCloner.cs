@@ -52,7 +52,7 @@ namespace Bix.Mixers.ILCloning
         /// Creates the target custom attribute.
         /// </summary>
         /// <returns>Custom attribute to attach to the target provider.</returns>
-        protected override CustomAttribute CreateTarget()
+        protected override CustomAttribute GetTarget()
         {
             var target = new CustomAttribute(this.ILCloningContext.RootImport(this.Source.Constructor));
             this.Parent.Target.CustomAttributes.Add(target);
@@ -62,7 +62,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Clones the custom attribute
         /// </summary>
-        public override void Clone()
+        protected override void DoClone()
         {
             var source = this.Source;
             var target = this.Target;
@@ -91,8 +91,6 @@ namespace Bix.Mixers.ILCloning
                                 this.ILCloningContext.DynamicRootImport(sourceProperty.Argument.Value))));
                 }
             }
-
-            this.IsCloned = true;
         }
     }
 }

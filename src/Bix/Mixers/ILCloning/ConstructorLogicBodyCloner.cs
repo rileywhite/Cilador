@@ -14,24 +14,24 @@
 // limitations under the License.
 /***************************************************************************/
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using Mono.Cecil.Cil;
+using System;
+using System.Diagnostics.Contracts;
+using System.Linq;
 
 namespace Bix.Mixers.ILCloning
 {
     /// <summary>
-    /// Clones a method body from a source to a target.
+    /// Clones the logic part of a source constructor into a new method body.
     /// </summary>
-    internal class MethodBodyCloner : ClonerBase<MethodBody>
+    internal class ConstructorLogicBodyCloner : ClonerBase<MultiplexedConstructor, MethodBody>
     {
         /// <summary>
-        /// Creates a new <see cref="MethodBodyCloner"/>
+        /// Creates a new <see cref="ConstructorLogicBodyCloner"/>.
         /// </summary>
-        /// <param name="parent">Cloner for the method signature to which this method body is attached.</param>
-        /// <param name="source">Resolved cloning source.</param>
-        public MethodBodyCloner(MethodSignatureCloner parent, MethodBody source)
+        /// <param name="parent">Cloner that creates the method signature for the logic part of the source constructor.</param>
+        /// <param name="source"></param>
+        public ConstructorLogicBodyCloner(ConstructorLogicSignatureCloner parent, MultiplexedConstructor source)
             : base(parent.ILCloningContext, source)
         {
             Contract.Requires(parent != null);
@@ -43,43 +43,45 @@ namespace Bix.Mixers.ILCloning
         }
 
         /// <summary>
-        /// Gets or sets the method signature cloner with which this method body cloner is associated
+        /// Gets or sets the cloner that creates the method signature for the logic part of the source constructor.
         /// </summary>
-        public MethodSignatureCloner Parent { get; private set; }
+        private ConstructorLogicSignatureCloner Parent { get; set; }
+
+        private ILProcessor ilProcessor;
 
         /// <summary>
-        /// The method body already exists, attached to the parent cloner.
+        /// Gets or sets the <see cref="ILProcessor"/> for accesing IL instructions.
         /// </summary>
-        /// <returns>Parent cloner's target body.</returns>
+        internal ILProcessor TargetILProcessor
+        {
+            get
+            {
+                this.EnsureTargetIsSet();
+                return this.ilProcessor;
+            }
+            private set { this.ilProcessor = value; }
+        }
+
+        /// <summary>
+        /// Creates the target.
+        /// </summary>
+        /// <returns>Created target.</returns>
         protected override MethodBody GetTarget()
         {
             Contract.Ensures(this.TargetILProcessor != null);
 
-            var target = this.Parent.Target.Body;
+            var target = new MethodBody(this.Parent.Target);
+            this.Parent.Target.Body = target;
             this.TargetILProcessor = target.GetILProcessor();
             return target;
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="ILProcessor"/> for accesing IL instructions.
-        /// </summary>
-        internal ILProcessor TargetILProcessor { get; private set; }
-
-        /// <summary>
-        /// Clones the method body from the source to the target.
+        /// Clones the constructor logic into a new method body.
         /// </summary>
         protected override void DoClone()
         {
-            this.Target.InitLocals = this.Source.InitLocals;
-
-            this.Target.MaxStackSize = this.Source.MaxStackSize;
-
-            if (this.Source.Scope != null)
-            {
-                // TODO method body scope may be tough to get right
-                // for now raise an exception
-                throw new NotSupportedException("An unsupported configuration was detected. Please consider filing a bug report on the project's github page.");
-            }
+            this.Target.InitLocals = this.Parent.Source.ConstructionVariables.Any();
         }
     }
 }

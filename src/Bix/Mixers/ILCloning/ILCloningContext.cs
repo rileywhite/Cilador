@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace Bix.Mixers.ILCloning
 {
@@ -412,6 +413,66 @@ namespace Bix.Mixers.ILCloning
             Contract.Assert(!(importedMethod is IMemberDefinition) || importedMethod.Module == this.RootTarget.Module);
             this.MethodCache[method.FullName] = importedMethod;
             return importedMethod;
+        }
+
+        /// <summary>
+        /// Root imports a parameter. That is, it finds the parameter with respect to the <see cref="RootTarget"/> type.
+        /// If necessary, this handles mixin redirection, meaning that a member within the <see cref="RootTarget"/>
+        /// will be returned in place of a member within the <see cref="RootSource"/>
+        /// </summary>
+        /// <param name="parameter">Parameter to root import.</param>
+        /// <returns>Root imported parameter.</returns>
+        public ParameterDefinition RootImport(ParameterDefinition parameter)
+        {
+            if (parameter == null) { return null; }
+            ParameterDefinition imported;
+            if (this.Cloners.TryGetTargetFor(parameter, out imported))
+            {
+                return imported;
+            }
+
+            // no need to import
+            return parameter;
+        }
+
+        /// <summary>
+        /// Root imports a variable. That is, it finds the variable with respect to the <see cref="RootTarget"/> type.
+        /// If necessary, this handles mixin redirection, meaning that a member within the <see cref="RootTarget"/>
+        /// will be returned in place of a member within the <see cref="RootSource"/>
+        /// </summary>
+        /// <param name="variable">Variable to root import.</param>
+        /// <returns>Root imported variable.</returns>
+        public VariableDefinition RootImport(VariableDefinition variable)
+        {
+            if (variable == null) { return null; }
+            VariableDefinition imported;
+            if (this.Cloners.TryGetTargetFor(variable, out imported))
+            {
+                return imported;
+            }
+
+            // no need to import
+            return variable;
+        }
+
+        /// <summary>
+        /// Root imports an instruction. That is, it finds the instruction with respect to the <see cref="RootTarget"/> type.
+        /// If necessary, this handles mixin redirection, meaning that a member within the <see cref="RootTarget"/>
+        /// will be returned in place of a member within the <see cref="RootSource"/>
+        /// </summary>
+        /// <param name="instruction">Instruction to root import.</param>
+        /// <returns>Root imported instruction.</returns>
+        public Instruction RootImport(Instruction instruction)
+        {
+            if (instruction == null) { return null; }
+            Instruction imported;
+            if (this.Cloners.TryGetTargetFor(instruction, out imported))
+            {
+                return imported;
+            }
+
+            // no need to import
+            return instruction;
         }
     }
 }

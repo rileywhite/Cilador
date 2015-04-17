@@ -30,7 +30,7 @@ namespace Bix.Mixers.ILCloning
         /// </summary>
         /// <param name="parent">Cloner for the method body that contains this exception handler.</param>
         /// <param name="source">Cloning source.</param>
-        public ExceptionHandlerCloner(MethodBodyCloner parent, ExceptionHandler source)
+        public ExceptionHandlerCloner(ICloner<object, MethodBody> parent, ExceptionHandler source)
             : base(parent.ILCloningContext, source)
         {
             Contract.Requires(parent != null);
@@ -39,19 +39,18 @@ namespace Bix.Mixers.ILCloning
             Contract.Ensures(this.Parent != null);
 
             this.Parent = parent;
-            this.Parent.ExceptionHandlerCloners.Add(this);
         }
 
         /// <summary>
         /// Gets or sets the cloner for the method body containing the exception handler being cloned.
         /// </summary>
-        public MethodBodyCloner Parent { get; private set; }
+        public ICloner<object, MethodBody> Parent { get; private set; }
 
         /// <summary>
         /// Creates the target exception handler.
         /// </summary>
         /// <returns>Created target.</returns>
-        protected override ExceptionHandler CreateTarget()
+        protected override ExceptionHandler GetTarget()
         {
             var target = new ExceptionHandler(this.Source.HandlerType);
             this.Parent.Target.ExceptionHandlers.Add(target);
@@ -61,20 +60,16 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Clones the exception handler in its entirety.
         /// </summary>
-        public override void Clone()
+        protected override void DoClone()
         {
             Contract.Assert(this.Target.HandlerType == this.Source.HandlerType);
 
             this.Target.CatchType = this.ILCloningContext.RootImport(this.Source.CatchType);
-
-            var methodContext = new MethodContext(this.Parent);
-            this.Target.FilterStart = methodContext.RootImport(this.Source.FilterStart);
-            this.Target.HandlerEnd = methodContext.RootImport(this.Source.HandlerEnd);
-            this.Target.HandlerStart = methodContext.RootImport(this.Source.HandlerStart);
-            this.Target.TryEnd = methodContext.RootImport(this.Source.TryEnd);
-            this.Target.TryStart = methodContext.RootImport(this.Source.TryStart);
-
-            this.IsCloned = true;
+            this.Target.FilterStart = this.ILCloningContext.RootImport(this.Source.FilterStart);
+            this.Target.HandlerEnd = this.ILCloningContext.RootImport(this.Source.HandlerEnd);
+            this.Target.HandlerStart = this.ILCloningContext.RootImport(this.Source.HandlerStart);
+            this.Target.TryEnd = this.ILCloningContext.RootImport(this.Source.TryEnd);
+            this.Target.TryStart = this.ILCloningContext.RootImport(this.Source.TryStart);
         }
     }
 }

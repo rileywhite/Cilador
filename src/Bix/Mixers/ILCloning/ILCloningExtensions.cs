@@ -32,7 +32,7 @@ namespace Bix.Mixers.ILCloning
         /// Invokes clone on each item
         /// </summary>
         /// <param name="cloners"></param>
-        public static void CloneAll(this IEnumerable<ICloner<object>> cloners)
+        public static void CloneAll(this IEnumerable<ICloner<object, object>> cloners)
         {
             Contract.Requires(cloners != null);
             Contract.Requires(!cloners.Any(cloner => cloner.IsCloned));
@@ -187,8 +187,8 @@ namespace Bix.Mixers.ILCloning
         /// cause the opcode to change (e.g. from stloc_S to stloc), then the original instruction
         /// is returned.
         /// </remarks>
-        /// <param name="instruction">Instruction to look at.</parparam>
-        /// <param name="translate">How to translate the referenced parameter, if any is referenced. Negative is a left translation, and positive is right.</paramparam>
+        /// <param name="instruction">Instruction to look at.</param>
+        /// <param name="translate">How to translate the referenced parameter, if any is referenced. Negative is a left translation, and positive is right.</param>
         /// <param name="variables">Collection of variables that may be referenced.</param>
         public static Instruction ApplyLocalVariableTranslation(
             this Instruction instruction,

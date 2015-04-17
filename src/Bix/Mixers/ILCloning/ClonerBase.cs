@@ -25,19 +25,19 @@ namespace Bix.Mixers.ILCloning
     /// <remarks>
     /// This type is not thread-safe.
     /// </remarks>
-    /// <typeparam name="TCloned">Type of item to be cloned.</typeparam>
-    [ContractClass(typeof(ClonerBaseContract<>))]
-    public abstract class ClonerBase<TCloned> : ICloner<TCloned>, ISourceAndTarget<TCloned>
-        where TCloned : class
+    /// <typeparam name="TSource">Type of the cloning source item.</typeparam>
+    /// <typeparam name="TTarget">Type of item to be cloned.</typeparam>
+    [ContractClass(typeof(ClonerBaseContract<,>))]
+    public abstract class ClonerBase<TSource, TTarget> : ICloner<TSource, TTarget>, ISourceAndTarget<TSource, TTarget>
+        where TSource : class
+        where TTarget : class
     {
         /// <summary>
-        /// Creates a new <see cref="ClonerBase{TCloned}"/>.
+        /// Creates a new <see cref="ClonerBase{TSource, TTarget}"/>.
         /// </summary>
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="source">Cloning source.</param>
-        protected ClonerBase(
-            IILCloningContext ilCloningContext,
-            TCloned source)
+        protected ClonerBase(IILCloningContext ilCloningContext, TSource source)
         {
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(source != null);
@@ -56,60 +56,60 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Whether the target has be set from its accessor.
         /// </summary>
-        public bool IsTargetCreated { get; private set; }
+        public bool IsTargetSet { get; private set; }
 
         /// <summary>
-        /// When overridden in a subclass, this method should create the cloning target.
+        /// When overridden in a subclass, this method should create or retrieve the cloning target.
         /// </summary>
         /// <returns>New target item.</returns>
-        protected abstract TCloned CreateTarget();
+        protected abstract TTarget GetTarget();
 
         /// <summary>
-        /// Checks whether the cloning target exists, and, if it doesn't, calls
-        /// the method to create and set the target.
+        /// Checks whether the cloning target is set, and, if it isn't, calls
+        /// the method to retrieve and set the target.
         /// </summary>
-        protected void EnsureTargetIsCreatedAndSet()
+        protected void EnsureTargetIsSet()
         {
-            Contract.Ensures(this.IsTargetCreated);
-            if (!this.IsTargetCreated) { this.CreateAndSetTarget(); }
+            Contract.Ensures(this.IsTargetSet);
+            if (!this.IsTargetSet) { this.RetrieveAndSetTarget(); }
         }
 
         /// <summary>
-        /// Calls the abstract target creation method and sets the target.
+        /// Calls the abstract target retrieval method and sets the target.
         /// </summary>
-        private void CreateAndSetTarget()
+        private void RetrieveAndSetTarget()
         {
-            Contract.Requires(!this.IsTargetCreated);
-            Contract.Ensures(this.IsTargetCreated);
+            Contract.Requires(!this.IsTargetSet);
+            Contract.Ensures(this.IsTargetSet);
             Contract.Ensures(this.Target != null);
 
-            TCloned target;
+            TTarget retrievedTarget;
             try
             {
-                target = this.CreateTarget();
+                retrievedTarget = this.GetTarget();
             }
             catch (Exception e)
             {
                 throw new InvalidOperationException(
-                    string.Format("Failed to create a cloning target for source of type [{0}].", typeof(TCloned).FullName),
+                    string.Format("Failed to retrieve a cloning target for source of type [{0}].", typeof(TSource).FullName),
                     e);
             }
 
-            if (target == null) { throw new InvalidOperationException("CreateTarget returned a null value.");}
+            if (retrievedTarget == null) { throw new InvalidOperationException("GetTarget returned a null value.");}
 
-            this.Target = target;
-            this.IsTargetCreated = true;
+            this.Target = retrievedTarget;
+            this.IsTargetSet = true;
         }
 
-        private TCloned target;
+        private TTarget target;
         /// <summary>
         /// Gets the resolved cloning target.
         /// </summary>
-        public TCloned Target
+        public TTarget Target
         {
             get
             {
-                this.EnsureTargetIsCreatedAndSet();
+                this.EnsureTargetIsSet();
                 return this.target;
             }
             private set
@@ -122,16 +122,41 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets the resolved cloning source.
         /// </summary>
-        public TCloned Source { get; set; }
+        public TSource Source { get; set; }
 
         /// <summary>
         /// Gets or sets whether the item has been cloned.
         /// </summary>
-        public bool IsCloned { get; protected set; }
+        public bool IsCloned { get; private set; }
+
+        public void Clone()
+        {
+            this.EnsureTargetIsSet();
+            this.DoClone();
+            this.IsCloned = true;
+        }
 
         /// <summary>
         /// Clones the item from the source to the target.
         /// </summary>
-        public abstract void Clone();
+        protected abstract void DoClone();
+    }
+
+    /// <summary>
+    /// Simplified base type for symmetric cloners that have the same type of
+    /// cloner source and target.
+    /// </summary>
+    /// <typeparam name="TCloned">Type of both the cloning source and target</typeparam>
+    public abstract class ClonerBase<TCloned> : ClonerBase<TCloned, TCloned>, ICloner<TCloned>, ISourceAndTarget<TCloned>
+        where TCloned : class
+    {
+        protected ClonerBase(IILCloningContext ilCloningContext, TCloned source)
+            : base(ilCloningContext, source)
+        {
+            Contract.Requires(ilCloningContext != null);
+            Contract.Requires(source != null);
+            Contract.Ensures(this.ILCloningContext != null);
+            Contract.Ensures(this.Source != null);
+        }
     }
 }

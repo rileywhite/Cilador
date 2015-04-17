@@ -17,6 +17,7 @@
 using Bix.Mixers.ILCloning;
 using Mono.Cecil;
 using System;
+using Mono.Cecil.Cil;
 
 namespace Bix.Mixers.Tests.ILCloningTests
 {
@@ -68,6 +69,31 @@ namespace Bix.Mixers.Tests.ILCloningTests
             var handler = this.RootImportFieldDelegate;
             if (handler != null) { return handler(field); }
             return field;
+        }
+
+
+        public Func<ParameterDefinition, ParameterDefinition> RootImportParameterDelegate { get; set; }
+        public ParameterDefinition RootImport(ParameterDefinition parameter)
+        {
+            var handler = this.RootImportParameterDelegate;
+            if (handler != null) { return handler(parameter); }
+            return parameter;
+        }
+
+        public Func<VariableDefinition, VariableDefinition> RootImportVariableDelegate { get; set; }
+        public VariableDefinition RootImport(VariableDefinition variable)
+        {
+            var handler = this.RootImportVariableDelegate;
+            if (handler != null) { return handler(variable); }
+            return variable;
+        }
+
+        public Func<Instruction, Instruction> RootImportInstructionDelegate { get; set; }
+        public Instruction RootImport(Instruction instruction)
+        {
+            var handler = this.RootImportInstructionDelegate;
+            if (handler != null) { return handler(instruction); }
+            return instruction;
         }
     }
 }

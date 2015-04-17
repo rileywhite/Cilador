@@ -58,10 +58,10 @@ namespace Bix.Mixers.ILCloning
         /// Creates the target parameter definition.
         /// </summary>
         /// <returns>Created target.</returns>
-        protected override ParameterDefinition CreateTarget()
+        protected override ParameterDefinition GetTarget()
         {
             // order matters for parameters, so make sure the previous has already been created before creating this one
-            if (this.Previous != null) { this.Previous.EnsureTargetIsCreatedAndSet(); }
+            if (this.Previous != null) { this.Previous.EnsureTargetIsSet(); }
 
             // now create the target
             var voidReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));  // TODO get rid of void ref
@@ -77,7 +77,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Clones the parameter
         /// </summary>
-        public override void Clone()
+        protected override void DoClone()
         {
             Contract.Assert(this.Source.Name == this.Target.Name);
             Contract.Assert(this.Source.Attributes == this.Target.Attributes);
@@ -98,8 +98,6 @@ namespace Bix.Mixers.ILCloning
             {
                 this.Target.MarshalInfo = new MarshalInfo(this.Source.MarshalInfo.NativeType);
             }
-
-            this.IsCloned = true;
         }
     }
 }

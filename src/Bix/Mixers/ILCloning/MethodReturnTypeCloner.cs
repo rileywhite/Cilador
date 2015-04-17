@@ -47,7 +47,7 @@ namespace Bix.Mixers.ILCloning
         /// Creates the target method return type.
         /// </summary>
         /// <returns>Created target.</returns>
-        protected override MethodReturnType CreateTarget()
+        protected override MethodReturnType GetTarget()
         {
             return this.Parent.Target.MethodReturnType;
         }
@@ -55,7 +55,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Clones the source to the target.
         /// </summary>
-        public override void Clone()
+        protected override void DoClone()
         {
             var source = this.Source;
             var target = this.Target;
@@ -70,8 +70,6 @@ namespace Bix.Mixers.ILCloning
             {
                 target.MarshalInfo = new MarshalInfo(source.MarshalInfo.NativeType);
             }
-
-            this.IsCloned = true;
         }
     }
 }

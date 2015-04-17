@@ -21,17 +21,24 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Defines a contract for holding a source and a target item.
     /// </summary>
-    /// <typeparam name="T">Type of source and target.</typeparam>
-    internal interface ISourceAndTarget<T>
+    /// <typeparam name="TSource">Type of source.</typeparam>
+    /// <typeparam name="TTarget">Type of target.</typeparam>
+    internal interface ISourceAndTarget<out TSource, out TTarget>
     {
         /// <summary>
         /// Gets the source.
         /// </summary>
-        T Source { get; }
+        TSource Source { get; }
 
         /// <summary>
         /// Gets the target.
         /// </summary>
-        T Target { get; }
+        TTarget Target { get; }
     }
+
+    /// <summary>
+    /// Defines a contract for holding a source and a target item.
+    /// </summary>
+    /// <typeparam name="T">Type of source and target.</typeparam>
+    internal interface ISourceAndTarget<out T> : ISourceAndTarget<T, T> { }
 }

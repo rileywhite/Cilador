@@ -28,7 +28,7 @@ namespace Bix.Mixers.ILCloning
     /// This separates the compiler generated initialization variables and instructions used
     /// for, as an example, initializing fields from those that run the actual constructor logic.
     /// </summary>
-    internal class ConstructorMultiplexer
+    internal class MultiplexedConstructor
     {
         /// <summary>
         /// Gets a multiplexed constructor.
@@ -36,33 +36,37 @@ namespace Bix.Mixers.ILCloning
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="constructor">Constructor to multiplex.</param>
         /// <returns>Multiplexed constructor.</returns>
-        public static ConstructorMultiplexer Get(ILCloningContext ilCloningContext, MethodDefinition constructor)
+        public static MultiplexedConstructor Get(IILCloningContext ilCloningContext, MethodDefinition constructor)
         {
-            var multiplexer = new ConstructorMultiplexer(ilCloningContext, constructor);
+            var multiplexer = new MultiplexedConstructor(ilCloningContext, constructor);
             multiplexer.Multiplex();
             return multiplexer;
         }
 
         /// <summary>
-        /// Creates a new <see cref="ConstructorMultiplexer"/>.
+        /// Creates a new <see cref="MultiplexedConstructor"/>.
         /// </summary>
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="constructor">Constructor to multiplex.</param>
-        private ConstructorMultiplexer(ILCloningContext ilCloningContext, MethodDefinition constructor)
+        private MultiplexedConstructor(IILCloningContext ilCloningContext, MethodDefinition constructor)
         {
             Contract.Requires(ilCloningContext != null);
             Contract.Requires(constructor != null);
             Contract.Ensures(this.ILCloningContext != null);
             Contract.Ensures(this.Constructor != null);
+            Contract.Ensures(this.Variables != null);
 
             this.ILCloningContext = ilCloningContext;
+
             this.Constructor = constructor;
+            this.ThisParameter = constructor.Body.ThisParameter;
+            this.Variables = new List<VariableDefinition>(constructor.Body.Variables);
         }
 
         /// <summary>
         /// Gets or sets the IL cloning context.
         /// </summary>
-        private ILCloningContext ILCloningContext { get; set; }
+        private IILCloningContext ILCloningContext { get; set; }
 
         /// <summary>
         /// Gets whether the constructor is initializing, i.e. whether it runs compiler generated code
@@ -76,6 +80,11 @@ namespace Bix.Mixers.ILCloning
         /// code, such as field initialization, from developer-written constructor code.
         /// </summary>
         private int? InnerBoundaryFirstInstructionIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "this" parameter within the constructor.
+        /// </summary>
+        public ParameterDefinition ThisParameter { get; private set; }
 
         /// <summary>
         /// Gets the first index of the set of instructions for the base or chained constructor call
@@ -118,6 +127,11 @@ namespace Bix.Mixers.ILCloning
         /// Gets the constructor that will be multiplexed.
         /// </summary>
         public MethodDefinition Constructor { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the collection of all variables.
+        /// </summary>
+        public IReadOnlyList<VariableDefinition> Variables { get; private set; }
 
         /// <summary>
         /// Gets or sets variables used in compiler-generated initialization code.

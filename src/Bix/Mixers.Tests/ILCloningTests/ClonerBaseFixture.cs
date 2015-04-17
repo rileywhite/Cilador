@@ -42,15 +42,14 @@ namespace Bix.Mixers.Tests.ILCloningTests
 
             public int CreateCallCount { get; set; }
 
-            protected override object CreateTarget()
+            protected override object GetTarget()
             {
                 ++this.CreateCallCount;
                 return ClonerBaseFixture.FakeTarget;
             }
 
-            public override void Clone()
+            protected override void DoClone()
             {
-                this.IsCloned = true;
             }
         }
 
@@ -62,14 +61,13 @@ namespace Bix.Mixers.Tests.ILCloningTests
             public BadCloner(IILCloningContext ilCloningContext, object source)
                 : base(ilCloningContext, source) { }
 
-            protected override object CreateTarget()
+            protected override object GetTarget()
             {
                 return null;
             }
 
-            public override void Clone()
+            protected override void DoClone()
             {
-                this.IsCloned = true;
             }
         }
 
@@ -87,11 +85,11 @@ namespace Bix.Mixers.Tests.ILCloningTests
 
             Assert.AreSame(source, cloner.Source);
 
-            Assert.IsFalse(cloner.IsTargetCreated);
+            Assert.IsFalse(cloner.IsTargetSet);
             Assert.AreEqual(0, cloner.CreateCallCount);
 
             var target = cloner.Target;
-            Assert.IsTrue(cloner.IsTargetCreated);
+            Assert.IsTrue(cloner.IsTargetSet);
             Assert.AreEqual(1, cloner.CreateCallCount);
 
             Assert.IsNotNull(target);

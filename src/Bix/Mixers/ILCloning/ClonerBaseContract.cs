@@ -20,34 +20,25 @@ using System.Diagnostics.Contracts;
 namespace Bix.Mixers.ILCloning
 {
     /// <summary>
-    /// Contracts for <see cref="ClonerBase{TItem}"/>.
+    /// Contracts for <see cref="ClonerBase{TSource, TTarget}"/>.
     /// </summary>
-    [ContractClassFor(typeof(ClonerBase<>))]
-    internal abstract class ClonerBaseContract<TClonedItem> : ClonerBase<TClonedItem>
-        where TClonedItem : class
+    [ContractClassFor(typeof(ClonerBase<,>))]
+    internal abstract class ClonerBaseContract<TSource, TTarget> : ClonerBase<TSource, TTarget>
+        where TSource : class
+        where TTarget : class
     {
         /// <summary>
-        /// Unused constructor for <see cref="LazyClonerBaseContract{TClonedItem}"/>.
+        /// Unused constructor for <see cref="ClonerBaseContract{TSource, TTarget}"/>.
         /// </summary>
         private ClonerBaseContract() : base(null, null) { }
 
         /// <summary>
-        /// Contracts for <see cref="CreateTarget()"/>
+        /// Contracts for <see cref="ClonerBase{TSource,TTarget}.GetTarget"/>
         /// </summary>
         /// <returns></returns>
-        protected override TClonedItem CreateTarget()
+        protected override TTarget GetTarget()
         {
-            Contract.Ensures(Contract.Result<TClonedItem>() != null);
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Contracts for <see cref="Clone()"/>.
-        /// </summary>
-        public override void Clone()
-        {
-            Contract.Requires(!this.IsCloned);
-            Contract.Ensures(this.IsCloned);
+            Contract.Ensures(Contract.Result<TTarget>() != null);
             throw new NotSupportedException();
         }
     }

@@ -16,9 +16,15 @@
 
 using System;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
+using System.Diagnostics.Contracts;
 
 namespace Bix.Mixers.ILCloning
 {
+    /// <summary>
+    /// Defines an interface for a cloning context.
+    /// </summary>
+    [ContractClass(typeof(ILCloningContextContract))]
     public interface IILCloningContext
     {
         /// <summary>
@@ -65,5 +71,32 @@ namespace Bix.Mixers.ILCloning
         /// <param name="field">Field to root import.</param>
         /// <returns>Root imported field.</returns>
         FieldReference RootImport(FieldReference field);
+
+        /// <summary>
+        /// Root imports a parameter. That is, it finds the parameter with respect to the <see cref="RootTarget"/> type.
+        /// If necessary, this handles mixin redirection, meaning that a member within the <see cref="RootTarget"/>
+        /// will be returned in place of a member within the <see cref="RootSource"/>
+        /// </summary>
+        /// <param name="parameter">Parameter to root import.</param>
+        /// <returns>Root imported parameter.</returns>
+        ParameterDefinition RootImport(ParameterDefinition parameter);
+
+        /// <summary>
+        /// Root imports a variable. That is, it finds the variable with respect to the <see cref="RootTarget"/> type.
+        /// If necessary, this handles mixin redirection, meaning that a member within the <see cref="RootTarget"/>
+        /// will be returned in place of a member within the <see cref="RootSource"/>
+        /// </summary>
+        /// <param name="variable">Variable to root import.</param>
+        /// <returns>Root imported variable.</returns>
+        VariableDefinition RootImport(VariableDefinition variable);
+
+        /// <summary>
+        /// Root imports an instruction. That is, it finds the instruction with respect to the <see cref="RootTarget"/> type.
+        /// If necessary, this handles mixin redirection, meaning that a member within the <see cref="RootTarget"/>
+        /// will be returned in place of a member within the <see cref="RootSource"/>
+        /// </summary>
+        /// <param name="instruction">Instruction to root import.</param>
+        /// <returns>Root imported instruction.</returns>
+        Instruction RootImport(Instruction instruction);
     }
 }

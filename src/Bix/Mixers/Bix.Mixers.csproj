@@ -147,13 +147,16 @@
     <Compile Include="Core\LazyAccessor.cs" />
     <Compile Include="ILCloning\ClonerBase.cs" />
     <Compile Include="ILCloning\ClonerBaseContract.cs" />
+    <Compile Include="ILCloning\ConstructorInitializationCloner.cs" />
+    <Compile Include="ILCloning\ConstructorLogicBodyCloner.cs" />
+    <Compile Include="ILCloning\ConstructorLogicSignatureCloner.cs" />
+    <Compile Include="ILCloning\ILCloningContextContract.cs" />
     <Compile Include="ILCloning\MethodReturnTypeCloner.cs" />
     <Compile Include="ILCloning\SourceAndTarget.cs" />
     <Compile Include="ILCloning\ISourceAndTarget.cs" />
     <Compile Include="ILCloning\ClonerGatheringVisitor.cs" />
     <Compile Include="ILCloning\Cloners.cs" />
-    <Compile Include="ILCloning\ConstructorBroadcaster.cs" />
-    <Compile Include="ILCloning\ConstructorMultiplexer.cs" />
+    <Compile Include="ILCloning\MultiplexedConstructor.cs" />
     <Compile Include="ILCloning\CustomAttributeCloner.cs" />
     <Compile Include="ILCloning\EventCloner.cs" />
     <Compile Include="ILCloning\ExceptionHandlerCloner.cs" />
@@ -166,7 +169,6 @@
     <Compile Include="ILCloning\ILCloningExtensions.cs" />
     <Compile Include="ILCloning\InstructionCloner.cs" />
     <Compile Include="ILCloning\MethodBodyCloner.cs" />
-    <Compile Include="ILCloning\MethodContext.cs" />
     <Compile Include="ILCloning\MethodSignatureCloner.cs" />
     <Compile Include="ILCloning\ParameterCloner.cs" />
     <Compile Include="ILCloning\PropertyCloner.cs" />

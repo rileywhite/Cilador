@@ -22,8 +22,12 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Interface implemented by all item cloners.
     /// </summary>
-    [ContractClass(typeof(ClonerContract<>))]
-    public interface ICloner<out TCloned>
+    /// <typeparam name="TSource">Type of the cloning source item.</typeparam>
+    /// <typeparam name="TTarget">Type of item to be cloned.</typeparam>
+    [ContractClass(typeof(ClonerContract<,>))]
+    public interface ICloner<out TSource, out TTarget>
+        where TSource : class
+        where TTarget : class
     {
         /// <summary>
         /// Gets the context for IL cloning.
@@ -43,11 +47,18 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets the cloning source.
         /// </summary>
-        TCloned Source { get; }
+        TSource Source { get; }
 
         /// <summary>
         /// Gets the cloning target.
         /// </summary>
-        TCloned Target { get; }
+        TTarget Target { get; }
     }
+
+    /// <summary>
+    /// Simplified interface for a symmetric cloner, where the source and target are the same type.
+    /// </summary>
+    /// <typeparam name="TCloned">Type of both the cloning source and target.</typeparam>
+    public interface ICloner<out TCloned> : ICloner<TCloned, TCloned> where TCloned : class { }
+
 }

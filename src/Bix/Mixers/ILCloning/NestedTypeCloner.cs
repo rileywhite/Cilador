@@ -55,7 +55,7 @@ namespace Bix.Mixers.ILCloning
         /// Creates the new target.
         /// </summary>
         /// <returns>Newly created target.</returns>
-        protected override TypeDefinition CreateTarget()
+        protected override TypeDefinition GetTarget()
         {
             var target = new TypeDefinition(this.Source.Namespace, this.Source.Name, 0);
             this.Parent.Target.NestedTypes.Add(target);
@@ -65,7 +65,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Clones the type.
         /// </summary>
-        public override void Clone()
+        protected override void DoClone()
         {
             Contract.Assert(this.Target != this.ILCloningContext.RootTarget);
             Contract.Assert(this.Target.IsNested);
@@ -93,8 +93,6 @@ namespace Bix.Mixers.ILCloning
 
             // TODO look more closely at type class size
             this.Target.ClassSize = this.Source.ClassSize;
-
-            this.IsCloned = true;
         }
     }
 }

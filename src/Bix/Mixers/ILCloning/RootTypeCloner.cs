@@ -49,7 +49,7 @@ namespace Bix.Mixers.ILCloning
         /// In this special case, the type already exists. Simply return the existing type.
         /// </summary>
         /// <returns>Cloning target.</returns>
-        protected override TypeDefinition CreateTarget()
+        protected override TypeDefinition GetTarget()
         {
             return this.RootTarget;
         }
@@ -57,7 +57,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Clones the type.
         /// </summary>
-        public override void Clone()
+        protected override void DoClone()
         {
             Contract.Assert(this.Target == this.ILCloningContext.RootTarget);
 
@@ -89,8 +89,6 @@ namespace Bix.Mixers.ILCloning
                     "Configured mixin implementation cannot have a base type other than System.Object: [{0}]",
                     this.Source.FullName));
             }
-
-            this.IsCloned = true;
         }
     }
 }
