@@ -31,7 +31,7 @@ namespace Bix.Mixers.ILCloning
         /// <param name="parent">Cloner for the method body that contains the variable being cloned.</param>
         /// <param name="previous">Cloner for the variable, if any, for the variable that comes before the variable being cloned.</param>
         /// <param name="source">Cloning source.</param>
-        public VariableCloner(ICloner<object, MethodBody> parent, VariableCloner previous, VariableDefinition source)
+        public VariableCloner(ICloneToMethodBody<object> parent, VariableCloner previous, VariableDefinition source)
             : base(parent.ILCloningContext, source)
         {
             Contract.Requires(parent != null);
@@ -46,7 +46,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets or sets the cloner for the method body that contains the variable being cloned.
         /// </summary>
-        private ICloner<object, MethodBody> Parent { get; set; }
+        private ICloneToMethodBody<object> Parent { get; set; }
 
         /// <summary>
         /// Gets or sets the cloner for the variable, if any, for the variable that comes before the variable being cloned.

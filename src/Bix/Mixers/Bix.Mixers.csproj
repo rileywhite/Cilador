@@ -150,10 +150,9 @@
     <Compile Include="ILCloning\ConstructorInitializationCloner.cs" />
     <Compile Include="ILCloning\ConstructorLogicBodyCloner.cs" />
     <Compile Include="ILCloning\ConstructorLogicSignatureCloner.cs" />
+    <Compile Include="ILCloning\ICloneToMethodBody.cs" />
     <Compile Include="ILCloning\ILCloningContextContract.cs" />
     <Compile Include="ILCloning\MethodReturnTypeCloner.cs" />
-    <Compile Include="ILCloning\SourceAndTarget.cs" />
-    <Compile Include="ILCloning\ISourceAndTarget.cs" />
     <Compile Include="ILCloning\ClonerGatheringVisitor.cs" />
     <Compile Include="ILCloning\Cloners.cs" />
     <Compile Include="ILCloning\MultiplexedConstructor.cs" />

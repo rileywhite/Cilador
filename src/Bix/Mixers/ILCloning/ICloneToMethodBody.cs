@@ -14,31 +14,26 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Mono.Cecil.Cil;
 using System;
+using Mono.Cecil;
 
 namespace Bix.Mixers.ILCloning
 {
     /// <summary>
-    /// Defines a contract for holding a source and a target item.
+    /// Defines an interface for cloners with a method body context
+    /// that provide access to the <see cref="MethodBody.ThisParameter"/>
+    /// of the target method.
     /// </summary>
-    /// <typeparam name="TSource">Type of source.</typeparam>
-    /// <typeparam name="TTarget">Type of target.</typeparam>
-    internal interface ISourceAndTarget<out TSource, out TTarget>
+    internal interface ICloneToMethodBody<out TSource> : ICloner<TSource, MethodBody>
+        where TSource : class
     {
         /// <summary>
-        /// Gets the source.
+        /// Gets the <see cref="ParameterDefinition"/>, if any, that
+        /// instructions should map to the <see cref="MethodBody.ThisParameter"/>
+        /// of the target method body. Generally this will be the ThisParameter
+        /// of a source method body.
         /// </summary>
-        TSource Source { get; }
-
-        /// <summary>
-        /// Gets the target.
-        /// </summary>
-        TTarget Target { get; }
+        ParameterDefinition SourceThisParameter { get; }
     }
-
-    /// <summary>
-    /// Defines a contract for holding a source and a target item.
-    /// </summary>
-    /// <typeparam name="T">Type of source and target.</typeparam>
-    internal interface ISourceAndTarget<out T> : ISourceAndTarget<T, T> { }
 }

@@ -30,7 +30,7 @@ namespace Bix.Mixers.ILCloning
         /// </summary>
         /// <param name="parent">Cloner for the method body that contains this exception handler.</param>
         /// <param name="source">Cloning source.</param>
-        public ExceptionHandlerCloner(ICloner<object, MethodBody> parent, ExceptionHandler source)
+        public ExceptionHandlerCloner(ICloneToMethodBody<object> parent, ExceptionHandler source)
             : base(parent.ILCloningContext, source)
         {
             Contract.Requires(parent != null);
@@ -44,7 +44,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Gets or sets the cloner for the method body containing the exception handler being cloned.
         /// </summary>
-        public ICloner<object, MethodBody> Parent { get; private set; }
+        public ICloneToMethodBody<object> Parent { get; private set; }
 
         /// <summary>
         /// Creates the target exception handler.

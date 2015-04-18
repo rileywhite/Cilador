@@ -44,12 +44,12 @@ namespace Bix.Mixers.ILCloning
         /// in <paramref name="instructionInsertAction"/>, then the delegate will be run instead.
         /// </remarks>
         public InstructionCloner(
-            ICloner<object, MethodBody> parent,
+            ICloneToMethodBody<object> parent,
             InstructionCloner previous,
             Instruction source,
             IEnumerable<VariableDefinition> possiblyReferencedVariables = null,
             int referencedVariableIndexTranslation = 0,
-            Action<ILProcessor, ICloner<object, MethodBody>, InstructionCloner, Instruction, Instruction> instructionInsertAction = null)
+            Action<ILProcessor, ICloneToMethodBody<object>, InstructionCloner, Instruction, Instruction> instructionInsertAction = null)
             : base(parent.ILCloningContext, source)
         {
             Contract.Requires(parent != null);
@@ -73,12 +73,12 @@ namespace Bix.Mixers.ILCloning
         /// An action is not required to insert the instruction. In general, the instruction to
         /// be inserted is the <see cref="InstructionCloner.Target"/>.
         /// </remarks>
-        private Action<ILProcessor, ICloner<object, MethodBody>, InstructionCloner, Instruction, Instruction> InstructionInsertAction { get; set; }
+        private Action<ILProcessor, ICloneToMethodBody<object>, InstructionCloner, Instruction, Instruction> InstructionInsertAction { get; set; }
 
         /// <summary>
         /// Gets or sets the context for the method associated with this cloner.
         /// </summary>
-        public ICloner<object, MethodBody> Parent { get; private set; }
+        public ICloneToMethodBody<object> Parent { get; private set; }
 
         /// <summary>
         /// Gets or sets the cloner for the previous instruction, if any.
@@ -149,7 +149,7 @@ namespace Bix.Mixers.ILCloning
         /// <param name="target">Target instruction</param>
         public static void DefaultInstructionInsertAction(
             ILProcessor ilProcessor,
-            ICloner<object, MethodBody> parent,
+            ICloneToMethodBody<object> parent,
             InstructionCloner previous,
             Instruction source,
             Instruction target)
@@ -550,6 +550,7 @@ namespace Bix.Mixers.ILCloning
         {
             Contract.Requires(parameter != null);
 
+            if (parameter == this.Parent.SourceThisParameter) { return this.Parent.Target.ThisParameter; }
             return this.ILCloningContext.RootImport(parameter);
         }
 

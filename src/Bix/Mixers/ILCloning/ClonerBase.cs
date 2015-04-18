@@ -28,7 +28,7 @@ namespace Bix.Mixers.ILCloning
     /// <typeparam name="TSource">Type of the cloning source item.</typeparam>
     /// <typeparam name="TTarget">Type of item to be cloned.</typeparam>
     [ContractClass(typeof(ClonerBaseContract<,>))]
-    public abstract class ClonerBase<TSource, TTarget> : ICloner<TSource, TTarget>, ISourceAndTarget<TSource, TTarget>
+    public abstract class ClonerBase<TSource, TTarget> : ICloner<TSource, TTarget>
         where TSource : class
         where TTarget : class
     {
@@ -147,7 +147,7 @@ namespace Bix.Mixers.ILCloning
     /// cloner source and target.
     /// </summary>
     /// <typeparam name="TCloned">Type of both the cloning source and target</typeparam>
-    public abstract class ClonerBase<TCloned> : ClonerBase<TCloned, TCloned>, ICloner<TCloned>, ISourceAndTarget<TCloned>
+    public abstract class ClonerBase<TCloned> : ClonerBase<TCloned, TCloned>, ICloner<TCloned>
         where TCloned : class
     {
         protected ClonerBase(IILCloningContext ilCloningContext, TCloned source)

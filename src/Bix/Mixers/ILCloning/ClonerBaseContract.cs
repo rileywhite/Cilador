@@ -30,7 +30,7 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Unused constructor for <see cref="ClonerBaseContract{TSource, TTarget}"/>.
         /// </summary>
-        private ClonerBaseContract() : base(null, null) { }
+        protected ClonerBaseContract() : base(null, null) { }
 
         /// <summary>
         /// Contracts for <see cref="ClonerBase{TSource,TTarget}.GetTarget"/>

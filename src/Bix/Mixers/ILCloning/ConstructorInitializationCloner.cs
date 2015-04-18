@@ -19,13 +19,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using Mono.Cecil;
 
 namespace Bix.Mixers.ILCloning
 {
     /// <summary>
     /// Clones a root source type's constructor into an existing root target type's constuctor.
     /// </summary>
-    internal class ConstructorInitializationCloner : ClonerBase<MultiplexedConstructor, MethodBody>
+    internal class ConstructorInitializationCloner :
+        ClonerBase<MultiplexedConstructor, MethodBody>,
+        ICloneToMethodBody<MultiplexedConstructor>
     {
         /// <summary>
         /// Creates a new <see cref="ConstructorInitializationCloner"/>.
@@ -43,12 +46,16 @@ namespace Bix.Mixers.ILCloning
         {
             Contract.Requires(parent != null);
             Contract.Requires(parent.ILCloningContext != null);
+            Contract.Requires(parent.Source != null);
             Contract.Requires(source != null);
+            Contract.Requires(source.Constructor != null);
+            Contract.Requires(source.Constructor.Body != null);
             Contract.Requires(target != null);
             Contract.Ensures(this.Parent != null);
             Contract.Ensures(this.ExistingTarget != null);
 
             this.Parent = parent;
+            this.SourceThisParameter = source.Constructor.Body.ThisParameter;
             this.LogicSignatureCloner = logicSignatureCloner;
             this.ExistingTarget = target;
         }
@@ -62,6 +69,11 @@ namespace Bix.Mixers.ILCloning
         /// Gets or sets the cloner for the signature of the logic portion of the constructor, if any.
         /// </summary>
         public ConstructorLogicSignatureCloner LogicSignatureCloner { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the This parameter of the source constructor.
+        /// </summary>
+        public ParameterDefinition SourceThisParameter { get; private set; }
 
         /// <summary>
         /// Gets or sets the pre-existing target method body.

@@ -18,13 +18,16 @@ using Mono.Cecil.Cil;
 using System;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using Mono.Cecil;
 
 namespace Bix.Mixers.ILCloning
 {
     /// <summary>
     /// Clones the logic part of a source constructor into a new method body.
     /// </summary>
-    internal class ConstructorLogicBodyCloner : ClonerBase<MultiplexedConstructor, MethodBody>
+    internal class ConstructorLogicBodyCloner :
+        ClonerBase<MultiplexedConstructor, MethodBody>,
+        ICloneToMethodBody<MultiplexedConstructor>
     {
         /// <summary>
         /// Creates a new <see cref="ConstructorLogicBodyCloner"/>.
@@ -36,10 +39,16 @@ namespace Bix.Mixers.ILCloning
         {
             Contract.Requires(parent != null);
             Contract.Requires(parent.ILCloningContext != null);
+            Contract.Requires(parent.Source != null);
+            Contract.Requires(parent.Source.Constructor != null);
+            Contract.Requires(parent.Source.Constructor.Body != null);
+            Contract.Requires(parent.Source.Constructor.Body.ThisParameter != null);
             Contract.Requires(source != null);
             Contract.Ensures(this.Parent != null);
+            Contract.Ensures(this.SourceThisParameter != null);
 
             this.Parent = parent;
+            this.SourceThisParameter = parent.Source.Constructor.Body.ThisParameter;
         }
 
         /// <summary>
@@ -47,8 +56,12 @@ namespace Bix.Mixers.ILCloning
         /// </summary>
         private ConstructorLogicSignatureCloner Parent { get; set; }
 
-        private ILProcessor ilProcessor;
+        /// <summary>
+        /// Gets or sets the This parameter of the source constructor.
+        /// </summary>
+        public ParameterDefinition SourceThisParameter { get; private set; }
 
+        private ILProcessor ilProcessor;
         /// <summary>
         /// Gets or sets the <see cref="ILProcessor"/> for accesing IL instructions.
         /// </summary>

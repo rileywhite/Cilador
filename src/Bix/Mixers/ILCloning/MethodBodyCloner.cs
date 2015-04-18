@@ -15,8 +15,8 @@
 /***************************************************************************/
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace Bix.Mixers.ILCloning
@@ -24,7 +24,7 @@ namespace Bix.Mixers.ILCloning
     /// <summary>
     /// Clones a method body from a source to a target.
     /// </summary>
-    internal class MethodBodyCloner : ClonerBase<MethodBody>
+    internal class MethodBodyCloner : ClonerBase<MethodBody>, ICloneToMethodBody<MethodBody>
     {
         /// <summary>
         /// Creates a new <see cref="MethodBodyCloner"/>
@@ -46,6 +46,14 @@ namespace Bix.Mixers.ILCloning
         /// Gets or sets the method signature cloner with which this method body cloner is associated
         /// </summary>
         public MethodSignatureCloner Parent { get; private set; }
+
+        /// <summary>
+        /// Gets the This parameter of the source.
+        /// </summary>
+        public ParameterDefinition SourceThisParameter
+        {
+            get { return this.Source.ThisParameter; }
+        }
 
         /// <summary>
         /// The method body already exists, attached to the parent cloner.

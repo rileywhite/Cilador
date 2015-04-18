@@ -210,7 +210,7 @@ namespace Bix.Mixers.ILCloning
                 previousVariableCloner = variableCloner;
             }
 
-            Action<ILProcessor, ICloner<object, MethodBody>, InstructionCloner, Instruction, Instruction> instructionInsertAction =
+            Action<ILProcessor, ICloneToMethodBody<object>, InstructionCloner, Instruction, Instruction> instructionInsertAction =
                 (ilProcessor, parent, previous, source, target) =>
             {
                 if (previous != null) { ilProcessor.InsertAfter(previous.Target, target); }
