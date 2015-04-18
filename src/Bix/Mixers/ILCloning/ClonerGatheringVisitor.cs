@@ -66,7 +66,7 @@ namespace Bix.Mixers.ILCloning
             Contract.Requires(rootTypeCloner != null);
             this.Cloners.AddCloner(rootTypeCloner);
 
-            if (this.ILCloningContext.RootTarget.Methods.Any(
+            if (this.ILCloningContext.RootSource.Methods.Any(
                 sourceMethod => sourceMethod.IsConstructor && !sourceMethod.IsStatic && sourceMethod.HasParameters))
             {
                 // at some point in the future if it becomes clear that it would be useful,
