@@ -80,7 +80,7 @@ namespace Bix.Mixers.ILCloning
                         this.ILCloningContext.RootSource.FullName));
             }
 
-            var sourceConstructor = this.ILCloningContext.RootTarget.Methods.SingleOrDefault(
+            var sourceConstructor = this.ILCloningContext.RootSource.Methods.SingleOrDefault(
                 sourceMethod => sourceMethod.IsConstructor && !sourceMethod.IsStatic && !sourceMethod.HasParameters);
 
             var sourceMultiplexedConstructor = MultiplexedConstructor.Get(this.ILCloningContext, sourceConstructor);
@@ -94,7 +94,9 @@ namespace Bix.Mixers.ILCloning
                 this.Visit(constructorLogicSignatureCloner);
             }
 
-            if (sourceMultiplexedConstructor.HasInitializationItems)
+            // the initialization cloning includes calling redirected construction methods
+            // so we want this if we have either initialization or if we have create a logic cloner
+            if (sourceMultiplexedConstructor.HasInitializationItems || constructorLogicSignatureCloner != null)
             {
                 foreach (var targetConstructor in
                     this.ILCloningContext.RootTarget.Methods.Where(
@@ -145,10 +147,12 @@ namespace Bix.Mixers.ILCloning
         {
             var targetVariableIndexBySourceVariableIndex = new Dictionary<int, int>();
             VariableCloner previousVariableCloner = null;
-            foreach (var sourceVariable in constructorLogicBodyCloner.Source.InitializationVariables)
+            var nextVariableIndex = 0;
+            foreach (var sourceVariable in constructorLogicBodyCloner.Source.ConstructionVariables)
             {
                 var variableCloner = new VariableCloner(constructorLogicBodyCloner, previousVariableCloner, sourceVariable);
-                targetVariableIndexBySourceVariableIndex.Add(sourceVariable.Index, variableCloner.Target.Index); // TODO remove target access
+                targetVariableIndexBySourceVariableIndex.Add(sourceVariable.Index, nextVariableIndex);
+                ++nextVariableIndex;
                 this.Cloners.AddCloner(variableCloner);
                 this.Visit(variableCloner);
                 previousVariableCloner = variableCloner;
@@ -168,7 +172,7 @@ namespace Bix.Mixers.ILCloning
                     if (!targetVariableIndexBySourceVariableIndex.TryGetValue(sourceVariableIndex.Value, out targetVariableIndex))
                     {
                         throw new InvalidOperationException(
-                            "No source entry to find target variable index for a construction instruction.");
+                            "No source entry to find target variable index for a construction logic instruction.");
                     }
                     translation = targetVariableIndex - sourceVariableIndex.Value;
                 }
@@ -201,10 +205,12 @@ namespace Bix.Mixers.ILCloning
         {
             var targetVariableIndexBySourceVariableIndex = new Dictionary<int, int>();
             VariableCloner previousVariableCloner = null;
+            var nextVariableIndex = constructorInitializationCloner.CountOfTargetVariablesBeforeCloning;
             foreach (var sourceVariable in constructorInitializationCloner.Source.InitializationVariables)
             {
                 var variableCloner = new VariableCloner(constructorInitializationCloner, previousVariableCloner, sourceVariable);
-                targetVariableIndexBySourceVariableIndex.Add(sourceVariable.Index, variableCloner.Target.Index); // TODO remove target access
+                targetVariableIndexBySourceVariableIndex.Add(sourceVariable.Index, nextVariableIndex);
+                ++nextVariableIndex;
                 this.Cloners.AddCloner(variableCloner);
                 this.Visit(variableCloner);
                 previousVariableCloner = variableCloner;
@@ -235,7 +241,8 @@ namespace Bix.Mixers.ILCloning
                     int targetVariableIndex;
                     if (!targetVariableIndexBySourceVariableIndex.TryGetValue(sourceVariableIndex.Value, out targetVariableIndex))
                     {
-                        throw new InvalidOperationException("No source entry to find target variable index for a construction instruction.");
+                        throw new InvalidOperationException(
+                            "No source entry to find target variable index for a constructor initialization instruction.");
                     }
                     translation = targetVariableIndex - sourceVariableIndex.Value;
                 }

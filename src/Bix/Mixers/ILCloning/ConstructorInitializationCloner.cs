@@ -58,6 +58,7 @@ namespace Bix.Mixers.ILCloning
             this.SourceThisParameter = source.Constructor.Body.ThisParameter;
             this.LogicSignatureCloner = logicSignatureCloner;
             this.ExistingTarget = target;
+            this.CountOfTargetVariablesBeforeCloning = this.ExistingTarget.Variables == null ? 0 : this.ExistingTarget.Variables.Count;
         }
 
         /// <summary>
@@ -81,6 +82,13 @@ namespace Bix.Mixers.ILCloning
         private MethodBody ExistingTarget { get; set; }
 
         /// <summary>
+        /// Gets the number of variables that are in the existing target before
+        /// the cloning operation begins.
+        /// </summary>
+        /// <returns>Target constructor method body.</returns>
+        public int CountOfTargetVariablesBeforeCloning { get; private set; }
+
+        /// <summary>
         /// Retrieves the existing constructor into which the source's data will be added.
         /// </summary>
         /// <returns>Target constructor method body.</returns>
@@ -100,9 +108,6 @@ namespace Bix.Mixers.ILCloning
             var target = this.Target;
 
             target.InitLocals = target.InitLocals || source.InitializationVariables.Any();
-
-            var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
-            var targetVariableIndexBySourceVariableIndex = new Dictionary<int, int>();
 
             if (this.LogicSignatureCloner != null)
             {

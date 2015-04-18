@@ -15,17 +15,11 @@
 /***************************************************************************/
 
 using Bix.Mixers.Fody.Config;
-using Bix.Mixers.Fody.Core;
-using Bix.Mixers.Fody.InterfaceMixins;
 using Bix.Mixers.Fody.TestMixinInterfaces;
 using Bix.Mixers.Fody.TestMixins;
 using Bix.Mixers.Fody.Tests.Common;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
 {
@@ -41,7 +35,7 @@ namespace Bix.Mixers.Fody.Tests.InterfaceMixinTests
             {
                 new InterfaceMixinConfigType
                 {
-                    InterfaceMixinMap = new InterfaceMixinMapType[]
+                    InterfaceMixinMap = new []
                     {
                         new InterfaceMixinMapType
                         {
