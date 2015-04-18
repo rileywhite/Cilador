@@ -493,6 +493,17 @@ namespace Bix.Mixers.ILCloning
         /// <summary>
         /// Imports the operand
         /// </summary>
+        /// <param name="type">Operand for instruction</param>
+        /// <returns>Imported operand for target instruction.</returns>
+        private TypeReference ImportOperand(TypeReference type)
+        {
+            Contract.Requires(type != null);
+            return this.ILCloningContext.RootImport(type);
+        }
+
+        /// <summary>
+        /// Imports the operand
+        /// </summary>
         /// <param name="field">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
         private FieldReference ImportOperand(FieldReference field)
