@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata minClientVersion="2.8">
+    <id>Cilador.Fody</id>
+    <version>$version$</version>
+    <title>Cilador.Fody</title>
+    <authors>Riley White</authors>
+    <owners>Riley White</owners>
+    <copyright>Copyright © Riley White 2013-2015</copyright>
+    <developmentDependency>false</developmentDependency>
+    <licenseUrl>https://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
+    <projectUrl>https://github.com/rileywhite/Bix.Mixers</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>Create custom C# mixins with this Fody add-in.</summary>
+    <description>$description$</description>
+    <language>en-US</language>
+    <tags>Mixins, Mixin, BehaviorComposition, TypeComposition, ILWeaving, CodeWeaving, Inheritance, Fody, Cecil, CIL</tags>
+    <dependencies>
+      <dependency id="Fody"/>
+    </dependencies>
+  </metadata>
+</package>

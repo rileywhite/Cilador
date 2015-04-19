@@ -14,16 +14,28 @@
 // limitations under the License.
 /***************************************************************************/
 
-using System.Reflection;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.Linq;
 
-[assembly: AssemblyCompany("Riley White")]
-[assembly: AssemblyProduct("Cilador")]
-[assembly: AssemblyCopyright("Copyright © Riley White 2013-2015")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyVersion(CommonAssemblyInfo.Version)]
-[assembly: AssemblyFileVersion(CommonAssemblyInfo.Version)]
-
-internal static class CommonAssemblyInfo
+namespace Cilador.Core
 {
-    public const string Version = "0.1.7.1";
+    /// <summary>
+    /// Extension methods used through Cilador
+    /// </summary>
+    public static class CoreExtensions
+    {
+        /// <summary>
+        /// Checks whether an enumeration contains any null items.
+        /// </summary>
+        /// <param name="items">Items to check. Items may be traversed.</param>
+        /// <returns><c>true</c> if any null items are found, else <c>false</c>.</returns>
+        [Pure]
+        public static bool AreAnyNull<T>(this IEnumerable<T> items)
+            where T: class
+        {
+            return items.Any(item => item == null);
+        }
+    }
 }

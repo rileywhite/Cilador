@@ -14,16 +14,12 @@
 // limitations under the License.
 /***************************************************************************/
 
-using System.Reflection;
+using System;
 
-[assembly: AssemblyCompany("Riley White")]
-[assembly: AssemblyProduct("Cilador")]
-[assembly: AssemblyCopyright("Copyright © Riley White 2013-2015")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyVersion(CommonAssemblyInfo.Version)]
-[assembly: AssemblyFileVersion(CommonAssemblyInfo.Version)]
-
-internal static class CommonAssemblyInfo
+namespace Cilador.Fody.Core
 {
-    public const string Version = "0.1.7.1";
+    /// <summary>
+    /// Interface that must be implemented by all mix command attributes.
+    /// </summary>
+    public interface IMixCommandAttribute { }
 }

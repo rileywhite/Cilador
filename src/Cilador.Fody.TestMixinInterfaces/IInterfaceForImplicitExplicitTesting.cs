@@ -14,16 +14,22 @@
 // limitations under the License.
 /***************************************************************************/
 
-using System.Reflection;
+using System;
 
-[assembly: AssemblyCompany("Riley White")]
-[assembly: AssemblyProduct("Cilador")]
-[assembly: AssemblyCopyright("Copyright © Riley White 2013-2015")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyVersion(CommonAssemblyInfo.Version)]
-[assembly: AssemblyFileVersion(CommonAssemblyInfo.Version)]
-
-internal static class CommonAssemblyInfo
+namespace Cilador.Fody.TestMixinInterfaces
 {
-    public const string Version = "0.1.7.1";
+    public interface IInterfaceForImplicitExplicitTesting
+    {
+        string Method1();
+        string Method2();
+        string Method3();
+
+        string Property1 { get; }
+        string Property2 { get; }
+        string Property3 { get; }
+
+        event EventHandler Event1;
+        event EventHandler Event2;
+        event EventHandler Event3;
+    }
 }

@@ -14,16 +14,20 @@
 // limitations under the License.
 /***************************************************************************/
 
-using System.Reflection;
+using System;
 
-[assembly: AssemblyCompany("Riley White")]
-[assembly: AssemblyProduct("Cilador")]
-[assembly: AssemblyCopyright("Copyright © Riley White 2013-2015")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyVersion(CommonAssemblyInfo.Version)]
-[assembly: AssemblyFileVersion(CommonAssemblyInfo.Version)]
-
-internal static class CommonAssemblyInfo
+namespace Cilador.Fody.TestMixinInterfaces
 {
-    public const string Version = "0.1.7.1";
+    public interface IGenericMixinDefinition<T1, T2, T3, T4>
+        where T1 : class, new()
+        where T2 : struct, IGenericMixinDefinition<T1, T2, T3, T4>
+        where T3 : T1, IDisposable
+        where T4 : EventArgs
+    {
+        IGenericMixinDefinition<T1, T2, T3, T4> AsInterface(T2 arg0);
+        void GenericMethod<T5>(T1 arg0, T4 arg1, T5 arg2);
+        T3 SomeProperty { get; set; }
+        int IntProperty { get; set; }
+        event EventHandler<T4> Thinged;
+    }
 }

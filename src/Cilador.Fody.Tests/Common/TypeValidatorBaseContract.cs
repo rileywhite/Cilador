@@ -14,16 +14,28 @@
 // limitations under the License.
 /***************************************************************************/
 
-using System.Reflection;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-[assembly: AssemblyCompany("Riley White")]
-[assembly: AssemblyProduct("Cilador")]
-[assembly: AssemblyCopyright("Copyright © Riley White 2013-2015")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyVersion(CommonAssemblyInfo.Version)]
-[assembly: AssemblyFileVersion(CommonAssemblyInfo.Version)]
-
-internal static class CommonAssemblyInfo
+namespace Cilador.Fody.Tests.Common
 {
-    public const string Version = "0.1.7.1";
+    /// <summary>
+    /// Contracts for <see cref="TypeValidatorBase"/>.
+    /// </summary>
+    [ContractClassFor(typeof(TypeValidatorBase))]
+    internal abstract class ParameterTypeValidatorBaseContract : TypeValidatorBase
+    {
+        /// <summary>
+        /// Contracts for <see cref="Validate(Type)"/>.
+        /// </summary>
+        /// <param name="actualType">Actual parameter type.</param>
+        public override void Validate(Type actualType)
+        {
+            Contract.Requires(actualType != null);
+        }
+    }
 }

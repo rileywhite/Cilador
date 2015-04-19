@@ -14,16 +14,21 @@
 // limitations under the License.
 /***************************************************************************/
 
+using NUnit.ConsoleRunner;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 
-[assembly: AssemblyCompany("Riley White")]
-[assembly: AssemblyProduct("Cilador")]
-[assembly: AssemblyCopyright("Copyright © Riley White 2013-2015")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyVersion(CommonAssemblyInfo.Version)]
-[assembly: AssemblyFileVersion(CommonAssemblyInfo.Version)]
-
-internal static class CommonAssemblyInfo
+namespace Cilador.Fody.Tests
 {
-    public const string Version = "0.1.7.1";
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Runner.Main(new[] { Assembly.GetExecutingAssembly().Location });
+        }
+    }
 }

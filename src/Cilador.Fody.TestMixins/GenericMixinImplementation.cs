@@ -14,16 +14,19 @@
 // limitations under the License.
 /***************************************************************************/
 
-using System.Reflection;
+using Cilador.Fody.TestMixinInterfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-[assembly: AssemblyCompany("Riley White")]
-[assembly: AssemblyProduct("Cilador")]
-[assembly: AssemblyCopyright("Copyright © Riley White 2013-2015")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyVersion(CommonAssemblyInfo.Version)]
-[assembly: AssemblyFileVersion(CommonAssemblyInfo.Version)]
-
-internal static class CommonAssemblyInfo
+namespace Cilador.Fody.TestMixins
 {
-    public const string Version = "0.1.7.1";
+    using Cilador.Fody.TestMixinInterfaces;
+
+    public class GenericMixinImplementation<T> : IEmptyInterface
+    {
+        public T Value;
+    }
 }
