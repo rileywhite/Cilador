@@ -19,7 +19,7 @@ using System;
 namespace Cilador.Fody.Core
 {
     /// <summary>
-    /// Interface that must be implemented by all mix command attributes.
+    /// Interface that must be implemented by all weave attributes.
     /// </summary>
-    public interface IMixCommandAttribute { }
+    public interface IWeaveAttribute { }
 }

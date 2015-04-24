@@ -25,8 +25,8 @@ namespace Cilador.Fody.Core
     /// <summary>
     /// Interface that must be implemented for all weaves.
     /// </summary>
-    [ContractClass(typeof(WeaverContract))]
-    public interface IWeaver
+    [ContractClass(typeof(WeaveContract))]
+    public interface IWeave
     {
         /// <summary>
         /// Gets whether the command has been initialized.
@@ -38,7 +38,7 @@ namespace Cilador.Fody.Core
         /// </summary>
         /// <param name="weavingContext">Context data for command initialization.</param>
         /// <param name="config">Configuration data for the command. Commands may require particular types for this argument that are subtypes of <see cref="WeaveConfigTypeBase"/></param>
-        void Initialize(IWeavingContext weavingContext, WeaverConfigTypeBase config);
+        void Initialize(IWeavingContext weavingContext, WeaveConfigTypeBase config);
 
         /// <summary>
         /// Applies the weave to a target type.

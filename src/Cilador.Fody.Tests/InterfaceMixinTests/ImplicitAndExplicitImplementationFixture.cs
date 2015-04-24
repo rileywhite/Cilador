@@ -44,7 +44,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.WeaverConfig = new WeaverConfigTypeBase[]
+            config.WeaveConfig = new WeaveConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -173,7 +173,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.WeaverConfig = new WeaverConfigTypeBase[]
+            config.WeaveConfig = new WeaveConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -270,7 +270,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.WeaverConfig = new WeaverConfigTypeBase[]
+            config.WeaveConfig = new WeaveConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {

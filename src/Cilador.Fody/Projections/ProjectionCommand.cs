@@ -6,17 +6,17 @@ using System.ComponentModel.Composition;
 
 namespace Cilador.Fody.Projections
 {
-    //[Export(typeof(IWeaver))]
+    //[Export(typeoIWeaveer))]
     //[ExportMetadata("AttributeType", typeof(InterfaceMixinAttribute))]
     //[ExportMetadata("ConfigType", typeof(InterfaceMixinConfigType))]
-    internal class ProjectionCommand : IWeaver
+    internal class ProjectionCommand : IWeave
     {
         public bool IsInitialized
         {
             get { throw new NotImplementedException(); }
         }
 
-        public void Initialize(IWeavingContext weavingContext, WeaverConfigTypeBase config)
+        public void Initialize(IWeavingContext weavingContext, WeaveConfigTypeBase config)
         {
             throw new NotImplementedException();
         }

@@ -25,12 +25,12 @@ namespace Cilador.Fody.InterfaceMixins
     using Cilador.ILCloning;
 
     /// <summary>
-    /// This is a method object for a single execution of <see cref="InterfaceMixinCommand"/>.
+    /// This is a method object for a single execution of <see cref="InterfaceMixinWeave"/>.
     /// </summary>
-    internal class InterfaceMixinCommandMixer
+    internal class InterfaceMixinWeaver
     {
         /// <summary>
-        /// Creates a new <see cref="InterfaceMixinCommandMixer"/>.
+        /// Creates a new <see cref="InterfaceMixinWeaver"/>.
         /// </summary>
         /// <param name="interfaceType">Interface which will be added to the <paramref name="target"/>.</param>
         /// <param name="mixinType">Type whose implementation will be cloned into the <paramref name="target"/>.</param>
@@ -40,7 +40,7 @@ namespace Cilador.Fody.InterfaceMixins
         /// does not implement <paramref name="interfaceType"/>, or if <paramref name="mixinType"/> implements any interface
         /// other than <paramref name="interfaceType"/>.
         /// </exception>
-        public InterfaceMixinCommandMixer(TypeDefinition interfaceType, TypeDefinition mixinType, TypeDefinition target)
+        public InterfaceMixinWeaver(TypeDefinition interfaceType, TypeDefinition mixinType, TypeDefinition target)
         {
             Contract.Requires(interfaceType != null);
             Contract.Requires(mixinType != null);

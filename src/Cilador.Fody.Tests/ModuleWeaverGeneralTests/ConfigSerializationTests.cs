@@ -43,12 +43,12 @@ namespace Cilador.Fody.Tests.ModuleWeaverGeneralTests
         [TestCase(
 @"<Cilador>
     <bmfc:CiladorConfig xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:bmfc=""urn:Cilador:Fody:Config"">
-      <WeaverConfig xsi:type=""bmfc:InterfaceMixinConfigType"">
+      <WeaveConfig xsi:type=""bmfc:InterfaceMixinConfigType"">
         <InterfaceMixinMap Interface=""My.Interface.Assembly.Type, My.Interface.Assembly"" Mixin=""My.Mixin.Assembly.Type, My.Mixin.Assembly"" />
-      </WeaverConfig>
+      </WeaveConfig>
     </bmfc:CiladorConfig>
 </Cilador>", typeof(InterfaceMixinConfigType))]
-        public void CanReadConfig(string xmlString, params Type[] weaverConfigTypes)
+        public void CanReadConfig(string xmlString, params Type[] WeaveConfigTypes)
         {
             var configXElement = XElement.Parse(xmlString);
             Assert.NotNull(configXElement);
@@ -57,20 +57,20 @@ namespace Cilador.Fody.Tests.ModuleWeaverGeneralTests
 
             Assert.NotNull(config);
 
-            if (weaverConfigTypes == null || weaverConfigTypes.Length == 0)
+            if (WeaveConfigTypes == null || WeaveConfigTypes.Length == 0)
             {
-                Assert.That(config.WeaverConfig == null || config.WeaverConfig.Length == 0);
+                Assert.That(config.WeaveConfig == null || config.WeaveConfig.Length == 0);
             }
             else
             {
-                Assert.NotNull(config.WeaverConfig);
+                Assert.NotNull(config.WeaveConfig);
 
-                Assert.That(config.WeaverConfig.Length == weaverConfigTypes.Length);
-                for (int i = 0; i < config.WeaverConfig.Length; i++)
+                Assert.That(config.WeaveConfig.Length == WeaveConfigTypes.Length);
+                for (int i = 0; i < config.WeaveConfig.Length; i++)
                 {
-                    Contract.Assume(i < weaverConfigTypes.Length);
-                    Assert.NotNull(config.WeaverConfig[i]);
-                    Assert.That(config.WeaverConfig[i].GetType() == weaverConfigTypes[i]);
+                    Contract.Assume(i < WeaveConfigTypes.Length);
+                    Assert.NotNull(config.WeaveConfig[i]);
+                    Assert.That(config.WeaveConfig[i].GetType() == WeaveConfigTypes[i]);
                 }
             }
         }

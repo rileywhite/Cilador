@@ -22,24 +22,24 @@ namespace Cilador.Fody.Core
     using Cilador.Fody.Config;
 
     /// <summary>
-    /// Holds information from <see cref="ExportMetadataAttribute"/> items on <see cref="IWeaver"/> MEF exports.
+    /// Holds information from <see cref="ExportMetadataAttribute"/> items on <see cref="IWeave"/> MEF exports.
     /// </summary>
-    public interface IWeaverMeta
+    public interface IWeaveMeta
     {
         /// <summary>
-        /// For a weavers exported through MEF, this identifies the custom attribute type
+        /// For a weaves exported through MEF, this identifies the custom attribute type
         /// that both indicates that the exported command should be invoked on the annotated type
         /// and contains any command arguments for the invocation. The type specified here must
-        /// implemente <see cref="IWeaverAttribute"/>.
+        /// implemente <see cref="IWeaveAttribute"/>.
         /// </summary>
         Type AttributeType { get; }
 
         /// <summary>
         /// For a weaver exported through MEF, this identifies the configuration type
-        /// that can be found within <see cref="CiladorConfigType.WeaverConfig"/>,
+        /// that can be found within <see cref="CiladorConfigType.WeaveConfig"/>,
         /// which is part of the configuration information that is serialized and embedded
         /// within the FodyWeavers.xml configuraiton file. The type specified here must
-        /// inherit from <see cref="WeaverConfigTypeBase"/>.
+        /// inherit from <see cref="WeaveConfigTypeBase"/>.
         /// </summary>
         Type ConfigType { get; }
     }

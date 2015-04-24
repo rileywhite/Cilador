@@ -131,8 +131,8 @@ namespace Cilador.Fody.Core
 
             foreach (var weaver in this.Weavers)
             {
-                var weaverConfig = this.CiladorConfig.WeaverConfig.FirstOrDefault(config => config.GetType() == weaver.Metadata.ConfigType);
-                if (weaverConfig == null)
+                var WeaveConfig = this.CiladorConfig.WeaveConfig.FirstOrDefault(config => config.GetType() == weaver.Metadata.ConfigType);
+                if (WeaveConfig == null)
                 {
                     if (this.LogWarning != null)
                     {
@@ -140,16 +140,16 @@ namespace Cilador.Fody.Core
                     }
                     continue;
                 }
-                weaver.Value.Initialize(this, weaverConfig);
+                weaver.Value.Initialize(this, WeaveConfig);
             }
         }
 
         /// <summary>
         /// Gets or sets the collection of weavers found in the MEF container catalogs.
         /// </summary>
-        [ImportMany(typeof(IWeaver), AllowRecomposition = true)]
+        [ImportMany(typeof(IWeave), AllowRecomposition = true)]
         // ReSharper disable once UnusedAutoPropertyAccessor.Local
-        private IEnumerable<Lazy<IWeaver,IWeaverMeta>> Weavers { get; set; }
+        private IEnumerable<Lazy<IWeave, IWeaveMeta>> Weavers { get; set; }
 
         private XElement config;
         /// <summary>
@@ -218,7 +218,7 @@ namespace Cilador.Fody.Core
         /// </summary>
         /// <remarks>
         /// The configuration type, <see cref="CiladorConfigType"/>, is primarily generated
-        /// from WeaverConfig.xsd.
+        /// from WeaveConfig.xsd.
         /// </remarks>
         /// <param name="config">Item that contains the serialized config element.</param>
         /// <returns>Deserialized configurtion object</returns>
@@ -371,7 +371,7 @@ namespace Cilador.Fody.Core
             Contract.Ensures(!Contract.Result<Dictionary<TypeDefinition, List<CustomAttribute>>>().Values.Any(
                 customAttributes => customAttributes == null || customAttributes.Any(customAttribute => customAttribute == null)));
 
-            var weaverAttributeInterfaceType = this.ModuleDefinition.Import(typeof(IWeaverAttribute)).Resolve();
+            var weaverAttributeInterfaceType = this.ModuleDefinition.Import(typeof(IWeaveAttribute)).Resolve();
 
             var weaverAttributesByTargetTypes = new Dictionary<TypeDefinition, List<CustomAttribute>>();
             foreach (var type in this.ModuleDefinition.Types)
@@ -433,11 +433,11 @@ namespace Cilador.Fody.Core
         /// <param name="weaverAttribute">Attribute to find command for</param>
         /// <returns>Weave command that corresponds to the given attribute</returns>
         /// <exception cref="InvalidOperationException">No weaver is found that corresponds to the <paramref name="weaverAttribute"/></exception>
-        private IWeaver GetWeaverFor(TypeDefinition targetType, CustomAttribute weaverAttribute)
+        private IWeave GetWeaverFor(TypeDefinition targetType, CustomAttribute weaverAttribute)
         {
             Contract.Requires(targetType != null);
             Contract.Requires(weaverAttribute != null);
-            Contract.Ensures(Contract.Result<IWeaver>() != null);
+            Contract.Ensures(Contract.Result<IWeave>() != null);
 
             var weaverAttributeType = weaverAttribute.AttributeType.Resolve();
             try

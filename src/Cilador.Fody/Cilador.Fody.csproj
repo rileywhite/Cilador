@@ -150,23 +150,23 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Config\WeaverConfig.cs">
-      <DependentUpon>WeaverConfig.xsd</DependentUpon>
+    <Compile Include="Config\WeaveConfig.cs">
+      <DependentUpon>WeaveConfig.xsd</DependentUpon>
     </Compile>
     <Compile Include="Core\DualAssemblyResolver.cs" />
     <Compile Include="Core\IWeavingContext.cs" />
     <Compile Include="Core\WeavingContextAssemblyResolver.cs" />
     <Compile Include="Core\WeavingException.cs" />
-    <Compile Include="Core\IWeaver.cs" />
-    <Compile Include="Core\IWeaverAttribute.cs" />
-    <Compile Include="Core\WeaverContract.cs" />
+    <Compile Include="Core\IWeave.cs" />
+    <Compile Include="Core\IWeaveAttribute.cs" />
+    <Compile Include="Core\WeaveContract.cs" />
     <Compile Include="Config\InterfaceMixinMapType.cs" />
-    <Compile Include="InterfaceMixins\InterfaceMixinCommandMixer.cs" />
+    <Compile Include="InterfaceMixins\InterfaceMixinWeaver.cs" />
     <Compile Include="Core\ModuleWeaver.cs" />
-    <Compile Include="InterfaceMixins\InterfaceMixinCommand.cs" />
+    <Compile Include="InterfaceMixins\InterfaceMixinWeave.cs" />
     <Compile Include="InterfaceMixins\InterfaceMixinAttribute.cs" />
     <Compile Include="Core\CoreExtensions.cs" />
-    <Compile Include="Core\IWeaverMeta.cs" />
+    <Compile Include="Core\IWeaveMeta.cs" />
     <Compile Include="Projections\ProjectionCommand.cs" />
     <Compile Include="Projections\TypeProjectionAttribute.cs" />
     <Compile Include="Projections\PropertyProjectionAttribute.cs" />
@@ -174,7 +174,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Config\WeaverConfig.xsd">
+    <None Include="Config\WeaveConfig.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
@@ -191,7 +191,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <PropertyGroup>
-    <PreBuildEvent>"$(TargetFrameworkSDKToolsDirectory)xsd.exe" /c /l:cs /n:Cilador.Fody.Config /o:"$(ProjectDir)Config" "$(ProjectDir)Config\WeaverConfig.xsd"
+    <PreBuildEvent>"$(TargetFrameworkSDKToolsDirectory)xsd.exe" /c /l:cs /n:Cilador.Fody.Config /o:"$(ProjectDir)Config" "$(ProjectDir)Config\WeaveConfig.xsd"
 </PreBuildEvent>
   </PropertyGroup>
   <Target AfterTargets="AfterBuild;NonWinFodyTarget" Name="CleanReferenceCopyLocalPaths">

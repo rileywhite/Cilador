@@ -21,11 +21,11 @@
   xmlns:cfc="urn:Cilador:Fody:Config"
   targetNamespace="urn:Cilador:Fody:Config">
 
-  <xs:complexType name="WeaverConfigTypeBase" abstract="true"/>
+  <xs:complexType name="WeaveConfigTypeBase" abstract="true"/>
 
   <xs:complexType name="CiladorConfigType">
     <xs:sequence minOccurs="1" maxOccurs="1">
-      <xs:element name="WeaverConfig" type="cfc:WeaverConfigTypeBase" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="WeaveConfig" type="cfc:WeaveConfigTypeBase" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
   <xs:element name="CiladorConfig" type="cfc:CiladorConfigType"/>
@@ -37,7 +37,7 @@
 
   <xs:complexType name="InterfaceMixinConfigType">
     <xs:complexContent>
-      <xs:extension base="cfc:WeaverConfigTypeBase">
+      <xs:extension base="cfc:WeaveConfigTypeBase">
         <xs:sequence minOccurs="1" maxOccurs="1">
           <xs:element name="InterfaceMixinMap" type="cfc:InterfaceMixinMapType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
@@ -53,7 +53,7 @@
 
   <xs:complexType name="ProjectionConfigType">
     <xs:complexContent>
-      <xs:extension base="cfc:WeaverConfigTypeBase">
+      <xs:extension base="cfc:WeaveConfigTypeBase">
         <xs:sequence minOccurs="1" maxOccurs="1">
           <xs:element name="ProjectionMap" type="cfc:ProjectionMapType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>

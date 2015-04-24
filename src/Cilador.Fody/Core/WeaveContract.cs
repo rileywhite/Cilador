@@ -16,7 +16,6 @@
 
 using System;
 using System.Diagnostics.Contracts;
-using Cilador.Fody.Config;
 using Mono.Cecil;
 
 namespace Cilador.Fody.Core
@@ -24,13 +23,13 @@ namespace Cilador.Fody.Core
     using Cilador.Fody.Config;
 
     /// <summary>
-    /// Contracts for <see cref="IMixCommand"/> implementations.
+    /// Contracts for <see cref="IWeave"/> implementations.
     /// </summary>
-    [ContractClassFor(typeof(IMixCommand))]
-    internal abstract class MixCommandContract : IMixCommand
+    [ContractClassFor(typeof(IWeave))]
+    internal abstract class WeaveContract : IWeave
     {
         /// <summary>
-        /// Contracts for <see cref="IMixCommand.IsInitialized"/>
+        /// Contracts for <see cref="IWeave.IsInitialized"/>
         /// </summary>
         public bool IsInitialized
         {
@@ -38,11 +37,11 @@ namespace Cilador.Fody.Core
         }
 
         /// <summary>
-        /// Contracts for <see cref="IMixCommand.Initialize"/>
+        /// Contracts for <see cref="IWeave.Initialize"/>
         /// </summary>
         /// <param name="weavingContext">Context data for command initialization.</param>
-        /// <param name="config">Configuration data for the command. Commands may require particular types for this argument that are subtypes of <see cref="MixCommandConfigTypeBase"/></param>
-        public void Initialize(IWeavingContext weavingContext, MixCommandConfigTypeBase config)
+        /// <param name="config">Configuration data for the command. Commands may require particular types for this argument that are subtypes of <see cref="WeaveConfigTypeBase"/></param>
+        public void Initialize(IWeavingContext weavingContext, WeaveConfigTypeBase config)
         {
             Contract.Requires(weavingContext != null);
             Contract.Requires(config != null);
@@ -53,16 +52,16 @@ namespace Cilador.Fody.Core
         }
 
         /// <summary>
-        /// Contracts for <see cref="IMixCommand.Mix"/>
+        /// Contracts for <see cref="IWeave.Weave"/>
         /// </summary>
-        /// <param name="weavingContext">Context data for mixing.</param>
-        /// <param name="target">The type to which the mix action will be applied/</param>
-        /// <param name="mixCommandAttribute">Attribute that may contain arguments for the mix command invocation.</param>
-        public void Mix(IWeavingContext weavingContext, TypeDefinition target, CustomAttribute mixCommandAttribute)
+        /// <param name="weavingContext">Context data for weaving.</param>
+        /// <param name="target">The type to which the weave will be applied/</param>
+        /// <param name="weaveAttribute">Attribute that may contain arguments for the weave invocation.</param>
+        public void Weave(IWeavingContext weavingContext, TypeDefinition target, CustomAttribute weaveAttribute)
         {
             Contract.Requires(weavingContext != null);
             Contract.Requires(target != null);
-            Contract.Requires(mixCommandAttribute != null);
+            Contract.Requires(weaveAttribute != null);
             Contract.Requires(this.IsInitialized);
 
             throw new NotSupportedException();

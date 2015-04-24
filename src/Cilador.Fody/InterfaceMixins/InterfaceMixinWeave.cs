@@ -26,13 +26,13 @@ namespace Cilador.Fody.InterfaceMixins
     using Cilador.Fody.Core;
 
     /// <summary>
-    /// This weaver will add interfaces to target types and will copy contents
+    /// This weave will add interfaces to target types and will copy contents
     /// of mixin implementations into those target types.
     /// </summary>
-    [Export(typeof(IWeaver))]
+    [Export(typeof(IWeave))]
     [ExportMetadata("AttributeType", typeof(InterfaceMixinAttribute))]
     [ExportMetadata("ConfigType", typeof(InterfaceMixinConfigType))]
-    internal class InterfaceMixinCommand : IWeaver
+    internal class InterfaceMixinWeave : IWeave
     {
         /// <summary>
         /// Gets or sets whether the command has been initialized
@@ -45,7 +45,7 @@ namespace Cilador.Fody.InterfaceMixins
         /// <param name="weavingContext">Context information for configuration.</param>
         /// <param name="config">Command configuration information. For this command type, the value must be of type <see cref="WeaveConfigTypeBase"/>.</param>
         /// <exception cref="ArgumentException">The <paramref name="config"/> is not of type <see cref="WeaveConfigTypeBase"/></exception>
-        public void Initialize(IWeavingContext weavingContext, WeaverConfigTypeBase config)
+        public void Initialize(IWeavingContext weavingContext, WeaveConfigTypeBase config)
         {
             this.Config = config as InterfaceMixinConfigType;
             if(this.Config == null)
@@ -107,7 +107,7 @@ namespace Cilador.Fody.InterfaceMixins
             if (!mixinInterfaceType.IsInterface)
             {
                 weavingContext.LogError(string.Format("Configured mixin interface type is not an interface: [{0}]", mixinInterfaceType.FullName));
-                // let execution continue...an error will be thrown for this particular weaver if invocation is attempted
+                // let execution continue...an error will be thrown for this particular weave if invocation is attempted
             }
 
             var matchedMap = this.Config.InterfaceMixinMap.SingleOrDefault(
@@ -119,7 +119,7 @@ namespace Cilador.Fody.InterfaceMixins
                 return;
             }
 
-            new InterfaceMixinCommandMixer(mixinInterfaceType, matchedMap.GetMixinType(weavingContext), target).Execute();
+            new InterfaceMixinWeaver(mixinInterfaceType, matchedMap.GetMixinType(weavingContext), target).Execute();
         }
     }
 }

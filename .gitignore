@@ -216,4 +216,4 @@ pip-log.txt
 
 src/NuGetBuild
 src/packages
-src/Cilador.Fody/Config/WeaverConfig.cs
+src/Cilador.Fody/Config/WeaveConfig.cs

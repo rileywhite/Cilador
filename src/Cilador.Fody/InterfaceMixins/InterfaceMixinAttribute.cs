@@ -22,11 +22,11 @@ namespace Cilador.Fody.InterfaceMixins
     using Cilador.Fody.Core;
 
     /// <summary>
-    /// Annotates types to which the <see cref="InterfaceMixinCommand"/> should be applied,
+    /// Annotates types to which the <see cref="InterfaceMixinWeave"/> should be applied,
     /// and supplies arguments for the invocation.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public sealed class InterfaceMixinAttribute : Attribute, IWeaverAttribute
+    public sealed class InterfaceMixinAttribute : Attribute, IWeaveAttribute
     {
         /// <summary>
         /// Creates a new <see cref="InterfaceMixinAttribute"/>.
