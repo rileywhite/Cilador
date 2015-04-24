@@ -46,7 +46,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -68,7 +68,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
             // simple generic method
-            var method = targetType.GetMethod("GenericMethod", TestContent.BindingFlagsForMixedMembers);
+            var method = targetType.GetMethod("GenericMethod", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(method, Is.Not.Null);
             Assert.That(method.ContainsGenericParameters);
             TypeValidatorBase.ValidateParameters(
@@ -101,7 +101,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.That(genericInstanceMethod.Invoke(instance, new object[] { someObject }), Is.SameAs(someObject));
 
             // generic method with constraints
-            method = targetType.GetMethod("GenericMethodWithConstraints", TestContent.BindingFlagsForMixedMembers);
+            method = targetType.GetMethod("GenericMethodWithConstraints", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(method, Is.Not.Null);
             Assert.That(method.ContainsGenericParameters);
             TypeValidatorBase.ValidateParameters(
@@ -157,7 +157,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -179,7 +179,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
             // basic nested generic type
-            var type = targetType.GetNestedType("GenericType`1", TestContent.BindingFlagsForMixedMembers);
+            var type = targetType.GetNestedType("GenericType`1", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(type, Is.Not.Null);
             Assert.That(type.ContainsGenericParameters);
             TypeValidatorBase.ValidateType(
@@ -188,7 +188,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                     type,
                     GenericParameterTypeValidator.Named("T")));
 
-            var method = type.GetMethod("GetThing", TestContent.BindingFlagsForMixedMembers);
+            var method = type.GetMethod("GetThing", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(method, Is.Not.Null);
             Assert.That(method.ContainsGenericParameters);
             TypeValidatorBase.ValidateParameters(
@@ -202,7 +202,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
 
             var instance = Activator.CreateInstance(genericInstanceType, new object[0]);
 
-            var genericInstanceMethod = genericInstanceType.GetMethod("GetThing", TestContent.BindingFlagsForMixedMembers);
+            var genericInstanceMethod = genericInstanceType.GetMethod("GetThing", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(genericInstanceMethod, Is.Not.Null);
             Assert.That(!genericInstanceMethod.ContainsGenericParameters);
             TypeValidatorBase.ValidateParameters(
@@ -217,7 +217,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
 
             instance = Activator.CreateInstance(genericInstanceType, new object[0]);
 
-            genericInstanceMethod = genericInstanceType.GetMethod("GetThing", TestContent.BindingFlagsForMixedMembers);
+            genericInstanceMethod = genericInstanceType.GetMethod("GetThing", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(genericInstanceMethod, Is.Not.Null);
             Assert.That(!genericInstanceMethod.ContainsGenericParameters);
             TypeValidatorBase.ValidateParameters(
@@ -228,7 +228,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.That(genericInstanceMethod.Invoke(instance, new object[] { someObject }), Is.SameAs(someObject));
 
             // nested generic type with constraints
-            type = targetType.GetNestedType("GenericTypeWithConstraints`6", TestContent.BindingFlagsForMixedMembers);
+            type = targetType.GetNestedType("GenericTypeWithConstraints`6", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(type, Is.Not.Null);
             Assert.That(type.ContainsGenericParameters);
             TypeValidatorBase.ValidateType(
@@ -254,7 +254,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
 
             instance = Activator.CreateInstance(genericInstanceType, new object[0]);
 
-            genericInstanceMethod = genericInstanceType.GetMethod("GetThings", TestContent.BindingFlagsForMixedMembers);
+            genericInstanceMethod = genericInstanceType.GetMethod("GetThings", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(genericInstanceMethod, Is.Not.Null);
             Assert.That(!genericInstanceMethod.ContainsGenericParameters);
             TypeValidatorBase.ValidateParameters(
@@ -274,7 +274,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                 NonGenericTypeValidator.ForType<FileStream>());
 
             // nested generic type with open generic method
-            type = targetType.GetNestedType("GenericTypeWithGenericMethod`1", TestContent.BindingFlagsForMixedMembers);
+            type = targetType.GetNestedType("GenericTypeWithGenericMethod`1", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(type, Is.Not.Null);
             Assert.That(type.ContainsGenericParameters);
             TypeValidatorBase.ValidateType(
@@ -283,7 +283,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                     type,
                     GenericParameterTypeValidator.Named("TType")));
 
-            method = type.GetMethod("GetThings", TestContent.BindingFlagsForMixedMembers);
+            method = type.GetMethod("GetThings", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(method, Is.Not.Null);
             Assert.That(method.ContainsGenericParameters);
             TypeValidatorBase.ValidateParameters(
@@ -300,7 +300,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
 
             instance = Activator.CreateInstance(genericInstanceType, new object[0]);
 
-            var genericInstanceGenericMethod = genericInstanceType.GetMethod("GetThings", TestContent.BindingFlagsForMixedMembers);
+            var genericInstanceGenericMethod = genericInstanceType.GetMethod("GetThings", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(genericInstanceGenericMethod, Is.Not.Null);
             Assert.That(genericInstanceGenericMethod.ContainsGenericParameters);
             TypeValidatorBase.ValidateParameters(
@@ -326,7 +326,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.That(things.Item2, Is.SameAs(someObject));
 
             // generic type with multiple parameters
-            type = targetType.GetNestedType("GenericTypeWithMultipleParameters`2", TestContent.BindingFlagsForMixedMembers);
+            type = targetType.GetNestedType("GenericTypeWithMultipleParameters`2", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(type, Is.Not.Null);
             TypeValidatorBase.ValidateType(
                 type,
@@ -351,7 +351,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
 
             instance = Activator.CreateInstance(genericInstanceType, new object[0]);
 
-            var genericInstanceProperty = genericInstanceType.GetProperty("Thing1", TestContent.BindingFlagsForMixedMembers);
+            var genericInstanceProperty = genericInstanceType.GetProperty("Thing1", TestContent.BindingFlagsForWeavedMembers);
             TypeValidatorBase.ValidatePropertyTypeAndAccessors(
                 genericInstanceProperty,
                 TypeValidatorBase.PropertyAccessorExpectations.Both,
@@ -359,7 +359,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             genericInstanceProperty.SetValue(instance, 48008);
             Assert.That(genericInstanceProperty.GetValue(instance), Is.EqualTo(48008));
 
-            genericInstanceProperty = genericInstanceType.GetProperty("Thing2", TestContent.BindingFlagsForMixedMembers);
+            genericInstanceProperty = genericInstanceType.GetProperty("Thing2", TestContent.BindingFlagsForWeavedMembers);
             TypeValidatorBase.ValidatePropertyTypeAndAccessors(
                 genericInstanceProperty,
                 TypeValidatorBase.PropertyAccessorExpectations.Both,
@@ -368,7 +368,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.That(genericInstanceProperty.GetValue(instance), Is.EqualTo("SAdfiohoqiweAsiohnewlroi asoidfh inra6f"));
 
             // partially closed generic type
-            type = targetType.GetNestedType("PartiallyClosedGenericType`1", TestContent.BindingFlagsForMixedMembers);
+            type = targetType.GetNestedType("PartiallyClosedGenericType`1", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(type, Is.Not.Null);
             TypeValidatorBase.ValidateType(
                 type,
@@ -414,15 +414,15 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
 
 
             // type with method with partially closed generic type
-            type = targetType.GetNestedType("TypeWithPartiallyClosedGenericMethod", TestContent.BindingFlagsForMixedMembers);
+            type = targetType.GetNestedType("TypeWithPartiallyClosedGenericMethod", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(type, Is.Not.Null);
             Assert.That(!type.IsGenericType);
 
             instance = Activator.CreateInstance(type);
 
-            var returnTypeGenericDefinition = targetType.GetNestedType("GenericTypeWithMultipleParameters`2", TestContent.BindingFlagsForMixedMembers);
+            var returnTypeGenericDefinition = targetType.GetNestedType("GenericTypeWithMultipleParameters`2", TestContent.BindingFlagsForWeavedMembers);
 
-            method = type.GetMethod("GetThing", TestContent.BindingFlagsForMixedMembers);
+            method = type.GetMethod("GetThing", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(method, Is.Not.Null);
             TypeValidatorBase.ValidateParameters(
                 method,
@@ -439,7 +439,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.That(genericInstanceReturnType.GetProperty("Thing1").GetValue(returnValue), Is.EqualTo(297387));
             Assert.That(genericInstanceReturnType.GetProperty("Thing2").GetValue(returnValue), Is.EqualTo("Eoahio eioua bueagingnpiuw nufib fuiwebyu"));
 
-            method = type.GetMethod("GetOtherThing", TestContent.BindingFlagsForMixedMembers);
+            method = type.GetMethod("GetOtherThing", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(method, Is.Not.Null);
             TypeValidatorBase.ValidateParameters(
                 method,
@@ -462,7 +462,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         //{
         //    var config = new CiladorConfigType();
 
-        //    config.MixCommandConfig = new MixCommandConfigTypeBase[]
+        //    config.WeaverConfig = new WeaverConfigTypeBase[]
         //    {
         //        new InterfaceMixinConfigType
         //        {
@@ -485,7 +485,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         //        {
         //            var config = new CiladorConfigType();
 
-        //            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+        //            config.WeaverConfig = new WeaverConfigTypeBase[]
         //            {
         //                new InterfaceMixinConfigType
         //                {
@@ -508,7 +508,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         //        {
         //            var config = new CiladorConfigType();
 
-        //            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+        //            config.WeaverConfig = new WeaverConfigTypeBase[]
         //            {
         //                new InterfaceMixinConfigType
         //                {
@@ -526,10 +526,10 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         //            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
         //            var targetType = assembly.GetType("Cilador.Fody.TestMixinTargets.EmptyInterfaceTarget");
         //            Assert.That(typeof(Cilador.Fody.TestMixinInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
-        //            Assert.That(targetType.GetConstructors(TestContent.BindingFlagsForMixedMembers).Length == 1, "Expected 1 constructor");
+        //            Assert.That(targetType.GetConstructors(TestContent.BindingFlagsForWeavedMembers).Length == 1, "Expected 1 constructor");
         //            Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
-        //            var valueField = targetType.GetField("Value", TestContent.BindingFlagsForMixedMembers);
+        //            var valueField = targetType.GetField("Value", TestContent.BindingFlagsForWeavedMembers);
         //            Assert.That(valueField != null);
         //            Assert.That(typeof(int) == valueField.FieldType);
         //        }
@@ -539,7 +539,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         //        {
         //            var config = new CiladorConfigType();
 
-        //            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+        //            config.WeaverConfig = new WeaverConfigTypeBase[]
         //            {
         //                new InterfaceMixinConfigType
         //                {

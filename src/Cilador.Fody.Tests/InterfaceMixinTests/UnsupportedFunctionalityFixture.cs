@@ -45,7 +45,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -63,7 +63,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.Throws(
                 Is.TypeOf((typeof(WeavingException)))
                 .And.Message.EqualTo(string.Format(
-                    "Configured mixin implementation type cannot be abstract: [{0}]",
+                    "Cloning root source type cannot be abstract: [{0}]",
                     typeof(AbstractMixin).FullName)),
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
@@ -73,7 +73,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -91,7 +91,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.Throws(
                 Is.TypeOf((typeof(WeavingException)))
                 .And.Message.EqualTo(string.Format(
-                    "Configured mixin implementation type cannot be an open generic type: [{0}]",
+                    "Cloning root source type cannot be an open generic type: [{0}]",
                     typeof(GenericMixinImplementation<>).FullName)),
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
@@ -101,7 +101,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -126,7 +126,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -151,7 +151,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -180,7 +180,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -208,7 +208,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -226,7 +226,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.Throws(
                 Is.TypeOf((typeof(WeavingException)))
                 .And.Message.EqualTo(string.Format(
-                    "Configured mixin implementation cannot have a base type other than System.Object: [{0}]",
+                    "Cloning root source type cannot have a base type other than System.Object: [{0}]",
                     typeof(InheritingMixin).FullName)),
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
@@ -236,7 +236,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -254,7 +254,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.Throws(
                 Is.TypeOf((typeof(WeavingException)))
                 .And.Message.EqualTo(string.Format(
-                    "Configured mixin implementation [{0}] may implement only the mixin definition interface [{1}]",
+                    "Configured mixin implementation type [{0}] may implement only the mixin definition interface [{1}]",
                     typeof(ExtraInterfaceMixin).FullName,
                     typeof(IEmptyInterface).FullName)),
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
@@ -265,7 +265,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -283,7 +283,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.Throws(
                 Is.TypeOf((typeof(WeavingException)))
                 .And.Message.EqualTo(string.Format(
-                    "Configured mixin implementation may not contain extern methods: [{0}]",
+                    "Cloning source may not contain extern methods: [{0}]",
                     typeof(UnmanagedCallMixin).FullName)),
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
@@ -293,7 +293,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
             ;
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -311,7 +311,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.Throws(
                 Is.TypeOf((typeof(WeavingException)))
                 .And.Message.EqualTo(string.Format(
-                    "Configured mixin implementation may not be annotated with security attributes: [{0}]",
+                    "Cloning root source type may not be annotated with security attributes: [{0}]",
                     typeof(SecurityDeclarationMixin).FullName)),
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
@@ -321,7 +321,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -339,7 +339,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.Throws(
                 Is.TypeOf((typeof(WeavingException)))
                 .And.Message.EqualTo(string.Format(
-                    "Configured mixin implementation may not contain nested types annotated with security attributes: [{0}]",
+                    "Cloning source type may not contain nested types annotated with security attributes: [{0}]",
                     typeof(SecurityDeclarationOnNestedTypeMixin).FullName)),
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
@@ -349,7 +349,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -367,7 +367,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.Throws(
                 Is.TypeOf((typeof(WeavingException)))
                 .And.Message.EqualTo(string.Format(
-                    "Configured mixin implementation may not contain methods annotated with security attributes: [{0}]",
+                    "Cloning source type may not contain methods annotated with security attributes: [{0}]",
                     typeof(SecurityDeclarationOnMethodMixin).FullName)),
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }
@@ -377,7 +377,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -406,7 +406,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -424,7 +424,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.Throws(
                 Is.TypeOf((typeof(WeavingException)))
                 .And.Message.EqualTo(string.Format(
-                    "Configured mixin implementation cannot have constructors with parameters: [{0}]",
+                    "Cloning root source type cannot have constructors with parameters: [{0}]",
                     typeof(ConstructorWithParametersMixin).FullName)),
                 () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
         }

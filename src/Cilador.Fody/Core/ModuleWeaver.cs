@@ -122,34 +122,34 @@ namespace Cilador.Fody.Core
 
         /// <summary>
         /// Called by MEF when a part's imports have been satisfied and it is safe to use.
-        /// For this type, it rebuilds some configuration information based on the imported mix commands.
+        /// For this type, it rebuilds some configuration information based on the imported weavers.
         /// </summary>
         void IPartImportsSatisfiedNotification.OnImportsSatisfied()
         {
             Contract.Assert(this.CiladorConfig != null);
-            Contract.Assert(this.MixCommands != null);
+            Contract.Assert(this.Weavers != null);
 
-            foreach (var mixCommand in this.MixCommands)
+            foreach (var weaver in this.Weavers)
             {
-                var mixCommandConfig = this.CiladorConfig.MixCommandConfig.FirstOrDefault(config => config.GetType() == mixCommand.Metadata.ConfigType);
-                if (mixCommandConfig == null)
+                var weaverConfig = this.CiladorConfig.WeaverConfig.FirstOrDefault(config => config.GetType() == weaver.Metadata.ConfigType);
+                if (weaverConfig == null)
                 {
                     if (this.LogWarning != null)
                     {
-                        this.LogWarning(string.Format("Ignoring mix command with no configuration: [{0}]", mixCommand.GetType().AssemblyQualifiedName));
+                        this.LogWarning(string.Format("Ignoring weaver with no configuration: [{0}]", weaver.GetType().AssemblyQualifiedName));
                     }
                     continue;
                 }
-                mixCommand.Value.Initialize(this, mixCommandConfig);
+                weaver.Value.Initialize(this, weaverConfig);
             }
         }
 
         /// <summary>
-        /// Gets or sets the collection of mix commands found in the MEF container catalogs.
+        /// Gets or sets the collection of weavers found in the MEF container catalogs.
         /// </summary>
-        [ImportMany(typeof(IMixCommand), AllowRecomposition = true)]
+        [ImportMany(typeof(IWeaver), AllowRecomposition = true)]
         // ReSharper disable once UnusedAutoPropertyAccessor.Local
-        private IEnumerable<Lazy<IMixCommand, IMixCommandData>> MixCommands { get; set; }
+        private IEnumerable<Lazy<IWeaver,IWeaverMeta>> Weavers { get; set; }
 
         private XElement config;
         /// <summary>
@@ -218,7 +218,7 @@ namespace Cilador.Fody.Core
         /// </summary>
         /// <remarks>
         /// The configuration type, <see cref="CiladorConfigType"/>, is primarily generated
-        /// from MixCommandConfig.xsd.
+        /// from WeaverConfig.xsd.
         /// </remarks>
         /// <param name="config">Item that contains the serialized config element.</param>
         /// <returns>Deserialized configurtion object</returns>
@@ -350,30 +350,30 @@ namespace Cilador.Fody.Core
         {
             this.assemblyResolver.Resolver2 = new WeavingContextAssemblyResolver(this);
 
-            foreach (var mixCommandAttributesByTargetType in this.ExtractMixCommandAttributesByTargetTypes())
+            foreach (var weaverAttributesByTargetType in this.ExtractWeaverAttributesByTargetTypes())
             {
-                Contract.Assert(mixCommandAttributesByTargetType.Key != null);
-                Contract.Assert(mixCommandAttributesByTargetType.Value != null);
-                Contract.Assert(mixCommandAttributesByTargetType.Value.All(customAttribute => customAttribute != null));
+                Contract.Assert(weaverAttributesByTargetType.Key != null);
+                Contract.Assert(weaverAttributesByTargetType.Value != null);
+                Contract.Assert(weaverAttributesByTargetType.Value.All(customAttribute => customAttribute != null));
 
-                this.FindAndInvokeMixCommands(mixCommandAttributesByTargetType.Key, mixCommandAttributesByTargetType.Value);
+                this.FindAndInvokeWeavers(weaverAttributesByTargetType.Key, weaverAttributesByTargetType.Value);
             }
         }
 
         /// <summary>
-        /// Looks at all types within the target assembly, and collects any that are annotated with mix command attributes.
-        /// Mix command attributes are removed from types as they are gathered.
+        /// Looks at all types within the target assembly, and collects any that are annotated with weaver attributes.
+        /// Weave command attributes are removed from types as they are gathered.
         /// </summary>
-        /// <returns>Collection keyed by types the are annotated with at least one mix command attribute. Values are the collection of mix commands on the key item.</returns>
-        private Dictionary<TypeDefinition, List<CustomAttribute>> ExtractMixCommandAttributesByTargetTypes()
+        /// <returns>Collection keyed by types the are annotated with at least one weaver attribute. Values are the collection of weavers on the key item.</returns>
+        private Dictionary<TypeDefinition, List<CustomAttribute>> ExtractWeaverAttributesByTargetTypes()
         {
             Contract.Ensures(Contract.Result<Dictionary<TypeDefinition, List<CustomAttribute>>>().Keys.All(type => type != null));
             Contract.Ensures(!Contract.Result<Dictionary<TypeDefinition, List<CustomAttribute>>>().Values.Any(
                 customAttributes => customAttributes == null || customAttributes.Any(customAttribute => customAttribute == null)));
 
-            var mixCommandAttributeInterfaceType = this.ModuleDefinition.Import(typeof(IMixCommandAttribute)).Resolve();
+            var weaverAttributeInterfaceType = this.ModuleDefinition.Import(typeof(IWeaverAttribute)).Resolve();
 
-            var mixCommandAttributesByTargetTypes = new Dictionary<TypeDefinition, List<CustomAttribute>>();
+            var weaverAttributesByTargetTypes = new Dictionary<TypeDefinition, List<CustomAttribute>>();
             foreach (var type in this.ModuleDefinition.Types)
             {
                 Contract.Assert(type != null);
@@ -388,68 +388,68 @@ namespace Cilador.Fody.Core
 
                     foreach (var attributeInterfaceType in attributeTypeDefinition.Interfaces)
                     {
-                        if (attributeInterfaceType.Resolve() == mixCommandAttributeInterfaceType)
+                        if (attributeInterfaceType.Resolve() == weaverAttributeInterfaceType)
                         {
-                            List<CustomAttribute> mixAttributesForType;
-                            if (!mixCommandAttributesByTargetTypes.TryGetValue(type.Resolve(), out mixAttributesForType))
+                            List<CustomAttribute> weaverAttributesForType;
+                            if (!weaverAttributesByTargetTypes.TryGetValue(type.Resolve(), out weaverAttributesForType))
                             {
-                                mixAttributesForType = new List<CustomAttribute>();
-                                mixCommandAttributesByTargetTypes[type.Resolve()] = mixAttributesForType;
+                                weaverAttributesForType = new List<CustomAttribute>();
+                                weaverAttributesByTargetTypes[type.Resolve()] = weaverAttributesForType;
                             }
 
-                            mixAttributesForType.Add(attribute);
+                            weaverAttributesForType.Add(attribute);
                             type.CustomAttributes.RemoveAt(i);
                         }
                     }
                 }
             }
-            return mixCommandAttributesByTargetTypes;
+            return weaverAttributesByTargetTypes;
         }
 
         /// <summary>
-        /// Looks up commands indicated by mix commands attributes thorugh configuration, and then
+        /// Looks up commands indicated by weaver attributes thorugh configuration, and then
         /// executes each command.
         /// </summary>
-        /// <param name="targetType">Type which will be modified by mix commands</param>
-        /// <param name="mixCommandAttributes">Collection of mix command attributes which indicate mix commands that will be applied the <paramref name="targetType"/></param>
-        private void FindAndInvokeMixCommands(
+        /// <param name="targetType">Type which will be modified by weavers</param>
+        /// <param name="weaverAttributes">Collection of weaver attributes which indicate weavers that will be applied the <paramref name="targetType"/></param>
+        private void FindAndInvokeWeavers(
             TypeDefinition targetType,
-            List<CustomAttribute> mixCommandAttributes)
+            List<CustomAttribute> weaverAttributes)
         {
             Contract.Requires(targetType != null);
-            Contract.Requires(mixCommandAttributes != null);
-            Contract.Requires(mixCommandAttributes.All(customAttribute => customAttribute != null));
+            Contract.Requires(weaverAttributes != null);
+            Contract.Requires(weaverAttributes.All(customAttribute => customAttribute != null));
 
-            foreach (var mixCommandAttribute in mixCommandAttributes)
+            foreach (var weaverAttribute in weaverAttributes)
             {
-                this.GetMixCommandFor(targetType, mixCommandAttribute).Mix(this, targetType, mixCommandAttribute);
+                this.GetWeaverFor(targetType, weaverAttribute).Weave(this, targetType, weaverAttribute);
             }
         }
 
         /// <summary>
-        /// Finds the mix command that corresponds to a given mix command attribute for a type
+        /// Finds the weaver that corresponds to a given weaver attribute for a type
         /// </summary>
         /// <param name="targetType">Type that is the target for the command</param>
-        /// <param name="mixCommandAttribute">Attribute to find command for</param>
-        /// <returns>Mix command that corresponds to the given attribute</returns>
-        /// <exception cref="InvalidOperationException">No mix command is found that corresponds to the <paramref name="mixCommandAttribute"/></exception>
-        private IMixCommand GetMixCommandFor(TypeDefinition targetType, CustomAttribute mixCommandAttribute)
+        /// <param name="weaverAttribute">Attribute to find command for</param>
+        /// <returns>Weave command that corresponds to the given attribute</returns>
+        /// <exception cref="InvalidOperationException">No weaver is found that corresponds to the <paramref name="weaverAttribute"/></exception>
+        private IWeaver GetWeaverFor(TypeDefinition targetType, CustomAttribute weaverAttribute)
         {
             Contract.Requires(targetType != null);
-            Contract.Requires(mixCommandAttribute != null);
-            Contract.Ensures(Contract.Result<IMixCommand>() != null);
+            Contract.Requires(weaverAttribute != null);
+            Contract.Ensures(Contract.Result<IWeaver>() != null);
 
-            var mixCommandAttributeType = mixCommandAttribute.AttributeType.Resolve();
+            var weaverAttributeType = weaverAttribute.AttributeType.Resolve();
             try
             {
-                return this.MixCommands.First(command =>
-                    this.ModuleDefinition.Import(command.Metadata.AttributeType).Resolve() == mixCommandAttributeType &&
+                return this.Weavers.First(command =>
+                    this.ModuleDefinition.Import(command.Metadata.AttributeType).Resolve() == weaverAttributeType &&
                     command.Value.IsInitialized).Value;
             }
             catch(Exception e)
             {
                 throw new InvalidOperationException(
-                    string.Format("Cannot find a configured mix command for type [{0}] and command [{1}]", targetType.FullName, mixCommandAttributeType.FullName),
+                    string.Format("Cannot find a configured weaver for type [{0}] and weaver attribute [{1}]", targetType.FullName, weaverAttributeType.FullName),
                     e);
             }
         }

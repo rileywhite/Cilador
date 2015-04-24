@@ -75,7 +75,7 @@ namespace Cilador.ILCloning
             {
                 // TODO Nested type security declarations
                 throw new InvalidOperationException(string.Format(
-                    "Configured mixin implementation may not contain nested types annotated with security attributes: [{0}]",
+                    "Cloning source type may not contain nested types annotated with security attributes: [{0}]",
                     this.ILCloningContext.RootSource.FullName));
             }
 

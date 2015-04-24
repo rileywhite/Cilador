@@ -144,7 +144,7 @@ namespace Cilador.ILCloning
             if(this.Source.IsPInvokeImpl)
             {
                 throw new InvalidOperationException(string.Format(
-                    "Configured mixin implementation may not contain extern methods: [{0}]",
+                    "Cloning source may not contain extern methods: [{0}]",
                     this.ILCloningContext.RootSource.FullName));
             }
             Contract.Assert(this.Source.PInvokeInfo == null);
@@ -161,7 +161,7 @@ namespace Cilador.ILCloning
             {
                 // TODO method security declarations
                 throw new InvalidOperationException(string.Format(
-                    "Configured mixin implementation may not contain methods annotated with security attributes: [{0}]",
+                    "Cloning source type may not contain methods annotated with security attributes: [{0}]",
                     this.ILCloningContext.RootSource.FullName));
             }
         }

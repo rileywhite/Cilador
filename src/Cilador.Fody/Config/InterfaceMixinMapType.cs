@@ -16,7 +16,6 @@
 
 using System;
 using System.Diagnostics.Contracts;
-using Cilador.Fody.Core;
 using Mono.Cecil;
 
 namespace Cilador.Fody.Config

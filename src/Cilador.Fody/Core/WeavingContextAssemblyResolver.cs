@@ -48,7 +48,7 @@ namespace Cilador.Fody.Core
             // simple bin path, e.g. for asp.net
             this.AddSearchDirectory(Path.Combine(weavingContext.ProjectDirectoryPath, "bin"));
 
-            // solution tools path for files created not normally available to the mix target assembly
+            // solution tools path for files created not normally available to the weave target assembly
             this.AddSearchDirectory(Path.Combine(weavingContext.SolutionDirectoryPath, "Tools"));
         }
     }

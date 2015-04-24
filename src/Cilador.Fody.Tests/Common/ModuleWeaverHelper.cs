@@ -151,7 +151,7 @@ namespace Cilador.Fody.Tests.Common
                 if (entry == null) { continue; }
 
                 var xElement = new XElement("Cilador", entry.ToXElement());
-                xElement.Add(new XAttribute("MixCommand", "InterfaceMixin"));
+                xElement.Add(new XAttribute("WeaverCommand", "InterfaceMixin"));
 
                 config.Add(xElement);
             }
@@ -184,14 +184,14 @@ namespace Cilador.Fody.Tests.Common
 
             System.ComponentModel.DescriptionAttribute descriptionAttribute;
 
-            foreach (var field in nonTargetType.GetFields(TestContent.BindingFlagsForMixedMembers))
+            foreach (var field in nonTargetType.GetFields(TestContent.BindingFlagsForWeavedMembers))
             {
                 descriptionAttribute = field.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
                 Assert.That(descriptionAttribute != null);
                 Assert.That(descriptionAttribute.Description == field.Name);
             }
 
-            foreach (var constructor in nonTargetType.GetConstructors(TestContent.BindingFlagsForMixedMembers))
+            foreach (var constructor in nonTargetType.GetConstructors(TestContent.BindingFlagsForWeavedMembers))
             {
                 descriptionAttribute = constructor.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
                 Assert.That(descriptionAttribute != null);
@@ -205,7 +205,7 @@ namespace Cilador.Fody.Tests.Common
                 }
             }
 
-            foreach (var method in nonTargetType.GetMethods(TestContent.BindingFlagsForMixedMembers))
+            foreach (var method in nonTargetType.GetMethods(TestContent.BindingFlagsForWeavedMembers))
             {
                 descriptionAttribute = method.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
                 Assert.That(descriptionAttribute != null);
@@ -223,21 +223,21 @@ namespace Cilador.Fody.Tests.Common
                 }
             }
 
-            foreach (var property in nonTargetType.GetProperties(TestContent.BindingFlagsForMixedMembers))
+            foreach (var property in nonTargetType.GetProperties(TestContent.BindingFlagsForWeavedMembers))
             {
                 descriptionAttribute = property.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
                 Assert.That(descriptionAttribute != null);
                 Assert.That(descriptionAttribute.Description == property.Name);
             }
 
-            foreach (var @event in nonTargetType.GetEvents(TestContent.BindingFlagsForMixedMembers))
+            foreach (var @event in nonTargetType.GetEvents(TestContent.BindingFlagsForWeavedMembers))
             {
                 descriptionAttribute = @event.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
                 Assert.That(descriptionAttribute != null);
                 Assert.That(descriptionAttribute.Description == @event.Name);
             }
 
-            foreach (var nestedType in nonTargetType.GetNestedTypes(TestContent.BindingFlagsForMixedMembers))
+            foreach (var nestedType in nonTargetType.GetNestedTypes(TestContent.BindingFlagsForWeavedMembers))
             {
                 descriptionAttribute = nestedType.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
                 Assert.That(descriptionAttribute != null);

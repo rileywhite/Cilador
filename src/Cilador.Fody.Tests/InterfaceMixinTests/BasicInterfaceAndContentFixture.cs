@@ -44,7 +44,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -73,7 +73,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -116,7 +116,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -127,7 +127,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
             var targetType = assembly.GetType("Cilador.Fody.TestMixinTargets.EmptyInterfaceTarget");
             Assert.That(!typeof(IEmptyInterface).IsAssignableFrom(targetType));
-            Assert.That(targetType.GetConstructors(TestContent.BindingFlagsForMixedMembers).Length == 1, "Expected 1 constructor");
+            Assert.That(targetType.GetConstructors(TestContent.BindingFlagsForWeavedMembers).Length == 1, "Expected 1 constructor");
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
             var instance = Activator.CreateInstance(targetType, new object[0]);
             Assert.That(!(instance is IEmptyInterface));
@@ -138,7 +138,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -156,18 +156,18 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
             var targetType = assembly.GetType("Cilador.Fody.TestMixinTargets.EmptyInterfaceTarget");
             Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
-            Assert.That(targetType.GetConstructors(TestContent.BindingFlagsForMixedMembers).Length == 1, "Expected 1 constructor");
+            Assert.That(targetType.GetConstructors(TestContent.BindingFlagsForWeavedMembers).Length == 1, "Expected 1 constructor");
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
             var instance = Activator.CreateInstance(targetType);
             Assert.That(instance, Is.Not.Null);
 
-            var method = targetType.GetMethod("GetThis", TestContent.BindingFlagsForMixedMembers);
+            var method = targetType.GetMethod("GetThis", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(method, Is.Not.Null);
             Assert.That(method.ReturnType.FullName, Is.EqualTo(targetType.FullName));
             Assert.That(instance, Is.SameAs(method.Invoke(instance, new object[0])));
 
-            method = targetType.GetMethod("GetThisAsInterface", TestContent.BindingFlagsForMixedMembers);
+            method = targetType.GetMethod("GetThisAsInterface", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(method, Is.Not.Null);
             Assert.That(method.ReturnType.FullName, Is.EqualTo(typeof(IEmptyInterface).FullName));
             Assert.That(instance, Is.SameAs(method.Invoke(instance, new object[0])));
@@ -178,7 +178,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {

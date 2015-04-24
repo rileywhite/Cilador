@@ -44,7 +44,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -72,22 +72,22 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             var instanceInterface = (IInterfaceForImplicitExplicitTesting)instanceObject;
 
             Assert.That("Implicit Method 1".Equals(
-                targetType.GetMethod("Method1", TestContent.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
+                targetType.GetMethod("Method1", TestContent.BindingFlagsForWeavedMembers).Invoke(instanceObject, new object[] { })));
             Assert.That("Implicit Method 2".Equals(
-                targetType.GetMethod("Method2", TestContent.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
+                targetType.GetMethod("Method2", TestContent.BindingFlagsForWeavedMembers).Invoke(instanceObject, new object[] { })));
             Assert.That("Implicit Method 3".Equals(
-                targetType.GetMethod("Method3", TestContent.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
+                targetType.GetMethod("Method3", TestContent.BindingFlagsForWeavedMembers).Invoke(instanceObject, new object[] { })));
 
             Assert.That("Implicit Method 1".Equals(instanceInterface.Method1()));
             Assert.That("Implicit Method 2".Equals(instanceInterface.Method2()));
             Assert.That("Implicit Method 3".Equals(instanceInterface.Method3()));
 
             Assert.That("Implicit Property 1".Equals(
-                targetType.GetProperty("Property1", TestContent.BindingFlagsForMixedMembers).GetValue(instanceObject)));
+                targetType.GetProperty("Property1", TestContent.BindingFlagsForWeavedMembers).GetValue(instanceObject)));
             Assert.That("Implicit Property 2".Equals(
-                targetType.GetProperty("Property2", TestContent.BindingFlagsForMixedMembers).GetValue(instanceObject)));
+                targetType.GetProperty("Property2", TestContent.BindingFlagsForWeavedMembers).GetValue(instanceObject)));
             Assert.That("Implicit Property 3".Equals(
-                targetType.GetProperty("Property3", TestContent.BindingFlagsForMixedMembers).GetValue(instanceObject)));
+                targetType.GetProperty("Property3", TestContent.BindingFlagsForWeavedMembers).GetValue(instanceObject)));
 
             Assert.That("Implicit Property 1".Equals(instanceInterface.Property1));
             Assert.That("Implicit Property 2".Equals(instanceInterface.Property2));
@@ -95,18 +95,18 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
 
             EventHandler eventHandler = (sender, eventArgs) => { return; };
 
-            var typeEvent1 = targetType.GetEvent("Event1", TestContent.BindingFlagsForMixedMembers);
+            var typeEvent1 = targetType.GetEvent("Event1", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(typeEvent1 != null);
-            var typeEvent2 = targetType.GetEvent("Event2", TestContent.BindingFlagsForMixedMembers);
+            var typeEvent2 = targetType.GetEvent("Event2", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(typeEvent2 != null);
-            var typeEvent3 = targetType.GetEvent("Event3", TestContent.BindingFlagsForMixedMembers);
+            var typeEvent3 = targetType.GetEvent("Event3", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(typeEvent2 != null);
 
-            var implicitEventHandler1 = targetType.GetField("Event1", TestContent.BindingFlagsForMixedMembers);
+            var implicitEventHandler1 = targetType.GetField("Event1", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(implicitEventHandler1 != null);
-            var implicitEventHandler2 = targetType.GetField("Event2", TestContent.BindingFlagsForMixedMembers);
+            var implicitEventHandler2 = targetType.GetField("Event2", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(implicitEventHandler2 != null);
-            var implicitEventHandler3 = targetType.GetField("Event3", TestContent.BindingFlagsForMixedMembers);
+            var implicitEventHandler3 = targetType.GetField("Event3", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(implicitEventHandler3 != null);
 
             Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);
@@ -173,7 +173,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -200,17 +200,17 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.That(instanceObject is IInterfaceForImplicitExplicitTesting);
             var instanceInterface = (IInterfaceForImplicitExplicitTesting)instanceObject;
 
-            Assert.That(targetType.GetMethod("Method1", TestContent.BindingFlagsForMixedMembers) == null);
-            Assert.That(targetType.GetMethod("Method2", TestContent.BindingFlagsForMixedMembers) == null);
-            Assert.That(targetType.GetMethod("Method3", TestContent.BindingFlagsForMixedMembers) == null);
+            Assert.That(targetType.GetMethod("Method1", TestContent.BindingFlagsForWeavedMembers) == null);
+            Assert.That(targetType.GetMethod("Method2", TestContent.BindingFlagsForWeavedMembers) == null);
+            Assert.That(targetType.GetMethod("Method3", TestContent.BindingFlagsForWeavedMembers) == null);
 
             Assert.That("Explicit Method 1".Equals(instanceInterface.Method1()));
             Assert.That("Explicit Method 2".Equals(instanceInterface.Method2()));
             Assert.That("Explicit Method 3".Equals(instanceInterface.Method3()));
 
-            Assert.That(targetType.GetProperty("Property1", TestContent.BindingFlagsForMixedMembers) == null);
-            Assert.That(targetType.GetProperty("Property2", TestContent.BindingFlagsForMixedMembers) == null);
-            Assert.That(targetType.GetProperty("Property3", TestContent.BindingFlagsForMixedMembers) == null);
+            Assert.That(targetType.GetProperty("Property1", TestContent.BindingFlagsForWeavedMembers) == null);
+            Assert.That(targetType.GetProperty("Property2", TestContent.BindingFlagsForWeavedMembers) == null);
+            Assert.That(targetType.GetProperty("Property3", TestContent.BindingFlagsForWeavedMembers) == null);
 
             Assert.That("Explicit Property 1".Equals(instanceInterface.Property1));
             Assert.That("Explicit Property 2".Equals(instanceInterface.Property2));
@@ -218,19 +218,19 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
 
             EventHandler eventHandler = (sender, eventArgs) => { return; };
 
-            Assert.That(targetType.GetEvent("Event1", TestContent.BindingFlagsForMixedMembers) == null);
-            Assert.That(targetType.GetEvent("Event2", TestContent.BindingFlagsForMixedMembers) == null);
-            Assert.That(targetType.GetEvent("Event3", TestContent.BindingFlagsForMixedMembers) == null);
+            Assert.That(targetType.GetEvent("Event1", TestContent.BindingFlagsForWeavedMembers) == null);
+            Assert.That(targetType.GetEvent("Event2", TestContent.BindingFlagsForWeavedMembers) == null);
+            Assert.That(targetType.GetEvent("Event3", TestContent.BindingFlagsForWeavedMembers) == null);
 
-            Assert.That(targetType.GetField("Event1", TestContent.BindingFlagsForMixedMembers) == null);
-            Assert.That(targetType.GetField("Event2", TestContent.BindingFlagsForMixedMembers) == null);
-            Assert.That(targetType.GetField("Event3", TestContent.BindingFlagsForMixedMembers) == null);
+            Assert.That(targetType.GetField("Event1", TestContent.BindingFlagsForWeavedMembers) == null);
+            Assert.That(targetType.GetField("Event2", TestContent.BindingFlagsForWeavedMembers) == null);
+            Assert.That(targetType.GetField("Event3", TestContent.BindingFlagsForWeavedMembers) == null);
 
-            var explicitEventHandler1 = targetType.GetField("explicitEventHandler1", TestContent.BindingFlagsForMixedMembers);
+            var explicitEventHandler1 = targetType.GetField("explicitEventHandler1", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(explicitEventHandler1 != null);
-            var explicitEventHandler2 = targetType.GetField("explicitEventHandler2", TestContent.BindingFlagsForMixedMembers);
+            var explicitEventHandler2 = targetType.GetField("explicitEventHandler2", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(explicitEventHandler2 != null);
-            var explicitEventHandler3 = targetType.GetField("explicitEventHandler3", TestContent.BindingFlagsForMixedMembers);
+            var explicitEventHandler3 = targetType.GetField("explicitEventHandler3", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(explicitEventHandler3 != null);
 
             Assert.That(explicitEventHandler1.GetValue(instanceObject) == null);
@@ -270,7 +270,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -298,20 +298,20 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             var instanceInterface = (IInterfaceForImplicitExplicitTesting)instanceObject;
 
             Assert.That("Implicit Method 1".Equals(
-                targetType.GetMethod("Method1", TestContent.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
+                targetType.GetMethod("Method1", TestContent.BindingFlagsForWeavedMembers).Invoke(instanceObject, new object[] { })));
             Assert.That("Independent Method 2".Equals(
-                targetType.GetMethod("Method2", TestContent.BindingFlagsForMixedMembers).Invoke(instanceObject, new object[] { })));
-            Assert.That(targetType.GetMethod("Method3", TestContent.BindingFlagsForMixedMembers) == null);
+                targetType.GetMethod("Method2", TestContent.BindingFlagsForWeavedMembers).Invoke(instanceObject, new object[] { })));
+            Assert.That(targetType.GetMethod("Method3", TestContent.BindingFlagsForWeavedMembers) == null);
 
             Assert.That("Implicit Method 1".Equals(instanceInterface.Method1()));
             Assert.That("Explicit Method 2".Equals(instanceInterface.Method2()));
             Assert.That("Explicit Method 3".Equals(instanceInterface.Method3()));
 
             Assert.That("Implicit Property 1".Equals(
-                targetType.GetProperty("Property1", TestContent.BindingFlagsForMixedMembers).GetValue(instanceObject)));
+                targetType.GetProperty("Property1", TestContent.BindingFlagsForWeavedMembers).GetValue(instanceObject)));
             Assert.That("Independent Property 2".Equals(
-                targetType.GetProperty("Property2", TestContent.BindingFlagsForMixedMembers).GetValue(instanceObject)));
-            Assert.That(targetType.GetProperty("Property3", TestContent.BindingFlagsForMixedMembers) == null);
+                targetType.GetProperty("Property2", TestContent.BindingFlagsForWeavedMembers).GetValue(instanceObject)));
+            Assert.That(targetType.GetProperty("Property3", TestContent.BindingFlagsForWeavedMembers) == null);
 
             Assert.That("Implicit Property 1".Equals(instanceInterface.Property1));
             Assert.That("Explicit Property 2".Equals(instanceInterface.Property2));
@@ -319,20 +319,20 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
 
             EventHandler eventHandler = (sender, eventArgs) => { return; };
 
-            var typeEvent1 = targetType.GetEvent("Event1", TestContent.BindingFlagsForMixedMembers);
+            var typeEvent1 = targetType.GetEvent("Event1", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(typeEvent1 != null);
-            var typeEvent2 = targetType.GetEvent("Event2", TestContent.BindingFlagsForMixedMembers);
+            var typeEvent2 = targetType.GetEvent("Event2", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(typeEvent2 != null);
-            Assert.That(targetType.GetEvent("Event3", TestContent.BindingFlagsForMixedMembers) == null);
+            Assert.That(targetType.GetEvent("Event3", TestContent.BindingFlagsForWeavedMembers) == null);
 
-            var implicitEventHandler1 = targetType.GetField("Event1", TestContent.BindingFlagsForMixedMembers);
+            var implicitEventHandler1 = targetType.GetField("Event1", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(implicitEventHandler1 != null);
-            var implicitEventHandler2 = targetType.GetField("Event2", TestContent.BindingFlagsForMixedMembers);
+            var implicitEventHandler2 = targetType.GetField("Event2", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(implicitEventHandler2 != null);
-            Assert.That(targetType.GetField("Event3", TestContent.BindingFlagsForMixedMembers) == null);
-            var explicitEventHandler2 = targetType.GetField("explicitEventHandler2", TestContent.BindingFlagsForMixedMembers);
+            Assert.That(targetType.GetField("Event3", TestContent.BindingFlagsForWeavedMembers) == null);
+            var explicitEventHandler2 = targetType.GetField("explicitEventHandler2", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(explicitEventHandler2 != null);
-            var explicitEventHandler3 = targetType.GetField("explicitEventHandler3", TestContent.BindingFlagsForMixedMembers);
+            var explicitEventHandler3 = targetType.GetField("explicitEventHandler3", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(explicitEventHandler3 != null);
 
             Assert.That(implicitEventHandler1.GetValue(instanceObject) == null);

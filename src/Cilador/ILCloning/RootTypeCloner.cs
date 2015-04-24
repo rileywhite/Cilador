@@ -64,30 +64,30 @@ namespace Cilador.ILCloning
 
             if (!(this.Source.IsClass && !this.Source.IsValueType))
             {
-                throw new InvalidOperationException(string.Format("Configured mixin implementation type must be a reference type: [{0}]", this.Source.FullName));
+                throw new InvalidOperationException(string.Format("Cloning root source type must be a reference type: [{0}]", this.Source.FullName));
             }
 
             if (this.Source.IsAbstract)
             {
-                throw new InvalidOperationException(string.Format("Configured mixin implementation type cannot be abstract: [{0}]", this.Source.FullName));
+                throw new InvalidOperationException(string.Format("Cloning root source type cannot be abstract: [{0}]", this.Source.FullName));
             }
 
             if (this.Source.HasGenericParameters)
             {
-                throw new InvalidOperationException(string.Format("Configured mixin implementation type cannot be an open generic type: [{0}]", this.Source.FullName));
+                throw new InvalidOperationException(string.Format("Cloning root source type cannot be an open generic type: [{0}]", this.Source.FullName));
             }
 
             if (this.Source.HasSecurityDeclarations)
             {
                 throw new InvalidOperationException(string.Format(
-                    "Configured mixin implementation may not be annotated with security attributes: [{0}]",
+                    "Cloning root source type may not be annotated with security attributes: [{0}]",
                     this.Source.FullName));
             }
 
             if (this.Source.BaseType.Resolve().FullName != this.Source.Module.Import(typeof(object)).Resolve().FullName)
             {
                 throw new InvalidOperationException(string.Format(
-                    "Configured mixin implementation cannot have a base type other than System.Object: [{0}]",
+                    "Cloning root source type cannot have a base type other than System.Object: [{0}]",
                     this.Source.FullName));
             }
         }

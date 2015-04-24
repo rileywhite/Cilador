@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using Cilador.Fody.Config;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 

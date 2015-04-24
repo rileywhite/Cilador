@@ -16,7 +16,6 @@
 
 using System;
 using System.Diagnostics.Contracts;
-using Cilador.Fody.Core;
 
 namespace Cilador.Fody.InterfaceMixins
 {
@@ -27,7 +26,7 @@ namespace Cilador.Fody.InterfaceMixins
     /// and supplies arguments for the invocation.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public sealed class InterfaceMixinAttribute : Attribute, IMixCommandAttribute
+    public sealed class InterfaceMixinAttribute : Attribute, IWeaverAttribute
     {
         /// <summary>
         /// Creates a new <see cref="InterfaceMixinAttribute"/>.

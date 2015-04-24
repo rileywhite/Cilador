@@ -27,7 +27,7 @@ namespace Cilador.Fody.Tests.Common
 {
     internal static class TestContent
     {
-        public static BindingFlags BindingFlagsForMixedMembers =
+        public static BindingFlags BindingFlagsForWeavedMembers =
             BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
         public static string GetTestSolutionDirectory()

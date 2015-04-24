@@ -43,12 +43,12 @@ namespace Cilador.Fody.Tests.ModuleWeaverGeneralTests
         [TestCase(
 @"<Cilador>
     <bmfc:CiladorConfig xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:bmfc=""urn:Cilador:Fody:Config"">
-      <MixCommandConfig xsi:type=""bmfc:InterfaceMixinConfigType"">
+      <WeaverConfig xsi:type=""bmfc:InterfaceMixinConfigType"">
         <InterfaceMixinMap Interface=""My.Interface.Assembly.Type, My.Interface.Assembly"" Mixin=""My.Mixin.Assembly.Type, My.Mixin.Assembly"" />
-      </MixCommandConfig>
+      </WeaverConfig>
     </bmfc:CiladorConfig>
 </Cilador>", typeof(InterfaceMixinConfigType))]
-        public void CanReadConfig(string xmlString, params Type[] mixCommandConfigTypes)
+        public void CanReadConfig(string xmlString, params Type[] weaverConfigTypes)
         {
             var configXElement = XElement.Parse(xmlString);
             Assert.NotNull(configXElement);
@@ -57,20 +57,20 @@ namespace Cilador.Fody.Tests.ModuleWeaverGeneralTests
 
             Assert.NotNull(config);
 
-            if (mixCommandConfigTypes == null || mixCommandConfigTypes.Length == 0)
+            if (weaverConfigTypes == null || weaverConfigTypes.Length == 0)
             {
-                Assert.That(config.MixCommandConfig == null || config.MixCommandConfig.Length == 0);
+                Assert.That(config.WeaverConfig == null || config.WeaverConfig.Length == 0);
             }
             else
             {
-                Assert.NotNull(config.MixCommandConfig);
+                Assert.NotNull(config.WeaverConfig);
 
-                Assert.That(config.MixCommandConfig.Length == mixCommandConfigTypes.Length);
-                for (int i = 0; i < config.MixCommandConfig.Length; i++)
+                Assert.That(config.WeaverConfig.Length == weaverConfigTypes.Length);
+                for (int i = 0; i < config.WeaverConfig.Length; i++)
                 {
-                    Contract.Assume(i < mixCommandConfigTypes.Length);
-                    Assert.NotNull(config.MixCommandConfig[i]);
-                    Assert.That(config.MixCommandConfig[i].GetType() == mixCommandConfigTypes[i]);
+                    Contract.Assume(i < weaverConfigTypes.Length);
+                    Assert.NotNull(config.WeaverConfig[i]);
+                    Assert.That(config.WeaverConfig[i].GetType() == weaverConfigTypes[i]);
                 }
             }
         }

@@ -18,8 +18,6 @@ using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using Cilador.Fody.Config;
-using Cilador.Fody.Core;
 using Mono.Cecil;
 
 namespace Cilador.Fody.InterfaceMixins
@@ -28,13 +26,13 @@ namespace Cilador.Fody.InterfaceMixins
     using Cilador.Fody.Core;
 
     /// <summary>
-    /// This mix command will add interfaces to target types and will copy contents
+    /// This weaver will add interfaces to target types and will copy contents
     /// of mixin implementations into those target types.
     /// </summary>
-    [Export(typeof(IMixCommand))]
+    [Export(typeof(IWeaver))]
     [ExportMetadata("AttributeType", typeof(InterfaceMixinAttribute))]
     [ExportMetadata("ConfigType", typeof(InterfaceMixinConfigType))]
-    internal class InterfaceMixinCommand : IMixCommand
+    internal class InterfaceMixinCommand : IWeaver
     {
         /// <summary>
         /// Gets or sets whether the command has been initialized
@@ -45,9 +43,9 @@ namespace Cilador.Fody.InterfaceMixins
         /// Initializes the command using context and configuration information.
         /// </summary>
         /// <param name="weavingContext">Context information for configuration.</param>
-        /// <param name="config">Command configuration information. For this command type, the value must be of type <see cref="MixCommandConfigTypeBase"/>.</param>
-        /// <exception cref="ArgumentException">The <paramref name="config"/> is not of type <see cref="MixCommandConfigTypeBase"/></exception>
-        public void Initialize(IWeavingContext weavingContext, MixCommandConfigTypeBase config)
+        /// <param name="config">Command configuration information. For this command type, the value must be of type <see cref="WeaveConfigTypeBase"/>.</param>
+        /// <exception cref="ArgumentException">The <paramref name="config"/> is not of type <see cref="WeaveConfigTypeBase"/></exception>
+        public void Initialize(IWeavingContext weavingContext, WeaverConfigTypeBase config)
         {
             this.Config = config as InterfaceMixinConfigType;
             if(this.Config == null)
@@ -75,53 +73,53 @@ namespace Cilador.Fody.InterfaceMixins
         }
 
         /// <summary>
-        /// Invokes the mix command on a target type.
+        /// Applies the weave to a target type.
         /// </summary>
-        /// <param name="weavingContext">Context data for mixing.</param>
-        /// <param name="target">The type to which the mix action will be applied/</param>
-        /// <param name="mixCommandAttribute">Attribute that may contain arguments for the mix command invocation. This must be of type <see cref="InterfaceMixinAttribute"/>.</param>
+        /// <param name="weavingContext">Context data for weaving.</param>
+        /// <param name="target">The type to which the weave will be applied/</param>
+        /// <param name="weaveAttribute">Attribute that may contain arguments for the weave invocation. This must be of type <see cref="InterfaceMixinAttribute"/>.</param>
         /// <exception cref="ArgumentException">
-        /// The <paramref name="mixCommandAttribute"/> is not of type <see cref="InterfaceMixinAttribute"/>, or it does not
+        /// The <paramref name="weaveAttribute"/> is not of type <see cref="InterfaceMixinAttribute"/>, or it does not
         /// contain the expected argument values.
         /// </exception>
-        public void Mix(IWeavingContext weavingContext, TypeDefinition target, CustomAttribute mixCommandAttribute)
+        public void Weave(IWeavingContext weavingContext, TypeDefinition target, CustomAttribute weaveAttribute)
         {
-            if (mixCommandAttribute.AttributeType.FullName != weavingContext.GetTypeDefinition(typeof(InterfaceMixinAttribute)).FullName)
+            if (weaveAttribute.AttributeType.FullName != weavingContext.GetTypeDefinition(typeof(InterfaceMixinAttribute)).FullName)
             {
                 throw new ArgumentException("Must be a valid CustomAttribute with AttributeType InterfaceMixAttribute",
-                    "mixCommandAttribute");
+                    "weaveAttribute");
             }
 
-            if (mixCommandAttribute.ConstructorArguments.Count != 1)
+            if (weaveAttribute.ConstructorArguments.Count != 1)
             {
-                throw new ArgumentException("Expected a single constructor argument", "mixCommandAttribute");
+                throw new ArgumentException("Expected a single constructor argument", "weaveAttribute");
             }
 
-            var commandInterfaceTypeReference = mixCommandAttribute.ConstructorArguments[0].Value as TypeReference;
+            var mixinInterfaceTypeReference = weaveAttribute.ConstructorArguments[0].Value as TypeReference;
 
-            if (commandInterfaceTypeReference == null)
+            if (mixinInterfaceTypeReference == null)
             {
-                throw new ArgumentException("Expected constructor argument to be a TypeReference", "mixCommandAttribute");
+                throw new ArgumentException("Expected constructor argument to be a TypeReference", "weaveAttribute");
             }
 
-            var commandInterfaceType = commandInterfaceTypeReference.Resolve();
+            var mixinInterfaceType = mixinInterfaceTypeReference.Resolve();
 
-            if (!commandInterfaceType.IsInterface)
+            if (!mixinInterfaceType.IsInterface)
             {
-                weavingContext.LogError(string.Format("Configured mixin interface type is not an interface: [{0}]", commandInterfaceType.FullName));
-                // let execution continue...an error will be thrown for this particular command if invocation is attempted
+                weavingContext.LogError(string.Format("Configured mixin interface type is not an interface: [{0}]", mixinInterfaceType.FullName));
+                // let execution continue...an error will be thrown for this particular weaver if invocation is attempted
             }
 
             var matchedMap = this.Config.InterfaceMixinMap.SingleOrDefault(
-                map => map.GetInterfaceType(weavingContext).FullName == commandInterfaceType.FullName);
+                map => map.GetInterfaceType(weavingContext).FullName == mixinInterfaceType.FullName);
 
             if(matchedMap == null)
             {
-                weavingContext.LogWarning("Could not find the a configuration for the requested interface: " + commandInterfaceType.FullName);
+                weavingContext.LogWarning("Could not find the a configuration for the requested interface: " + mixinInterfaceType.FullName);
                 return;
             }
 
-            new InterfaceMixinCommandMixer(commandInterfaceType, matchedMap.GetMixinType(weavingContext), target).Execute();
+            new InterfaceMixinCommandMixer(mixinInterfaceType, matchedMap.GetMixinType(weavingContext), target).Execute();
         }
     }
 }

@@ -76,7 +76,7 @@ namespace Cilador.ILCloning
                 // so for now we don't support mixin implementations that have constructors with parameters
                 throw new InvalidOperationException(
                     string.Format(
-                        "Configured mixin implementation cannot have constructors with parameters: [{0}]",
+                        "Cloning root source type cannot have constructors with parameters: [{0}]",
                         rootTypeCloner.Source.FullName));
             }
 

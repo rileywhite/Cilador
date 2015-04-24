@@ -37,7 +37,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         {
             var config = new CiladorConfigType();
 
-            config.MixCommandConfig = new MixCommandConfigTypeBase[]
+            config.WeaverConfig = new WeaverConfigTypeBase[]
             {
                 new InterfaceMixinConfigType
                 {
@@ -57,14 +57,14 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
             targetType.ValidateMemberCountsAre(1, 0, 0, 0, 0, 1);
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
-            var nestedType = targetType.GetNestedType("InnerClass", TestContent.BindingFlagsForMixedMembers);
+            var nestedType = targetType.GetNestedType("InnerClass", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(nestedType != null);
 
-            var staticProperty = nestedType.GetProperty("StaticSomeValue", TestContent.BindingFlagsForMixedMembers);
+            var staticProperty = nestedType.GetProperty("StaticSomeValue", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(staticProperty != null);
             Assert.That(488.Equals(staticProperty.GetValue(null)));
 
-            var property = nestedType.GetProperty("SomeValue", TestContent.BindingFlagsForMixedMembers);
+            var property = nestedType.GetProperty("SomeValue", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(property != null);
             var instance = Activator.CreateInstance(nestedType, new object[0]);
             Assert.That(42.Equals(property.GetValue(instance)));

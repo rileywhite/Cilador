@@ -17,8 +17,6 @@
 using System;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using Cilador.Fody.Core;
-using Cilador.ILCloning;
 using Mono.Cecil;
 
 namespace Cilador.Fody.InterfaceMixins
@@ -72,7 +70,7 @@ namespace Cilador.Fody.InterfaceMixins
             if (mixinType.Interfaces.Count != 1)
             {
                 throw new WeavingException(string.Format(
-                    "Configured mixin implementation [{0}] may implement only the mixin definition interface [{1}]",
+                    "Configured mixin implementation type [{0}] may implement only the mixin definition interface [{1}]",
                     mixinType.FullName,
                     interfaceType.FullName));
             }

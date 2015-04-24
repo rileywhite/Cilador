@@ -67,7 +67,7 @@ namespace Cilador.Fody.Tests.Common
         public static void ValidateFieldCountIs(this Type type, int expectedCount)
         {
             Contract.Requires(type != null);
-            var actualCount = type.GetFields(TestContent.BindingFlagsForMixedMembers).Length;
+            var actualCount = type.GetFields(TestContent.BindingFlagsForWeavedMembers).Length;
             Assert.That(
                 expectedCount == actualCount,
                 string.Format("Expected {0} fields but found {1} in type [{2}]", expectedCount, actualCount, type.FullName));
@@ -76,7 +76,7 @@ namespace Cilador.Fody.Tests.Common
         public static void ValidatePropertyCountIs(this Type type, int expectedCount)
         {
             Contract.Requires(type != null);
-            var actualCount = type.GetProperties(TestContent.BindingFlagsForMixedMembers).Length;
+            var actualCount = type.GetProperties(TestContent.BindingFlagsForWeavedMembers).Length;
             Assert.That(
                 expectedCount == actualCount,
                 string.Format("Expected {0} properties but found {1} in type [{2}]", expectedCount, actualCount, type.FullName));
@@ -85,7 +85,7 @@ namespace Cilador.Fody.Tests.Common
         public static void ValidateConstructorCountIs(this Type type, int expectedCount)
         {
             Contract.Requires(type != null);
-            var actualCount = type.GetConstructors(TestContent.BindingFlagsForMixedMembers).Length;
+            var actualCount = type.GetConstructors(TestContent.BindingFlagsForWeavedMembers).Length;
             Assert.That(
                 expectedCount == actualCount,
                 string.Format("Expected {0} constructors but found {1} in type [{2}]", expectedCount, actualCount, type.FullName));
@@ -94,7 +94,7 @@ namespace Cilador.Fody.Tests.Common
         public static void ValidateMethodCountIs(this Type type, int expectedCount)
         {
             Contract.Requires(type != null);
-            var actualCount = type.GetMethods(TestContent.BindingFlagsForMixedMembers).Length;
+            var actualCount = type.GetMethods(TestContent.BindingFlagsForWeavedMembers).Length;
             Assert.That(
                 expectedCount == actualCount,
                 string.Format("Expected {0} non-constructor methods but found {1} in type [{2}]", expectedCount, actualCount, type.FullName));
@@ -103,7 +103,7 @@ namespace Cilador.Fody.Tests.Common
         public static void ValidateEventCountIs(this Type type, int expectedCount)
         {
             Contract.Requires(type != null);
-            var actualCount = type.GetEvents(TestContent.BindingFlagsForMixedMembers).Length;
+            var actualCount = type.GetEvents(TestContent.BindingFlagsForWeavedMembers).Length;
             Assert.That(
                 expectedCount == actualCount,
                 string.Format("Expected {0} events but found {1} in type [{2}]", expectedCount, actualCount, type.FullName));
@@ -112,7 +112,7 @@ namespace Cilador.Fody.Tests.Common
         public static void ValidateNestedTypeCountIs(this Type type, int expectedCount)
         {
             Contract.Requires(type != null);
-            var actualCount = type.GetNestedTypes(TestContent.BindingFlagsForMixedMembers).Length;
+            var actualCount = type.GetNestedTypes(TestContent.BindingFlagsForWeavedMembers).Length;
             Assert.That(
                 expectedCount == actualCount,
                 string.Format("Expected {0} nested types but found {1} in type [{2}]", expectedCount, actualCount, type.FullName));
@@ -132,41 +132,41 @@ namespace Cilador.Fody.Tests.Common
 
             Tuple<string, string> rootTargetAndSourceFullNames = Tuple.Create(targetType.FullName, sourceType.FullName);
 
-            foreach (var targetField in targetType.GetFields(TestContent.BindingFlagsForMixedMembers))
+            foreach (var targetField in targetType.GetFields(TestContent.BindingFlagsForWeavedMembers))
             {
-                targetField.ValidateSourceEqual(sourceType.GetField(targetField.Name, TestContent.BindingFlagsForMixedMembers), rootTargetAndSourceFullNames);
+                targetField.ValidateSourceEqual(sourceType.GetField(targetField.Name, TestContent.BindingFlagsForWeavedMembers), rootTargetAndSourceFullNames);
             }
 
-            foreach (var targetMethod in targetType.GetMethods(TestContent.BindingFlagsForMixedMembers))
+            foreach (var targetMethod in targetType.GetMethods(TestContent.BindingFlagsForWeavedMembers))
             {
                 // can't match by parameter types because some of the generic type arguments may have been redirected during mixing
                 targetMethod.ValidateSourceEqual(
-                    sourceType.GetMethods(TestContent.BindingFlagsForMixedMembers)
+                    sourceType.GetMethods(TestContent.BindingFlagsForWeavedMembers)
                         .SingleOrDefault(method => targetMethod.IsSourceNameEqual(method, rootTargetAndSourceFullNames)),
                     rootTargetAndSourceFullNames);
             }
 
-            foreach (var targetProperty in targetType.GetProperties(TestContent.BindingFlagsForMixedMembers))
+            foreach (var targetProperty in targetType.GetProperties(TestContent.BindingFlagsForWeavedMembers))
             {
                 targetProperty.ValidateSourceEqual(sourceType.GetProperty(
                     targetProperty.Name,
-                    TestContent.BindingFlagsForMixedMembers,
+                    TestContent.BindingFlagsForWeavedMembers,
                     null,
                     targetProperty.PropertyType,
                     targetProperty.GetIndexParameters().Select(each => each.ParameterType).ToArray(),
                     null), rootTargetAndSourceFullNames);
             }
 
-            foreach (var targetEvent in targetType.GetEvents(TestContent.BindingFlagsForMixedMembers))
+            foreach (var targetEvent in targetType.GetEvents(TestContent.BindingFlagsForWeavedMembers))
             {
                 targetEvent.ValidateSourceEqual(sourceType.GetEvent(
                     targetEvent.Name,
-                    TestContent.BindingFlagsForMixedMembers), rootTargetAndSourceFullNames);
+                    TestContent.BindingFlagsForWeavedMembers), rootTargetAndSourceFullNames);
             }
 
-            foreach (var targetNestedType in targetType.GetNestedTypes(TestContent.BindingFlagsForMixedMembers))
+            foreach (var targetNestedType in targetType.GetNestedTypes(TestContent.BindingFlagsForWeavedMembers))
             {
-                targetNestedType.ValidateSourceEqual(sourceType.GetNestedType(targetNestedType.Name, TestContent.BindingFlagsForMixedMembers), rootTargetAndSourceFullNames);
+                targetNestedType.ValidateSourceEqual(sourceType.GetNestedType(targetNestedType.Name, TestContent.BindingFlagsForWeavedMembers), rootTargetAndSourceFullNames);
             }
         }
 
@@ -394,12 +394,12 @@ namespace Cilador.Fody.Tests.Common
             }
 
             targetType.ValidateMemberCountsAre(
-                sourceType.GetConstructors(TestContent.BindingFlagsForMixedMembers).Length,
-                sourceType.GetMethods(TestContent.BindingFlagsForMixedMembers).Length,
-                sourceType.GetFields(TestContent.BindingFlagsForMixedMembers).Length,
-                sourceType.GetProperties(TestContent.BindingFlagsForMixedMembers).Length,
-                sourceType.GetEvents(TestContent.BindingFlagsForMixedMembers).Length,
-                sourceType.GetNestedTypes(TestContent.BindingFlagsForMixedMembers).Length);
+                sourceType.GetConstructors(TestContent.BindingFlagsForWeavedMembers).Length,
+                sourceType.GetMethods(TestContent.BindingFlagsForWeavedMembers).Length,
+                sourceType.GetFields(TestContent.BindingFlagsForWeavedMembers).Length,
+                sourceType.GetProperties(TestContent.BindingFlagsForWeavedMembers).Length,
+                sourceType.GetEvents(TestContent.BindingFlagsForWeavedMembers).Length,
+                sourceType.GetNestedTypes(TestContent.BindingFlagsForWeavedMembers).Length);
 
             Attribute.GetCustomAttributes(targetType).ValidateSourceEqual(Attribute.GetCustomAttributes(sourceType), rootTargetAndSourceFullNames);
         }
