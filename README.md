@@ -1,4 +1,6 @@
-#Welcome to Bix.Mixers!
+#Welcome to Cilador!
+
+Cilador was formerly known as Bix.Mixers. The name change is still in progress. Please excuse that the rest of the README references the old name :-)
 
 Bix.Mixers has two parts:
 
