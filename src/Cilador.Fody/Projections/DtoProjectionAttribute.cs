@@ -3,7 +3,9 @@ using System.Diagnostics.Contracts;
 
 namespace Cilador.Fody.Projections
 {
-    public class ProjectionAttributeBase : Attribute
+
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+    public sealed class DtoProjectionAttribute : Attribute
     {
         private string name;
         /// <summary>

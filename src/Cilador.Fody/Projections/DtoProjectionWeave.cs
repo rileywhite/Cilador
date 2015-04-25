@@ -1,15 +1,14 @@
 ﻿using Cilador.Fody.Config;
 using Cilador.Fody.Core;
-using Cilador.Fody.InterfaceMixins;
 using System;
 using System.ComponentModel.Composition;
 
 namespace Cilador.Fody.Projections
 {
-    //[Export(typeoIWeaveer))]
-    //[ExportMetadata("AttributeType", typeof(InterfaceMixinAttribute))]
-    //[ExportMetadata("ConfigType", typeof(InterfaceMixinConfigType))]
-    internal class ProjectionCommand : IWeave
+    [Export(typeof(IWeave))]
+    [ExportMetadata("AttributeType", typeof(DtoProjectionAttribute))]
+    [ExportMetadata("ConfigType", typeof(DtoProjectionConfigType))]
+    internal class DtoProjectionWeave : IWeave
     {
         public bool IsInitialized
         {
