@@ -3,7 +3,7 @@ using Cilador.Fody.Core;
 using System;
 using System.ComponentModel.Composition;
 
-namespace Cilador.Fody.Projections
+namespace Cilador.Fody.Projector
 {
     [Export(typeof(IWeave))]
     [ExportMetadata("AttributeType", typeof(DtoProjectionAttribute))]

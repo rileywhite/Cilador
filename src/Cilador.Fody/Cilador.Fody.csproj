@@ -167,9 +167,9 @@
     <Compile Include="InterfaceMixins\InterfaceMixinAttribute.cs" />
     <Compile Include="Core\CoreExtensions.cs" />
     <Compile Include="Core\IWeaveMeta.cs" />
-    <Compile Include="Projections\DtoProjectionWeave.cs" />
-    <Compile Include="Projections\DtoProjectionAttribute.cs" />
-    <Compile Include="Projections\DtoMemberAttribute.cs" />
+    <Compile Include="DtoProjector\DtoProjectorWeave.cs" />
+    <Compile Include="DtoProjector\DtoProjectorAttribute.cs" />
+    <Compile Include="DtoProjector\DtoMemberAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
 
-namespace Cilador.Fody.Projections
+namespace Cilador.Fody.Projector
 {
 
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
