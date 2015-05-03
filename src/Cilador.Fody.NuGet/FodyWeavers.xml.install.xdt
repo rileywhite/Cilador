@@ -2,14 +2,18 @@
 <Weavers xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
   <Cilador xdt:Transform="Insert">
     <cfc:CiladorConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cfc="urn:Cilador:Fody:Config">
+
+      <!-- This is the section for configurating Interface Mixins -->
       <WeaveConfig xsi:type="cfc:InterfaceMixinConfigType">
 
         <!-- Add an InterfaceMixinMap element for each mixin interface definition -->
         <InterfaceMixinMap 
           Interface="MyMixinDefinitions.IHelloWorld, MyMixinDefinitions"
           Mixin="MyMixins.HelloMixin, MyMixins" />
-
       </WeaveConfig>
+
+        <!-- Include this configuration to support data transfer object projection -->
+      <WeaveConfig xsi:type="cfc:DtoProjectorConfigType" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" />
     </cfc:CiladorConfig>
   </Cilador>
 </Weavers>

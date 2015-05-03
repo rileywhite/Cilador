@@ -1,4 +1,4 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Weavers xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
-  <Bix.Mixers xdt:Transform="Remove" />
+  <Cilador xdt:Transform="Remove" />
 </Weavers>
