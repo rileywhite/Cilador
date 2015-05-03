@@ -37,8 +37,8 @@ namespace Cilador.Fody.Core
         /// Initializes the command.
         /// </summary>
         /// <param name="weavingContext">Context data for command initialization.</param>
-        /// <param name="config">Configuration data for the command. Commands may require particular types for this argument that are subtypes of <see cref="WeaveConfigTypeBase"/></param>
-        void Initialize(IWeavingContext weavingContext, WeaveConfigTypeBase config);
+        /// <param name="weaveConfig">Configuration data for the command. Commands may require particular types for this argument that are subtypes of <see cref="WeaveConfigTypeBase"/></param>
+        void Initialize(IWeavingContext weavingContext, WeaveConfigTypeBase weaveConfig);
 
         /// <summary>
         /// Applies the weave to a target type.

@@ -25,8 +25,24 @@ namespace Cilador.Fody.DtoProjector
 
     [Export(typeof(IWeave))]
     [ExportMetadata("AttributeType", typeof(DtoProjectorAttribute))]
+    [ExportMetadata("ConfigType", typeof(DtoProjectorConfigType))]
     internal class DtoProjectorWeave : IWeave
     {
+        private DtoProjectorConfigType config;
+        /// <summary>
+        /// Gets or sets the configuration for this weave.
+        /// </summary>
+        public DtoProjectorConfigType Config
+        {
+            get { return this.config; }
+            private set
+            {
+                value = value ?? new DtoProjectorConfigType();
+                value.DtoProjectorMap = value.DtoProjectorMap ?? new DtoProjectorMapType[0];
+                this.config = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets whether this weave has been initialized.
         /// </summary>
@@ -36,13 +52,9 @@ namespace Cilador.Fody.DtoProjector
         /// Initializes the weave.
         /// </summary>
         /// <param name="weavingContext">Weaving context that is initializing the weave.</param>
-        /// <param name="config">Must be null for this type of weave.</param>
-        public void Initialize(IWeavingContext weavingContext, WeaveConfigTypeBase config)
+        /// <param name="weaveConfig">Must be null for this type of weave.</param>
+        public void Initialize(IWeavingContext weavingContext, WeaveConfigTypeBase weaveConfig)
         {
-            if (config != null)
-            {
-                throw new ArgumentException("DtoProjector weave does not accept a config", "config");
-            }
             this.IsInitialized = true;
         }
 

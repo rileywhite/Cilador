@@ -40,11 +40,10 @@ namespace Cilador.Fody.Core
         /// Contracts for <see cref="IWeave.Initialize"/>
         /// </summary>
         /// <param name="weavingContext">Context data for command initialization.</param>
-        /// <param name="config">Configuration data for the command. Commands may require particular types for this argument that are subtypes of <see cref="WeaveConfigTypeBase"/></param>
-        public void Initialize(IWeavingContext weavingContext, WeaveConfigTypeBase config)
+        /// <param name="weaveConfig">Configuration data for the command. Commands may require particular types for this argument that are subtypes of <see cref="WeaveConfigTypeBase"/></param>
+        public void Initialize(IWeavingContext weavingContext, WeaveConfigTypeBase weaveConfig)
         {
             Contract.Requires(weavingContext != null);
-            Contract.Requires(config != null);
             Contract.Requires(!this.IsInitialized);
             Contract.Ensures(this.IsInitialized);
 

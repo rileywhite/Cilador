@@ -21,6 +21,8 @@ using Cilador.Fody.TestMixinTargets;
 using Cilador.Fody.Tests.Common;
 using NUnit.Framework;
 using System;
+using System.Diagnostics.Contracts;
+using System.Reflection;
 
 namespace Cilador.Fody.Tests.InterfaceMixinTests
 {
@@ -54,6 +56,78 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
             targetType.ValidateMemberSources(typeof(FieldsMixin));
+
+            ValidateNonTargetTypeAndAttributesAreUntouched(assembly);
+        }
+
+        private static void ValidateNonTargetTypeAndAttributesAreUntouched(Assembly mixedAssembly)
+        {
+            Contract.Requires(mixedAssembly != null);
+
+            var nonTargetType = mixedAssembly.GetType(typeof(NonTargetType).FullName);
+            nonTargetType.ValidateMemberCountsAre(3, 15, 3, 3, 3, 15);
+
+            System.ComponentModel.DescriptionAttribute descriptionAttribute;
+
+            foreach (var field in nonTargetType.GetFields(TestContent.BindingFlagsForWeavedMembers))
+            {
+                descriptionAttribute = field.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
+                Assert.That(descriptionAttribute != null);
+                Assert.That(descriptionAttribute.Description == field.Name);
+            }
+
+            foreach (var constructor in nonTargetType.GetConstructors(TestContent.BindingFlagsForWeavedMembers))
+            {
+                descriptionAttribute = constructor.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
+                Assert.That(descriptionAttribute != null);
+                Assert.That(descriptionAttribute.Description == constructor.Name);
+
+                foreach (var parameter in constructor.GetParameters())
+                {
+                    descriptionAttribute = parameter.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
+                    Assert.That(descriptionAttribute != null);
+                    Assert.That(descriptionAttribute.Description == parameter.Name);
+                }
+            }
+
+            foreach (var method in nonTargetType.GetMethods(TestContent.BindingFlagsForWeavedMembers))
+            {
+                descriptionAttribute = method.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
+                Assert.That(descriptionAttribute != null);
+                Assert.That(descriptionAttribute.Description == method.Name);
+
+                descriptionAttribute = method.ReturnParameter.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
+                Assert.That(descriptionAttribute != null);
+                Assert.That(descriptionAttribute.Description == "return");
+
+                foreach (var parameter in method.GetParameters())
+                {
+                    descriptionAttribute = parameter.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
+                    Assert.That(descriptionAttribute != null);
+                    Assert.That(descriptionAttribute.Description == parameter.Name);
+                }
+            }
+
+            foreach (var property in nonTargetType.GetProperties(TestContent.BindingFlagsForWeavedMembers))
+            {
+                descriptionAttribute = property.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
+                Assert.That(descriptionAttribute != null);
+                Assert.That(descriptionAttribute.Description == property.Name);
+            }
+
+            foreach (var @event in nonTargetType.GetEvents(TestContent.BindingFlagsForWeavedMembers))
+            {
+                descriptionAttribute = @event.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
+                Assert.That(descriptionAttribute != null);
+                Assert.That(descriptionAttribute.Description == @event.Name);
+            }
+
+            foreach (var nestedType in nonTargetType.GetNestedTypes(TestContent.BindingFlagsForWeavedMembers))
+            {
+                descriptionAttribute = nestedType.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
+                Assert.That(descriptionAttribute != null);
+                Assert.That(descriptionAttribute.Description == nestedType.Name);
+            }
         }
 
         [Test]

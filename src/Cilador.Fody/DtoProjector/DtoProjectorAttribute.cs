@@ -14,14 +14,14 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Fody.Core;
 using System;
 using System.Diagnostics.Contracts;
 
 namespace Cilador.Fody.DtoProjector
 {
-
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public sealed class DtoProjectorAttribute : Attribute
+    public sealed class DtoProjectorAttribute : Attribute, IWeaveAttribute
     {
         private string name;
         /// <summary>

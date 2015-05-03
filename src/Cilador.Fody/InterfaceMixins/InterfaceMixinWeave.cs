@@ -42,15 +42,11 @@ namespace Cilador.Fody.InterfaceMixins
         /// Initializes the command using context and configuration information.
         /// </summary>
         /// <param name="weavingContext">Context information for configuration.</param>
-        /// <param name="config">Command configuration information. For this command type, the value must be of type <see cref="WeaveConfigTypeBase"/>.</param>
-        /// <exception cref="ArgumentException">The <paramref name="config"/> is not of type <see cref="WeaveConfigTypeBase"/></exception>
-        public void Initialize(IWeavingContext weavingContext, WeaveConfigTypeBase config)
+        /// <param name="weaveConfig">Command configuration information. For this command type, the value must be of type <see cref="WeaveConfigTypeBase"/>.</param>
+        /// <exception cref="ArgumentException">The <paramref name="weaveConfig"/> is not of type <see cref="WeaveConfigTypeBase"/></exception>
+        public void Initialize(IWeavingContext weavingContext, WeaveConfigTypeBase weaveConfig)
         {
-            this.Config = config as InterfaceMixinConfigType;
-            if(this.Config == null)
-            {
-                throw new ArgumentException("Must be of type InterfaceMixConfigType", "config");
-            }
+            this.Config = weaveConfig as InterfaceMixinConfigType;
             this.IsInitialized = true;
         }
 
@@ -63,9 +59,9 @@ namespace Cilador.Fody.InterfaceMixins
             get { return this.config; }
             set
             {
-                Contract.Requires(value != null);
                 Contract.Ensures(this.Config != null);
 
+                value = value ?? new InterfaceMixinConfigType();
                 value.InterfaceMixinMap = value.InterfaceMixinMap ?? new InterfaceMixinMapType[0];
                 this.config = value;
             }

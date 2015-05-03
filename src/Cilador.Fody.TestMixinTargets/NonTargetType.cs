@@ -15,11 +15,7 @@
 /***************************************************************************/
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 [assembly: Description("This is an assembly attribute")]
 [module: Description("This is a module attribute")]

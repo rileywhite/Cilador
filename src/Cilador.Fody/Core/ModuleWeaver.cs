@@ -120,40 +120,40 @@ namespace Cilador.Fody.Core
 
         /// <summary>
         /// Called by MEF when a part's imports have been satisfied and it is safe to use.
-        /// For this type, it rebuilds some configuration information based on the imported weavers.
+        /// For this type, it rebuilds some configuration information based on the imported weaver.
         /// </summary>
         void IPartImportsSatisfiedNotification.OnImportsSatisfied()
         {
             Contract.Assert(this.CiladorConfig != null);
-            Contract.Assert(this.Weavers != null);
+            Contract.Assert(this.Weaves != null);
 
-            foreach (var weaver in this.Weavers)
+            foreach (var weave in this.Weaves)
             {
-                var weaveConfigType = weaver.Metadata.ConfigType;
+                var weaveConfigType = weave.Metadata.ConfigType;
                 WeaveConfigTypeBase weaveConfig;
-                if (weaveConfigType == null) { weaveConfig = null; }
+                if (weaveConfigType == null || this.CiladorConfig.WeaveConfig == null) { weaveConfig = null; }
                 else
                 {
-                    weaveConfig = this.CiladorConfig.WeaveConfig.FirstOrDefault(config => config.GetType() == weaver.Metadata.ConfigType);
+                    weaveConfig = this.CiladorConfig.WeaveConfig.FirstOrDefault(config => config.GetType() == weave.Metadata.ConfigType);
                     if (weaveConfig == null)
                     {
                         if (this.LogWarning != null)
                         {
-                            this.LogWarning(string.Format("Ignoring weaver with no configuration: [{0}]", weaver.GetType().AssemblyQualifiedName));
+                            this.LogWarning(string.Format("Ignoring weave with no configuration: [{0}]", weave.GetType().AssemblyQualifiedName));
                         }
                         continue;
                     }
                 }
-                weaver.Value.Initialize(this, weaveConfig);
+                weave.Value.Initialize(this, weaveConfig);
             }
         }
 
         /// <summary>
-        /// Gets or sets the collection of weavers found in the MEF container catalogs.
+        /// Gets or sets the collection of weaves found in the MEF container catalogs.
         /// </summary>
         [ImportMany(typeof(IWeave), AllowRecomposition = true)]
         // ReSharper disable once UnusedAutoPropertyAccessor.Local
-        private IEnumerable<Lazy<IWeave, IWeaveMeta>> Weavers { get; set; }
+        private IEnumerable<Lazy<IWeave, IWeaveMeta>> Weaves { get; set; }
 
         private XElement config;
         /// <summary>
@@ -354,30 +354,30 @@ namespace Cilador.Fody.Core
         {
             this.assemblyResolver.Resolver2 = new WeavingContextAssemblyResolver(this);
 
-            foreach (var weaverAttributesByTargetType in this.ExtractWeaverAttributesByTargetTypes())
+            foreach (var weaveAttributesByTargetType in this.ExtractWeaveAttributesByTargetTypes())
             {
-                Contract.Assert(weaverAttributesByTargetType.Key != null);
-                Contract.Assert(weaverAttributesByTargetType.Value != null);
-                Contract.Assert(weaverAttributesByTargetType.Value.All(customAttribute => customAttribute != null));
+                Contract.Assert(weaveAttributesByTargetType.Key != null);
+                Contract.Assert(weaveAttributesByTargetType.Value != null);
+                Contract.Assert(weaveAttributesByTargetType.Value.All(customAttribute => customAttribute != null));
 
-                this.FindAndInvokeWeavers(weaverAttributesByTargetType.Key, weaverAttributesByTargetType.Value);
+                this.FindAndInvokeWeavers(weaveAttributesByTargetType.Key, weaveAttributesByTargetType.Value);
             }
         }
 
         /// <summary>
-        /// Looks at all types within the target assembly, and collects any that are annotated with weaver attributes.
+        /// Looks at all types within the target assembly, and collects any that are annotated with weave attributes.
         /// Weave command attributes are removed from types as they are gathered.
         /// </summary>
-        /// <returns>Collection keyed by types the are annotated with at least one weaver attribute. Values are the collection of weavers on the key item.</returns>
-        private Dictionary<TypeDefinition, List<CustomAttribute>> ExtractWeaverAttributesByTargetTypes()
+        /// <returns>Collection keyed by types the are annotated with at least one weave attribute. Values are the collection of weaves on the key item.</returns>
+        private Dictionary<TypeDefinition, List<CustomAttribute>> ExtractWeaveAttributesByTargetTypes()
         {
             Contract.Ensures(Contract.Result<Dictionary<TypeDefinition, List<CustomAttribute>>>().Keys.All(type => type != null));
             Contract.Ensures(!Contract.Result<Dictionary<TypeDefinition, List<CustomAttribute>>>().Values.Any(
                 customAttributes => customAttributes == null || customAttributes.Any(customAttribute => customAttribute == null)));
 
-            var weaverAttributeInterfaceType = this.ModuleDefinition.Import(typeof(IWeaveAttribute)).Resolve();
+            var weaveAttributeInterfaceType = this.ModuleDefinition.Import(typeof(IWeaveAttribute)).Resolve();
 
-            var weaverAttributesByTargetTypes = new Dictionary<TypeDefinition, List<CustomAttribute>>();
+            var weaveAttributesByTargetTypes = new Dictionary<TypeDefinition, List<CustomAttribute>>();
             foreach (var type in this.ModuleDefinition.Types)
             {
                 Contract.Assert(type != null);
@@ -392,68 +392,68 @@ namespace Cilador.Fody.Core
 
                     foreach (var attributeInterfaceType in attributeTypeDefinition.Interfaces)
                     {
-                        if (attributeInterfaceType.Resolve() == weaverAttributeInterfaceType)
+                        if (attributeInterfaceType.Resolve() == weaveAttributeInterfaceType)
                         {
-                            List<CustomAttribute> weaverAttributesForType;
-                            if (!weaverAttributesByTargetTypes.TryGetValue(type.Resolve(), out weaverAttributesForType))
+                            List<CustomAttribute> weaveAttributesForType;
+                            if (!weaveAttributesByTargetTypes.TryGetValue(type.Resolve(), out weaveAttributesForType))
                             {
-                                weaverAttributesForType = new List<CustomAttribute>();
-                                weaverAttributesByTargetTypes[type.Resolve()] = weaverAttributesForType;
+                                weaveAttributesForType = new List<CustomAttribute>();
+                                weaveAttributesByTargetTypes[type.Resolve()] = weaveAttributesForType;
                             }
 
-                            weaverAttributesForType.Add(attribute);
+                            weaveAttributesForType.Add(attribute);
                             type.CustomAttributes.RemoveAt(i);
                         }
                     }
                 }
             }
-            return weaverAttributesByTargetTypes;
+            return weaveAttributesByTargetTypes;
         }
 
         /// <summary>
-        /// Looks up commands indicated by weaver attributes thorugh configuration, and then
+        /// Looks up commands indicated by weave attributes thorugh configuration, and then
         /// executes each command.
         /// </summary>
-        /// <param name="targetType">Type which will be modified by weavers</param>
-        /// <param name="weaverAttributes">Collection of weaver attributes which indicate weavers that will be applied the <paramref name="targetType"/></param>
+        /// <param name="targetType">Type which will be modified by weaves</param>
+        /// <param name="weaveAttributes">Collection of weave attributes which indicate weaves that will be applied the <paramref name="targetType"/></param>
         private void FindAndInvokeWeavers(
             TypeDefinition targetType,
-            List<CustomAttribute> weaverAttributes)
+            List<CustomAttribute> weaveAttributes)
         {
             Contract.Requires(targetType != null);
-            Contract.Requires(weaverAttributes != null);
-            Contract.Requires(weaverAttributes.All(customAttribute => customAttribute != null));
+            Contract.Requires(weaveAttributes != null);
+            Contract.Requires(weaveAttributes.All(customAttribute => customAttribute != null));
 
-            foreach (var weaverAttribute in weaverAttributes)
+            foreach (var weaveAttribute in weaveAttributes)
             {
-                this.GetWeaverFor(targetType, weaverAttribute).Weave(this, targetType, weaverAttribute);
+                this.GetWeaverFor(targetType, weaveAttribute).Weave(this, targetType, weaveAttribute);
             }
         }
 
         /// <summary>
-        /// Finds the weaver that corresponds to a given weaver attribute for a type
+        /// Finds the weave that corresponds to a given weave attribute for a type
         /// </summary>
         /// <param name="targetType">Type that is the target for the command</param>
-        /// <param name="weaverAttribute">Attribute to find command for</param>
+        /// <param name="weaveAttribute">Attribute to find command for</param>
         /// <returns>Weave command that corresponds to the given attribute</returns>
-        /// <exception cref="InvalidOperationException">No weaver is found that corresponds to the <paramref name="weaverAttribute"/></exception>
-        private IWeave GetWeaverFor(TypeDefinition targetType, CustomAttribute weaverAttribute)
+        /// <exception cref="InvalidOperationException">No weave is found that corresponds to the <paramref name="weaveAttribute"/></exception>
+        private IWeave GetWeaverFor(TypeDefinition targetType, CustomAttribute weaveAttribute)
         {
             Contract.Requires(targetType != null);
-            Contract.Requires(weaverAttribute != null);
+            Contract.Requires(weaveAttribute != null);
             Contract.Ensures(Contract.Result<IWeave>() != null);
 
-            var weaverAttributeType = weaverAttribute.AttributeType.Resolve();
+            var weaveAttributeType = weaveAttribute.AttributeType.Resolve();
             try
             {
-                return this.Weavers.First(command =>
-                    this.ModuleDefinition.Import(command.Metadata.AttributeType).Resolve() == weaverAttributeType &&
+                return this.Weaves.First(command =>
+                    this.ModuleDefinition.Import(command.Metadata.AttributeType).Resolve() == weaveAttributeType &&
                     command.Value.IsInitialized).Value;
             }
             catch(Exception e)
             {
                 throw new InvalidOperationException(
-                    string.Format("Cannot find a configured weaver for type [{0}] and weaver attribute [{1}]", targetType.FullName, weaverAttributeType.FullName),
+                    string.Format("Cannot find a configured weave for type [{0}] and weave attribute [{1}]", targetType.FullName, weaveAttributeType.FullName),
                     e);
             }
         }

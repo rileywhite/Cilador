@@ -36,7 +36,7 @@ namespace Cilador.Fody.Core
         Type AttributeType { get; }
 
         /// <summary>
-        /// For a weaver exported through MEF, this identifies the configuration type
+        /// For a weave exported through MEF, this identifies the configuration type
         /// that can be found within <see cref="CiladorConfigType.WeaveConfig"/>,
         /// which is part of the configuration information that is serialized and embedded
         /// within the FodyWeavers.xml configuraiton file. The type specified here must
