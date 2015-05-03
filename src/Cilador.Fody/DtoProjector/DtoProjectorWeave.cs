@@ -18,7 +18,9 @@ using Cilador.Fody.Config;
 using Cilador.Fody.Core;
 using Mono.Cecil;
 using System;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
+using Mono.Cecil.Cil;
 
 namespace Cilador.Fody.DtoProjector
 {
@@ -58,9 +60,36 @@ namespace Cilador.Fody.DtoProjector
             this.IsInitialized = true;
         }
 
+        /// <summary>
+        /// Projects a DTO type as a nested type inside of the target type.
+        /// </summary>
+        /// <param name="weavingContext">Weaving context within which the weave is running.</param>
+        /// <param name="target">Target type.</param>
+        /// <param name="weaveAttribute">Attribute that decorated the target type.</param>
         public void Weave(IWeavingContext weavingContext, TypeDefinition target, CustomAttribute weaveAttribute)
         {
-            throw new NotImplementedException();
+            TypeDefinition dtoType = new TypeDefinition(
+                target.Namespace, "Dto",
+                TypeAttributes.Class | TypeAttributes.NestedPublic,
+                target.Module.Import(typeof(object)));
+            target.NestedTypes.Add(dtoType);
+
+            var dtoMemberAttributeType = target.Module.Import(typeof (DtoMemberAttribute)).Resolve();
+
+            foreach (var property in target.Properties)
+            {
+                for (var i = property.CustomAttributes.Count - 1; i >= 0; --i)
+                {
+                    var attribute = property.CustomAttributes[i];
+                    if (attribute.AttributeType.Resolve() == dtoMemberAttributeType)
+                    {
+                        property.CustomAttributes.RemoveAt(i);
+
+                        var field = new FieldDefinition(property.Name, FieldAttributes.Public, property.PropertyType);
+                        dtoType.Fields.Add(field);
+                    }
+                }
+            }
         }
     }
 }

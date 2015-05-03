@@ -18,6 +18,6 @@ using System;
 
 namespace Cilador.Fody.DtoProjector
 {
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public sealed class DtoMemberAttribute : Attribute { }
 }
