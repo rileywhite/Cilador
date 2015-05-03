@@ -9,7 +9,7 @@
     <copyright>Copyright © Riley White 2013-2015</copyright>
     <developmentDependency>false</developmentDependency>
     <licenseUrl>https://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
-    <projectUrl>https://github.com/rileywhite/Bix.Mixers</projectUrl>
+    <projectUrl>https://github.com/rileywhite/Cilador</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>CIL post-compile manipulation tools, including mixin support through code cloning.</summary>
     <description>$description$</description>
