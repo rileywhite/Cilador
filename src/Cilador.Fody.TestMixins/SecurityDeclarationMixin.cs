@@ -16,16 +16,10 @@
 
 using Cilador.Fody.TestMixinInterfaces;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Permissions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Cilador.Fody.TestMixins
 {
-    using Cilador.Fody.TestMixinInterfaces;
-
     [SecurityPermission(SecurityAction.PermitOnly)]
     public class SecurityDeclarationMixin : IEmptyInterface
     {

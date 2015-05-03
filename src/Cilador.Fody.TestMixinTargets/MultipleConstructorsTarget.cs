@@ -20,9 +20,6 @@ using System;
 
 namespace Cilador.Fody.TestMixinTargets
 {
-    using Cilador.Fody.InterfaceMixins;
-    using Cilador.Fody.TestMixinInterfaces;
-
     public class MultipleConstructorsTargetBase
     {
         public MultipleConstructorsTargetBase()

@@ -20,8 +20,6 @@ using System.Runtime.Serialization;
 
 namespace Cilador.Fody.TestMixins
 {
-    using Cilador.Fody.TestMixinInterfaces;
-
     public class TryCatchFinallyMixin : IEmptyInterface
     {
         public bool FieldSetBeforeTryBlock;

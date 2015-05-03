@@ -155,6 +155,7 @@
     </Compile>
     <Compile Include="Core\DualAssemblyResolver.cs" />
     <Compile Include="Core\IWeavingContext.cs" />
+    <Compile Include="Core\WeaveMetaContract.cs" />
     <Compile Include="Core\WeavingContextAssemblyResolver.cs" />
     <Compile Include="Core\WeavingException.cs" />
     <Compile Include="Core\IWeave.cs" />

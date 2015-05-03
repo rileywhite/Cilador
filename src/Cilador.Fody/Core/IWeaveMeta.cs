@@ -14,16 +14,17 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Fody.Config;
 using System;
 using System.ComponentModel.Composition;
+using System.Diagnostics.Contracts;
 
 namespace Cilador.Fody.Core
 {
-    using Cilador.Fody.Config;
-
     /// <summary>
     /// Holds information from <see cref="ExportMetadataAttribute"/> items on <see cref="IWeave"/> MEF exports.
     /// </summary>
+    [ContractClass(typeof(WeaveMetaContract))]
     public interface IWeaveMeta
     {
         /// <summary>

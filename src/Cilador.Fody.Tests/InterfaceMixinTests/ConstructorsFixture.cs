@@ -17,17 +17,13 @@
 using Cilador.Fody.Config;
 using Cilador.Fody.TestMixinInterfaces;
 using Cilador.Fody.TestMixins;
+using Cilador.Fody.TestMixinTargets;
 using Cilador.Fody.Tests.Common;
 using NUnit.Framework;
 using System;
 
 namespace Cilador.Fody.Tests.InterfaceMixinTests
 {
-    using Cilador.Fody.Config;
-    using Cilador.Fody.TestMixinInterfaces;
-    using Cilador.Fody.TestMixins;
-    using Cilador.Fody.TestMixinTargets;
-    using Cilador.Fody.Tests.Common;
 
     [TestFixture]
     internal class ConstructorsFixture
@@ -52,7 +48,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
             var targetType = assembly.GetType(typeof(EmptyInterfaceTarget).FullName);
             Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
             targetType.ValidateMemberCountsAre(1, 0, 0, 0, 0, 1);

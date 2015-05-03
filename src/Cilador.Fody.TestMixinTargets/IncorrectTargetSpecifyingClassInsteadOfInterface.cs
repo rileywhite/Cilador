@@ -17,16 +17,9 @@
 using Cilador.Fody.InterfaceMixins;
 using Cilador.Fody.TestMixinInterfaces;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Cilador.Fody.TestMixinTargets
 {
-    using Cilador.Fody.InterfaceMixins;
-    using Cilador.Fody.TestMixinInterfaces;
-
     [InterfaceMixin(typeof(NotAValidMixinInterface))]
     public class IncorrectTargetSpecifyingClassInsteadOfInterface { }
 }

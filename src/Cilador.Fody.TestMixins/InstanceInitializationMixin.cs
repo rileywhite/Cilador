@@ -19,8 +19,6 @@ using System;
 
 namespace Cilador.Fody.TestMixins
 {
-    using Cilador.Fody.TestMixinInterfaces;
-
     public class InstanceInitializationMixin : IForTargetWithMultipleConstructors
     {
         public int SomeNumber = 684865;

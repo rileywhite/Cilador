@@ -15,20 +15,15 @@
 /***************************************************************************/
 
 using Cilador.Fody.Config;
-using Cilador.Fody.Tests.Common;
 using Cilador.Fody.TestMixinInterfaces;
 using Cilador.Fody.TestMixins;
+using Cilador.Fody.TestMixinTargets;
+using Cilador.Fody.Tests.Common;
 using NUnit.Framework;
 using System;
 
 namespace Cilador.Fody.Tests.InterfaceMixinTests
 {
-    using Cilador.Fody.Config;
-    using Cilador.Fody.TestMixinInterfaces;
-    using Cilador.Fody.TestMixins;
-    using Cilador.Fody.TestMixinTargets;
-    using Cilador.Fody.Tests.Common;
-
     [TestFixture]
     public class InstanceInitializationFixture
     {
@@ -105,7 +100,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
             var targetType = assembly.GetType(typeof(MultipleConstructorsTarget).FullName);
 
             Assert.That(typeof(IForTargetWithMultipleConstructors).IsAssignableFrom(targetType));

@@ -15,27 +15,15 @@
 /***************************************************************************/
 
 using Cilador.Fody.Config;
-using Cilador.Fody.Core;
-using Cilador.Fody.InterfaceMixins;
 using Cilador.Fody.TestMixinInterfaces;
 using Cilador.Fody.TestMixins;
+using Cilador.Fody.TestMixinTargets;
 using Cilador.Fody.Tests.Common;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Cilador.Fody.Tests.InterfaceMixinTests
 {
-    using Cilador.Fody.Config;
-    using Cilador.Fody.TestMixinInterfaces;
-    using Cilador.Fody.TestMixins;
-    using Cilador.Fody.TestMixinTargets;
-    using Cilador.Fody.Tests.Common;
-
     [TestFixture]
     internal class InterfaceWithOnlyPrimitiveTypesFixture
     {
@@ -59,7 +47,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
             var targetType = assembly.GetType(typeof(InterfaceWithOnlyPrimitiveTypesTarget).FullName);
 
             Assert.That(typeof(IInterfaceWithOnlyPrimitiveTypes).IsAssignableFrom(targetType));

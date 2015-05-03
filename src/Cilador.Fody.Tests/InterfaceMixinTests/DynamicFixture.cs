@@ -15,26 +15,15 @@
 /***************************************************************************/
 
 using Cilador.Fody.Config;
-using Cilador.Fody.Core;
-using Cilador.Fody.InterfaceMixins;
 using Cilador.Fody.TestMixinInterfaces;
 using Cilador.Fody.TestMixins;
+using Cilador.Fody.TestMixinTargets;
 using Cilador.Fody.Tests.Common;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Cilador.Fody.Tests.InterfaceMixinTests
 {
-    using Cilador.Fody.Config;
-    using Cilador.Fody.TestMixinInterfaces;
-    using Cilador.Fody.TestMixins;
-    using Cilador.Fody.TestMixinTargets;
-    using Cilador.Fody.Tests.Common;
-
     [TestFixture]
     public class DynamicFixture
     {
@@ -58,7 +47,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
             var targetType = assembly.GetType(typeof(EmptyInterfaceTarget).FullName);
             Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
             targetType.ValidateMemberCountsAre(1, 7, 3, 1, 1, 1);   // MS compiler is adding a nested type...not sure it should actually be tested for since it's a compiler implementation detail, but leaving it for now

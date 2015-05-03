@@ -14,26 +14,35 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Fody.TestMixinInterfaces;
 using System;
+using System.Diagnostics.Contracts;
 
-namespace Cilador.Fody.TestMixins
+namespace Cilador.Fody.Core
 {
-    public class StaticInitializationMixin : IEmptyInterface
+    /// <summary>
+    /// Contracts for <see cref="IWeaveMeta"/>.
+    /// </summary>
+    [ContractClassFor(typeof(IWeaveMeta))]
+    internal abstract class WeaveMetaContract : IWeaveMeta
     {
-        static StaticInitializationMixin()
+        /// <summary>
+        /// Contracts for <see cref="IWeaveMeta.AttributeType"/>.
+        /// </summary>
+        public Type AttributeType
         {
-            MixedUninitializedInt = 3788448;
-            MixedUninitializedString = "APONION ioniosdnfionaiuhg ";
-            MixedUninitializedObject = new UriBuilder { Host = "j.k.l" };
+            get
+            {
+                Contract.Ensures(Contract.Result<Type>() != null);
+                throw new NotSupportedException();
+            }
         }
 
-        public static int MixedInitializedInt = 438974789;
-        public static string MixedInitializedString = "QKLdsionioj ioenu buif";
-        public static UriBuilder MixedInitializedObject = new UriBuilder { Host = "g.h.i" };
-
-        public static int MixedUninitializedInt;
-        public static string MixedUninitializedString;
-        public static UriBuilder MixedUninitializedObject;
+        /// <summary>
+        /// Contracts for <see cref="IWeaveMeta.ConfigType"/>.
+        /// </summary>
+        public Type ConfigType
+        {
+            get { throw new NotSupportedException(); }
+        }
     }
 }

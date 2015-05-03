@@ -168,6 +168,7 @@
     <Compile Include="Common\ModuleWeaverHelper.cs" />
     <Compile Include="Common\CommonExtensions.cs" />
     <Compile Include="Common\AssemblyVerifier.cs" />
+    <Compile Include="DtoProjectorTests\DtoProjectorFixture.cs" />
     <Compile Include="InterfaceMixinTests\ArrayFixture.cs" />
     <Compile Include="InterfaceMixinTests\ConstructorsFixture.cs" />
     <Compile Include="InterfaceMixinTests\DynamicFixture.cs" />
@@ -188,6 +189,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Cilador.Fody.TestDtoProjectorTargets\Cilador.Fody.TestDtoProjectorTargets.csproj">
+      <Project>{1083cf20-d2f5-4d89-b0d0-b9fb9138ac0f}</Project>
+      <Name>Cilador.Fody.TestDtoProjectorTargets</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Cilador.Fody.TestMixinInterfaces\Cilador.Fody.TestMixinInterfaces.csproj">
       <Project>{bf49324e-601f-4d8d-b520-0cd561d11bb4}</Project>
       <Name>Cilador.Fody.TestMixinInterfaces</Name>
@@ -208,6 +213,7 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

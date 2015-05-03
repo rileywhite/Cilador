@@ -20,8 +20,6 @@ using System;
 
 namespace Cilador.Tests.CoreTests
 {
-    using Cilador.Core;
-
     /// <summary>
     /// Tests <see cref="LazyAccessor{T}"/>, which is used for lazy cloning.
     /// </summary>

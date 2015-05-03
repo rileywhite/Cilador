@@ -25,8 +25,6 @@ using System.Reflection;
 
 namespace Cilador.Tests.ILCloningTests
 {
-    using Cilador.ILCloning;
-
     [TestFixture]
     internal class ILCloningExtensionsFixture
     {

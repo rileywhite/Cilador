@@ -16,27 +16,15 @@
 
 using Cilador.Fody.Config;
 using Cilador.Fody.Core;
-using Cilador.Fody.InterfaceMixins;
 using Cilador.Fody.TestMixinInterfaces;
 using Cilador.Fody.TestMixins;
+using Cilador.Fody.TestMixinTargets;
 using Cilador.Fody.Tests.Common;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Cilador.Fody.Tests.InterfaceMixinTests
 {
-    using Cilador.Fody.Config;
-    using Cilador.Fody.Core;
-    using Cilador.Fody.TestMixinInterfaces;
-    using Cilador.Fody.TestMixins;
-    using Cilador.Fody.TestMixinTargets;
-    using Cilador.Fody.Tests.Common;
-
     [TestFixture]
     public class UnsupportedFunctionalityFixture
     {
@@ -65,7 +53,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                 .And.Message.EqualTo(string.Format(
                     "Cloning root source type cannot be abstract: [{0}]",
                     typeof(AbstractMixin).FullName)),
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config));
         }
 
         [Test]
@@ -93,7 +81,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                 .And.Message.EqualTo(string.Format(
                     "Cloning root source type cannot be an open generic type: [{0}]",
                     typeof(GenericMixinImplementation<>).FullName)),
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config));
         }
 
         [Test]
@@ -118,7 +106,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
 
             Assert.Throws(
                 Is.AssignableTo<Exception>(),
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config));
         }
 
         [Test]
@@ -143,7 +131,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
 
             Assert.Throws(
                 Is.AssignableTo<Exception>(),
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config));
         }
 
         [Test]
@@ -172,7 +160,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                     "Configured mixin implementation type [{0}] must implement the interface specified mixin interface definition [{1}]",
                     typeof(InterfacelessMixin).FullName,
                     typeof(IEmptyInterface).FullName)),
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config));
         }
 
         [Test]
@@ -200,7 +188,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                 .And.Message.EqualTo(string.Format(
                     "Configured mixin definition interface type is not an interface: [{0}]",
                     typeof(NotAValidMixinInterface).FullName)),
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config));
         }
 
         [Test]
@@ -228,7 +216,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                 .And.Message.EqualTo(string.Format(
                     "Cloning root source type cannot have a base type other than System.Object: [{0}]",
                     typeof(InheritingMixin).FullName)),
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config));
         }
 
         [Test]
@@ -257,7 +245,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                     "Configured mixin implementation type [{0}] may implement only the mixin definition interface [{1}]",
                     typeof(ExtraInterfaceMixin).FullName,
                     typeof(IEmptyInterface).FullName)),
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config));
         }
 
         [Test]
@@ -285,7 +273,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                 .And.Message.EqualTo(string.Format(
                     "Cloning source may not contain extern methods: [{0}]",
                     typeof(UnmanagedCallMixin).FullName)),
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config));
         }
 
         [Test]
@@ -313,7 +301,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                 .And.Message.EqualTo(string.Format(
                     "Cloning root source type may not be annotated with security attributes: [{0}]",
                     typeof(SecurityDeclarationMixin).FullName)),
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config));
         }
 
         [Test]
@@ -341,7 +329,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                 .And.Message.EqualTo(string.Format(
                     "Cloning source type may not contain nested types annotated with security attributes: [{0}]",
                     typeof(SecurityDeclarationOnNestedTypeMixin).FullName)),
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config));
         }
 
         [Test]
@@ -369,7 +357,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                 .And.Message.EqualTo(string.Format(
                     "Cloning source type may not contain methods annotated with security attributes: [{0}]",
                     typeof(SecurityDeclarationOnMethodMixin).FullName)),
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config));
         }
 
         [Test]
@@ -398,7 +386,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                     "Target type [{0}] already implements interface to be mixed [{1}]",
                     typeof(InterfaceIsAlreadyImplementedTarget).FullName,
                     typeof(IIsAlreadyImplementedTester).FullName)),
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config));
         }
 
         [Test]
@@ -426,7 +414,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                 .And.Message.EqualTo(string.Format(
                     "Cloning root source type cannot have constructors with parameters: [{0}]",
                     typeof(ConstructorWithParametersMixin).FullName)),
-                () => ModuleWeaverHelper.WeaveAndLoadTestTarget(config));
+                () => ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config));
         }
     }
 }

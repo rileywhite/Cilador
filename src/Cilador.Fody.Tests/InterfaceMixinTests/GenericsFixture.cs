@@ -15,29 +15,18 @@
 /***************************************************************************/
 
 using Cilador.Fody.Config;
-using Cilador.Fody.Core;
 using Cilador.Fody.TestMixinInterfaces;
 using Cilador.Fody.TestMixins;
+using Cilador.Fody.TestMixinTargets;
 using Cilador.Fody.Tests.Common;
 using NUnit.Framework;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 
 namespace Cilador.Fody.Tests.InterfaceMixinTests
 {
-    using Cilador.Fody.Config;
-    using Cilador.Fody.TestMixinInterfaces;
-    using Cilador.Fody.TestMixins;
-    using Cilador.Fody.TestMixinTargets;
-    using Cilador.Fody.Tests.Common;
-
     [TestFixture]
     internal class GenericsFixture
     {
@@ -61,7 +50,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
             var targetType = assembly.GetType(typeof(EmptyInterfaceTarget).FullName);
             Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
             targetType.ValidateMemberCountsAre(1, 2, 0, 0, 0, 0);
@@ -172,7 +161,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
                 },
             };
 
-            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
             var targetType = assembly.GetType(typeof(EmptyInterfaceTarget).FullName);
             Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
             targetType.ValidateMemberCountsAre(1, 0, 0, 0, 0, 6);
@@ -477,7 +466,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         //        },
         //    };
 
-        //    ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+        //    ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
         //}
 
         //        [Test]
@@ -500,7 +489,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         //                },
         //            };
 
-        //            ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+        //            ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
         //        }
 
         //        [Test]
@@ -523,7 +512,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         //                },
         //            };
 
-        //            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+        //            var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
         //            var targetType = assembly.GetType("Cilador.Fody.TestMixinTargets.EmptyInterfaceTarget");
         //            Assert.That(typeof(Cilador.Fody.TestMixinInterfaces.IEmptyInterface).IsAssignableFrom(targetType));
         //            Assert.That(targetType.GetConstructors(TestContent.BindingFlagsForWeavedMembers).Length == 1, "Expected 1 constructor");
@@ -554,7 +543,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         //                },
         //            };
 
-        //            ModuleWeaverHelper.WeaveAndLoadTestTarget(config);
+        //            ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
         //        }
     }
 }

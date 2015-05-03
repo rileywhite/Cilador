@@ -14,13 +14,13 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Fody.Config;
+using Mono.Cecil;
 using System;
 using System.Diagnostics.Contracts;
-using Mono.Cecil;
 
 namespace Cilador.Fody.Core
 {
-    using Cilador.Fody.Config;
 
     /// <summary>
     /// Contracts for <see cref="IWeave"/> implementations.

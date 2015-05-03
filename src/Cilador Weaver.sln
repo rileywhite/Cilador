@@ -15,6 +15,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.Fody.TestMixinInterfaces", "Cilador.Fody.TestMixinInterfaces\Cilador.Fody.TestMixinInterfaces.csproj", "{BF49324E-601F-4D8D-B520-0CD561D11BB4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.Fody.Tests", "Cilador.Fody.Tests\Cilador.Fody.Tests.csproj", "{D22DF5E2-E4A5-4E5A-8664-C961680D267C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1083CF20-D2F5-4D89-B0D0-B9FB9138AC0F} = {1083CF20-D2F5-4D89-B0D0-B9FB9138AC0F}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.Fody.TestMixins", "Cilador.Fody.TestMixins\Cilador.Fody.TestMixins.csproj", "{CC1F40B0-9E5A-42B9-8C67-5F95D4AB2763}"
 EndProject
@@ -26,6 +29,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador", "Cilador\Cilador.csproj", "{0E204E18-CAE0-4C25-A0F6-8695D5B27F5D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.Tests", "Cilador.Tests\Cilador.Tests.csproj", "{53B19EF9-C5D1-4A23-97D8-FF12F3185997}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.Fody.TestDtoProjectorTargets", "Cilador.Fody.TestDtoProjectorTargets\Cilador.Fody.TestDtoProjectorTargets.csproj", "{1083CF20-D2F5-4D89-B0D0-B9FB9138AC0F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +66,10 @@ Global
 		{53B19EF9-C5D1-4A23-97D8-FF12F3185997}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53B19EF9-C5D1-4A23-97D8-FF12F3185997}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53B19EF9-C5D1-4A23-97D8-FF12F3185997}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1083CF20-D2F5-4D89-B0D0-B9FB9138AC0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1083CF20-D2F5-4D89-B0D0-B9FB9138AC0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1083CF20-D2F5-4D89-B0D0-B9FB9138AC0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1083CF20-D2F5-4D89-B0D0-B9FB9138AC0F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

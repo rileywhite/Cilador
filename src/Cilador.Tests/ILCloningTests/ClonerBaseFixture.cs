@@ -14,15 +14,12 @@
 // limitations under the License.
 /***************************************************************************/
 
-using System;
 using Cilador.ILCloning;
-using Mono.Cecil;
 using NUnit.Framework;
+using System;
 
 namespace Cilador.Tests.ILCloningTests
 {
-    using Cilador.ILCloning;
-
     /// <summary>
     /// Tests <see cref="ClonerBase{TCloned}"/>.
     /// </summary>

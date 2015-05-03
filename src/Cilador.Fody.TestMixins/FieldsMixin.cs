@@ -18,14 +18,9 @@ using Cilador.Fody.TestMixinInterfaces;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Cilador.Fody.TestMixins
 {
-    using Cilador.Fody.TestMixinInterfaces;
-
     public class FieldsMixin : IEmptyInterface
     {
 #pragma warning disable 169, 649

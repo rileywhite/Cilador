@@ -15,14 +15,13 @@
 /***************************************************************************/
 
 using System;
+using System.Runtime.Serialization;
+using System.Xml;
+using System.Xml.Schema;
+using System.Xml.Serialization;
 
 namespace Cilador.Fody.TestMixinInterfaces
 {
-    using System.Runtime.Serialization;
-    using System.Xml;
-    using System.Xml.Schema;
-    using System.Xml.Serialization;
-
     [Serializable]
     [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
     public sealed class TestMixedAttribute : Attribute, ISerializable, IXmlSerializable

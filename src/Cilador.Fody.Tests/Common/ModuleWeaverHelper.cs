@@ -14,30 +14,25 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Fody.Config;
 using Cilador.Fody.Core;
+using Cilador.Fody.TestMixinTargets;
+using Cilador.Fody.Config;
 using Mono.Cecil;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Xml;
 using System.Xml.Linq;
-using System.Xml.Serialization;
 
 namespace Cilador.Fody.Tests.Common
 {
-    using Cilador.Fody.Core;
-    using Cilador.Fody.TestMixinTargets;
-    using Cilador.Fody.Config;
-
     internal static class ModuleWeaverHelper
     {
-        public static ModuleWeaver GetModuleWeaver(XElement config)
+        public static ModuleWeaver GetModuleWeaver(
+            string targetAssemblyFilename,
+            XElement config)
         {
             Contract.Requires(config != null);
             Contract.Ensures(Contract.Result<ModuleWeaver>() != null);
@@ -58,9 +53,9 @@ namespace Cilador.Fody.Tests.Common
             Contract.Ensures(!string.IsNullOrWhiteSpace(Contract.Result<ModuleWeaver>().SolutionDirectoryPath));
 
             var moduleWeaver = new ModuleWeaver();
-            moduleWeaver.AddinDirectoryPath = TestContent.GetAddinDirectory();
+            moduleWeaver.AddinDirectoryPath = TestContent.GetDirectory(targetAssemblyFilename);
             Contract.Assert(Directory.Exists(moduleWeaver.AddinDirectoryPath));
-            moduleWeaver.AssemblyFilePath = TestContent.GetTestTargetsPath();
+            moduleWeaver.AssemblyFilePath = TestContent.GetTestPath(targetAssemblyFilename);
             moduleWeaver.AssemblyResolver = new DefaultAssemblyResolver();
             moduleWeaver.Config = config;
             moduleWeaver.DefineConstants = new List<string>();
@@ -74,41 +69,50 @@ namespace Cilador.Fody.Tests.Common
             moduleWeaver.LogWarning = m => { };
             moduleWeaver.LogWarningPoint = (m, p) => { };
             moduleWeaver.ModuleDefinition = ModuleDefinition.ReadModule(moduleWeaver.AssemblyFilePath);
-            moduleWeaver.ProjectDirectoryPath = TestContent.GetTestProjectDirectory();
+            moduleWeaver.ProjectDirectoryPath = TestContent.GetDirectory(targetAssemblyFilename);
             Contract.Assert(Directory.Exists(moduleWeaver.ProjectDirectoryPath));
             moduleWeaver.SolutionDirectoryPath = TestContent.GetTestSolutionDirectory();
             Contract.Assert(Directory.Exists(moduleWeaver.SolutionDirectoryPath));
             return moduleWeaver;
         }
 
-        public static Assembly WeaveAndLoadTestTarget(CiladorConfigType config, params Tuple<string, string>[] fodyWeaverTaskProperties)
+        public static Assembly WeaveAndLoadTestTarget(
+            string targetAssemblyFilename,
+            CiladorConfigType config,
+            params Tuple<string, string>[] fodyWeaverTaskProperties)
         {
             Contract.Requires(config != null);
             Contract.Ensures(Contract.Result<Assembly>() != null);
 
-            var mixedAssembly = AppDomain.CurrentDomain.Load(ModuleWeaverHelper.GetRawWeavedAssembly(BuildXElementConfig(config, fodyWeaverTaskProperties)));
+            var mixedAssembly = AppDomain.CurrentDomain.Load(ModuleWeaverHelper.GetRawWeavedAssembly(
+                targetAssemblyFilename,
+                BuildXElementConfig(config, fodyWeaverTaskProperties)));
             ValidateNonTargetTypeAndAttributesAreUntouched(mixedAssembly);
             return mixedAssembly;
         }
 
-        public static byte[] GetRawWeavedAssembly(XElement config)
+        public static byte[] GetRawWeavedAssembly(
+            string targetAssemblyFilename,
+            XElement config)
         {
             Contract.Requires(config != null);
             Contract.Ensures(Contract.Result<byte[]>() != null);
 
             using(var memoryStream = new MemoryStream())
             {
-                WeaveTestTarget(config).Write(memoryStream);
+                WeaveTestTarget(targetAssemblyFilename, config).Write(memoryStream);
                 return memoryStream.GetBuffer();
             }
         }
 
-        public static ModuleDefinition WeaveTestTarget(XElement config)
+        public static ModuleDefinition WeaveTestTarget(
+            string targetAssemblyFilename,
+            XElement config)
         {
             Contract.Requires(config != null);
             Contract.Ensures(Contract.Result<ModuleDefinition>() != null);
 
-            var moduleWeaver = GetModuleWeaver(config);
+            var moduleWeaver = GetModuleWeaver(targetAssemblyFilename, config);
 
             bool isVerified;
             string verificationOutput;

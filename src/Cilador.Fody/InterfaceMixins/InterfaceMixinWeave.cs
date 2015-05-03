@@ -14,6 +14,8 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Fody.Config;
+using Cilador.Fody.Core;
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics.Contracts;
@@ -22,9 +24,6 @@ using Mono.Cecil;
 
 namespace Cilador.Fody.InterfaceMixins
 {
-    using Cilador.Fody.Config;
-    using Cilador.Fody.Core;
-
     /// <summary>
     /// This weave will add interfaces to target types and will copy contents
     /// of mixin implementations into those target types.

@@ -14,14 +14,13 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Fody.Core;
+using Mono.Cecil;
 using System;
 using System.Diagnostics.Contracts;
-using Mono.Cecil;
 
 namespace Cilador.Fody.Config
 {
-    using Cilador.Fody.Core;
-
     /// <summary>
     /// Configuration data that maps mixin definition interfaces to mixin implementations
     /// that will be used to satisfy the definition during mixing.

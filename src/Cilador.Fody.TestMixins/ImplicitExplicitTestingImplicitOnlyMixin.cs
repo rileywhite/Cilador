@@ -16,15 +16,9 @@
 
 using Cilador.Fody.TestMixinInterfaces;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Cilador.Fody.TestMixins
 {
-    using Cilador.Fody.TestMixinInterfaces;
-
     public class ImplicitExplicitTestingImplicitOnlyMixin : IInterfaceForImplicitExplicitTesting
     {
         public string Method1() { return "Implicit Method 1"; }

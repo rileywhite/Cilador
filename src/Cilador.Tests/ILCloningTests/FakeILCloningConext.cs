@@ -21,8 +21,6 @@ using Mono.Cecil.Cil;
 
 namespace Cilador.Tests.ILCloningTests
 {
-    using Cilador.ILCloning;
-
     /// <summary>
     /// Fake IL cloning context.
     /// </summary>

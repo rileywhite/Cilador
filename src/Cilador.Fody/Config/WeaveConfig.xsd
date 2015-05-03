@@ -46,19 +46,19 @@
   </xs:complexType>
   <xs:element name="InterfaceMixinConfig" type="cfc:InterfaceMixinConfigType"/>
 
-  <xs:complexType name="DtoProjectionMapType">
+  <xs:complexType name="DtoProjectorMapType">
     <xs:attribute name="TargetAssembly" type="xs:string" use="required"/>
     <xs:attribute name="TargetNamespace" type="xs:string" use="required"/>
   </xs:complexType>
 
-  <xs:complexType name="DtoProjectionConfigType">
+  <xs:complexType name="DtoProjectorConfigType">
     <xs:complexContent>
       <xs:extension base="cfc:WeaveConfigTypeBase">
         <xs:sequence minOccurs="1" maxOccurs="1">
-          <xs:element name="DtoProjectionMap" type="cfc:DtoProjectionMapType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="DtoProjectorMap" type="cfc:DtoProjectorMapType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
-  <xs:element name="DtoProjectionConfig" type="cfc:DtoProjectionConfigType"/>
+  <xs:element name="DtoProjectorConfig" type="cfc:DtoProjectorConfigType"/>
 </xs:schema>

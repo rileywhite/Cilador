@@ -14,14 +14,14 @@
 // limitations under the License.
 /***************************************************************************/
 
-using System;
-using System.Collections.Generic;
+using Cilador.Fody.Config;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System;
+using System.Collections.Generic;
 
 namespace Cilador.Fody.Core
 {
-    using Cilador.Fody.Config;
 
     /// <summary>
     /// Represents a read-only context with configuration data, logging actions, and target assembly data

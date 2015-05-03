@@ -14,15 +14,15 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Fody.Core;
+using Cilador.ILCloning;
+using Mono.Cecil;
 using System;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using Mono.Cecil;
 
 namespace Cilador.Fody.InterfaceMixins
 {
-    using Cilador.Fody.Core;
-    using Cilador.ILCloning;
 
     /// <summary>
     /// This is a method object for a single execution of <see cref="InterfaceMixinWeave"/>.

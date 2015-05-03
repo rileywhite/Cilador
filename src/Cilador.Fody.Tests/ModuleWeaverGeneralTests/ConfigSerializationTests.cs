@@ -14,26 +14,15 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Fody.Config;
 using Cilador.Fody.Core;
-using Cilador.Fody.InterfaceMixins;
-using Cilador.Fody.Tests.Common;
+using Cilador.Fody.Config;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
-using System.Xml.Serialization;
 
 namespace Cilador.Fody.Tests.ModuleWeaverGeneralTests
 {
-    using Cilador.Fody.Core;
-    using Cilador.Fody.Config;
-
     [TestFixture]
     internal class ConfigTests
     {

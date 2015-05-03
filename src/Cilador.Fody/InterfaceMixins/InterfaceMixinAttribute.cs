@@ -14,12 +14,12 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Fody.Core;
 using System;
 using System.Diagnostics.Contracts;
 
 namespace Cilador.Fody.InterfaceMixins
 {
-    using Cilador.Fody.Core;
 
     /// <summary>
     /// Annotates types to which the <see cref="InterfaceMixinWeave"/> should be applied,

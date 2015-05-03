@@ -14,6 +14,9 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Fody.Config;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -21,14 +24,9 @@ using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Xml.Linq;
-using Cilador.Fody.Config;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Cilador.Fody.Core
 {
-    using Cilador.Fody.Config;
-
     /// <summary>
     /// The <see cref="ModuleWeaver.Execute()"/> method is invoked by Fody as a Visual
     /// Studio post-build step. This type serves to start the weaving process and to manage
@@ -131,16 +129,22 @@ namespace Cilador.Fody.Core
 
             foreach (var weaver in this.Weavers)
             {
-                var WeaveConfig = this.CiladorConfig.WeaveConfig.FirstOrDefault(config => config.GetType() == weaver.Metadata.ConfigType);
-                if (WeaveConfig == null)
+                var weaveConfigType = weaver.Metadata.ConfigType;
+                WeaveConfigTypeBase weaveConfig;
+                if (weaveConfigType == null) { weaveConfig = null; }
+                else
                 {
-                    if (this.LogWarning != null)
+                    weaveConfig = this.CiladorConfig.WeaveConfig.FirstOrDefault(config => config.GetType() == weaver.Metadata.ConfigType);
+                    if (weaveConfig == null)
                     {
-                        this.LogWarning(string.Format("Ignoring weaver with no configuration: [{0}]", weaver.GetType().AssemblyQualifiedName));
+                        if (this.LogWarning != null)
+                        {
+                            this.LogWarning(string.Format("Ignoring weaver with no configuration: [{0}]", weaver.GetType().AssemblyQualifiedName));
+                        }
+                        continue;
                     }
-                    continue;
                 }
-                weaver.Value.Initialize(this, WeaveConfig);
+                weaver.Value.Initialize(this, weaveConfig);
             }
         }
 
