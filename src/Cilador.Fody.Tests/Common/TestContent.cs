@@ -35,31 +35,16 @@ namespace Cilador.Fody.Tests.Common
             return Path.GetFullPath(@"..\..\..\");
         }
 
-        private static readonly string TestProjectDirectoryRelativeToExecutingAssemblyFormat = @"..\..\..\Cilador.Fody.Test{0}";
-
-        public static string GetTestProjectDirectory()
-        {
-            return Path.GetFullPath(string.Format(TestProjectDirectoryRelativeToExecutingAssemblyFormat, "MixinTargets"));
-        }
+        private static readonly string TestProjectDirectoryRelativeToExecutingAssemblyFormat = @"..\..\..\{0}";
 
         private static readonly string TestAssemblyPathRelativeToExecutingAssemblyFormat =
-            TestProjectDirectoryRelativeToExecutingAssemblyFormat + @"\bin\{1}\Cilador.Fody.Test{0}.dll";
+            TestProjectDirectoryRelativeToExecutingAssemblyFormat + @"\bin\{1}\{0}.dll";
 
-        public static string GetTestTargetsPath()
-        {
-            return GetTestPath("MixinTargets");
-        }
-
-        public static string GetTestMixinsPath()
-        {
-            return GetTestPath("Mixins");
-        }
-
-        private static string GetTestPath(string name)
+        public static string GetTestPath(string assemblyFilename)
         {
             var targetPathFormat = Path.GetFullPath(Path.Combine(
                 Path.GetDirectoryName(new Uri(typeof(TestContent).Assembly.CodeBase).LocalPath),
-                string.Format(TestAssemblyPathRelativeToExecutingAssemblyFormat, name, "{0}")));
+                string.Format(TestAssemblyPathRelativeToExecutingAssemblyFormat, assemblyFilename, "{0}")));
 #if (DEBUG)
             return string.Format(targetPathFormat, "Debug");
 #else
@@ -67,9 +52,9 @@ namespace Cilador.Fody.Tests.Common
 #endif
         }
 
-        public static string GetAddinDirectory()
+        public static string GetDirectory(string assemblyFilename)
         {
-            return Path.GetDirectoryName(GetTestMixinsPath());
+            return Path.GetDirectoryName(GetTestPath(assemblyFilename));
         }
     }
 }
