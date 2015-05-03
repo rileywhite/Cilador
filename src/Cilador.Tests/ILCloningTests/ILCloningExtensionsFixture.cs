@@ -102,7 +102,9 @@ namespace Cilador.Tests.ILCloningTests
                 {
                     public class Level1_2_1_1
                     {
+#pragma warning disable 169
                         public int SomeInt;
+#pragma warning restore 169
                     }
                 }
             }

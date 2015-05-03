@@ -25,5 +25,5 @@ using System.Reflection;
 
 internal static class CommonAssemblyInfo
 {
-    public const string Version = "0.1.7.1";
+    public const string Version = "0.2.0.0";
 }
