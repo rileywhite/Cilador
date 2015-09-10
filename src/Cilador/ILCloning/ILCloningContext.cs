@@ -14,12 +14,13 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Core;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Cilador.ILCloning
 {
@@ -63,6 +64,10 @@ namespace Cilador.ILCloning
         {
             Contract.Requires(this.RootSource != null);
             Contract.Requires(this.RootTarget != null);
+
+            var builder = new Cilador.Graph.ILGraphBuilder();
+            var graph = builder.Traverse(this.RootSource);
+            var stuff = TopologicalSort.TopologicalSorter.TopologicalSort(graph.Vertices, graph.DependencyEdges);
 
             this.ClonerGatheringVisitor.Visit(new RootTypeCloner(this, this.RootSource, this.RootTarget));
             this.Cloners.SetAllClonersAdded();
@@ -109,6 +114,7 @@ namespace Cilador.ILCloning
         /// <returns>Unmodified <paramref name="item"/></returns>
         private object RootImport(object item)
         {
+            Contract.Assert(this.Cloners.AreAllClonersAdded);
             return item;
         }
 
@@ -127,6 +133,7 @@ namespace Cilador.ILCloning
         public TypeReference RootImport(TypeReference type)
         {
             Contract.Ensures(condition: (type == null) == (Contract.Result<TypeReference>() == null));
+            Contract.Assert(this.Cloners.AreAllClonersAdded);
 
             if (type == null) { return null; }
             if (type.IsGenericParameter)
@@ -191,6 +198,7 @@ namespace Cilador.ILCloning
         /// <returns>Root imported type.</returns>
         public TypeReference RootImport(GenericParameter genericParameter)
         {
+            Contract.Assert(this.Cloners.AreAllClonersAdded);
             if (genericParameter == null) { return null; }
 
             string cacheKey = Cloners.GetUniqueKeyFor(genericParameter);
@@ -233,6 +241,7 @@ namespace Cilador.ILCloning
         /// <returns>Root imported field.</returns>
         public FieldReference RootImport(FieldReference field)
         {
+            Contract.Assert(this.Cloners.AreAllClonersAdded);
             if (field == null) { return null; }
 
             FieldReference importedField;
@@ -292,6 +301,7 @@ namespace Cilador.ILCloning
         /// <returns>Root imported method.</returns>
         public MethodReference RootImport(MethodReference method)
         {
+            Contract.Assert(this.Cloners.AreAllClonersAdded);
             if (method == null) { return null; }
 
             MethodReference importedMethod;
@@ -329,6 +339,9 @@ namespace Cilador.ILCloning
                 Contract.Assert(localMethod.GenericParameters.Count > 0);
 
                 // create a new generic instance reference and root import all generic arguments
+
+                // TODO this "snapshots" a possibly incompletely cloned generic type
+
                 var genericInstanceMethod = (GenericInstanceMethod)method;
 
                 var importedLocalMethod = this.RootTarget.Module.Import(localMethod);
@@ -362,6 +375,7 @@ namespace Cilador.ILCloning
                     {
                         // the method is defined within a generic type _and_ importing results in a definition rather than a reference
                         // this means that we need to make a new reference
+                        // TODO this "snapshots" a possibly incompletely cloned generic method
                         importedMethod = new MethodReference(importedMethodDefinition.Name, importedMethodDefinition.ReturnType)
                         {
                             DeclaringType = importedDeclaringType,
@@ -424,6 +438,7 @@ namespace Cilador.ILCloning
         /// <returns>Root imported parameter.</returns>
         public ParameterDefinition RootImport(ParameterDefinition parameter)
         {
+            Contract.Assert(this.Cloners.AreAllClonersAdded);
             if (parameter == null) { return null; }
             ParameterDefinition imported;
             if (this.Cloners.TryGetTargetFor(parameter, out imported))
@@ -444,6 +459,7 @@ namespace Cilador.ILCloning
         /// <returns>Root imported variable.</returns>
         public VariableDefinition RootImport(VariableDefinition variable)
         {
+            Contract.Assert(this.Cloners.AreAllClonersAdded);
             if (variable == null) { return null; }
             VariableDefinition imported;
             if (this.Cloners.TryGetTargetFor(variable, out imported))
@@ -464,6 +480,7 @@ namespace Cilador.ILCloning
         /// <returns>Root imported instruction.</returns>
         public Instruction RootImport(Instruction instruction)
         {
+            Contract.Assert(this.Cloners.AreAllClonersAdded);
             if (instruction == null) { return null; }
             Instruction imported;
             if (this.Cloners.TryGetTargetFor(instruction, out imported))

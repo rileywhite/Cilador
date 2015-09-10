@@ -14,9 +14,10 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Core;
+using Mono.Cecil;
 using System;
 using System.Diagnostics.Contracts;
-using Mono.Cecil;
 
 namespace Cilador.ILCloning
 {
@@ -31,8 +32,6 @@ namespace Cilador.ILCloning
         /// <param name="parent">Cloner for member that contains the generic parameter to be cloned.</param>
         /// <param name="previous">Cloner for the generic parameter, if any, that comes before the generic parameter being cloned.</param>
         /// <param name="source">Cloning source.</param>
-        /// <param name="targetGetter">Getter method for the target.</param>
-        /// <param name="targetSetter">Setter method for the target.</param>
         public GenericParameterCloner(
             ICloner<IGenericParameterProvider> parent,
             GenericParameterCloner previous,

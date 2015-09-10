@@ -14,10 +14,11 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Core;
 using Cilador.ILCloning;
 using Mono.Cecil;
-using System;
 using Mono.Cecil.Cil;
+using System;
 
 namespace Cilador.Tests.ILCloningTests
 {

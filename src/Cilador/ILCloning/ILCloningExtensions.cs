@@ -14,12 +14,14 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Core;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
+using TopologicalSort;
 
 namespace Cilador.ILCloning
 {
@@ -32,13 +34,56 @@ namespace Cilador.ILCloning
         /// Invokes clone on each item
         /// </summary>
         /// <param name="cloners"></param>
-        public static void CloneAll(this IEnumerable<ICloner<object, object>> cloners)
+        public static void CloneAll(
+            this IEnumerable<ICloner<object, object>> cloners)
         {
             Contract.Requires(cloners != null);
             Contract.Requires(!cloners.Any(cloner => cloner.IsCloned));
             Contract.Ensures(cloners.All(cloner => cloner.IsCloned));
 
-            foreach (var cloner in cloners) { cloner.Clone(); }
+            foreach(var cloner in cloners) { cloner.Clone(); }
+
+            //var clonersBySource = cloners.ToLookup(cloner => cloner.Source);
+
+            //var vertices = new HashSet<object>(clonersBySource.Select(grouping => grouping.Key));
+            //var edges = dependencies.GetEdges(vertices);
+
+            //// we need to perform a topological sort to ensure that dependencies
+            //// are met before they are needed
+            //var sourceLists = TopologicalSorter.FindAndTopologicallySortStronglyConnectedComponents(vertices, edges);
+
+            //// now we go through the results and clone in order
+            //foreach(var sourceList in sourceLists)
+            //{
+            //    foreach (var source in sourceList)
+            //    {
+            //        foreach (var cloner in clonersBySource[source]) { cloner.Clone(); }
+            //    }
+            //}
+        }
+
+        private static IEnumerable<Edge<TVertex>> GetEdges<TVertex>(
+            this Dictionary<TVertex, HashSet<TVertex>> dependencies,
+            HashSet<TVertex> vertices)
+        {
+            Contract.Requires(dependencies != null);
+            Contract.Requires(vertices != null);
+
+            var edges = new List<Edge<TVertex>>();
+            foreach(var dependency in dependencies)
+            {
+                // non-null is expected, but if we hit something null we'll just skip
+                // if a dependency's key (i.e. the "from" part) is not in the collection of vertices, we'll skip, too
+                // because it's not part of the cloning operation
+                if (dependency.Value == null || !vertices.Contains(dependency.Key)) { continue; }
+                foreach(var to in dependency.Value)
+                {
+                    // same test for the "from" part...we only care about items in the cloning operation
+                    if (vertices.Contains(to)) { edges.Add(Edge.Create(dependency.Key, to)); };
+                }
+            }
+
+            return edges;
         }
 
         /// <summary>

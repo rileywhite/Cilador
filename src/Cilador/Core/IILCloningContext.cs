@@ -14,12 +14,12 @@
 // limitations under the License.
 /***************************************************************************/
 
-using System;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System;
 using System.Diagnostics.Contracts;
 
-namespace Cilador.ILCloning
+namespace Cilador.Core
 {
     /// <summary>
     /// Defines an interface for a cloning context.

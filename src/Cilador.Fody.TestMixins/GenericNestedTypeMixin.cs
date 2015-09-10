@@ -53,6 +53,14 @@ namespace Cilador.Fody.TestMixins
 
         public class GenericTypeWithMultipleParameters<T1, T2>
         {
+            public GenericTypeWithMultipleParameters() { }
+
+            public GenericTypeWithMultipleParameters(T1 thing1, T2 thing2)
+            {
+                this.Thing1 = thing1;
+                this.Thing2 = thing2;
+            }
+
             public T1 Thing1 { get; set; }
 
             public T2 Thing2 { get; set; }
