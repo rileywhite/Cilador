@@ -152,6 +152,7 @@
     <Compile Include="Core\ILItemFunctionDispatcherContract.cs" />
     <Compile Include="Core\InstructionOperandFunctionDispatcherBase.cs" />
     <Compile Include="Core\InstructionOperandFunctionDispatcherContract.cs" />
+    <Compile Include="Graph\EdgeEqualityComperer.cs" />
     <Compile Include="Graph\ILOrderedChildrenGetDispatcher.cs" />
     <Compile Include="Graph\ILDependencyGetDispatcher.cs" />
     <Compile Include="Graph\OperandDependenciesGetDispatcher.cs" />

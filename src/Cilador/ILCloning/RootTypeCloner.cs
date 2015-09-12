@@ -32,7 +32,7 @@ namespace Cilador.ILCloning
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="source">Cloning source.</param>
         /// <param name="target">Cloning target.</param>
-        public RootTypeCloner(ILCloningContext ilCloningContext, TypeDefinition source, TypeDefinition target)
+        public RootTypeCloner(IILCloningContext ilCloningContext, TypeDefinition source, TypeDefinition target)
             : base(ilCloningContext, source)
         {
             Contract.Requires(ilCloningContext != null);

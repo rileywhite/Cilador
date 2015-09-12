@@ -49,44 +49,73 @@ namespace Cilador.Graph
             Contract.Ensures(this.ParentChildEdges != null);
             Contract.Ensures(this.SiblingEdges != null);
             Contract.Ensures(this.DependencyEdges != null);
+            Contract.Ensures(this.Roots != null);
 
-            this.Vertices = vertices;
-            this.ParentChildEdges = parentChildEdges;
-            this.SiblingEdges = siblingEdges;
-            this.DependencyEdges = dependencyEdges;
+            this.Vertices = new HashSet<object>(vertices);
+            this.ParentChildEdges = new HashSet<Edge<object>>(parentChildEdges, new EdgeEqualityComparer());
+            this.SiblingEdges = new HashSet<Edge<object>>(siblingEdges, new EdgeEqualityComparer());
+            this.DependencyEdges = new HashSet<Edge<object>>(dependencyEdges, new EdgeEqualityComparer());
 
             this.ProcessParentEdges();
             this.ProcessSiblingEdges();
+            this.ProcessDependencyEdges();
         }
 
         /// <summary>
-        /// Process parent edges to pull additional index-type information for easier lookup.
+        /// Process parent/child edges for validation and indexing.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if any edge has a <c>null</c> vertex.
+        /// </exception>
         private void ProcessParentEdges()
         {
             Contract.Requires(this.Vertices != null);
+            Contract.Requires(this.ParentChildEdges != null);
             Contract.Ensures(this.ParentByChild != null);
+            Contract.Ensures(this.Roots != null);
 
+            var roots = new HashSet<object>(this.Vertices);
             var parentByChild = new Dictionary<object, object>(this.Vertices.Count());
             foreach (var edge in this.ParentChildEdges)
             {
+                if (edge.From == null || edge.To == null)
+                {
+                    throw new InvalidOperationException("All parent edges must connect non-null vertices.");
+                }
                 parentByChild.Add(edge.To, edge.From);
+                roots.Remove(edge.To);
             }
 
             this.ParentByChild = parentByChild;
+            this.Roots = roots;
         }
 
         /// <summary>
-        /// Process sibling edges to pull additional index-type information for easier lookup.
+        /// Process sibling edges for validation and indexing.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if any edge has a <c>null</c> vertex. Also thrown if any two connected siblings are of different types.
+        /// </exception>
         private void ProcessSiblingEdges()
         {
             Contract.Requires(this.Vertices != null);
+            Contract.Requires(this.SiblingEdges != null);
             Contract.Ensures(this.PreviousSiblingBySibling != null);
 
             var previousSiblingBySibling = new Dictionary<object, object>();
             foreach (var edge in this.SiblingEdges)
             {
+                if (edge.From == null || edge.To == null)
+                {
+                    throw new InvalidOperationException("All sibling edges must connect non-null vertices.");
+                }
+                if (!edge.From.GetType().Equals(edge.To.GetType()))
+                {
+                    throw new InvalidOperationException(string.Format(
+                        "Sibling edges must connect vertices of the same type, but a sibling edge was found connecting {0} and {1}.",
+                        edge.From.GetType(),
+                        edge.To.GetType()));
+                }
                 previousSiblingBySibling.Add(edge.To, edge.From);
             }
 
@@ -94,9 +123,39 @@ namespace Cilador.Graph
         }
 
         /// <summary>
+        /// Process dependency edges for validation and indexing.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if any edge has a <c>null</c> vertex.
+        /// </exception>
+        private void ProcessDependencyEdges()
+        {
+            Contract.Requires(this.Vertices != null);
+            Contract.Requires(this.DependencyEdges != null);
+
+            foreach (var edge in this.ParentChildEdges)
+            {
+                if (edge.From == null || edge.To == null)
+                {
+                    throw new InvalidOperationException("All parent edges must connect non-null vertices.");
+                }
+            }
+        }
+
+        /// <summary>
         /// Represents the vertices of the graph.
         /// </summary>
         public IEnumerable<object> Vertices { get; private set; }
+
+        /// <summary>
+        /// Represents the vertices of the graph that are root nodes. I.e., those with no parent.
+        /// </summary>
+        /// <remarks>
+        /// Even though roots have no parents, it's important to note that they may have siblings,
+        /// and they may have dependents. The idea of a root node only applies to the parent/child
+        /// relationship.
+        /// </remarks>
+        public IEnumerable<object> Roots { get; private set; }
 
         /// <summary>
         /// Represents the edges of the graph for the parent/child relationship.
@@ -111,14 +170,51 @@ namespace Cilador.Graph
         private IReadOnlyDictionary<object, object> ParentByChild { get; set; }
 
         /// <summary>
+        /// Get the parent of a given child item.
+        /// </summary>
+        /// <typeparam name="TParent">Type of the parent node.</typeparam>
+        /// <param name="child">Child to find parent of.</param>
+        /// <returns>The parent.</returns>
+        /// <exception cref="ArgumentException">
+        /// Thrown when <paramref name="child"/> has no parent, meaning it is a root node.
+        /// </exception>
+        /// <exception cref="InvalidCastException">
+        /// Thrown when the parent cannot be held in a reference of type <typeparamref name="TParent"/>.
+        /// </exception>
+        public TParent GetParentOf<TParent>(object child)
+            where TParent : class
+        {
+            Contract.Requires(child != null);
+            Contract.Ensures(Contract.Result<TParent>() != null);
+
+            TParent parent;
+            if (this.TryGetParentOf(child, out parent))
+            {
+                Contract.Assert(parent != null);
+            }
+            throw new ArgumentException(string.Format("Given child {0} is a root node with no parent.", child.ToString()), "child");
+        }
+
+        /// <summary>
         /// Try to get the parent of a given child item.
         /// </summary>
         /// <param name="child">Child to find parent for.</param>
         /// <param name="parent">To be populated with the parent, if found.</param>
         /// <returns><c>true</c> if the parent was found, else <c>false</c>.</returns>
-        public bool TryGetParentFor(object child, out object parent)
+        /// <exception cref="InvalidCastException">
+        /// Thrown when the parent cannot be held in a reference of type <typeparamref name="TParent"/>.
+        /// </exception>
+        public bool TryGetParentOf<TParent>(object child, out TParent parent)
+            where TParent : class
         {
-            return this.ParentByChild.TryGetValue(child, out object parent);
+            Contract.Requires(child != null);
+            Contract.Ensures(Contract.Result<bool>() == false || Contract.ValueAtReturn(out parent) != null);
+
+            object parentObject;
+            var isSuccessful = this.ParentByChild.TryGetValue(child, out parentObject);
+            Contract.Assert(parentObject != null);
+            parent = (TParent)parentObject;
+            return isSuccessful;
         }
 
         /// <summary>
@@ -139,14 +235,47 @@ namespace Cilador.Graph
         private IReadOnlyDictionary<object, object> PreviousSiblingBySibling { get; set; }
 
         /// <summary>
+        /// Get the previous sibling of a given sibling item.
+        /// </summary>
+        /// <typeparam name="TSibling">Type of the sibling and previous sibling.</typeparam>
+        /// <param name="sibling">Sibling to find previous sibling of.</param>
+        /// <returns>The previous sibling.</returns>
+        /// <exception cref="ArgumentException">
+        /// Thrown when <paramref name="sibling"/> has no previous sibling.
+        /// </exception>
+        public TSibling GetPreviousSiblingOf<TSibling>(TSibling sibling)
+            where TSibling : class
+        {
+            Contract.Requires(sibling != null);
+            Contract.Ensures(Contract.Result<TSibling>() != null);
+
+            TSibling previousSibling;
+            if (this.TryGetPreviousSiblingOf(sibling, out previousSibling))
+            {
+                Contract.Assert(previousSibling != null);
+                return previousSibling;
+            }
+            throw new ArgumentException(string.Format("Given sibling {0} has no previous sibling.", sibling.ToString()), "sibling");
+        }
+
+        /// <summary>
         /// Try to get the previous sibling of a given sibling item.
         /// </summary>
+        /// <typeparam name="TSibling">Type of the sibling and previous sibling.</typeparam>
         /// <param name="sibling">Sibling to find previous sibling of.</param>
         /// <param name="previousSibling">To be populated with the previous sibling, if found.</param>
         /// <returns><c>true</c> if the previous sibling was found, else <c>false</c>.</returns>
-        public bool TryGetParentFor(object sibling, out object previousSibling)
+        public bool TryGetPreviousSiblingOf<TSibling>(TSibling sibling, out TSibling previousSibling)
+            where TSibling : class
         {
-            return this.ParentByChild.TryGetValue(child, out object parent);
+            Contract.Requires(sibling != null);
+            Contract.Ensures(Contract.Result<bool>() == false || Contract.ValueAtReturn(out previousSibling) != null);
+
+            object previousSiblingObject;
+            var isSuccessful = this.PreviousSiblingBySibling.TryGetValue(sibling, out previousSiblingObject);
+            Contract.Assert(previousSiblingObject != null);
+            previousSibling = (TSibling)previousSiblingObject;
+            return isSuccessful;
         }
 
         /// <summary>

@@ -151,44 +151,6 @@ namespace Cilador.Graph
         }
 
         /// <summary>
-        /// Used to ensure unique edges are collected.
-        /// </summary>
-        private class EdgeEqualityComparer : IEqualityComparer<Edge<object>>
-        {
-            /// <summary>
-            /// Checks equality between two edges.
-            /// </summary>
-            /// <param name="x">One edge.</param>
-            /// <param name="y">Another edge.</param>
-            /// <returns><c>true</c> if the two edges connect the same vertices in the same direction, else <c>false</c>.</returns>
-            public bool Equals(Edge<object> x, Edge<object> y)
-            {
-                if (x.GetType() != y.GetType()) { return false; }
-
-                if (x.From == null || x.To == null || y.From == null || y.To == null)
-                {
-                    throw new InvalidOperationException("Valid edges must connect non-null vertices.");
-                }
-
-                return x.From.Equals(y.From) && x.To.Equals(y.To);
-            }
-
-            /// <summary>
-            /// Gets the hash code of an edge.
-            /// </summary>
-            /// <param name="obj">Edge to get hash code for.</param>
-            /// <returns>Hash code for edge.</returns>
-            public int GetHashCode(Edge<object> obj)
-            {
-                if (obj.From == null || obj.To == null)
-                {
-                    throw new InvalidOperationException("Valid edges must connect non-null vertices.");
-                }
-                return obj.From.GetHashCode() ^ obj.To.GetHashCode();
-            }
-        }
-
-        /// <summary>
         /// Gets edges by looking at dependencies for all vertices in a graph.
         /// </summary>
         /// <param name="vertices">Completed collection of vertices on the graph.</param>
