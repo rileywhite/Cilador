@@ -62,14 +62,14 @@ namespace Cilador.ILCloning
             //}
         }
 
-        private static IEnumerable<Edge<TVertex>> GetEdges<TVertex>(
+        private static IEnumerable<IEdge<TVertex>> GetEdges<TVertex>(
             this Dictionary<TVertex, HashSet<TVertex>> dependencies,
             HashSet<TVertex> vertices)
         {
             Contract.Requires(dependencies != null);
             Contract.Requires(vertices != null);
 
-            var edges = new List<Edge<TVertex>>();
+            var edges = new List<IEdge<TVertex>>();
             foreach(var dependency in dependencies)
             {
                 // non-null is expected, but if we hit something null we'll just skip

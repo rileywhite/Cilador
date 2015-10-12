@@ -14,14 +14,10 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Core;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using TopologicalSort;
 
 namespace Cilador.Graph
 {
@@ -30,12 +26,12 @@ namespace Cilador.Graph
     /// collecting vertices and edges for a graph that represents IL objects
     /// and object dependencies.
     /// </summary>
-    internal class ILGraphBuilder
+    internal class ILGraphGetter
     {
         /// <summary>
-        /// Creates a new <see cref="ILGraphBuilder"/>.
+        /// Creates a new <see cref="ILGraphGetter"/>.
         /// </summary>
-        public ILGraphBuilder()
+        public ILGraphGetter()
         {
             Contract.Ensures(this.ChildrenGetter != null);
             Contract.Ensures(this.DependenciesGetter != null);
@@ -57,8 +53,8 @@ namespace Cilador.Graph
             Contract.Requires(type != null);
 
             var vertices = new HashSet<object>();
-            var parentChildEdges = new HashSet<Edge<object>>(new EdgeEqualityComparer());
-            var siblingEdges = new HashSet<Edge<object>>(new EdgeEqualityComparer());
+            var parentChildEdges = new HashSet<IILEdge>(new EdgeEqualityComparer());
+            var siblingEdges = new HashSet<IILEdge>(new EdgeEqualityComparer());
 
             // in theory, this could be called for multiple roots before collecting edges
             this.CollectVerticesAndFamilyEdgesFrom(type, vertices, parentChildEdges, siblingEdges);
@@ -82,9 +78,9 @@ namespace Cilador.Graph
         /// <param name="parent">IL item that is the parent of the <paramref name="child"/>.</param>
         /// <param name="child">IL item that is the child of the <paramref name="parent"/>.</param>
         /// <returns>New edge.</returns>
-        private static Edge<object> GetParentChildEdge(object parent, object child)
+        private static IILEdge CreateParentChildEdge(object parent, object child)
         {
-            return Edge.Create(parent, child);
+            return new ILEdge(parent, child);
         }
 
         /// <summary>
@@ -93,9 +89,9 @@ namespace Cilador.Graph
         /// <param name="firstSibling">IL item that is the first sibling.</param>
         /// <param name="secondSibling">IL item that is the second sibling.</param>
         /// <returns>New edge.</returns>
-        private static Edge<object> GetSiblingEdge(object firstSibling, object secondSibling)
+        private static IILEdge CreateSiblingEdge(object firstSibling, object secondSibling)
         {
-            return Edge.Create(firstSibling, secondSibling);
+            return new ILEdge(firstSibling, secondSibling);
         }
 
         /// <summary>
@@ -104,9 +100,9 @@ namespace Cilador.Graph
         /// <param name="dependent">IL item that depends on another item.</param>
         /// <param name="dependsOn">IL item that is depended upon by another item.</param>
         /// <returns>New edge.</returns>
-        private static Edge<object> GetDependencyEdge(object dependent, object dependsOn)
+        private static IILEdge CreateDependencyEdge(object dependent, object dependsOn)
         {
-            return Edge.Create(dependent, dependsOn);
+            return new ILEdge(dependsOn, dependent);
         }
 
         /// <summary>
@@ -119,8 +115,8 @@ namespace Cilador.Graph
         private void CollectVerticesAndFamilyEdgesFrom(
             object item,
             HashSet<object> vertices,
-            HashSet<Edge<object>> parentChildEdges,
-            HashSet<Edge<object>> siblingEdges)
+            HashSet<IILEdge> parentChildEdges,
+            HashSet<IILEdge> siblingEdges)
         {
             Contract.Requires(item != null);
             Contract.Requires(vertices != null);
@@ -140,10 +136,10 @@ namespace Cilador.Graph
                 foreach (var child in this.ChildrenGetter.InvokeFor(currentItem))
                 {
                     items.Push(child);
-                    parentChildEdges.Add(GetParentChildEdge(currentItem, child));
-                    if (previousChild != null && previousChild.GetType().Equals(child.GetType()))
+                    parentChildEdges.Add(ILGraphGetter.CreateParentChildEdge(currentItem, child));
+                    if (previousChild != null && previousChild.GetType() == child.GetType())
                     {
-                        siblingEdges.Add(GetSiblingEdge(previousChild, child));
+                        siblingEdges.Add(ILGraphGetter.CreateSiblingEdge(previousChild, child));
                     }
                     previousChild = child;
                 }
@@ -158,11 +154,11 @@ namespace Cilador.Graph
         /// <remarks>
         /// All vertices should be collected before this method is called.
         /// </remarks>
-        private IEnumerable<Edge<object>> GetDependencyEdges(IEnumerable<object> vertices)
+        private IEnumerable<IILEdge> GetDependencyEdges(HashSet<object> vertices)
         {
             Contract.Requires(vertices != null);
 
-            var dependencyEdges = new HashSet<Edge<object>>(new EdgeEqualityComparer());
+            var dependencyEdges = new HashSet<IILEdge>(new EdgeEqualityComparer());
 
             // loop through all vertices in the graph
             foreach(var vertex in vertices)
@@ -175,7 +171,7 @@ namespace Cilador.Graph
                     {
                         // since edges is a hash set with a comparer that compares
                         // to and from vertices, the collected edges will be distinct
-                        dependencyEdges.Add(GetDependencyEdge(vertex, dependency));
+                        dependencyEdges.Add(ILGraphGetter.CreateDependencyEdge(vertex, dependency));
                     }
                 }
             }

@@ -167,11 +167,6 @@ namespace Cilador.Graph
         /// <returns>Children of <paramref name="item"/>.</returns>
         protected override IEnumerable<object> InvokeForItem(PropertyDefinition item)
         {
-            if (item.HasParameters) foreach (var parameter in item.Parameters)
-            {
-                yield return parameter;
-            }
-
             if (item.HasCustomAttributes) foreach (var customAttribute in item.CustomAttributes)
             {
                 yield return customAttribute;

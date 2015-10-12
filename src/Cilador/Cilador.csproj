@@ -153,10 +153,12 @@
     <Compile Include="Core\InstructionOperandFunctionDispatcherBase.cs" />
     <Compile Include="Core\InstructionOperandFunctionDispatcherContract.cs" />
     <Compile Include="Graph\EdgeEqualityComperer.cs" />
+    <Compile Include="Graph\IILEdge.cs" />
+    <Compile Include="Graph\ILEdge.cs" />
     <Compile Include="Graph\ILOrderedChildrenGetDispatcher.cs" />
     <Compile Include="Graph\ILDependencyGetDispatcher.cs" />
     <Compile Include="Graph\OperandDependenciesGetDispatcher.cs" />
-    <Compile Include="Graph\ILGraphBuilder.cs" />
+    <Compile Include="Graph\ILGraphGetter.cs" />
     <Compile Include="Core\CoreExtensions.cs" />
     <Compile Include="Core\LazyAccessor.cs" />
     <Compile Include="Core\ClonerBase.cs" />
@@ -168,6 +170,7 @@
     <Compile Include="ILCloning\ICloneToMethodBody.cs" />
     <Compile Include="Core\ILCloningContextContract.cs" />
     <Compile Include="Graph\ILGraph.cs" />
+    <Compile Include="ILCloning\ILProjection.cs" />
     <Compile Include="ILCloning\MethodReturnTypeCloner.cs" />
     <Compile Include="ILCloning\ClonerGatheringVisitor.cs" />
     <Compile Include="ILCloning\Cloners.cs" />

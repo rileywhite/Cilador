@@ -97,7 +97,7 @@ namespace Cilador.ILCloning
             }
 
             // the initialization cloning includes calling redirected construction methods
-            // so we want this if we have either initialization or if we have create a logic cloner
+            // so we want to do this if we have either initialization or if we have to create a logic cloner
             if (sourceMultiplexedConstructor.HasInitializationItems || constructorLogicSignatureCloner != null)
             {
                 foreach (var targetConstructor in

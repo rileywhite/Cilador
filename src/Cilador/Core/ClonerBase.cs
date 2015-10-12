@@ -95,8 +95,6 @@ namespace Cilador.Core
                     e);
             }
 
-            if (retrievedTarget == null) { throw new InvalidOperationException("GetTarget returned a null value.");}
-
             this.Target = retrievedTarget;
             this.IsTargetSet = true;
         }

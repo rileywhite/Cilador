@@ -65,7 +65,7 @@ namespace Cilador.ILCloning
             Contract.Requires(this.RootSource != null);
             Contract.Requires(this.RootTarget != null);
 
-            var builder = new Cilador.Graph.ILGraphBuilder();
+            var builder = new Cilador.Graph.ILGraphGetter();
             var graph = builder.Traverse(this.RootSource);
             var stuff = TopologicalSort.TopologicalSorter.TopologicalSort(graph.Vertices, graph.DependencyEdges);
 
