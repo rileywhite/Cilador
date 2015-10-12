@@ -15,12 +15,15 @@
 /***************************************************************************/
 
 using Cilador.Core;
+using Cilador.Graph;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using TopologicalSort;
 
 namespace Cilador.ILCloning
 {
@@ -39,15 +42,19 @@ namespace Cilador.ILCloning
         /// <summary>
         /// Creates a new <see cref="ILCloningContext"/>
         /// </summary>
+        /// <param name="ilGraph">IL graph for the cloning operation</param>
         /// <param name="rootSource">Top level source type for the cloning operation</param>
         /// <param name="rootTarget">Top level target type for the cloning operation</param>
-        public ILCloningContext(TypeDefinition rootSource, TypeDefinition rootTarget)
+        public ILCloningContext(IILGraph ilGraph, TypeDefinition rootSource, TypeDefinition rootTarget)
         {
+            Contract.Requires(ilGraph != null);
             Contract.Requires(rootSource != null);
             Contract.Requires(rootTarget != null);
+            Contract.Ensures(this.ILGraph != null);
             Contract.Ensures(this.RootSource != null);
             Contract.Ensures(this.RootTarget != null);
 
+            this.ILGraph = ilGraph;
             this.RootSource = rootSource;
             this.RootTarget = rootTarget;
             this.GenericParameterCache = new Dictionary<string, GenericParameter>();
@@ -58,6 +65,11 @@ namespace Cilador.ILCloning
         }
 
         /// <summary>
+        /// Gets or sets the ILGraph of items for the cloning operation.
+        /// </summary>
+        public IILGraph ILGraph { get; private set; }
+
+        /// <summary>
         /// Executes the cloning actions specified by the context.
         /// </summary>
         public void Execute()
@@ -65,9 +77,20 @@ namespace Cilador.ILCloning
             Contract.Requires(this.RootSource != null);
             Contract.Requires(this.RootTarget != null);
 
-            var builder = new Cilador.Graph.ILGraphGetter();
-            var graph = builder.Traverse(this.RootSource);
-            var stuff = TopologicalSort.TopologicalSorter.TopologicalSort(graph.Vertices, graph.DependencyEdges);
+            var targetsByRoot = new Dictionary<object, IReadOnlyCollection<object>>(1)
+            {
+                { this.RootSource, new object[] { this.RootTarget }}
+            };
+
+            var clonersBySource = new Dictionary<object, IReadOnlyCollection<ICloner<object, object>>>();
+
+            var clonersGetter = new ClonersGetDispatcher(this, targetsByRoot, clonersBySource);
+
+            var sortedVertices = TopologicalSorter.TopologicalSort(this.ILGraph.Vertices, this.ILGraph.DependencyEdges);
+            foreach (var source in sortedVertices)
+            {
+                clonersBySource.Add(source, clonersGetter.InvokeFor(source));
+            }
 
             this.ClonerGatheringVisitor.Visit(new RootTypeCloner(this, this.RootSource, this.RootTarget));
             this.Cloners.SetAllClonersAdded();

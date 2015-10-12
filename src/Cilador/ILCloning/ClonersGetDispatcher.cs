@@ -35,26 +35,21 @@ namespace Cilador.ILCloning
         /// Creates a new <see cref="ClonersGetDispatcher"/>.
         /// </summary>
         /// <param name="ilCloningContext">IL cloning context for the cloning operation.</param>
-        /// <param name="ilGraph">Graph of all items that are being looked at.</param>
-        /// <param name="targetsByRoot">Dictionary containing a collection of targets for each root in <paramref name="ilGraph"/>.</param>
+        /// <param name="targetsByRoot">Dictionary containing a collection of targets for each root in the IL graph of <paramref name="ilCloningContext"/>.</param>
         /// <param name="clonersBySource">Dictionary containing a collection of cloners for each possible source.</param>
         public ClonersGetDispatcher(
             IILCloningContext ilCloningContext,
-            ILGraph ilGraph,
-            IReadOnlyDictionary<object, ReadOnlyCollection<object>> targetsByRoot,
-            IReadOnlyDictionary<object, ReadOnlyCollection<ICloner<object, object>>> clonersBySource)
+            IReadOnlyDictionary<object, IReadOnlyCollection<object>> targetsByRoot,
+            IReadOnlyDictionary<object, IReadOnlyCollection<ICloner<object, object>>> clonersBySource)
         {
             Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilGraph != null);
             Contract.Requires(targetsByRoot != null);
             Contract.Requires(clonersBySource != null);
             Contract.Ensures(this.ILCloningContext != null);
-            Contract.Ensures(this.ILGraph != null);
             Contract.Ensures(this.TargetsByRoot != null);
             Contract.Ensures(this.ClonersBySource != null);
 
             this.ILCloningContext = ilCloningContext;
-            this.ILGraph = ilGraph;
             this.TargetsByRoot = targetsByRoot;
             this.ClonersBySource = clonersBySource;
         }
@@ -65,19 +60,14 @@ namespace Cilador.ILCloning
         private IILCloningContext ILCloningContext { get; set; }
 
         /// <summary>
-        /// Graph containing all of the vertices and edges for the IL involved in the cloning operation.
-        /// </summary>
-        private ILGraph ILGraph { get; set; }
-
-        /// <summary>
         /// Gets or sets the collection of target object for each root in the graph of items.
         /// </summary>
-        private IReadOnlyDictionary<object, ReadOnlyCollection<object>> TargetsByRoot { get; set; }
+        private IReadOnlyDictionary<object, IReadOnlyCollection<object>> TargetsByRoot { get; set; }
 
         /// <summary>
         /// Gets or sets the dictionary by which cloners can be looked up by the cloning source.
         /// </summary>
-        private IReadOnlyDictionary<object, ReadOnlyCollection<ICloner<object, object>>> ClonersBySource { get; set; }
+        private IReadOnlyDictionary<object, IReadOnlyCollection<ICloner<object, object>>> ClonersBySource { get; set; }
 
         /// <summary>
         /// Handles null items.
@@ -111,7 +101,7 @@ namespace Cilador.ILCloning
         /// <returns>Cloners for the <paramref name="item"/>.</returns>
         protected override ReadOnlyCollection<ICloner<object, object>> InvokeForItem(TypeDefinition item)
         {
-            return this.ILGraph.Roots.Contains(item) ?
+            return this.ILCloningContext.ILGraph.Roots.Contains(item) ?
                 this.InvokeForRootType(item) :
                 this.InvokeForNestedType(item);
         }
@@ -124,7 +114,7 @@ namespace Cilador.ILCloning
         private ReadOnlyCollection<ICloner<object, object>> InvokeForRootType(TypeDefinition item)
         {
             Contract.Requires(item != null);
-            Contract.Requires(this.ILGraph.Roots.Contains(item));
+            Contract.Requires(this.ILCloningContext.ILGraph.Roots.Contains(item));
             Contract.Ensures(Contract.Result<ReadOnlyCollection<ICloner<object, object>>>() != null);
 
             if (item.Methods.Any(
@@ -142,11 +132,9 @@ namespace Cilador.ILCloning
             }
 
             var targets = this.TargetsByRoot[item];
+
             var cloners = new List<ICloner<object, object>>(targets.Count);
-            foreach (TypeDefinition target in targets)
-            {
-                cloners.Add(new RootTypeCloner(this.ILCloningContext, item, target));
-            }
+            cloners.AddRange(from TypeDefinition target in targets select new RootTypeCloner(this.ILCloningContext, item, target));
 
             return new ReadOnlyCollection<ICloner<object, object>>(cloners);
         }
@@ -159,18 +147,16 @@ namespace Cilador.ILCloning
         private ReadOnlyCollection<ICloner<object, object>> InvokeForNestedType(TypeDefinition item)
         {
             Contract.Requires(item != null);
-            Contract.Requires(!this.ILGraph.Roots.Contains(item));
+            Contract.Requires(!this.ILCloningContext.ILGraph.Roots.Contains(item));
             Contract.Ensures(Contract.Result<ReadOnlyCollection<ICloner<object, object>>>() != null);
 
-            var parent = this.ILGraph.GetParentOf<TypeDefinition>(item);
+            var parent = this.ILCloningContext.ILGraph.GetParentOf<TypeDefinition>(item);
             var parentCloners = this.ClonersBySource[parent];
             Contract.Assume(parentCloners != null);
 
             var cloners = new List<ICloner<object, object>>(parentCloners.Count);
-            foreach (ICloner<TypeDefinition> parentCloner in parentCloners)
-            {
-                cloners.Add(new NestedTypeCloner(parentCloner, item));
-            }
+            cloners.AddRange(from ICloner<TypeDefinition> parentCloner in parentCloners
+                             select new NestedTypeCloner(parentCloner, item));
 
             return new ReadOnlyCollection<ICloner<object, object>>(cloners);
         }
@@ -182,16 +168,14 @@ namespace Cilador.ILCloning
         /// <returns>Cloners for the <paramref name="item"/>.</returns>
         protected override ReadOnlyCollection<ICloner<object, object>> InvokeForItem(FieldDefinition item)
         {
-            var parent = this.ILGraph.GetParentOf<TypeDefinition>(item);
+            var parent = this.ILCloningContext.ILGraph.GetParentOf<TypeDefinition>(item);
             Contract.Assert(parent != null);
             var parentCloners = this.ClonersBySource[parent];
             Contract.Assume(parentCloners != null);
 
             var cloners = new List<ICloner<object, object>>(parentCloners.Count);
-            foreach(ICloner<TypeDefinition> parentCloner in parentCloners)
-            {
-                cloners.Add(new FieldCloner(parentCloner, item));
-            }
+            cloners.AddRange(from ICloner<TypeDefinition> parentCloner in parentCloners
+                             select new FieldCloner(parentCloner, item));
 
             return new ReadOnlyCollection<ICloner<object, object>>(cloners);
         }
@@ -203,16 +187,14 @@ namespace Cilador.ILCloning
         /// <returns>Cloners for the <paramref name="item"/>.</returns>
         protected override ReadOnlyCollection<ICloner<object, object>> InvokeForItem(PropertyDefinition item)
         {
-            var parent = this.ILGraph.GetParentOf<TypeDefinition>(item);
+            var parent = this.ILCloningContext.ILGraph.GetParentOf<TypeDefinition>(item);
             Contract.Assert(parent != null);
             var parentCloners = this.ClonersBySource[parent];
             Contract.Assume(parentCloners != null);
 
             var cloners = new List<ICloner<object, object>>(parentCloners.Count);
-            foreach (ICloner<TypeDefinition> parentCloner in parentCloners)
-            {
-                cloners.Add(new PropertyCloner(parentCloner, item));
-            }
+            cloners.AddRange(from ICloner<TypeDefinition> parentCloner in parentCloners
+                             select new PropertyCloner(parentCloner, item));
 
             return new ReadOnlyCollection<ICloner<object, object>>(cloners);
         }
@@ -224,16 +206,14 @@ namespace Cilador.ILCloning
         /// <returns>Cloners for the <paramref name="item"/>.</returns>
         protected override ReadOnlyCollection<ICloner<object, object>> InvokeForItem(EventDefinition item)
         {
-            var parent = this.ILGraph.GetParentOf<TypeDefinition>(item);
+            var parent = this.ILCloningContext.ILGraph.GetParentOf<TypeDefinition>(item);
             Contract.Assert(parent != null);
             var parentCloners = this.ClonersBySource[parent];
             Contract.Assume(parentCloners != null);
 
             var cloners = new List<ICloner<object, object>>(parentCloners.Count);
-            foreach (ICloner<TypeDefinition> parentCloner in parentCloners)
-            {
-                cloners.Add(new EventCloner(parentCloner, item));
-            }
+            cloners.AddRange(from ICloner<TypeDefinition> parentCloner in parentCloners
+                             select new EventCloner(parentCloner, item));
 
             return new ReadOnlyCollection<ICloner<object, object>>(cloners);
         }
@@ -246,21 +226,19 @@ namespace Cilador.ILCloning
         protected override ReadOnlyCollection<ICloner<object, object>> InvokeForItem(MethodDefinition item)
         {
             // check whether this is the constructor for a root type
-            if (item.IsConstructor && !item.IsStatic && !item.HasParameters && this.ILGraph.GetDepth(item) == 1)
+            if (item.IsConstructor && !item.IsStatic && !item.HasParameters && this.ILCloningContext.ILGraph.GetDepth(item) == 1)
             {
                 return this.InvokeForRootTypeConstructor(item);
             }
 
-            var parent = this.ILGraph.GetParentOf<TypeDefinition>(item);
+            var parent = this.ILCloningContext.ILGraph.GetParentOf<TypeDefinition>(item);
             Contract.Assert(parent != null);
             var parentCloners = this.ClonersBySource[parent];
             Contract.Assume(parentCloners != null);
 
             var cloners = new List<ICloner<object, object>>(parentCloners.Count);
-            foreach (ICloner<TypeDefinition> parentCloner in parentCloners)
-            {
-                cloners.Add(new MethodSignatureCloner(parentCloner, item));
-            }
+            cloners.AddRange(from ICloner<TypeDefinition> parentCloner in parentCloners
+                             select new MethodSignatureCloner(parentCloner, item));
 
             return new ReadOnlyCollection<ICloner<object, object>>(cloners);
         }
@@ -273,9 +251,9 @@ namespace Cilador.ILCloning
         private ReadOnlyCollection<ICloner<object, object>> InvokeForRootTypeConstructor(MethodDefinition item)
         {
             Contract.Requires(item != null);
-            Contract.Requires(item.IsConstructor && !item.IsStatic && !item.HasParameters && this.ILGraph.GetDepth(item) == 1);
+            Contract.Requires(item.IsConstructor && !item.IsStatic && !item.HasParameters && this.ILCloningContext.ILGraph.GetDepth(item) == 1);
 
-            var parent = this.ILGraph.GetParentOf<TypeDefinition>(item);
+            var parent = this.ILCloningContext.ILGraph.GetParentOf<TypeDefinition>(item);
             Contract.Assert(parent != null);
             var parentCloners = this.ClonersBySource[parent];
             Contract.Assume(parentCloners != null);
@@ -296,28 +274,27 @@ namespace Cilador.ILCloning
 
                 // the initialization cloning includes calling redirected construction methods
                 // so we want to do this if we have either initialization or if we have to create a logic cloner
-                if (sourceMultiplexedConstructor.HasInitializationItems || constructorLogicSignatureCloner != null)
+                if (!sourceMultiplexedConstructor.HasInitializationItems && constructorLogicSignatureCloner == null) { continue; }
+
+                foreach (var targetConstructor in
+                    parentCloner.Target.Methods.Where(targetMethod => targetMethod.IsConstructor && !targetMethod.IsStatic))
                 {
-                    foreach (var targetConstructor in
-                        parentCloner.Target.Methods.Where(targetMethod => targetMethod.IsConstructor && !targetMethod.IsStatic))
+                    var targetMultiplexedConstructor = MultiplexedConstructor.Get(this.ILCloningContext, targetConstructor);
+
+                    if (!targetMultiplexedConstructor.IsInitializingConstructor)
                     {
-                        var targetMultiplexedConstructor = MultiplexedConstructor.Get(this.ILCloningContext, targetConstructor);
-
-                        if (!targetMultiplexedConstructor.IsInitializingConstructor)
-                        {
-                            // skip non-initializing constructors because they will eventually call into an initializing constructor
-                            continue;
-                        }
-
-                        Contract.Assert(targetConstructor.HasBody);
-                        var constructorCloner = new ConstructorInitializationCloner(
-                            parentCloner,
-                            constructorLogicSignatureCloner,
-                            sourceMultiplexedConstructor,
-                            targetConstructor.Body);
-
-                        cloners.Add(constructorCloner);
+                        // skip non-initializing constructors because they will eventually call into an initializing constructor
+                        continue;
                     }
+
+                    Contract.Assert(targetConstructor.HasBody);
+                    var constructorCloner = new ConstructorInitializationCloner(
+                        parentCloner,
+                        constructorLogicSignatureCloner,
+                        sourceMultiplexedConstructor,
+                        targetConstructor.Body);
+
+                    cloners.Add(constructorCloner);
                 }
             }
 
@@ -332,7 +309,7 @@ namespace Cilador.ILCloning
         protected override ReadOnlyCollection<ICloner<object, object>> InvokeForItem(MethodBody item)
         {
             throw new NotImplementedException();
-            var parent = this.ILGraph.GetParentOf<MethodDefinition>(item);
+            var parent = this.ILCloningContext.ILGraph.GetParentOf<MethodDefinition>(item);
             Contract.Assert(parent != null);
             var parentCloners = this.ClonersBySource[parent];
             Contract.Assume(parentCloners != null);

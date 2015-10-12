@@ -18,6 +18,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
 using System.Diagnostics.Contracts;
+using Cilador.Graph;
 
 namespace Cilador.Core
 {
@@ -27,6 +28,16 @@ namespace Cilador.Core
     [ContractClassFor(typeof(IILCloningContext))]
     internal abstract class ILCloningContextContract : IILCloningContext
     {
+        public IILGraph ILGraph
+        {
+            get
+            {
+                Contract.Ensures(Contract.Result<IILGraph>() != null);
+                throw new NotSupportedException();
+            }
+        }
+
+
         public TypeDefinition RootSource
         {
             get

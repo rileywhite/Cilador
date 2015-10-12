@@ -23,7 +23,7 @@ namespace Cilador.Graph
     /// <summary>
     /// Reprents a directional IL edge to be used in IL graphs.
     /// </summary>
-    internal interface IILEdge : IEdge<object>
+    public interface IILEdge : IEdge<object>
     {
     }
 }

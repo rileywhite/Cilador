@@ -26,7 +26,7 @@ namespace Cilador.Graph
     /// collecting vertices and edges for a graph that represents IL objects
     /// and object dependencies.
     /// </summary>
-    internal class ILGraphGetter
+    public class ILGraphGetter
     {
         /// <summary>
         /// Creates a new <see cref="ILGraphGetter"/>.
@@ -48,7 +48,7 @@ namespace Cilador.Graph
         /// <see cref="ILGraph"/> repesenting the items and dependencies of the given
         /// root type.
         /// </returns>
-        public ILGraph Traverse(TypeDefinition type)
+        public IILGraph Traverse(TypeDefinition type)
         {
             Contract.Requires(type != null);
 

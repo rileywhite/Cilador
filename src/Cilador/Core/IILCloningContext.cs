@@ -18,6 +18,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
 using System.Diagnostics.Contracts;
+using Cilador.Graph;
 
 namespace Cilador.Core
 {
@@ -27,6 +28,11 @@ namespace Cilador.Core
     [ContractClass(typeof(ILCloningContextContract))]
     public interface IILCloningContext
     {
+        /// <summary>
+        /// Gets the ILGraph of items for the cloning operation.
+        /// </summary>
+        IILGraph ILGraph { get; }
+
         /// <summary>
         /// Gets the top level source type for the cloning operation.
         /// </summary>

@@ -155,6 +155,7 @@
     <Compile Include="Graph\EdgeEqualityComperer.cs" />
     <Compile Include="Graph\IILEdge.cs" />
     <Compile Include="Graph\ILEdge.cs" />
+    <Compile Include="Graph\IILGraph.cs" />
     <Compile Include="Graph\ILOrderedChildrenGetDispatcher.cs" />
     <Compile Include="Graph\ILDependencyGetDispatcher.cs" />
     <Compile Include="Graph\OperandDependenciesGetDispatcher.cs" />

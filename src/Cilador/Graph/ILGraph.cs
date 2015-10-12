@@ -26,7 +26,7 @@ namespace Cilador.Graph
     /// <summary>
     /// Represents IL as a directed acyclic graph.
     /// </summary>
-    internal class ILGraph
+    internal class ILGraph : IILGraph
     {
         /// <summary>
         /// Creates a new <see cref="ILGraph"/> with the given vertices and edges.
