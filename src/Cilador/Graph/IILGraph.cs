@@ -16,12 +16,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace Cilador.Graph
 {
     /// <summary>
     /// Represents IL as a directed acyclic graph.
     /// </summary>
+    [ContractClass(typeof(ILGraphContracts))]
     public interface IILGraph
     {
         /// <summary>
@@ -49,13 +51,13 @@ namespace Cilador.Graph
         /// E.g. a field F is a child of a type T, so there will be an edge
         /// from T to F to represent that relationship.
         /// </summary>
-        IEnumerable<IILEdge> ParentChildEdges { get; }
+        IEnumerable<ParentChildILEdge> ParentChildEdges { get; }
 
         /// <summary>
         /// Get the parent of a given child item.
         /// </summary>
         /// <typeparam name="TParent">Type of the parent node.</typeparam>
-        /// <param name="child">Child to find parent of.</param>
+        /// <param name="child">DependsOn to find parent of.</param>
         /// <returns>The parent.</returns>
         /// <exception cref="ArgumentException">
         /// Thrown when <paramref name="child"/> has no parent, meaning it is a root node.
@@ -68,8 +70,8 @@ namespace Cilador.Graph
         /// <summary>
         /// Try to get the parent of a given child item.
         /// </summary>
-        /// <param name="child">Child to find parent for.</param>
-        /// <param name="parent">To be populated with the parent, if found.</param>
+        /// <param name="child">DependsOn to find parent for.</param>
+        /// <param name="parent">DependsOn be populated with the parent, if found.</param>
         /// <returns><c>true</c> if the parent was found, else <c>false</c>.</returns>
         /// <exception cref="InvalidCastException">
         /// Thrown when the parent cannot be held in a reference of type <typeparamref name="TParent"/>.
@@ -94,7 +96,7 @@ namespace Cilador.Graph
         /// doesn't matter between fields, but the implicit order in which they are
         /// generated will be enshrined in an edge, anyway.
         /// </remarks>
-        IEnumerable<IILEdge> SiblingEdges { get; }
+        IEnumerable<SiblingILEdge> SiblingEdges { get; }
 
         /// <summary>
         /// Get the previous sibling of a given sibling item.
@@ -112,7 +114,7 @@ namespace Cilador.Graph
         /// </summary>
         /// <typeparam name="TSibling">Type of the sibling and previous sibling.</typeparam>
         /// <param name="sibling">Sibling to find previous sibling of.</param>
-        /// <param name="previousSibling">To be populated with the previous sibling, if found.</param>
+        /// <param name="previousSibling">DependsOn be populated with the previous sibling, if found.</param>
         /// <returns><c>true</c> if the previous sibling was found, else <c>false</c>.</returns>
         bool TryGetPreviousSiblingOf<TSibling>(TSibling sibling, out TSibling previousSibling) where TSibling : class;
 
@@ -121,6 +123,6 @@ namespace Cilador.Graph
         /// E.g. a generic type T depends on a generic parameter G, so there will
         /// be an edge from T to G.
         /// </summary>
-        IEnumerable<IILEdge> DependencyEdges { get; }
+        IEnumerable<DependencyILEdge> DependencyEdges { get; }
     }
 }

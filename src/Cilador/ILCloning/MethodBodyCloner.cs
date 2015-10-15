@@ -59,7 +59,7 @@ namespace Cilador.ILCloning
         /// <summary>
         /// The method body already exists, attached to the parent cloner.
         /// </summary>
-        /// <returns>Parent cloner's target body.</returns>
+        /// <returns>Dependent cloner's target body.</returns>
         protected override MethodBody GetTarget()
         {
             Contract.Ensures(this.TargetILProcessor != null);

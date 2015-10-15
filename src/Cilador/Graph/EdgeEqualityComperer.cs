@@ -40,7 +40,7 @@ namespace Cilador.Graph
                 throw new InvalidOperationException("Valid edges must connect non-null vertices.");
             }
 
-            //return x.From.Equals(y.From) && x.To.Equals(y.To);
+            //return x.Dependent.Equals(y.Dependent) && x.DependsOn.Equals(y.DependsOn);
             return x.From == y.From && x.To == y.To;
         }
 

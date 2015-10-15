@@ -84,8 +84,8 @@ namespace Cilador.ILCloning
         {
             Contract.Ensures(this.TargetILProcessor != null);
 
-            //var target = new MethodBody(this.Parent.Target);
-            //this.Parent.Target.Body = target;
+            //var target = new MethodBody(this.Dependent.Target);
+            //this.Dependent.Target.Body = target;
             var target = this.Parent.Target.Body;
             this.TargetILProcessor = target.GetILProcessor();
             return target;

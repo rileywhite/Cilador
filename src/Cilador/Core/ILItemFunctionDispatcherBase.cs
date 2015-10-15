@@ -36,8 +36,7 @@ namespace Cilador.Core
         /// <returns>Result of the invocation.</returns>
         public TReturn InvokeFor(dynamic item)
         {
-            if (item == null) { return this.InvokeForNull(); }
-            return this.InvokeForItem(item);
+            return item == null ? this.InvokeForNull() : this.InvokeForItem(item);
         }
 
         /// <summary>
@@ -66,7 +65,6 @@ namespace Cilador.Core
         /// <summary>
         /// Defines the behavior for <c>null</c> values.
         /// </summary>
-        /// <param name="item">Item on which to invoke the behavior.</param>
         /// <returns>Result of the invocation.</returns>
         protected abstract TReturn InvokeForNull();
 

@@ -14,12 +14,10 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using TopologicalSort;
 
 namespace Cilador.Graph
 {
@@ -37,9 +35,9 @@ namespace Cilador.Graph
         /// <param name="dependencyEdges">Edges repesenting dependencies of the graph.</param>
         public ILGraph(
             IEnumerable<object> vertices,
-            IEnumerable<IILEdge> parentChildEdges,
-            IEnumerable<IILEdge> siblingEdges,
-            IEnumerable<IILEdge> dependencyEdges)
+            IEnumerable<ParentChildILEdge> parentChildEdges,
+            IEnumerable<SiblingILEdge> siblingEdges,
+            IEnumerable<DependencyILEdge> dependencyEdges)
         {
             Contract.Requires(vertices != null);
             Contract.Requires(parentChildEdges != null);
@@ -55,10 +53,10 @@ namespace Cilador.Graph
             var verticesHashSet = new HashSet<object>(vertices);
             this.Vertices = verticesHashSet;
             this.VertexCount = verticesHashSet.Count;
-            this.ParentChildEdges = new HashSet<IILEdge>(parentChildEdges, new EdgeEqualityComparer());
+            this.ParentChildEdges = new HashSet<ParentChildILEdge>(parentChildEdges, new EdgeEqualityComparer());
             this.DepthByVertex = new Dictionary<object, int>();
-            this.SiblingEdges = new HashSet<IILEdge>(siblingEdges, new EdgeEqualityComparer());
-            this.DependencyEdges = new HashSet<IILEdge>(dependencyEdges, new EdgeEqualityComparer());
+            this.SiblingEdges = new HashSet<SiblingILEdge>(siblingEdges, new EdgeEqualityComparer());
+            this.DependencyEdges = new HashSet<DependencyILEdge>(dependencyEdges, new EdgeEqualityComparer());
 
             this.ProcessParentEdges();
             this.ProcessSiblingEdges();
@@ -82,12 +80,12 @@ namespace Cilador.Graph
             var parentByChild = new Dictionary<object, object>(this.Vertices.Count());
             foreach (var edge in this.ParentChildEdges)
             {
-                if (edge.From == null || edge.To == null)
+                if (edge.Parent == null || edge.Child == null)
                 {
                     throw new InvalidOperationException("All parent edges must connect non-null vertices.");
                 }
-                parentByChild.Add(edge.To, edge.From);
-                roots.Remove(edge.To);
+                parentByChild.Add(edge.Child, edge.Parent);
+                roots.Remove(edge.Child);
             }
 
             this.ParentByChild = parentByChild;
@@ -109,18 +107,18 @@ namespace Cilador.Graph
             var previousSiblingBySibling = new Dictionary<object, object>();
             foreach (var edge in this.SiblingEdges)
             {
-                if (edge.From == null || edge.To == null)
+                if (edge.First == null || edge.Second == null)
                 {
                     throw new InvalidOperationException("All sibling edges must connect non-null vertices.");
                 }
-                if (edge.From.GetType() != edge.To.GetType())
+                if (edge.First.GetType() != edge.Second.GetType())
                 {
                     throw new InvalidOperationException(string.Format(
                         "Sibling edges must connect vertices of the same type, but a sibling edge was found connecting {0} and {1}.",
-                        edge.From.GetType(),
-                        edge.To.GetType()));
+                        edge.First.GetType(),
+                        edge.Second.GetType()));
                 }
-                previousSiblingBySibling.Add(edge.To, edge.From);
+                previousSiblingBySibling.Add(edge.Second, edge.First);
             }
 
             this.PreviousSiblingBySibling = previousSiblingBySibling;
@@ -137,8 +135,8 @@ namespace Cilador.Graph
             Contract.Requires(this.Vertices != null);
             Contract.Requires(this.DependencyEdges != null);
 
-            if (this.ParentChildEdges.Any(edge => edge.From == null || edge.To == null)) {
-                throw new InvalidOperationException("All parent edges must connect non-null vertices.");
+            if (this.DependencyEdges.Any(edge => edge.Dependent == null || edge.DependsOn == null)) {
+                throw new InvalidOperationException("All dependency edges must connect non-null vertices.");
             }
         }
 
@@ -167,7 +165,7 @@ namespace Cilador.Graph
         /// E.g. a field F is a child of a type T, so there will be an edge
         /// from T to F to represent that relationship.
         /// </summary>
-        public IEnumerable<IILEdge> ParentChildEdges { get; private set; }
+        public IEnumerable<ParentChildILEdge> ParentChildEdges { get; private set; }
 
         /// <summary>
         /// Gets or sets the lookup for finding parent items of child items.
@@ -178,7 +176,7 @@ namespace Cilador.Graph
         /// Get the parent of a given child item.
         /// </summary>
         /// <typeparam name="TParent">Type of the parent node.</typeparam>
-        /// <param name="child">Child to find parent of.</param>
+        /// <param name="child">DependsOn to find parent of.</param>
         /// <returns>The parent.</returns>
         /// <exception cref="ArgumentException">
         /// Thrown when <paramref name="child"/> has no parent, meaning it is a root node.
@@ -186,25 +184,25 @@ namespace Cilador.Graph
         /// <exception cref="InvalidCastException">
         /// Thrown when the parent cannot be held in a reference of type <typeparamref name="TParent"/>.
         /// </exception>
-        public TParent GetParentOf<TParent>(object child)
-            where TParent : class
+        public TParent GetParentOf<TParent>(object child) where TParent : class
         {
-            Contract.Requires(child != null);
-            Contract.Ensures(Contract.Result<TParent>() != null);
-
             TParent parent;
-            if (this.TryGetParentOf(child, out parent))
+            if (!this.TryGetParentOf(child, out parent))
             {
-                Contract.Assert(parent != null);
+                throw new ArgumentException(
+                    string.Format("Given child {0} is a root node with no parent.", child),
+                    "child");
             }
-            throw new ArgumentException(string.Format("Given child {0} is a root node with no parent.", child.ToString()), "child");
+
+            Contract.Assert(parent != null);
+            return parent;
         }
 
         /// <summary>
         /// Try to get the parent of a given child item.
         /// </summary>
-        /// <param name="child">Child to find parent for.</param>
-        /// <param name="parent">To be populated with the parent, if found.</param>
+        /// <param name="child">DependsOn to find parent for.</param>
+        /// <param name="parent">DependsOn be populated with the parent, if found.</param>
         /// <returns><c>true</c> if the parent was found, else <c>false</c>.</returns>
         /// <exception cref="InvalidCastException">
         /// Thrown when the parent cannot be held in a reference of type <typeparamref name="TParent"/>.
@@ -212,9 +210,6 @@ namespace Cilador.Graph
         public bool TryGetParentOf<TParent>(object child, out TParent parent)
             where TParent : class
         {
-            Contract.Requires(child != null);
-            Contract.Ensures(Contract.Result<bool>() == false || Contract.ValueAtReturn(out parent) != null);
-
             object parentObject;
             if(!this.ParentByChild.TryGetValue(child, out parentObject))
             {
@@ -241,15 +236,13 @@ namespace Cilador.Graph
         /// <returns>Depth of the item. E.g. root items are depth 0, their children are 1, etc.</returns>
         public int GetDepth(object item)
         {
-            Contract.Requires(item != null);
-
             // we'll calculate and populate depths on-demand
             int depth;
             if (this.DepthByVertex.TryGetValue(item, out depth)) { return depth; }
 
             var items = new Stack<object>();
             var currentItem = item;
-            while (!this.DepthByVertex.ContainsKey(currentItem) && !this.Roots.Contains(item))
+            while (!this.DepthByVertex.ContainsKey(currentItem) && !this.Roots.Contains(currentItem))
             {
                 items.Push(currentItem);
                 if (items.Count > this.VertexCount)
@@ -289,7 +282,7 @@ namespace Cilador.Graph
         /// doesn't matter between fields, but the implicit order in which they are
         /// generated will be enshrined in an edge, anyway.
         /// </remarks>
-        public IEnumerable<IILEdge> SiblingEdges { get; private set; }
+        public IEnumerable<SiblingILEdge> SiblingEdges { get; private set; }
 
         /// <summary>
         /// Gets or sets the lookup for finding previous sibling of sibling items.
@@ -305,19 +298,18 @@ namespace Cilador.Graph
         /// <exception cref="ArgumentException">
         /// Thrown when <paramref name="sibling"/> has no previous sibling.
         /// </exception>
-        public TSibling GetPreviousSiblingOf<TSibling>(TSibling sibling)
-            where TSibling : class
+        public TSibling GetPreviousSiblingOf<TSibling>(TSibling sibling) where TSibling : class
         {
-            Contract.Requires(sibling != null);
-            Contract.Ensures(Contract.Result<TSibling>() != null);
-
             TSibling previousSibling;
-            if (this.TryGetPreviousSiblingOf(sibling, out previousSibling))
+            if (!this.TryGetPreviousSiblingOf(sibling, out previousSibling))
             {
-                Contract.Assert(previousSibling != null);
-                return previousSibling;
+                throw new ArgumentException(
+                    string.Format("Given sibling {0} has no previous sibling.", sibling),
+                    "sibling");
             }
-            throw new ArgumentException(string.Format("Given sibling {0} has no previous sibling.", sibling.ToString()), "sibling");
+
+            Contract.Assert(previousSibling != null);
+            return previousSibling;
         }
 
         /// <summary>
@@ -325,14 +317,10 @@ namespace Cilador.Graph
         /// </summary>
         /// <typeparam name="TSibling">Type of the sibling and previous sibling.</typeparam>
         /// <param name="sibling">Sibling to find previous sibling of.</param>
-        /// <param name="previousSibling">To be populated with the previous sibling, if found.</param>
+        /// <param name="previousSibling">DependsOn be populated with the previous sibling, if found.</param>
         /// <returns><c>true</c> if the previous sibling was found, else <c>false</c>.</returns>
-        public bool TryGetPreviousSiblingOf<TSibling>(TSibling sibling, out TSibling previousSibling)
-            where TSibling : class
+        public bool TryGetPreviousSiblingOf<TSibling>(TSibling sibling, out TSibling previousSibling) where TSibling : class
         {
-            Contract.Requires(sibling != null);
-            Contract.Ensures(Contract.Result<bool>() == false || Contract.ValueAtReturn(out previousSibling) != null);
-
             object previousSiblingObject;
             if (!this.PreviousSiblingBySibling.TryGetValue(sibling, out previousSiblingObject))
             {
@@ -350,6 +338,6 @@ namespace Cilador.Graph
         /// E.g. a generic type T depends on a generic parameter G, so there will
         /// be an edge from T to G.
         /// </summary>
-        public IEnumerable<IILEdge> DependencyEdges { get; private set; }
+        public IEnumerable<DependencyILEdge> DependencyEdges { get; private set; }
     }
 }

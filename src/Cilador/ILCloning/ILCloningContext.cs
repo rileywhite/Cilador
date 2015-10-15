@@ -86,7 +86,9 @@ namespace Cilador.ILCloning
 
             var clonersGetter = new ClonersGetDispatcher(this, targetsByRoot, clonersBySource);
 
-            var sortedVertices = TopologicalSorter.TopologicalSort(this.ILGraph.Vertices, this.ILGraph.DependencyEdges);
+            var sortedVertices = TopologicalSorter.TopologicalSort(
+                this.ILGraph.Vertices,
+                ((IEnumerable<IILEdge>)this.ILGraph.ParentChildEdges).Union(this.ILGraph.SiblingEdges));
             foreach (var source in sortedVertices)
             {
                 clonersBySource.Add(source, clonersGetter.InvokeFor(source));
