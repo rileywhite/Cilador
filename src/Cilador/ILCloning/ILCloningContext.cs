@@ -20,7 +20,6 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using TopologicalSort;
@@ -51,6 +50,7 @@ namespace Cilador.ILCloning
             Contract.Requires(rootSource != null);
             Contract.Requires(rootTarget != null);
             Contract.Ensures(this.ILGraph != null);
+            Contract.Ensures(this.ClonersBySource != null);
             Contract.Ensures(this.RootSource != null);
             Contract.Ensures(this.RootTarget != null);
 
@@ -61,13 +61,18 @@ namespace Cilador.ILCloning
             this.TypeCache = new Dictionary<string, TypeReference>();
             this.FieldCache = new Dictionary<string, FieldReference>();
             this.MethodCache = new Dictionary<string, MethodReference>();
-            this.ClonerGatheringVisitor = new ClonerGatheringVisitor(this);
+            this.ClonersBySource = new Dictionary<object, IReadOnlyCollection<ICloner<object, object>>>(this.ILGraph.VertexCount);
         }
 
         /// <summary>
         /// Gets or sets the ILGraph of items for the cloning operation.
         /// </summary>
         public IILGraph ILGraph { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the collection of cloners for a given source.
+        /// </summary>
+        private Dictionary<object, IReadOnlyCollection<ICloner<object, object>>> ClonersBySource { get; set; }
 
         /// <summary>
         /// Executes the cloning actions specified by the context.
@@ -82,21 +87,24 @@ namespace Cilador.ILCloning
                 { this.RootSource, new object[] { this.RootTarget }}
             };
 
-            var clonersBySource = new Dictionary<object, IReadOnlyCollection<ICloner<object, object>>>();
+            var clonersGetter = new ClonersGetDispatcher(this, targetsByRoot, this.ClonersBySource);
 
-            var clonersGetter = new ClonersGetDispatcher(this, targetsByRoot, clonersBySource);
-
-            var sortedVertices = TopologicalSorter.TopologicalSort(
+            var verticesSortedForCreation = TopologicalSorter.TopologicalSort(
                 this.ILGraph.Vertices,
                 ((IEnumerable<IILEdge>)this.ILGraph.ParentChildEdges).Union(this.ILGraph.SiblingEdges));
-            foreach (var source in sortedVertices)
+            foreach (var source in verticesSortedForCreation)
             {
-                clonersBySource.Add(source, clonersGetter.InvokeFor(source));
+                this.ClonersBySource.Add(source, clonersGetter.InvokeFor(source));
             }
 
-            this.ClonerGatheringVisitor.Visit(new RootTypeCloner(this, this.RootSource, this.RootTarget));
-            this.Cloners.SetAllClonersAdded();
-            this.Cloners.InvokeCloners();
+            var verticesSortedForCloning = TopologicalSorter.TopologicalSort(
+                this.ILGraph.Vertices,
+                this.ILGraph.DependencyEdges);
+
+            foreach (var source in verticesSortedForCloning)
+            {
+                this.ClonersBySource[source].CloneAll();
+            }
         }
 
         /// <summary>
@@ -108,16 +116,6 @@ namespace Cilador.ILCloning
         /// Gets or sets the top level source type for the cloning operation.
         /// </summary>
         public TypeDefinition RootTarget { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the cloner gathering visitor used by this context.
-        /// </summary>
-        private ClonerGatheringVisitor ClonerGatheringVisitor { get; set; }
-
-        private Cloners Cloners
-        {
-            get { return this.ClonerGatheringVisitor.Cloners; }
-        }
 
         /// <summary>
         /// Root import an item when the exact item type may not be known.
@@ -139,7 +137,6 @@ namespace Cilador.ILCloning
         /// <returns>Unmodified <paramref name="item"/></returns>
         private object RootImport(object item)
         {
-            Contract.Assert(this.Cloners.AreAllClonersAdded);
             return item;
         }
 
@@ -158,7 +155,6 @@ namespace Cilador.ILCloning
         public TypeReference RootImport(TypeReference type)
         {
             Contract.Ensures(condition: (type == null) == (Contract.Result<TypeReference>() == null));
-            Contract.Assert(this.Cloners.AreAllClonersAdded);
 
             if (type == null) { return null; }
             if (type.IsGenericParameter)
@@ -196,11 +192,15 @@ namespace Cilador.ILCloning
             else
             {
                 // either return the found mixed target (for mixed types) or do a straight import of the type (for non-mixed types)
-                TypeDefinition foundTargetType;
-                importedType =
-                    this.Cloners.TryGetTargetFor(type, out foundTargetType) ?
-                    foundTargetType :
-                    this.RootTarget.Module.Import(type);
+                IReadOnlyCollection<ICloner<object, object>> foundTargetType;
+                if (this.ClonersBySource.TryGetValue(type, out foundTargetType))
+                {
+                    importedType = (TypeDefinition)foundTargetType.First().Target;
+                }
+                else
+                {
+                    importedType = this.RootTarget.Module.Import(type);
+                }
             }
 
             Contract.Assert(importedType != null);
@@ -223,10 +223,9 @@ namespace Cilador.ILCloning
         /// <returns>Root imported type.</returns>
         public TypeReference RootImport(GenericParameter genericParameter)
         {
-            Contract.Assert(this.Cloners.AreAllClonersAdded);
             if (genericParameter == null) { return null; }
 
-            string cacheKey = Cloners.GetUniqueKeyFor(genericParameter);
+            var cacheKey = Cloners.GetUniqueKeyFor(genericParameter);
 
             // if root import has already occurred, then return the previous result
             GenericParameter importedGenericParameter;
@@ -236,13 +235,15 @@ namespace Cilador.ILCloning
                 return importedGenericParameter;
             }
 
-            if (!this.Cloners.TryGetTargetFor(genericParameter, out importedGenericParameter))
+            IReadOnlyCollection<ICloner<object, object>> cloners;
+            if (!this.ClonersBySource.TryGetValue(genericParameter, out cloners))
             {
                 throw new InvalidOperationException(string.Format(
                     "Could not find the target generic parameter for source named [{0}] with owner [{1}].",
                     genericParameter.Name,
                     ((MemberReference)genericParameter.Owner).Name));
             }
+            importedGenericParameter = (GenericParameter)cloners.First().Target;
 
             Contract.Assert(importedGenericParameter != null);
             Contract.Assert(importedGenericParameter.Module == this.RootTarget.Module);
@@ -266,7 +267,6 @@ namespace Cilador.ILCloning
         /// <returns>Root imported field.</returns>
         public FieldReference RootImport(FieldReference field)
         {
-            Contract.Assert(this.Cloners.AreAllClonersAdded);
             if (field == null) { return null; }
 
             FieldReference importedField;
@@ -282,14 +282,15 @@ namespace Cilador.ILCloning
             var importedDeclaringType = this.RootImport(field.DeclaringType);
 
             // try to get the field from within the clone targets that would correspond with a field within the clone source
-            FieldDefinition importedFieldDefinition;
-            if (!this.Cloners.TryGetTargetFor(field, out importedFieldDefinition))
+            IReadOnlyCollection<ICloner<object, object>> cloners;
+            if (!this.ClonersBySource.TryGetValue(field, out cloners))
             {
                 // not a mixed type field, so do a simple import
                 importedField = this.RootTarget.Module.Import(field);
             }
             else
             {
+                var importedFieldDefinition = (FieldDefinition)cloners.First().Target;
                 if (!importedDeclaringType.IsGenericInstance)
                 {
                     // this is the easy case
@@ -326,7 +327,6 @@ namespace Cilador.ILCloning
         /// <returns>Root imported method.</returns>
         public MethodReference RootImport(MethodReference method)
         {
-            Contract.Assert(this.Cloners.AreAllClonersAdded);
             if (method == null) { return null; }
 
             MethodReference importedMethod;
@@ -388,9 +388,10 @@ namespace Cilador.ILCloning
             else
             {
                 // try to get the method from within the clone targets that would correspond with a method within the clone source
-                MethodDefinition importedMethodDefinition;
-                if (this.Cloners.TryGetTargetFor(method, out importedMethodDefinition))
+                IReadOnlyCollection<ICloner<object, object>> cloners;
+                if (this.ClonersBySource.TryGetValue(method, out cloners))
                 {
+                    var importedMethodDefinition = (MethodDefinition)cloners.First().Target;
                     if (!importedDeclaringType.IsGenericInstance)
                     {
                         // this is the easy case
@@ -463,12 +464,12 @@ namespace Cilador.ILCloning
         /// <returns>Root imported parameter.</returns>
         public ParameterDefinition RootImport(ParameterDefinition parameter)
         {
-            Contract.Assert(this.Cloners.AreAllClonersAdded);
             if (parameter == null) { return null; }
-            ParameterDefinition imported;
-            if (this.Cloners.TryGetTargetFor(parameter, out imported))
+
+            IReadOnlyCollection<ICloner<object, object>> cloners;
+            if (this.ClonersBySource.TryGetValue(parameter, out cloners))
             {
-                return imported;
+                return (ParameterDefinition)cloners.First().Target;
             }
 
             // no need to import
@@ -484,12 +485,12 @@ namespace Cilador.ILCloning
         /// <returns>Root imported variable.</returns>
         public VariableDefinition RootImport(VariableDefinition variable)
         {
-            Contract.Assert(this.Cloners.AreAllClonersAdded);
             if (variable == null) { return null; }
-            VariableDefinition imported;
-            if (this.Cloners.TryGetTargetFor(variable, out imported))
+
+            IReadOnlyCollection<ICloner<object, object>> cloners;
+            if (this.ClonersBySource.TryGetValue(variable, out cloners))
             {
-                return imported;
+                return (VariableDefinition)cloners.First().Target;
             }
 
             // no need to import
@@ -505,12 +506,12 @@ namespace Cilador.ILCloning
         /// <returns>Root imported instruction.</returns>
         public Instruction RootImport(Instruction instruction)
         {
-            Contract.Assert(this.Cloners.AreAllClonersAdded);
             if (instruction == null) { return null; }
-            Instruction imported;
-            if (this.Cloners.TryGetTargetFor(instruction, out imported))
+
+            IReadOnlyCollection<ICloner<object, object>> cloners;
+            if (this.ClonersBySource.TryGetValue(instruction, out cloners))
             {
-                return imported;
+                return (Instruction)cloners.First().Target;
             }
 
             // no need to import
