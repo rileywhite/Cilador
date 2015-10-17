@@ -20,7 +20,6 @@ using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
@@ -183,7 +182,6 @@ namespace Cilador.ILCloning
         /// <returns>Cloners for the <paramref name="item"/>.</returns>
         protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(PropertyDefinition item)
         {
-            throw new NotImplementedException();
             var parent = this.ILCloningContext.ILGraph.GetParentOf<TypeDefinition>(item);
             Contract.Assert(parent != null);
             var parentCloners = this.ClonersBySource[parent];
@@ -203,7 +201,6 @@ namespace Cilador.ILCloning
         /// <returns>Cloners for the <paramref name="item"/>.</returns>
         protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(EventDefinition item)
         {
-            throw new NotImplementedException();
             var parent = this.ILCloningContext.ILGraph.GetParentOf<TypeDefinition>(item);
             Contract.Assert(parent != null);
             var parentCloners = this.ClonersBySource[parent];
