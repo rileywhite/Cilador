@@ -320,22 +320,30 @@ namespace Cilador.ILCloning
         /// <returns>Cloners for the <paramref name="item"/>.</returns>
         protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(ParameterDefinition item)
         {
-            throw new NotImplementedException();
-            //MethodSignatureCloner parentCloner =
-            //    (MethodSignatureCloner)this.ClonersBySource[this.ILGraph.GetParentOf<MethodDefinition>(item)].Single();
+            var parent = this.ILCloningContext.ILGraph.GetParentOf<MethodDefinition>(item);
+            Contract.Assert(parent != null);
+            var parentCloners = this.ClonersBySource[parent];
+            Contract.Assume(parentCloners != null);
 
-            //ParameterDefinition previousSibling;
-            //ParameterCloner previousSiblingCloner;
-            //if (this.ILGraph.TryGetPreviousSiblingOf(item, out previousSibling))
-            //{
-            //    previousSiblingCloner = (ParameterCloner)this.ClonersBySource[previousSibling].Single();
-            //}
-            //else
-            //{
-            //    previousSiblingCloner = null;
-            //}
+            if (parentCloners.Count == 0) { return new ICloner<object, object>[0]; }
 
-            //return new ICloner<object, object>[] { new ParameterCloner(parentCloner, previousSiblingCloner, item) };
+            IEnumerable<Tuple<ICloner<object, object>, ICloner<object, object>>> parentAndSiblingCloners;
+
+            ParameterDefinition previousSibling;
+            if (this.ILCloningContext.ILGraph.TryGetPreviousSiblingOf(item, out previousSibling))
+            {
+                parentAndSiblingCloners = parentCloners.Zip(this.ClonersBySource[previousSibling], Tuple.Create);
+            }
+            else
+            {
+                parentAndSiblingCloners =
+                    from parentCloner in parentCloners
+                    select Tuple.Create<ICloner<object, object>, ICloner<object, object>>(parentCloner, null);
+            }
+
+            return
+                (from parentAndSiblingCloner in parentAndSiblingCloners
+                 select new ParameterCloner((MethodSignatureCloner)parentAndSiblingCloner.Item1, (ParameterCloner)parentAndSiblingCloner.Item2, item)).ToArray();
         }
 
         /// <summary>
@@ -362,17 +370,30 @@ namespace Cilador.ILCloning
         /// <returns>Cloners for the <paramref name="item"/>.</returns>
         protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(VariableDefinition item)
         {
-            throw new NotImplementedException("How to get the parent and previous given that the parent may generate multiple cloners?");
-            //var parentCloner = (ICloneToMethodBody<object>)this.ClonersBySource[item].Single();
+            var parent = this.ILCloningContext.ILGraph.GetParentOf<MethodBody>(item);
+            Contract.Assert(parent != null);
+            var parentCloners = this.ClonersBySource[parent];
+            Contract.Assume(parentCloners != null);
 
-            //VariableCloner previousSiblingCloner;
-            //if (item.Index == 0) { previousSiblingCloner = null; }
-            //else
-            //{
-            //    //previousSiblingCloner =
-            //    //    ParameterCloner)this.ClonersBySource[parentCloner.Source.Variables[item.Index - 1]].Single();
-            //}
-            //return new ICloner<object, object>[] { new VariableCloner(parentCloner, previousSiblingCloner, item) };
+            if (parentCloners.Count == 0) { return new ICloner<object, object>[0]; }
+
+            IEnumerable<Tuple<ICloner<object, object>, ICloner<object, object>>> parentAndSiblingCloners;
+
+            VariableDefinition previousSibling;
+            if (this.ILCloningContext.ILGraph.TryGetPreviousSiblingOf(item, out previousSibling))
+            {
+                parentAndSiblingCloners = parentCloners.Zip(this.ClonersBySource[previousSibling], Tuple.Create);
+            }
+            else
+            {
+                parentAndSiblingCloners =
+                    from parentCloner in parentCloners
+                    select Tuple.Create<ICloner<object, object>, ICloner<object, object>>(parentCloner, null);
+            }
+
+            return
+                (from parentAndSiblingCloner in parentAndSiblingCloners
+                 select new VariableCloner((ICloneToMethodBody<object>)parentAndSiblingCloner.Item1, (VariableCloner)parentAndSiblingCloner.Item2, item)).ToArray();
         }
 
         /// <summary>
@@ -415,9 +436,14 @@ namespace Cilador.ILCloning
         /// <returns>Cloners for the <paramref name="item"/>.</returns>
         protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(ExceptionHandler item)
         {
-            throw new NotImplementedException();
-            //var parentCloner = (ICloner<ICustomAttributeProvider>)this.ClonersBySource[item].Single();
-            //return new ICloner<object, object>[] { new ExceptionHandlerCloner(parentCloner, item) };
+            var parent = this.ILCloningContext.ILGraph.GetParentOf<MethodBody>(item);
+            Contract.Assert(parent != null);
+            var parentCloners = this.ClonersBySource[parent];
+            Contract.Assume(parentCloners != null);
+
+            return
+                (from ICloneToMethodBody<object> parentCloner in parentCloners
+                 select new ExceptionHandlerCloner(parentCloner, item)).ToArray();
         }
 
         /// <summary>
@@ -427,22 +453,30 @@ namespace Cilador.ILCloning
         /// <returns>Cloners for the <paramref name="item"/>.</returns>
         protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(GenericParameter item)
         {
-            throw new NotImplementedException();
-            //ICloner<IGenericParameterProvider> parentCloner =
-            //    (ICloner<IGenericParameterProvider>)this.ClonersBySource[this.ILGraph.GetParentOf<IGenericParameterProvider>(item)].Single();
+            var parent = this.ILCloningContext.ILGraph.GetParentOf<IGenericParameterProvider>(item);
+            Contract.Assert(parent != null);
+            var parentCloners = this.ClonersBySource[parent];
+            Contract.Assume(parentCloners != null);
 
-            //GenericParameter previousSibling;
-            //GenericParameterCloner previousSiblingCloner;
-            //if (this.ILGraph.TryGetPreviousSiblingOf(item, out previousSibling))
-            //{
-            //    previousSiblingCloner = null;
-            //}
-            //else
-            //{
-            //    previousSiblingCloner = (GenericParameterCloner)this.ClonersBySource[previousSibling].Single();
-            //}
+            if (parentCloners.Count == 0) { return new ICloner<object, object>[0]; }
 
-            //return new ICloner<object, object>[] { new GenericParameterCloner(parentCloner, previousSiblingCloner, item) };
+            IEnumerable<Tuple<ICloner<object, object>, ICloner<object, object>>> parentAndSiblingCloners;
+
+            GenericParameter previousSibling;
+            if (this.ILCloningContext.ILGraph.TryGetPreviousSiblingOf(item, out previousSibling))
+            {
+                parentAndSiblingCloners = parentCloners.Zip(this.ClonersBySource[previousSibling], Tuple.Create);
+            }
+            else
+            {
+                parentAndSiblingCloners =
+                    from parentCloner in parentCloners
+                    select Tuple.Create<ICloner<object, object>, ICloner<object, object>>(parentCloner, null);
+            }
+
+            return
+                (from parentAndSiblingCloner in parentAndSiblingCloners
+                 select new GenericParameterCloner((ICloner<IGenericParameterProvider>)parentAndSiblingCloner.Item1, (GenericParameterCloner)parentAndSiblingCloner.Item2, item)).ToArray();
         }
 
         /// <summary>
@@ -452,10 +486,14 @@ namespace Cilador.ILCloning
         /// <returns>Cloners for the <paramref name="item"/>.</returns>
         protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(CustomAttribute item)
         {
-            throw new NotImplementedException();
-            //var parentCloner =
-            //    (ICloner<ICustomAttributeProvider>)this.ClonersBySource[this.ILGraph.GetParentOf<ICustomAttributeProvider>(item)].Single();
-            //return new ICloner<object, object>[] { new CustomAttributeCloner(parentCloner, item) };
+            var parent = this.ILCloningContext.ILGraph.GetParentOf<ICustomAttributeProvider>(item);
+            Contract.Assert(parent != null);
+            var parentCloners = this.ClonersBySource[parent];
+            Contract.Assume(parentCloners != null);
+
+            return
+                (from ICloner<ICustomAttributeProvider> parentCloner in parentCloners
+                 select new CustomAttributeCloner(parentCloner, item)).ToArray();
         }
     }
 }
