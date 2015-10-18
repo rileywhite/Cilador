@@ -441,9 +441,25 @@ namespace Cilador.ILCloning
             var parentCloners = this.ClonersBySource[parent];
             Contract.Assume(parentCloners != null);
 
+            if (parentCloners.Count == 0) { return new ICloner<object, object>[0]; }
+
+            IEnumerable<Tuple<ICloner<object, object>, ICloner<object, object>>> parentAndSiblingCloners;
+
+            ExceptionHandler previousSibling;
+            if (this.ILCloningContext.ILGraph.TryGetPreviousSiblingOf(item, out previousSibling))
+            {
+                parentAndSiblingCloners = parentCloners.Zip(this.ClonersBySource[previousSibling], Tuple.Create);
+            }
+            else
+            {
+                parentAndSiblingCloners =
+                    from parentCloner in parentCloners
+                    select Tuple.Create<ICloner<object, object>, ICloner<object, object>>(parentCloner, null);
+            }
+
             return
-                (from ICloneToMethodBody<object> parentCloner in parentCloners
-                 select new ExceptionHandlerCloner(parentCloner, item)).ToArray();
+                (from parentAndSiblingCloner in parentAndSiblingCloners
+                 select new ExceptionHandlerCloner((ICloneToMethodBody<object>)parentAndSiblingCloner.Item1, (ExceptionHandlerCloner)parentAndSiblingCloner.Item2, item)).ToArray();
         }
 
         /// <summary>

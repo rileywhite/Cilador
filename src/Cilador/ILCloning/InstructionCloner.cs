@@ -123,7 +123,7 @@ namespace Cilador.ILCloning
 
             // now create the target
             var ilProcessor = this.Parent.Target.GetILProcessor();
-            Instruction target = this.TargetInstructionCreator.InvokeFor(source, ilProcessor);
+            var target = this.TargetInstructionCreator.InvokeFor(source, ilProcessor);
 
             // run the insert action
             this.InstructionInsertAction(ilProcessor, this.Parent, this.Previous, this.Source, target);
@@ -196,7 +196,7 @@ namespace Cilador.ILCloning
             /// Gets an instruction target for a source with a <c>null</c> operand.
             /// </summary>
             /// <param name="opCode">Op code of the instruction.</param>
-            /// <param name="state">State to use in instruction creation.</param>
+            /// <param name="ilProcessor">IL processor for instruction creation.</param>
             /// <returns>New target instruction</returns>
             protected override Instruction GetReturnValueForNull(OpCode opCode, ILProcessor ilProcessor)
             {
