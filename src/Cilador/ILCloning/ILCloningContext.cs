@@ -225,15 +225,15 @@ namespace Cilador.ILCloning
         {
             if (genericParameter == null) { return null; }
 
-            var cacheKey = Cloners.GetUniqueKeyFor(genericParameter);
+            // TODO still cache?
+            //var cacheKey = Cloners.GetUniqueKeyFor(genericParameter);
 
             // if root import has already occurred, then return the previous result
-            GenericParameter importedGenericParameter;
-            if (this.GenericParameterCache.TryGetValue(cacheKey, out importedGenericParameter))
-            {
-                Contract.Assert(importedGenericParameter != null);
-                return importedGenericParameter;
-            }
+            //if (this.GenericParameterCache.TryGetValue(cacheKey, out importedGenericParameter))
+            //{
+            //    Contract.Assert(importedGenericParameter != null);
+            //    return importedGenericParameter;
+            //}
 
             IReadOnlyCollection<ICloner<object, object>> cloners;
             if (!this.ClonersBySource.TryGetValue(genericParameter, out cloners))
@@ -243,12 +243,12 @@ namespace Cilador.ILCloning
                     genericParameter.Name,
                     ((MemberReference)genericParameter.Owner).Name));
             }
-            importedGenericParameter = (GenericParameter)cloners.First().Target;
+            var importedGenericParameter = (GenericParameter)cloners.First().Target;
 
             Contract.Assert(importedGenericParameter != null);
             Contract.Assert(importedGenericParameter.Module == this.RootTarget.Module);
             Contract.Assert(importedGenericParameter.Owner.Module == this.RootTarget.Module);
-            this.GenericParameterCache[cacheKey] = importedGenericParameter;
+            //this.GenericParameterCache[cacheKey] = importedGenericParameter;
 
             return importedGenericParameter;
         }
@@ -364,9 +364,8 @@ namespace Cilador.ILCloning
                 Contract.Assert(localMethod.GenericParameters.Count > 0);
 
                 // create a new generic instance reference and root import all generic arguments
-
-                // TODO this "snapshots" a possibly incompletely cloned generic type
-
+                // depends on good depenendency topological sorting to ensure that the created closed generic method
+                // is constructed from a completely cloned open generic method
                 var genericInstanceMethod = (GenericInstanceMethod)method;
 
                 var importedLocalMethod = this.RootTarget.Module.Import(localMethod);
@@ -401,7 +400,8 @@ namespace Cilador.ILCloning
                     {
                         // the method is defined within a generic type _and_ importing results in a definition rather than a reference
                         // this means that we need to make a new reference
-                        // TODO this "snapshots" a possibly incompletely cloned generic method
+                        // depends on good depenendency topological sorting to ensure that the created closed generic type
+                        // is constructed from a completely cloned open generic type
                         importedMethod = new MethodReference(importedMethodDefinition.Name, importedMethodDefinition.ReturnType)
                         {
                             DeclaringType = importedDeclaringType,

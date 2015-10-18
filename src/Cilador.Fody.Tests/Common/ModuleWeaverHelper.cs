@@ -15,7 +15,6 @@
 /***************************************************************************/
 
 using Cilador.Fody.Core;
-using Cilador.Fody.TestMixinTargets;
 using Cilador.Fody.Config;
 using Mono.Cecil;
 using NUnit.Framework;
@@ -86,7 +85,7 @@ namespace Cilador.Fody.Tests.Common
 
             var mixedAssembly = AppDomain.CurrentDomain.Load(ModuleWeaverHelper.GetRawWeavedAssembly(
                 targetAssemblyFilename,
-                BuildXElementConfig(config, fodyWeaverTaskProperties)));
+                ModuleWeaverHelper.BuildXElementConfig(config, fodyWeaverTaskProperties)));
             return mixedAssembly;
         }
 
@@ -99,7 +98,7 @@ namespace Cilador.Fody.Tests.Common
 
             using(var memoryStream = new MemoryStream())
             {
-                WeaveTestTarget(targetAssemblyFilename, config).Write(memoryStream);
+                ModuleWeaverHelper.WeaveTestTarget(targetAssemblyFilename, config).Write(memoryStream);
                 return memoryStream.GetBuffer();
             }
         }
@@ -111,7 +110,7 @@ namespace Cilador.Fody.Tests.Common
             Contract.Requires(config != null);
             Contract.Ensures(Contract.Result<ModuleDefinition>() != null);
 
-            var moduleWeaver = GetModuleWeaver(targetAssemblyFilename, config);
+            var moduleWeaver = ModuleWeaverHelper.GetModuleWeaver(targetAssemblyFilename, config);
 
             bool isVerified;
             string verificationOutput;

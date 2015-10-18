@@ -176,8 +176,6 @@
     <Compile Include="Graph\ILGraph.cs" />
     <Compile Include="ILCloning\ILProjection.cs" />
     <Compile Include="ILCloning\MethodReturnTypeCloner.cs" />
-    <Compile Include="ILCloning\ClonerGatheringVisitor.cs" />
-    <Compile Include="ILCloning\Cloners.cs" />
     <Compile Include="ILCloning\MultiplexedConstructor.cs" />
     <Compile Include="ILCloning\CustomAttributeCloner.cs" />
     <Compile Include="ILCloning\EventCloner.cs" />
