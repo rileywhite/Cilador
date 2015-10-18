@@ -68,7 +68,10 @@ namespace Cilador.Graph
         protected override IEnumerable<object> InvokeForItem(TypeDefinition item)
         {
             // a type depends on its base type
-            if (item.BaseType != null) { yield return item.BaseType.Resolve(); }
+            foreach (var dependency in item.BaseType.GetDependencies())
+            {
+                yield return dependency;
+            }
 
             // a type depends on its containing type, if any
             if (item.DeclaringType != null) { yield return item.DeclaringType; }
@@ -76,11 +79,20 @@ namespace Cilador.Graph
             // a type depends on its interface types, if any
             if (item.HasInterfaces) foreach (var interfaceType in item.Interfaces)
             {
-                yield return interfaceType.Resolve();
+                foreach (var dependency in interfaceType.GetDependencies())
+                {
+                    yield return dependency;
+                }
             }
 
             // if a type is an array or generic instance, then it depends on its element type 
-            if (item.IsArray || item.IsGenericInstance) { yield return item.GetElementType().Resolve(); }
+            if (item.IsArray || item.IsGenericInstance)
+            {
+                foreach (var dependency in item.GetElementType().GetDependencies())
+                {
+                    yield return dependency;
+                }
+            }
 
             // a type depends on its generic parameters
             if (item.HasGenericParameters) foreach (var genericParameter in item.GenericParameters)
@@ -97,7 +109,10 @@ namespace Cilador.Graph
         protected override IEnumerable<object> InvokeForItem(FieldDefinition item)
         {
             yield return item.DeclaringType;
-            yield return item.FieldType.Resolve();
+            foreach (var dependency in item.FieldType.GetDependencies())
+            {
+                yield return dependency;
+            }
         }
 
         /// <summary>
@@ -140,7 +155,10 @@ namespace Cilador.Graph
         protected override IEnumerable<object> InvokeForItem(PropertyDefinition item)
         {
             yield return item.DeclaringType;
-            yield return item.PropertyType.Resolve();
+            foreach (var dependency in item.PropertyType.GetDependencies())
+            {
+                yield return dependency;
+            }
 
             if (item.HasParameters) foreach (var parameter in item.Parameters)
             {
@@ -164,7 +182,10 @@ namespace Cilador.Graph
         protected override IEnumerable<object> InvokeForItem(EventDefinition item)
         {
             yield return item.DeclaringType;
-            yield return item.EventType.Resolve();
+            foreach (var dependency in item.EventType.GetDependencies())
+            {
+                yield return dependency;
+            }
         }
 
         /// <summary>
@@ -181,7 +202,10 @@ namespace Cilador.Graph
 
             if (item.HasConstraints) foreach (var type in item.Constraints)
             {
-                yield return type.Resolve();
+                foreach (var dependency in type.GetDependencies())
+                {
+                    yield return dependency;
+                }
             }
         }
 
@@ -192,7 +216,7 @@ namespace Cilador.Graph
         /// <returns>Dependencies of <paramref name="item"/>.</returns>
         protected override IEnumerable<object> InvokeForItem(ParameterDefinition item)
         {
-            yield return item.ParameterType.Resolve();
+            return item.ParameterType.GetDependencies();
         }
 
         /// <summary>
@@ -202,7 +226,7 @@ namespace Cilador.Graph
         /// <returns>Dependencies of <paramref name="item"/>.</returns>
         protected override IEnumerable<object> InvokeForItem(MethodReturnType item)
         {
-            yield return item.ReturnType.Resolve();
+            return item.ReturnType.GetDependencies();
         }
 
         /// <summary>
@@ -212,8 +236,16 @@ namespace Cilador.Graph
         /// <returns>Dependencies of <paramref name="item"/>.</returns>
         protected override IEnumerable<object> InvokeForItem(CustomAttribute item)
         {
-            yield return item.AttributeType.Resolve();
-            yield return item.Constructor.Resolve();
+            foreach (var dependency in item.AttributeType.GetDependencies())
+            {
+                yield return dependency;
+            }
+
+            foreach (var dependency in item.Constructor.GetDependencies())
+            {
+                yield return dependency;
+            }
+
             if (item.HasConstructorArguments) foreach (var constructorArgument in item.ConstructorArguments)
             {
                 yield return constructorArgument.Value;
@@ -238,7 +270,7 @@ namespace Cilador.Graph
         protected override IEnumerable<object> InvokeForItem(VariableDefinition item)
         {
             // a variable depends on its type
-            yield return item.VariableType.Resolve();
+            return item.VariableType.GetDependencies();
         }
 
         /// <summary>

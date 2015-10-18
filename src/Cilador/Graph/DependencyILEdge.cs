@@ -44,7 +44,7 @@ namespace Cilador.Graph
         /// </summary>
         object IEdge<object>.From
         {
-            get { return this.DependsOn; }
+            get { return this.Dependent; }
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Cilador.Graph
         /// </summary>
         object IEdge<object>.To
         {
-            get { return this.Dependent; }
+            get { return this.DependsOn; }
         }
 
         /// <summary>

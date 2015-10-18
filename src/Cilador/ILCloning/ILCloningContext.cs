@@ -283,7 +283,7 @@ namespace Cilador.ILCloning
 
             // try to get the field from within the clone targets that would correspond with a field within the clone source
             IReadOnlyCollection<ICloner<object, object>> cloners;
-            if (!this.ClonersBySource.TryGetValue(field, out cloners))
+            if (!this.ClonersBySource.TryGetValue(field.Resolve(), out cloners))
             {
                 // not a mixed type field, so do a simple import
                 importedField = this.RootTarget.Module.Import(field);
@@ -298,7 +298,7 @@ namespace Cilador.ILCloning
                 }
                 else
                 {
-                    // the method is defined within a generic type _and_ importing results in a definition rather than a reference
+                    // the field is defined within a generic type _and_ importing results in a definition rather than a reference
                     // this means that we need to make a new reference
                     importedField = new FieldReference(importedFieldDefinition.Name, importedFieldDefinition.FieldType)
                     {
@@ -388,7 +388,7 @@ namespace Cilador.ILCloning
             {
                 // try to get the method from within the clone targets that would correspond with a method within the clone source
                 IReadOnlyCollection<ICloner<object, object>> cloners;
-                if (this.ClonersBySource.TryGetValue(method, out cloners))
+                if (this.ClonersBySource.TryGetValue(method.Resolve(), out cloners))
                 {
                     var importedMethodDefinition = (MethodDefinition)cloners.First().Target;
                     if (!importedDeclaringType.IsGenericInstance)
@@ -400,7 +400,7 @@ namespace Cilador.ILCloning
                     {
                         // the method is defined within a generic type _and_ importing results in a definition rather than a reference
                         // this means that we need to make a new reference
-                        // depends on good depenendency topological sorting to ensure that the created closed generic type
+                        // depends on good dependency topological sorting to ensure that the created closed generic type
                         // is constructed from a completely cloned open generic type
                         importedMethod = new MethodReference(importedMethodDefinition.Name, importedMethodDefinition.ReturnType)
                         {

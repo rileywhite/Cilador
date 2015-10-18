@@ -153,6 +153,7 @@
     <Compile Include="Core\InstructionOperandFunctionDispatcherBase.cs" />
     <Compile Include="Core\InstructionOperandFunctionDispatcherContract.cs" />
     <Compile Include="Graph\EdgeEqualityComperer.cs" />
+    <Compile Include="Graph\GraphExtensions.cs" />
     <Compile Include="Graph\IILEdge.cs" />
     <Compile Include="Graph\DependencyILEdge.cs" />
     <Compile Include="Graph\SiblingILEdge.cs" />
@@ -163,7 +164,6 @@
     <Compile Include="Graph\ILDependencyGetDispatcher.cs" />
     <Compile Include="Graph\OperandDependenciesGetDispatcher.cs" />
     <Compile Include="Graph\ILGraphGetter.cs" />
-    <Compile Include="Core\CoreExtensions.cs" />
     <Compile Include="Core\LazyAccessor.cs" />
     <Compile Include="Core\ClonerBase.cs" />
     <Compile Include="Core\ClonerBaseContract.cs" />

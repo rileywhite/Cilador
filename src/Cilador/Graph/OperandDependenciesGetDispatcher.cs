@@ -18,6 +18,7 @@ using Cilador.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 
 namespace Cilador.Graph
@@ -25,12 +26,12 @@ namespace Cilador.Graph
     /// <summary>
     /// Gets dependencies from instruction operands.
     /// </summary>
-    internal class OperandDependenciesGetDispatcher : InstructionOperandFunctionDispatcherBase<object[]>
+    internal class OperandDependenciesGetDispatcher : InstructionOperandFunctionDispatcherBase<IEnumerable<object>>
     {
         /// <summary>
         /// Gets an empty array for null operands.
         /// </summary>
-        protected override object[] ReturnValueForNull
+        protected override IEnumerable<object> ReturnValueForNull
         {
             get { return new object[0]; }
         }
@@ -40,10 +41,10 @@ namespace Cilador.Graph
         /// </summary>
         /// <param name="operand">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
-        protected override object[] InvokeForOperand(TypeReference operand)
+        protected override IEnumerable<object> InvokeForOperand(TypeReference operand)
         {
             Contract.Requires(operand != null);
-            return new object[] { operand.Resolve() };
+            return operand.GetDependencies();
         }
 
         /// <summary>
@@ -51,10 +52,10 @@ namespace Cilador.Graph
         /// </summary>
         /// <param name="operand">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
-        protected override object[] InvokeForOperand(FieldReference operand)
+        protected override IEnumerable<object> InvokeForOperand(FieldReference operand)
         {
             Contract.Requires(operand != null);
-            return new object[] { operand.Resolve() };
+            return operand.GetDependencies();
         }
 
         /// <summary>
@@ -62,7 +63,7 @@ namespace Cilador.Graph
         /// </summary>
         /// <param name="operand">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
-        protected override object[] InvokeForOperand(Instruction operand)
+        protected override IEnumerable<object> InvokeForOperand(Instruction operand)
         {
             Contract.Requires(operand != null);
             return new object[] { operand };
@@ -73,7 +74,7 @@ namespace Cilador.Graph
         /// </summary>
         /// <param name="operand">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
-        protected override object[] InvokeForOperand(Instruction[] operand)
+        protected override IEnumerable<object> InvokeForOperand(Instruction[] operand)
         {
             Contract.Requires(operand != null);
             return operand;
@@ -84,10 +85,10 @@ namespace Cilador.Graph
         /// </summary>
         /// <param name="operand">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
-        protected override object[] InvokeForOperand(MethodReference operand)
+        protected override IEnumerable<object> InvokeForOperand(MethodReference operand)
         {
             Contract.Requires(operand != null);
-            return new object[] { operand.Resolve() };
+            return operand.GetDependencies();
         }
 
         /// <summary>
@@ -95,18 +96,7 @@ namespace Cilador.Graph
         /// </summary>
         /// <param name="operand">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
-        protected override object[] InvokeForOperand(ParameterDefinition operand)
-        {
-            Contract.Requires(operand != null);
-            return new object[] { operand };
-        }
-
-        /// <summary>
-        /// Finds dependencies based on an operand.
-        /// </summary>
-        /// <param name="operand">Operand for instruction</param>
-        /// <returns>Imported operand for target instruction.</returns>
-        protected override object[] InvokeForOperand(VariableDefinition operand)
+        protected override IEnumerable<object> InvokeForOperand(ParameterDefinition operand)
         {
             Contract.Requires(operand != null);
             return new object[] { operand };
@@ -117,7 +107,18 @@ namespace Cilador.Graph
         /// </summary>
         /// <param name="operand">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
-        protected override object[] InvokeForOperand(byte operand)
+        protected override IEnumerable<object> InvokeForOperand(VariableDefinition operand)
+        {
+            Contract.Requires(operand != null);
+            return new object[] { operand };
+        }
+
+        /// <summary>
+        /// Finds dependencies based on an operand.
+        /// </summary>
+        /// <param name="operand">Operand for instruction</param>
+        /// <returns>Imported operand for target instruction.</returns>
+        protected override IEnumerable<object> InvokeForOperand(byte operand)
         {
             return new object[0];
         }
@@ -127,7 +128,7 @@ namespace Cilador.Graph
         /// </summary>
         /// <param name="operand">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
-        protected override object[] InvokeForOperand(sbyte operand)
+        protected override IEnumerable<object> InvokeForOperand(sbyte operand)
         {
             return new object[0];
         }
@@ -137,7 +138,7 @@ namespace Cilador.Graph
         /// </summary>
         /// <param name="operand">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
-        protected override object[] InvokeForOperand(float operand)
+        protected override IEnumerable<object> InvokeForOperand(float operand)
         {
             return new object[0];
         }
@@ -147,7 +148,7 @@ namespace Cilador.Graph
         /// </summary>
         /// <param name="operand">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
-        protected override object[] InvokeForOperand(double operand)
+        protected override IEnumerable<object> InvokeForOperand(double operand)
         {
             return new object[0];
         }
@@ -157,7 +158,7 @@ namespace Cilador.Graph
         /// </summary>
         /// <param name="operand">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
-        protected override object[] InvokeForOperand(int operand)
+        protected override IEnumerable<object> InvokeForOperand(int operand)
         {
             return new object[0];
         }
@@ -167,7 +168,7 @@ namespace Cilador.Graph
         /// </summary>
         /// <param name="operand">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
-        protected override object[] InvokeForOperand(long operand)
+        protected override IEnumerable<object> InvokeForOperand(long operand)
         {
             return new object[0];
         }
@@ -177,7 +178,7 @@ namespace Cilador.Graph
         /// </summary>
         /// <param name="operand">Operand for instruction</param>
         /// <returns>Imported operand for target instruction.</returns>
-        protected override object[] InvokeForOperand(string operand)
+        protected override IEnumerable<object> InvokeForOperand(string operand)
         {
             return new object[0];
         }
