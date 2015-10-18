@@ -32,22 +32,24 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         [Test]
         public void CanMixinFields()
         {
-            var config = new CiladorConfigType();
-
-            config.WeaveConfig = new WeaveConfigTypeBase[]
+            var config = new CiladorConfigType
             {
-                new InterfaceMixinConfigType
+                WeaveConfig = new WeaveConfigTypeBase[]
                 {
-                    InterfaceMixinMap = new InterfaceMixinMapType[]
+                    new InterfaceMixinConfigType
                     {
-                        new InterfaceMixinMapType
+                        InterfaceMixinMap = new[]
                         {
-                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
-                            Mixin = typeof(FieldsMixin).GetShortAssemblyQualifiedName()
+                            new InterfaceMixinMapType
+                            {
+                                Interface = typeof (IEmptyInterface).GetShortAssemblyQualifiedName(),
+                                Mixin = typeof (FieldsMixin).GetShortAssemblyQualifiedName()
+                            }
                         }
-                    }
-                },
+                    },
+                }
             };
+
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
             var targetType = assembly.GetType(typeof(EmptyInterfaceTarget).FullName);
@@ -57,7 +59,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
 
             targetType.ValidateMemberSources(typeof(FieldsMixin));
 
-            ValidateNonTargetTypeAndAttributesAreUntouched(assembly);
+            MemberMixingFixture.ValidateNonTargetTypeAndAttributesAreUntouched(assembly);
         }
 
         private static void ValidateNonTargetTypeAndAttributesAreUntouched(Assembly mixedAssembly)
@@ -133,22 +135,24 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         [Test]
         public void CanMixinMethods()
         {
-            var config = new CiladorConfigType();
-
-            config.WeaveConfig = new WeaveConfigTypeBase[]
+            var config = new CiladorConfigType
             {
-                new InterfaceMixinConfigType
+                WeaveConfig = new WeaveConfigTypeBase[]
                 {
-                    InterfaceMixinMap = new InterfaceMixinMapType[]
+                    new InterfaceMixinConfigType
                     {
-                        new InterfaceMixinMapType
+                        InterfaceMixinMap = new[]
                         {
-                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
-                            Mixin = typeof(MethodsMixin).GetShortAssemblyQualifiedName()
+                            new InterfaceMixinMapType
+                            {
+                                Interface = typeof (IEmptyInterface).GetShortAssemblyQualifiedName(),
+                                Mixin = typeof (MethodsMixin).GetShortAssemblyQualifiedName()
+                            }
                         }
-                    }
-                },
+                    },
+                }
             };
+
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
             var targetType = assembly.GetType(typeof(EmptyInterfaceTarget).FullName);
@@ -162,22 +166,24 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         [Test]
         public void CanMixinProperties()
         {
-            var config = new CiladorConfigType();
-
-            config.WeaveConfig = new WeaveConfigTypeBase[]
+            var config = new CiladorConfigType
             {
-                new InterfaceMixinConfigType
+                WeaveConfig = new WeaveConfigTypeBase[]
                 {
-                    InterfaceMixinMap = new InterfaceMixinMapType[]
+                    new InterfaceMixinConfigType
                     {
-                        new InterfaceMixinMapType
+                        InterfaceMixinMap = new[]
                         {
-                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
-                            Mixin = typeof(PropertiesMixin).GetShortAssemblyQualifiedName()
+                            new InterfaceMixinMapType
+                            {
+                                Interface = typeof (IEmptyInterface).GetShortAssemblyQualifiedName(),
+                                Mixin = typeof (PropertiesMixin).GetShortAssemblyQualifiedName()
+                            }
                         }
-                    }
-                },
+                    },
+                }
             };
+
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
             var targetType = assembly.GetType(typeof(EmptyInterfaceTarget).FullName);
@@ -191,22 +197,24 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         [Test]
         public void CanMixinEvents()
         {
-            var config = new CiladorConfigType();
-
-            config.WeaveConfig = new WeaveConfigTypeBase[]
+            var config = new CiladorConfigType
             {
-                new InterfaceMixinConfigType
+                WeaveConfig = new WeaveConfigTypeBase[]
                 {
-                    InterfaceMixinMap = new InterfaceMixinMapType[]
+                    new InterfaceMixinConfigType
                     {
-                        new InterfaceMixinMapType
+                        InterfaceMixinMap = new[]
                         {
-                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
-                            Mixin = typeof(EventsMixin).GetShortAssemblyQualifiedName()
+                            new InterfaceMixinMapType
+                            {
+                                Interface = typeof (IEmptyInterface).GetShortAssemblyQualifiedName(),
+                                Mixin = typeof (EventsMixin).GetShortAssemblyQualifiedName()
+                            }
                         }
-                    }
-                },
+                    },
+                }
             };
+
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
             var targetType = assembly.GetType(typeof(EmptyInterfaceTarget).FullName);
@@ -220,22 +228,24 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         [Test]
         public void CanMixinNestedTypes()
         {
-            var config = new CiladorConfigType();
-
-            config.WeaveConfig = new WeaveConfigTypeBase[]
+            var config = new CiladorConfigType
             {
-                new InterfaceMixinConfigType
+                WeaveConfig = new WeaveConfigTypeBase[]
                 {
-                    InterfaceMixinMap = new InterfaceMixinMapType[]
+                    new InterfaceMixinConfigType
                     {
-                        new InterfaceMixinMapType
+                        InterfaceMixinMap = new[]
                         {
-                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
-                            Mixin = typeof(NestedTypesMixin).GetShortAssemblyQualifiedName()
+                            new InterfaceMixinMapType
+                            {
+                                Interface = typeof (IEmptyInterface).GetShortAssemblyQualifiedName(),
+                                Mixin = typeof (NestedTypesMixin).GetShortAssemblyQualifiedName()
+                            }
                         }
-                    }
-                },
+                    },
+                }
             };
+
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
             var targetType = assembly.GetType(typeof(EmptyInterfaceTarget).FullName);
@@ -264,22 +274,24 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         [Test]
         public void CanRedirectMixedMembers()
         {
-            var config = new CiladorConfigType();
-
-            config.WeaveConfig = new WeaveConfigTypeBase[]
+            var config = new CiladorConfigType
             {
-                new InterfaceMixinConfigType
+                WeaveConfig = new WeaveConfigTypeBase[]
                 {
-                    InterfaceMixinMap = new InterfaceMixinMapType[]
+                    new InterfaceMixinConfigType
                     {
-                        new InterfaceMixinMapType
+                        InterfaceMixinMap = new[]
                         {
-                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
-                            Mixin = typeof(SelfReferencingMembersMixin).GetShortAssemblyQualifiedName()
+                            new InterfaceMixinMapType
+                            {
+                                Interface = typeof (IEmptyInterface).GetShortAssemblyQualifiedName(),
+                                Mixin = typeof (SelfReferencingMembersMixin).GetShortAssemblyQualifiedName()
+                            }
                         }
-                    }
-                },
+                    },
+                }
             };
+
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
             var targetType = assembly.GetType(typeof(EmptyInterfaceTarget).FullName);
