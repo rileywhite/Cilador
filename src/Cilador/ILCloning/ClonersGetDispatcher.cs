@@ -248,49 +248,29 @@ namespace Cilador.ILCloning
             Contract.Ensures(Contract.Result<IReadOnlyCollection<ICloner<object, object>>>() != null);
 
             var parent = this.ILCloningContext.ILGraph.GetParentOf<TypeDefinition>(item);
-            Contract.Assert(parent != null);
             var parentCloners = this.ClonersBySource[parent];
             Contract.Assume(parentCloners != null);
 
             var cloners = new List<ICloner<object, object>>();
 
-            foreach (RootTypeCloner parentCloner in parentCloners)
+            foreach (var parentCloner in parentCloners.Cast<RootTypeCloner>())
             {
+                // add one no-op cloner per target constructor
+                cloners.AddRange(
+                    from method in parentCloner.Target.Methods
+                    where method.IsConstructor && !method.IsStatic
+                    select NoOpCloner.Create(this.ILCloningContext, item, method));
+
+                // add a single constructor logic signature cloner to generate a new method, if necessary
                 var sourceMultiplexedConstructor = MultiplexedConstructor.Get(this.ILCloningContext, item);
 
-                ConstructorLogicSignatureCloner constructorLogicSignatureCloner = null;
-                if (sourceMultiplexedConstructor.HasConstructionItems)
-                {
-                    constructorLogicSignatureCloner =
-                        new ConstructorLogicSignatureCloner(parentCloner, sourceMultiplexedConstructor);
-                    cloners.Add(constructorLogicSignatureCloner);
-                }
+                // only continue if we have construction items
+                if (!sourceMultiplexedConstructor.HasConstructionItems) { continue; }
 
-                // the initialization cloning includes calling redirected construction methods
-                // so we want to do this if we have either initialization or if we have to create a logic cloner
-                if (!sourceMultiplexedConstructor.HasInitializationItems && constructorLogicSignatureCloner == null) { continue; }
-
-                throw new NotImplementedException();
-                foreach (var targetConstructor in
-                    parentCloner.Target.Methods.Where(targetMethod => targetMethod.IsConstructor && !targetMethod.IsStatic))
-                {
-                    var targetMultiplexedConstructor = MultiplexedConstructor.Get(this.ILCloningContext, targetConstructor);
-
-                    if (!targetMultiplexedConstructor.IsInitializingConstructor)
-                    {
-                        // skip non-initializing constructors because they will eventually call into an initializing constructor
-                        continue;
-                    }
-
-                    Contract.Assert(targetConstructor.HasBody);
-                    var constructorCloner = new ConstructorInitializationCloner(
-                        parentCloner,
-                        constructorLogicSignatureCloner,
-                        sourceMultiplexedConstructor,
-                        targetConstructor.Body);
-
-                    cloners.Add(constructorCloner);
-                }
+                // add the constructor logic signature cloner
+                var constructorLogicSignatureCloner =
+                    new ConstructorLogicSignatureCloner(parentCloner, sourceMultiplexedConstructor);
+                cloners.Add(constructorLogicSignatureCloner);
             }
 
             return cloners;
@@ -305,12 +285,68 @@ namespace Cilador.ILCloning
         {
             var parent = this.ILCloningContext.ILGraph.GetParentOf<MethodDefinition>(item);
             Contract.Assert(parent != null);
+
+            if (parent.IsConstructor && !parent.IsStatic && this.ILCloningContext.ILGraph.GetDepth(item) == 2)
+            {
+                return this.InvokeForRootTypeConstructorBody(item, parent);
+            }
+
             var parentCloners = this.ClonersBySource[parent];
             Contract.Assume(parentCloners != null);
 
             return
                 (from MethodSignatureCloner parentCloner in parentCloners
                  select new MethodBodyCloner(parentCloner, item)).ToArray();
+        }
+
+        private IReadOnlyCollection<ICloner<object, object>> InvokeForRootTypeConstructorBody(MethodBody item, MethodDefinition parent)
+        {
+            Contract.Requires(item != null);
+            Contract.Requires(parent != null);
+            Contract.Ensures(Contract.Result<IReadOnlyCollection<ICloner<object, object>>>() != null);
+
+            var parentCloners = this.ClonersBySource[parent];
+            Contract.Assume(parentCloners != null);
+
+            var constructorLogicSignatureCloner =
+                parentCloners.SingleOrDefault(parentCloner => parentCloner is ConstructorLogicSignatureCloner) as ConstructorLogicSignatureCloner;
+            var sourceMultiplexedConstructor = MultiplexedConstructor.Get(this.ILCloningContext, parent);
+
+            var cloners = new List<ICloner<object, object>>();
+
+            if (constructorLogicSignatureCloner != null)
+            {
+                cloners.Add(new ConstructorLogicBodyCloner(constructorLogicSignatureCloner, sourceMultiplexedConstructor));
+            }
+
+            foreach (var parentCloner in parentCloners
+                .Where(parentCloner => parentCloner is NoOpCloner<MethodDefinition, MethodDefinition>)
+                .Cast<NoOpCloner<MethodDefinition, MethodDefinition>>())
+            {
+
+                // the initialization cloning includes calling redirected construction methods
+                // so we want to do this if we have initialization items or if we have to create a logic cloner
+                if (!sourceMultiplexedConstructor.HasInitializationItems && constructorLogicSignatureCloner == null) { continue; }
+
+                var targetMultiplexedConstructor = MultiplexedConstructor.Get(this.ILCloningContext, parentCloner.Target);
+
+                if (!targetMultiplexedConstructor.IsInitializingConstructor)
+                {
+                    // skip non-initializing constructors because they will eventually call into an initializing constructor
+                    continue;
+                }
+
+                Contract.Assert(parentCloner.Target.HasBody);
+                var constructorCloner = new ConstructorInitializationCloner(
+                    parentCloner,
+                    constructorLogicSignatureCloner,
+                    sourceMultiplexedConstructor,
+                    parentCloner.Target.Body);
+
+                cloners.Add(constructorCloner);
+            }
+
+            return cloners;
         }
 
         /// <summary>
@@ -359,7 +395,7 @@ namespace Cilador.ILCloning
             Contract.Assume(parentCloners != null);
 
             return
-                (from MethodSignatureCloner parentCloner in parentCloners
+                (from ICloner<object, MethodDefinition> parentCloner in parentCloners
                  select new MethodReturnTypeCloner(parentCloner, item)).ToArray();
         }
 

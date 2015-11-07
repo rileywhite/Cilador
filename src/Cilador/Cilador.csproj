@@ -190,6 +190,7 @@
     <Compile Include="ILCloning\InstructionCloner.cs" />
     <Compile Include="ILCloning\MethodBodyCloner.cs" />
     <Compile Include="ILCloning\MethodSignatureCloner.cs" />
+    <Compile Include="ILCloning\NoOpCloner.cs" />
     <Compile Include="ILCloning\ParameterCloner.cs" />
     <Compile Include="ILCloning\PropertyCloner.cs" />
     <Compile Include="ILCloning\RootTypeCloner.cs" />

@@ -35,23 +35,23 @@ namespace Cilador.ILCloning
         /// <summary>
         /// Creates a new <see cref="ConstructorLogicSignatureCloner"/>.
         /// </summary>
-        /// <param name="parent">Cloner for the root type of the cloning operation, which is the type that the cloned constructor belongs to.</param>
+        /// <param name="rootTypeCloner">Cloner for the root type of the cloning operation, which is the type that the cloned constructor belongs to.</param>
         /// <param name="source">Source constructor, multiplexed into the initialization and constructor logic parts.</param>
-        public ConstructorLogicSignatureCloner(RootTypeCloner parent, MultiplexedConstructor source)
-            : base(parent.ILCloningContext, source)
+        public ConstructorLogicSignatureCloner(RootTypeCloner rootTypeCloner, MultiplexedConstructor source)
+            : base(rootTypeCloner.ILCloningContext, source)
         {
-            Contract.Requires(parent != null);
-            Contract.Requires(parent.ILCloningContext != null);
+            Contract.Requires(rootTypeCloner != null);
+            Contract.Requires(rootTypeCloner.ILCloningContext != null);
             Contract.Requires(source != null);
-            Contract.Ensures(this.Parent != null);
+            Contract.Ensures(this.RootTypeCloner != null);
 
-            this.Parent = parent;
+            this.RootTypeCloner = rootTypeCloner;
         }
 
         /// <summary>
         /// Gets or set the cloner for the root type of the cloning operation, which is the type that the cloned constructor belongs to.
         /// </summary>
-        private RootTypeCloner Parent { get; set; }
+        private RootTypeCloner RootTypeCloner { get; set; }
 
         /// <summary>
         /// Creates the target method signature.
@@ -63,7 +63,7 @@ namespace Cilador.ILCloning
                 string.Format("ctor_{0:N}", Guid.NewGuid()),
                 MethodAttributes.Private | MethodAttributes.HideBySig,
                 this.ILCloningContext.RootTarget.Module.Import(typeof(void)));
-            this.Parent.Target.Methods.Add(target);
+            this.RootTypeCloner.Target.Methods.Add(target);
             return target;
         }
 

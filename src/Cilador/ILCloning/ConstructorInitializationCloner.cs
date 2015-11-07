@@ -33,12 +33,12 @@ namespace Cilador.ILCloning
         /// <summary>
         /// Creates a new <see cref="ConstructorInitializationCloner"/>.
         /// </summary>
-        /// <param name="parent">Cloner for the parent root type for the constructor being cloned.</param>
+        /// <param name="parent">Cloner for the constructor method definition being cloned.</param>
         /// <param name="logicSignatureCloner">Cloner for the signature of the logic portion of the constructor, if any.</param>
         /// <param name="source">Cloning source.</param>
         /// <param name="target">Cloning target.</param>
         public ConstructorInitializationCloner(
-            RootTypeCloner parent,
+            ICloner<object, MethodDefinition> parent,
             ConstructorLogicSignatureCloner logicSignatureCloner,
             MultiplexedConstructor source,
             MethodBody target)
@@ -64,7 +64,7 @@ namespace Cilador.ILCloning
         /// <summary>
         /// Gets or sets the cloner for the parent root type for the constructor being cloned.
         /// </summary>
-        private RootTypeCloner Parent { get; set; }
+        private ICloner<object, MethodDefinition> Parent { get; set; }
 
         /// <summary>
         /// Gets or sets the cloner for the signature of the logic portion of the constructor, if any.

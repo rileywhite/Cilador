@@ -21,7 +21,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using TopologicalSort;
 
 namespace Cilador.ILCloning
 {
@@ -42,48 +41,6 @@ namespace Cilador.ILCloning
             Contract.Ensures(cloners.All(cloner => cloner.IsCloned));
 
             foreach(var cloner in cloners) { cloner.Clone(); }
-
-            //var clonersBySource = cloners.ToLookup(cloner => cloner.Source);
-
-            //var vertices = new HashSet<object>(clonersBySource.Select(grouping => grouping.Key));
-            //var edges = dependencies.GetEdges(vertices);
-
-            //// we need to perform a topological sort to ensure that dependencies
-            //// are met before they are needed
-            //var sourceLists = TopologicalSorter.FindAndTopologicallySortStronglyConnectedComponents(vertices, edges);
-
-            //// now we go through the results and clone in order
-            //foreach(var sourceList in sourceLists)
-            //{
-            //    foreach (var source in sourceList)
-            //    {
-            //        foreach (var cloner in clonersBySource[source]) { cloner.Clone(); }
-            //    }
-            //}
-        }
-
-        private static IEnumerable<IEdge<TVertex>> GetEdges<TVertex>(
-            this Dictionary<TVertex, HashSet<TVertex>> dependencies,
-            HashSet<TVertex> vertices)
-        {
-            Contract.Requires(dependencies != null);
-            Contract.Requires(vertices != null);
-
-            var edges = new List<IEdge<TVertex>>();
-            foreach(var dependency in dependencies)
-            {
-                // non-null is expected, but if we hit something null we'll just skip
-                // if a dependency's key (i.e. the "from" part) is not in the collection of vertices, we'll skip, too
-                // because it's not part of the cloning operation
-                if (dependency.Value == null || !vertices.Contains(dependency.Key)) { continue; }
-                foreach(var to in dependency.Value)
-                {
-                    // same test for the "from" part...we only care about items in the cloning operation
-                    if (vertices.Contains(to)) { edges.Add(Edge.Create(dependency.Key, to)); };
-                }
-            }
-
-            return edges;
         }
 
         /// <summary>
@@ -100,9 +57,15 @@ namespace Cilador.ILCloning
         [Pure]
         public static bool IsNestedWithin(this TypeReference type, TypeDefinition possibleAncestorType)
         {
-            if (type == null || type.DeclaringType == null) { return false; }
-            else if (type.DeclaringType.Resolve().FullName == possibleAncestorType.FullName) { return true; }
-            else { return type.DeclaringType.IsNestedWithin(possibleAncestorType); }
+            if (type == null) { return false; }
+
+            while (type.DeclaringType != null)
+            {
+                if (type.DeclaringType.Resolve().FullName == possibleAncestorType.FullName) { return true; }
+                type = type.DeclaringType;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -257,19 +220,19 @@ namespace Cilador.ILCloning
                 throw new InvalidOperationException(string.Format("A variable index greater than {0} cannot be used.", ushort.MaxValue));
             }
 
-            var indexedVariable = new Lazy<VariableDefinition>(new Func<VariableDefinition>(
+            var indexedVariable = new Lazy<VariableDefinition>(
                 () =>
+                {
+                    var value = instruction.Operand as VariableDefinition ??
+                                variables.FirstOrDefault(variable => variable.Index == initialVariableIndex.Value);
+
+                    if (value == null)
                     {
-                        var value = instruction.Operand as VariableDefinition ??
-                            variables.FirstOrDefault(variable => variable.Index == initialVariableIndex.Value);
+                        throw new InvalidOperationException("An instruction references a variable that cannot be found.");
+                    }
 
-                        if (value == null)
-                        {
-                            throw new InvalidOperationException("An instruction references a variable that cannot be found.");
-                        }
-
-                        return value;
-                    }));
+                    return value;
+                });
 
             if (instruction.OpCode.Code.IsStoreVariableOpCode())
             {
