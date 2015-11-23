@@ -163,6 +163,36 @@ namespace Cilador.ILCloning
             else { ilProcessor.InsertAfter(previous.Target, target); }
         }
 
+        /// <summary>
+        /// Action for inserting the target instruction in such a way that cloned instructions appear before any existing
+        /// instructions in the target method body.
+        /// </summary>
+        /// <param name="ilProcessor">IL processor to use in inserting the instruction.</param>
+        /// <param name="parent">Cloner for the method body containing the instruction being cloned.</param>
+        /// <param name="previous">Cloner for the previous instruction being cloned, if any.</param>
+        /// <param name="source">Source instruction.</param>
+        /// <param name="target">Target instruction</param>
+        public static void InsertBeforeExistingInstructionInsertAction(
+            ILProcessor ilProcessor,
+            ICloneToMethodBody<object> parent,
+            InstructionCloner previous,
+            Instruction source,
+            Instruction target)
+        {
+            if (previous == null)
+            {
+                if (parent.Target.Instructions.Count == 0)
+                {
+                    ilProcessor.Append(target);
+                }
+                else
+                {
+                    ilProcessor.InsertBefore(parent.Target.Instructions[0], target);
+                }
+            }
+            else { ilProcessor.InsertAfter(previous.Target, target); }
+        }
+
         #region Creating instructions that may not have the correct operand
 
         /// <summary>

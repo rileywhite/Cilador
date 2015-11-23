@@ -168,6 +168,7 @@
     <Compile Include="Core\ClonerBase.cs" />
     <Compile Include="Core\ClonerBaseContract.cs" />
     <Compile Include="ILCloning\ClonersGetDispatcher.cs" />
+    <Compile Include="ILCloning\CloneToMethodBodyContract.cs" />
     <Compile Include="ILCloning\ConstructorInitializationCloner.cs" />
     <Compile Include="ILCloning\ConstructorLogicBodyCloner.cs" />
     <Compile Include="ILCloning\ConstructorLogicSignatureCloner.cs" />

@@ -18,6 +18,7 @@ using Cilador.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
@@ -77,6 +78,53 @@ namespace Cilador.ILCloning
         public ParameterDefinition SourceThisParameter { get; private set; }
 
         /// <summary>
+        /// Gets the offset for  use in instruction cloning so that referenced variables can
+        /// be translated. Normally zero, but in cases where a method is split up, such as for
+        /// some constructors, variables may also be split up. This may be set to a non-zero
+        /// value for cloners that are cloning only a subset of instructions and variables.
+        /// </summary>
+        public int GetVariableTranslation(Instruction sourceInstruction)
+        {
+            int? originalIndex;
+            if (!sourceInstruction.TryGetVariableIndex(out originalIndex)) { return 0; }
+            Contract.Assert(originalIndex.HasValue);
+
+            int newIndex;
+            if (!this.Source.TryGetInitializationVariableIndex(sourceInstruction, out newIndex)) { return 0;}
+            return newIndex + this.CountOfTargetVariablesBeforeCloning - originalIndex.Value;
+        }
+
+        /// <summary>
+        /// Collection of source variables that may be referenced by source instructions
+        /// that will be cloned to the target. This may or may not be all variables
+        /// as method cloning may split methods into parts, as is the case for some
+        /// constructors.
+        /// </summary>
+        public IEnumerable<VariableDefinition> PossiblyReferencedVariables
+        {
+            get { return this.Source.InitializationVariables; }
+        }
+
+        /// <summary>
+        /// Gets the action that should be used for inserting instructions for cloning instructions contained in the method.
+        /// </summary>
+        public Action<ILProcessor, ICloneToMethodBody<object>, InstructionCloner, Instruction, Instruction> InstructionInsertAction
+        {
+            get { return InstructionCloner.InsertBeforeExistingInstructionInsertAction; }
+        }
+
+        /// <summary>
+        /// Determines whether the given instruction is a valid source instruction for the cloner
+        /// that should be cloned to a target instruction.
+        /// </summary>
+        /// <param name="instruction">Instruction to examine.</param>
+        /// <returns><c>true</c> if <paramref name="instruction"/> is a valid source instruction that should be cloned, else <c>false</c>.</returns>
+        public bool IsValidSourceInstruction(Instruction instruction)
+        {
+            return instruction != null && this.Source.InitializationInstructions.Contains(instruction);
+        }
+
+        /// <summary>
         /// Gets or sets the pre-existing target method body.
         /// </summary>
         private MethodBody ExistingTarget { get; set; }
@@ -109,21 +157,20 @@ namespace Cilador.ILCloning
 
             target.InitLocals = target.InitLocals || source.InitializationVariables.Any();
 
-            if (this.LogicSignatureCloner != null)
-            {
-                // we can't re-use multiplexed target constructors from initialization because they may have changed
-                var targetMultiplexedConstructor = MultiplexedConstructor.Get(this.ILCloningContext, this.Target.Method);
+            if (this.LogicSignatureCloner == null) { return; }
 
-                var boundaryInstruction =
-                    this.Target.Instructions[targetMultiplexedConstructor.BoundaryLastInstructionIndex];
-                var targetILProcessor = this.Target.GetILProcessor();
+            // we can't re-use multiplexed target constructors from initialization because they may have changed
+            var targetMultiplexedConstructor = MultiplexedConstructor.Get(this.ILCloningContext, this.Target.Method);
 
-                // insert in reverse order
-                targetILProcessor.InsertAfter(
-                    boundaryInstruction,
-                    targetILProcessor.Create(OpCodes.Call, this.LogicSignatureCloner.Target));
-                targetILProcessor.InsertAfter(boundaryInstruction, targetILProcessor.Create(OpCodes.Ldarg_0));
-            }
+            var boundaryInstruction =
+                this.Target.Instructions[targetMultiplexedConstructor.BoundaryLastInstructionIndex];
+            var targetILProcessor = this.Target.GetILProcessor();
+
+            // insert in reverse order
+            targetILProcessor.InsertAfter(
+                boundaryInstruction,
+                targetILProcessor.Create(OpCodes.Call, this.LogicSignatureCloner.Target));
+            targetILProcessor.InsertAfter(boundaryInstruction, targetILProcessor.Create(OpCodes.Ldarg_0));
         }
     }
 }

@@ -152,6 +152,41 @@ namespace Cilador.ILCloning
         }
 
         /// <summary>
+        /// Tries to get the index of a variable within the group of initialization variables that
+        /// have been pulled from the full collection of constructor variables.
+        /// </summary>
+        /// <param name="sourceInstruction">Source instruction possibly referencing a variable to look up.</param>
+        /// <param name="index">Index of the variable in the subset of variables.</param>
+        public bool TryGetInitializationVariableIndex(Instruction sourceInstruction, out int index)
+        {
+            Contract.Requires(sourceInstruction != null);
+
+            VariableDefinition sourceVariable;
+
+            if (this.TryGetReferencedVariable(sourceInstruction, out sourceVariable))
+            {
+                return this.TryGetInitializationVariableIndex(sourceVariable, out index);
+            }
+
+            index = -1;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to get the index of a variable within the group of initialization variables that
+        /// have been pulled from the full collection of constructor variables.
+        /// </summary>
+        /// <param name="sourceVariable">Source variable to look up.</param>
+        /// <param name="index">Index of the variable in the subset of variables.</param>
+        public bool TryGetInitializationVariableIndex(VariableDefinition sourceVariable, out int index)
+        {
+            Contract.Requires(sourceVariable != null);
+
+            index = this.InnerInitializationVariables.IndexOf(sourceVariable);
+            return index >= 0;
+        }
+
+        /// <summary>
         /// Gets or sets instructions used in compiler-generated initialization code.
         /// </summary>
         private List<Instruction> InnerInitializationInstructions { get; set; }
@@ -183,6 +218,41 @@ namespace Cilador.ILCloning
                 Contract.Requires(this.InnerConstructionVariables != null);
                 return this.InnerConstructionVariables;
             }
+        }
+
+        /// <summary>
+        /// Tries to get the index of a variable within the group of construction variables that
+        /// have been pulled from the full collection of constructor variables.
+        /// </summary>
+        /// <param name="sourceInstruction">Source instruction possibly referencing a variable to look up.</param>
+        /// <param name="index">Index of the variable in the subset of variables.</param>
+        public bool TryGetConstructionVariableIndex(Instruction sourceInstruction, out int index)
+        {
+            Contract.Requires(sourceInstruction != null);
+
+            VariableDefinition sourceVariable;
+
+            if (this.TryGetReferencedVariable(sourceInstruction, out sourceVariable))
+            {
+                return this.TryGetConstructionVariableIndex(sourceVariable, out index);
+            }
+
+            index = -1;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to get the index of a variable within the group of construction variables that
+        /// have been pulled from the full collection of constructor variables.
+        /// </summary>
+        /// <param name="sourceVariable">Source variable to look up.</param>
+        /// <param name="index">Index of the variable in the subset of variables.</param>
+        public bool TryGetConstructionVariableIndex(VariableDefinition sourceVariable, out int index)
+        {
+            Contract.Requires(sourceVariable != null);
+
+            index = this.InnerConstructionVariables.IndexOf(sourceVariable);
+            return index >= 0;
         }
 
         /// <summary>
@@ -399,18 +469,18 @@ namespace Cilador.ILCloning
                 foreach (var instruction in instructionGroup.Instructions)
                 {
                     VariableDefinition variable;
-                    if (this.TryGetReferencedVariable(instruction, out variable))
+                    if (!this.TryGetReferencedVariable(instruction, out variable) ||
+                        !this.InnerConstructionVariables.Contains(variable))
                     {
-                        if (this.InnerConstructionVariables.Contains(variable))
-                        {
-                            this.InnerConstructionVariables.Remove(variable);
-                            if (!isConstructorCallFound)
-                            {
-                                // if an instance arises where a variable is only used in a constructor call
-                                // then it would be dropped
-                                this.InnerInitializationVariables.Add(variable);
-                            }
-                        }
+                        continue;
+                    }
+
+                    this.InnerConstructionVariables.Remove(variable);
+                    if (!isConstructorCallFound)
+                    {
+                        // if an instance arises where a variable is only used in a constructor call
+                        // then it would be dropped
+                        this.InnerInitializationVariables.Add(variable);
                     }
                 }
             }
@@ -437,23 +507,25 @@ namespace Cilador.ILCloning
 
                 // if the instruction references a variable, then ensure that the variable exists in the collection of construction variables
                 VariableDefinition variable;
-                if (this.TryGetReferencedVariable(instruction, out variable) &&
-                    !this.InnerConstructionVariables.Contains(variable))
+                if (!this.TryGetReferencedVariable(instruction, out variable) ||
+                    this.InnerConstructionVariables.Contains(variable))
                 {
-                    // variable wasn't in the expected place
-                    if (this.InnerInitializationVariables.Contains(variable))
-                    {
-                        // looks like a variable was shared
-                        // this indicates that the code was written with an incorrect assumption that variables are not shared
-                        throw new InvalidOperationException(
-                            "An instruction in the construction part of a multiplexed constructor references a variable that is also referenced by initialization instructions.");
-                    }
-                    else
-                    {
-                        // a variable wasn't found at all
-                        throw new InvalidOperationException(
-                            "An instruction in the construction part of a multiplexed constructor references a variable that either cannot be found.");
-                    }
+                    continue;
+                }
+
+                // variable wasn't in the expected place
+                if (this.InnerInitializationVariables.Contains(variable))
+                {
+                    // looks like a variable was shared
+                    // this indicates that the code was written with an incorrect assumption that variables are not shared
+                    throw new InvalidOperationException(
+                        "An instruction in the construction part of a multiplexed constructor references a variable that is also referenced by initialization instructions.");
+                }
+                else
+                {
+                    // a variable wasn't found at all
+                    throw new InvalidOperationException(
+                        "An instruction in the construction part of a multiplexed constructor references a variable that either cannot be found.");
                 }
             }
         }
@@ -467,8 +539,8 @@ namespace Cilador.ILCloning
         private bool TryGetReferencedVariable(Instruction instruction, out VariableDefinition variable)
         {
             return
-                TryGetVariableDefinitionOperand(instruction, out variable) ||
-                TryGetIndexedVariableOperand(instruction, this.InnerConstructionVariables, ref variable);
+                MultiplexedConstructor.TryGetVariableDefinitionOperand(instruction, out variable) ||
+                MultiplexedConstructor.TryGetIndexedVariableOperand(instruction, this.Constructor.Body.Variables, ref variable);
         }
 
         /// <summary>

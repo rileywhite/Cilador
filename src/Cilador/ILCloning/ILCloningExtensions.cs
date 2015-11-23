@@ -258,15 +258,14 @@ namespace Cilador.ILCloning
                                 instruction :
                                 Instruction.Create(OpCodes.Stloc_S, indexedVariable.Value);
                         }
-                        else
-                        {
-                            return instruction.OpCode.Code == Code.Stloc ?
-                                instruction :
-                                Instruction.Create(OpCodes.Stloc, indexedVariable.Value);
-                        }
+
+                        return instruction.OpCode.Code == Code.Stloc ?
+                            instruction :
+                            Instruction.Create(OpCodes.Stloc, indexedVariable.Value);
                 }
             }
-            else if (instruction.OpCode.Code.IsLoadVariableOpCode())
+
+            if (instruction.OpCode.Code.IsLoadVariableOpCode())
             {
                 switch (newIndex)
                 {
@@ -290,34 +289,29 @@ namespace Cilador.ILCloning
                                 instruction :
                                 Instruction.Create(OpCodes.Ldloc_S, indexedVariable.Value);
                         }
-                        else
-                        {
-                            return instruction.OpCode.Code == Code.Ldloc ?
-                                instruction :
-                                Instruction.Create(OpCodes.Ldloc, indexedVariable.Value);
-                        }
+
+                        return instruction.OpCode.Code == Code.Ldloc ?
+                            instruction :
+                            Instruction.Create(OpCodes.Ldloc, indexedVariable.Value);
                 }
             }
-            else if (instruction.OpCode.Code.IsLoadVariableAddressOpCode())
-            {
-                // only make a new instruction if the opcode needs to change
-                if (newIndex <= byte.MaxValue)
-                {
-                    return instruction.OpCode.Code == Code.Ldloca_S ?
-                        instruction :
-                        Instruction.Create(OpCodes.Ldloca_S, indexedVariable.Value);
-                }
-                else
-                {
-                    return instruction.OpCode.Code == Code.Ldloca ?
-                        instruction :
-                        Instruction.Create(OpCodes.Ldloca, indexedVariable.Value);
-                }
-            }
-            else
+
+            if (!instruction.OpCode.Code.IsLoadVariableAddressOpCode())
             {
                 throw new InvalidOperationException("Expected a variable store or load opcode.");
             }
+
+            // only make a new instruction if the opcode needs to change
+            if (newIndex <= byte.MaxValue)
+            {
+                return instruction.OpCode.Code == Code.Ldloca_S ?
+                    instruction :
+                    Instruction.Create(OpCodes.Ldloca_S, indexedVariable.Value);
+            }
+
+            return instruction.OpCode.Code == Code.Ldloca ?
+                instruction :
+                Instruction.Create(OpCodes.Ldloca, indexedVariable.Value);
         }
     }
 }

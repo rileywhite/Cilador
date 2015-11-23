@@ -257,9 +257,9 @@ namespace Cilador.ILCloning
             {
                 // add one no-op cloner per target constructor
                 cloners.AddRange(
-                    from method in parentCloner.Target.Methods
-                    where method.IsConstructor && !method.IsStatic
-                    select NoOpCloner.Create(this.ILCloningContext, item, method));
+                    from constructor in parentCloner.Target.Methods
+                    where constructor.IsConstructor && !constructor.IsStatic
+                    select NoOpCloner.Create(this.ILCloningContext, item, constructor));
 
                 // add a single constructor logic signature cloner to generate a new method, if necessary
                 var sourceMultiplexedConstructor = MultiplexedConstructor.Get(this.ILCloningContext, item);
@@ -323,7 +323,6 @@ namespace Cilador.ILCloning
                 .Where(parentCloner => parentCloner is NoOpCloner<MethodDefinition, MethodDefinition>)
                 .Cast<NoOpCloner<MethodDefinition, MethodDefinition>>())
             {
-
                 // the initialization cloning includes calling redirected construction methods
                 // so we want to do this if we have initialization items or if we have to create a logic cloner
                 if (!sourceMultiplexedConstructor.HasInitializationItems && constructorLogicSignatureCloner == null) { continue; }
@@ -444,25 +443,37 @@ namespace Cilador.ILCloning
             var parentCloners = this.ClonersBySource[parent];
             Contract.Assume(parentCloners != null);
 
-            if (parentCloners.Count == 0) { return new ICloner<object, object>[0]; }
-
-            IEnumerable<Tuple<ICloner<object, object>, ICloner<object, object>>> parentAndSiblingCloners;
-
             Instruction previousSibling;
-            if (this.ILCloningContext.ILGraph.TryGetPreviousSiblingOf(item, out previousSibling))
+            if (!this.ILCloningContext.ILGraph.TryGetPreviousSiblingOf(item, out previousSibling)) { previousSibling = null; }
+
+            var cloners = new List<ICloner<object, object>>();
+
+            foreach (var parentCloner in parentCloners.Cast<ICloneToMethodBody<object>>().Where(parentCloner => parentCloner.IsValidSourceInstruction(item)))
             {
-                parentAndSiblingCloners = parentCloners.Zip(this.ClonersBySource[previousSibling], Tuple.Create);
-            }
-            else
-            {
-                parentAndSiblingCloners =
-                    from parentCloner in parentCloners
-                    select Tuple.Create<ICloner<object, object>, ICloner<object, object>>(parentCloner, null);
+                if (previousSibling != null && parentCloner.IsValidSourceInstruction(previousSibling))
+                {
+                    var previousCloner = this.ClonersBySource[previousSibling].Cast<InstructionCloner>().Single(possiblePrevious => possiblePrevious.Parent == parentCloner);
+                    cloners.Add(new InstructionCloner(
+                        parentCloner,
+                        previousCloner,
+                        item,
+                        parentCloner.PossiblyReferencedVariables,
+                        parentCloner.GetVariableTranslation(item),
+                        parentCloner.InstructionInsertAction));
+                }
+                else
+                {
+                    cloners.Add(new InstructionCloner(
+                        parentCloner,
+                        null,
+                        item,
+                        parentCloner.PossiblyReferencedVariables,
+                        parentCloner.GetVariableTranslation(item),
+                        parentCloner.InstructionInsertAction));
+                }
             }
 
-            return
-                (from parentAndSiblingCloner in parentAndSiblingCloners
-                select new InstructionCloner((ICloneToMethodBody<object>)parentAndSiblingCloner.Item1, (InstructionCloner)parentAndSiblingCloner.Item2, item)).ToArray();
+            return cloners;
         }
 
         /// <summary>
