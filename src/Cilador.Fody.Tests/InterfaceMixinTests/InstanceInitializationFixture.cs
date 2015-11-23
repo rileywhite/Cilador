@@ -43,7 +43,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         public void FieldsAreInitializedWithConstructorWithArguments()
         {
             this.TestWith(
-                new Type[] { typeof(int), typeof(string), typeof(UriBuilder) },
+                new[] { typeof(int), typeof(string), typeof(UriBuilder) },
                 new object[] { 138785, "SAJio  oioihIouh UIH UIH PUIHG", new UriBuilder { Host = "m.n.o" } },
                 138785,
                 "SAJio  oioihIouh UIH UIH PUIHG",
@@ -55,7 +55,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         public void FieldsAreInitializedWithConstructorWithArgumentsThatCallsADifferentConstructor()
         {
             this.TestWith(
-                new Type[] { typeof(int), typeof(string) },
+                new[] { typeof(int), typeof(string) },
                 new object[] { 684684, ":POIenuiofh oie hioeh goiuh iu g" },
                 684684,
                 ":POIenuiofh oie hioeh goiuh iu g",
@@ -67,7 +67,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         public void FieldsAreInitializedWithConstructorWithArgumentsThatCallsThroughTwoConstructors()
         {
             this.TestWith(
-                new Type[] { typeof(int) },
+                new[] { typeof(int) },
                 new object[] { 90874389 },
                 90874389,
                 "A iuohiogfniouhe uihui iu.",
@@ -83,22 +83,24 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             string uriHostValue,
             string whichBaseConstructor)
         {
-            var config = new CiladorConfigType();
-
-            config.WeaveConfig = new WeaveConfigTypeBase[]
+            var config = new CiladorConfigType
             {
-                new InterfaceMixinConfigType
+                WeaveConfig = new WeaveConfigTypeBase[]
                 {
-                    InterfaceMixinMap = new InterfaceMixinMapType[]
+                    new InterfaceMixinConfigType
                     {
-                        new InterfaceMixinMapType
+                        InterfaceMixinMap = new[]
                         {
-                            Interface = typeof(IForTargetWithMultipleConstructors).GetShortAssemblyQualifiedName(),
-                            Mixin = typeof(InstanceInitializationMixin).GetShortAssemblyQualifiedName()
+                            new InterfaceMixinMapType
+                            {
+                                Interface = typeof (IForTargetWithMultipleConstructors).GetShortAssemblyQualifiedName(),
+                                Mixin = typeof (InstanceInitializationMixin).GetShortAssemblyQualifiedName()
+                            }
                         }
-                    }
-                },
+                    },
+                }
             };
+
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
             var targetType = assembly.GetType(typeof(MultipleConstructorsTarget).FullName);
@@ -144,7 +146,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
 
             var someFunc = targetType.GetField("SomeFunc").GetValue(instance) as Delegate;
             Assert.That(someFunc, Is.Not.Null);
-            var result = someFunc.DynamicInvoke(new object[] { 1, "2", new object() }) as Tuple<int, string, object>;
+            var result = someFunc.DynamicInvoke(new[] { 1, "2", new object() }) as Tuple<int, string, object>;
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Item1, Is.EqualTo(1));
             Assert.That(result.Item2, Is.EqualTo("2"));
@@ -152,7 +154,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
 
             var someMethodDelegateInstance = targetType.GetField("SomeMethodDelegateInstance").GetValue(instance) as Delegate;
             Assert.That(someMethodDelegateInstance, Is.Not.Null);
-            result = someMethodDelegateInstance.DynamicInvoke(new object[] { 3, "4", new object() }) as Tuple<int, string, object>;
+            result = someMethodDelegateInstance.DynamicInvoke(new[] { 3, "4", new object() }) as Tuple<int, string, object>;
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Item1, Is.EqualTo(3));
             Assert.That(result.Item2, Is.EqualTo("4"));

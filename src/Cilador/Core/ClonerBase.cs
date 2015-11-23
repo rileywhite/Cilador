@@ -17,7 +17,7 @@
 using System;
 using System.Diagnostics.Contracts;
 
-namespace Cilador.ILCloning
+namespace Cilador.Core
 {
     /// <summary>
     /// Provides a way to clone items in such a way that the targets are created a late as possible.
@@ -94,8 +94,6 @@ namespace Cilador.ILCloning
                     string.Format("Failed to retrieve a cloning target for source of type [{0}].", typeof(TSource).FullName),
                     e);
             }
-
-            if (retrievedTarget == null) { throw new InvalidOperationException("GetTarget returned a null value.");}
 
             this.Target = retrievedTarget;
             this.IsTargetSet = true;

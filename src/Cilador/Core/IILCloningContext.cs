@@ -14,12 +14,13 @@
 // limitations under the License.
 /***************************************************************************/
 
-using System;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System;
 using System.Diagnostics.Contracts;
+using Cilador.Graph;
 
-namespace Cilador.ILCloning
+namespace Cilador.Core
 {
     /// <summary>
     /// Defines an interface for a cloning context.
@@ -27,6 +28,11 @@ namespace Cilador.ILCloning
     [ContractClass(typeof(ILCloningContextContract))]
     public interface IILCloningContext
     {
+        /// <summary>
+        /// Gets the ILGraph of items for the cloning operation.
+        /// </summary>
+        IILGraph ILGraph { get; }
+
         /// <summary>
         /// Gets the top level source type for the cloning operation.
         /// </summary>

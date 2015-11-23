@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Core;
 using Cilador.ILCloning;
 using Mono.Cecil;
 using Mono.Cecil.Cil;

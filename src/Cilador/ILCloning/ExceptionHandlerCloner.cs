@@ -14,9 +14,10 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Core;
+using Mono.Cecil.Cil;
 using System;
 using System.Diagnostics.Contracts;
-using Mono.Cecil.Cil;
 
 namespace Cilador.ILCloning
 {
@@ -29,8 +30,9 @@ namespace Cilador.ILCloning
         /// Creates a new <see cref="ExceptionHandlerCloner"/>
         /// </summary>
         /// <param name="parent">Cloner for the method body that contains this exception handler.</param>
+        /// <param name="previous">Cloner of the previous exception handler, if any.</param>
         /// <param name="source">Cloning source.</param>
-        public ExceptionHandlerCloner(ICloneToMethodBody<object> parent, ExceptionHandler source)
+        public ExceptionHandlerCloner(ICloneToMethodBody<object> parent, ExceptionHandlerCloner previous, ExceptionHandler source)
             : base(parent.ILCloningContext, source)
         {
             Contract.Requires(parent != null);
@@ -39,6 +41,7 @@ namespace Cilador.ILCloning
             Contract.Ensures(this.Parent != null);
 
             this.Parent = parent;
+            this.Previous = previous;
         }
 
         /// <summary>
@@ -47,13 +50,24 @@ namespace Cilador.ILCloning
         public ICloneToMethodBody<object> Parent { get; private set; }
 
         /// <summary>
+        /// Gets or sets the cloner for the previous exception handler, if any.
+        /// </summary>
+        public ExceptionHandlerCloner Previous { get; private set; }
+
+        /// <summary>
         /// Creates the target exception handler.
         /// </summary>
         /// <returns>Created target.</returns>
         protected override ExceptionHandler GetTarget()
         {
+            // order of cration matters here, so ensure the previous target is created before continuing
+            var previous = this.Previous;
+            if (previous != null) { this.Previous.EnsureTargetIsSet(); }
+
+            // now create the target
             var target = new ExceptionHandler(this.Source.HandlerType);
             this.Parent.Target.ExceptionHandlers.Add(target);
+
             return target;
         }
 

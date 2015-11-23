@@ -14,12 +14,13 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Core;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Cilador.ILCloning
 {
@@ -32,13 +33,14 @@ namespace Cilador.ILCloning
         /// Invokes clone on each item
         /// </summary>
         /// <param name="cloners"></param>
-        public static void CloneAll(this IEnumerable<ICloner<object, object>> cloners)
+        public static void CloneAll(
+            this IEnumerable<ICloner<object, object>> cloners)
         {
             Contract.Requires(cloners != null);
             Contract.Requires(!cloners.Any(cloner => cloner.IsCloned));
             Contract.Ensures(cloners.All(cloner => cloner.IsCloned));
 
-            foreach (var cloner in cloners) { cloner.Clone(); }
+            foreach(var cloner in cloners) { cloner.Clone(); }
         }
 
         /// <summary>
@@ -55,9 +57,15 @@ namespace Cilador.ILCloning
         [Pure]
         public static bool IsNestedWithin(this TypeReference type, TypeDefinition possibleAncestorType)
         {
-            if (type == null || type.DeclaringType == null) { return false; }
-            else if (type.DeclaringType.Resolve().FullName == possibleAncestorType.FullName) { return true; }
-            else { return type.DeclaringType.IsNestedWithin(possibleAncestorType); }
+            if (type == null) { return false; }
+
+            while (type.DeclaringType != null)
+            {
+                if (type.DeclaringType.Resolve().FullName == possibleAncestorType.FullName) { return true; }
+                type = type.DeclaringType;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -212,19 +220,19 @@ namespace Cilador.ILCloning
                 throw new InvalidOperationException(string.Format("A variable index greater than {0} cannot be used.", ushort.MaxValue));
             }
 
-            var indexedVariable = new Lazy<VariableDefinition>(new Func<VariableDefinition>(
+            var indexedVariable = new Lazy<VariableDefinition>(
                 () =>
+                {
+                    var value = instruction.Operand as VariableDefinition ??
+                                variables.FirstOrDefault(variable => variable.Index == initialVariableIndex.Value);
+
+                    if (value == null)
                     {
-                        var value = instruction.Operand as VariableDefinition ??
-                            variables.FirstOrDefault(variable => variable.Index == initialVariableIndex.Value);
+                        throw new InvalidOperationException("An instruction references a variable that cannot be found.");
+                    }
 
-                        if (value == null)
-                        {
-                            throw new InvalidOperationException("An instruction references a variable that cannot be found.");
-                        }
-
-                        return value;
-                    }));
+                    return value;
+                });
 
             if (instruction.OpCode.Code.IsStoreVariableOpCode())
             {
@@ -250,15 +258,14 @@ namespace Cilador.ILCloning
                                 instruction :
                                 Instruction.Create(OpCodes.Stloc_S, indexedVariable.Value);
                         }
-                        else
-                        {
-                            return instruction.OpCode.Code == Code.Stloc ?
-                                instruction :
-                                Instruction.Create(OpCodes.Stloc, indexedVariable.Value);
-                        }
+
+                        return instruction.OpCode.Code == Code.Stloc ?
+                            instruction :
+                            Instruction.Create(OpCodes.Stloc, indexedVariable.Value);
                 }
             }
-            else if (instruction.OpCode.Code.IsLoadVariableOpCode())
+
+            if (instruction.OpCode.Code.IsLoadVariableOpCode())
             {
                 switch (newIndex)
                 {
@@ -282,34 +289,29 @@ namespace Cilador.ILCloning
                                 instruction :
                                 Instruction.Create(OpCodes.Ldloc_S, indexedVariable.Value);
                         }
-                        else
-                        {
-                            return instruction.OpCode.Code == Code.Ldloc ?
-                                instruction :
-                                Instruction.Create(OpCodes.Ldloc, indexedVariable.Value);
-                        }
+
+                        return instruction.OpCode.Code == Code.Ldloc ?
+                            instruction :
+                            Instruction.Create(OpCodes.Ldloc, indexedVariable.Value);
                 }
             }
-            else if (instruction.OpCode.Code.IsLoadVariableAddressOpCode())
-            {
-                // only make a new instruction if the opcode needs to change
-                if (newIndex <= byte.MaxValue)
-                {
-                    return instruction.OpCode.Code == Code.Ldloca_S ?
-                        instruction :
-                        Instruction.Create(OpCodes.Ldloca_S, indexedVariable.Value);
-                }
-                else
-                {
-                    return instruction.OpCode.Code == Code.Ldloca ?
-                        instruction :
-                        Instruction.Create(OpCodes.Ldloca, indexedVariable.Value);
-                }
-            }
-            else
+
+            if (!instruction.OpCode.Code.IsLoadVariableAddressOpCode())
             {
                 throw new InvalidOperationException("Expected a variable store or load opcode.");
             }
+
+            // only make a new instruction if the opcode needs to change
+            if (newIndex <= byte.MaxValue)
+            {
+                return instruction.OpCode.Code == Code.Ldloca_S ?
+                    instruction :
+                    Instruction.Create(OpCodes.Ldloca_S, indexedVariable.Value);
+            }
+
+            return instruction.OpCode.Code == Code.Ldloca ?
+                instruction :
+                Instruction.Create(OpCodes.Ldloca, indexedVariable.Value);
         }
     }
 }

@@ -20,6 +20,7 @@ using Mono.Cecil;
 using System;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using Cilador.Graph;
 
 namespace Cilador.Fody.InterfaceMixins
 {
@@ -111,7 +112,8 @@ namespace Cilador.Fody.InterfaceMixins
             this.Target.Interfaces.Add(this.Target.Module.Import(this.InterfaceType));
             try
             {
-                new ILCloningContext(this.Source, this.Target).Execute();
+                var ilGraph = new ILGraphGetter().Traverse(this.Source);
+                new ILCloningContext(ilGraph, this.Source, this.Target).Execute();
             }
             catch(InvalidOperationException e)
             {

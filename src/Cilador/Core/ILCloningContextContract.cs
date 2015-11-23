@@ -14,12 +14,13 @@
 // limitations under the License.
 /***************************************************************************/
 
-using System;
-using System.Diagnostics.Contracts;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System;
+using System.Diagnostics.Contracts;
+using Cilador.Graph;
 
-namespace Cilador.ILCloning
+namespace Cilador.Core
 {
     /// <summary>
     /// Contracts for <see cref="IILCloningContext"/>
@@ -27,6 +28,16 @@ namespace Cilador.ILCloning
     [ContractClassFor(typeof(IILCloningContext))]
     internal abstract class ILCloningContextContract : IILCloningContext
     {
+        public IILGraph ILGraph
+        {
+            get
+            {
+                Contract.Ensures(Contract.Result<IILGraph>() != null);
+                throw new NotSupportedException();
+            }
+        }
+
+
         public TypeDefinition RootSource
         {
             get

@@ -356,6 +356,22 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             genericInstanceProperty.SetValue(instance, "SAdfiohoqiweAsiohnewlroi asoidfh inra6f");
             Assert.That(genericInstanceProperty.GetValue(instance), Is.EqualTo("SAdfiohoqiweAsiohnewlroi asoidfh inra6f"));
 
+            instance = Activator.CreateInstance(genericInstanceType, new object[] { 34543, "ALKJEWklnrpioewhfioehgiu" });
+
+            genericInstanceProperty = genericInstanceType.GetProperty("Thing1", TestContent.BindingFlagsForWeavedMembers);
+            TypeValidatorBase.ValidatePropertyTypeAndAccessors(
+                genericInstanceProperty,
+                TypeValidatorBase.PropertyAccessorExpectations.Both,
+                NonGenericTypeValidator.ForType<int>());
+            Assert.That(genericInstanceProperty.GetValue(instance), Is.EqualTo(34543));
+
+            genericInstanceProperty = genericInstanceType.GetProperty("Thing2", TestContent.BindingFlagsForWeavedMembers);
+            TypeValidatorBase.ValidatePropertyTypeAndAccessors(
+                genericInstanceProperty,
+                TypeValidatorBase.PropertyAccessorExpectations.Both,
+                NonGenericTypeValidator.ForType<string>());
+            Assert.That(genericInstanceProperty.GetValue(instance), Is.EqualTo("ALKJEWklnrpioewhfioehgiu"));
+
             // partially closed generic type
             type = targetType.GetNestedType("PartiallyClosedGenericType`1", TestContent.BindingFlagsForWeavedMembers);
             Assert.That(type, Is.Not.Null);

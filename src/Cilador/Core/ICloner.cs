@@ -17,7 +17,7 @@
 using System;
 using System.Diagnostics.Contracts;
 
-namespace Cilador.ILCloning
+namespace Cilador.Core
 {
     /// <summary>
     /// Interface implemented by all item cloners.

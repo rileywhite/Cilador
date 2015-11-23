@@ -14,9 +14,10 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Core;
+using Mono.Cecil;
 using System;
 using System.Diagnostics.Contracts;
-using Mono.Cecil;
 
 namespace Cilador.ILCloning
 {
@@ -31,7 +32,7 @@ namespace Cilador.ILCloning
         /// <param name="ilCloningContext">IL cloning context.</param>
         /// <param name="source">Cloning source.</param>
         /// <param name="target">Cloning target.</param>
-        public RootTypeCloner(ILCloningContext ilCloningContext, TypeDefinition source, TypeDefinition target)
+        public RootTypeCloner(IILCloningContext ilCloningContext, TypeDefinition source, TypeDefinition target)
             : base(ilCloningContext, source)
         {
             Contract.Requires(ilCloningContext != null);

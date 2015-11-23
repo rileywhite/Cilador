@@ -15,7 +15,6 @@
 /***************************************************************************/
 
 using Cilador.Fody.Core;
-using Cilador.Fody.TestMixinTargets;
 using Cilador.Fody.Config;
 using Mono.Cecil;
 using NUnit.Framework;
@@ -52,26 +51,32 @@ namespace Cilador.Fody.Tests.Common
             Contract.Ensures(!string.IsNullOrWhiteSpace(Contract.Result<ModuleWeaver>().ProjectDirectoryPath));
             Contract.Ensures(!string.IsNullOrWhiteSpace(Contract.Result<ModuleWeaver>().SolutionDirectoryPath));
 
-            var moduleWeaver = new ModuleWeaver();
-            moduleWeaver.AddinDirectoryPath = TestContent.GetDirectory(targetAssemblyFilename);
-            Contract.Assert(Directory.Exists(moduleWeaver.AddinDirectoryPath));
-            moduleWeaver.AssemblyFilePath = TestContent.GetTestPath(targetAssemblyFilename);
-            moduleWeaver.AssemblyResolver = new DefaultAssemblyResolver();
-            moduleWeaver.Config = config;
-            moduleWeaver.DefineConstants = new List<string>();
+            var addinDirectoryPath = TestContent.GetDirectory(targetAssemblyFilename);
+            Contract.Assert(Directory.Exists(addinDirectoryPath));
+            var assemblyFilePath = TestContent.GetTestPath(targetAssemblyFilename);
+            var moduleWeaver = new ModuleWeaver
+            {
+                AddinDirectoryPath = addinDirectoryPath,
+                AssemblyFilePath = assemblyFilePath,
+                AssemblyResolver = new DefaultAssemblyResolver(),
+                Config = config,
+                DefineConstants = new List<string>
+                {
 #if DEBUG
-            moduleWeaver.DefineConstants.Add("DEBUG");
+                    "DEBUG"
 #endif
-            moduleWeaver.LogDebug = m => { };
-            moduleWeaver.LogError = m => { };
-            moduleWeaver.LogErrorPoint = (m, p) => { };
-            moduleWeaver.LogInfo = m => { };
-            moduleWeaver.LogWarning = m => { };
-            moduleWeaver.LogWarningPoint = (m, p) => { };
-            moduleWeaver.ModuleDefinition = ModuleDefinition.ReadModule(moduleWeaver.AssemblyFilePath);
-            moduleWeaver.ProjectDirectoryPath = TestContent.GetDirectory(targetAssemblyFilename);
+                },
+                LogDebug = m => { },
+                LogError = m => { },
+                LogErrorPoint = (m, p) => { },
+                LogInfo = m => { },
+                LogWarning = m => { },
+                LogWarningPoint = (m, p) => { },
+                ModuleDefinition = ModuleDefinition.ReadModule(assemblyFilePath),
+                ProjectDirectoryPath = TestContent.GetDirectory(targetAssemblyFilename),
+                SolutionDirectoryPath = TestContent.GetTestSolutionDirectory(),
+            };
             Contract.Assert(Directory.Exists(moduleWeaver.ProjectDirectoryPath));
-            moduleWeaver.SolutionDirectoryPath = TestContent.GetTestSolutionDirectory();
             Contract.Assert(Directory.Exists(moduleWeaver.SolutionDirectoryPath));
             return moduleWeaver;
         }
@@ -86,7 +91,7 @@ namespace Cilador.Fody.Tests.Common
 
             var mixedAssembly = AppDomain.CurrentDomain.Load(ModuleWeaverHelper.GetRawWeavedAssembly(
                 targetAssemblyFilename,
-                BuildXElementConfig(config, fodyWeaverTaskProperties)));
+                ModuleWeaverHelper.BuildXElementConfig(config, fodyWeaverTaskProperties)));
             return mixedAssembly;
         }
 
@@ -99,7 +104,7 @@ namespace Cilador.Fody.Tests.Common
 
             using(var memoryStream = new MemoryStream())
             {
-                WeaveTestTarget(targetAssemblyFilename, config).Write(memoryStream);
+                ModuleWeaverHelper.WeaveTestTarget(targetAssemblyFilename, config).Write(memoryStream);
                 return memoryStream.GetBuffer();
             }
         }
@@ -111,7 +116,7 @@ namespace Cilador.Fody.Tests.Common
             Contract.Requires(config != null);
             Contract.Ensures(Contract.Result<ModuleDefinition>() != null);
 
-            var moduleWeaver = GetModuleWeaver(targetAssemblyFilename, config);
+            var moduleWeaver = ModuleWeaverHelper.GetModuleWeaver(targetAssemblyFilename, config);
 
             bool isVerified;
             string verificationOutput;
@@ -135,7 +140,7 @@ namespace Cilador.Fody.Tests.Common
                     {
                         File.Delete(tempProcessedAssemblyPath);
                     }
-                    catch { }
+                    catch { /* Best-effort deletion only */ }
                 }
             }
 

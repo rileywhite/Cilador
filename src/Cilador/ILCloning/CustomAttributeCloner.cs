@@ -14,9 +14,10 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Core;
+using Mono.Cecil;
 using System;
 using System.Diagnostics.Contracts;
-using Mono.Cecil;
 
 namespace Cilador.ILCloning
 {
@@ -70,6 +71,7 @@ namespace Cilador.ILCloning
             // TODO what is the blob argument for custom attributes?
             if (source.HasConstructorArguments)
             {
+                // TODO consider making new cloner types for these to make dependencies nicer
                 foreach (var sourceArgument in source.ConstructorArguments)
                 {
                     target.ConstructorArguments.Add(
@@ -81,6 +83,7 @@ namespace Cilador.ILCloning
 
             if (source.HasProperties)
             {
+                // TODO consider making new cloner types for these to make dependencies nicer
                 foreach (var sourceProperty in source.Properties)
                 {
                     target.Properties.Add(
@@ -89,6 +92,20 @@ namespace Cilador.ILCloning
                             new CustomAttributeArgument(
                                 this.ILCloningContext.RootImport(sourceProperty.Argument.Type),
                                 this.ILCloningContext.DynamicRootImport(sourceProperty.Argument.Value))));
+                }
+            }
+
+            if (source.HasFields)
+            {
+                // TODO consider making new cloner types for these to make dependencies nicer
+                foreach (var sourceField in source.Fields)
+                {
+                    target.Fields.Add(
+                        new CustomAttributeNamedArgument(
+                            sourceField.Name,
+                            new CustomAttributeArgument(
+                                this.ILCloningContext.RootImport(sourceField.Argument.Type),
+                                this.ILCloningContext.DynamicRootImport(sourceField.Argument.Value))));
                 }
             }
         }

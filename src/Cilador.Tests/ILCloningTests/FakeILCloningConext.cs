@@ -14,10 +14,11 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.ILCloning;
+using Cilador.Core;
+using Cilador.Graph;
 using Mono.Cecil;
-using System;
 using Mono.Cecil.Cil;
+using System;
 
 namespace Cilador.Tests.ILCloningTests
 {
@@ -28,9 +29,10 @@ namespace Cilador.Tests.ILCloningTests
     {
         public FakeILCloningConext()
         {
-            this.RootImportObjectDelegate = new Func<object, object>(item => item);
+            this.RootImportObjectDelegate = item => item;
         }
 
+        public IILGraph ILGraph { get; set; }
         public TypeDefinition RootSource { get; set; }
         public TypeDefinition RootTarget { get; set; }
 
@@ -43,8 +45,7 @@ namespace Cilador.Tests.ILCloningTests
         private object RootImport(object item)
         {
             var handler = this.RootImportObjectDelegate;
-            if (handler != null) { return handler(item); }
-            return item;
+            return handler != null ? handler(item) : item;
         }
 
         public Func<TypeReference, TypeReference> RootImportTypeDelegate { get; set; }

@@ -30,22 +30,24 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
         [Test]
         public void TryCatchFinallyFlowIsCorrect()
         {
-            var config = new CiladorConfigType();
-
-            config.WeaveConfig = new WeaveConfigTypeBase[]
+            var config = new CiladorConfigType
             {
-                new InterfaceMixinConfigType
+                WeaveConfig = new WeaveConfigTypeBase[]
                 {
-                    InterfaceMixinMap = new InterfaceMixinMapType[]
+                    new InterfaceMixinConfigType
                     {
-                        new InterfaceMixinMapType
+                        InterfaceMixinMap = new[]
                         {
-                            Interface = typeof(IEmptyInterface).GetShortAssemblyQualifiedName(),
-                            Mixin = typeof(TryCatchFinallyMixin).GetShortAssemblyQualifiedName()
+                            new InterfaceMixinMapType
+                            {
+                                Interface = typeof (IEmptyInterface).GetShortAssemblyQualifiedName(),
+                                Mixin = typeof (TryCatchFinallyMixin).GetShortAssemblyQualifiedName()
+                            }
                         }
-                    }
-                },
+                    },
+                }
             };
+
 
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
             var targetType = assembly.GetType(typeof(EmptyInterfaceTarget).FullName);

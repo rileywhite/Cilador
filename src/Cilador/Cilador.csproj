@@ -138,23 +138,45 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="TopologicalSort, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\TopologicalSort.1.0.0\lib\net35\TopologicalSort.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Core\CoreExtensions.cs" />
+    <Compile Include="Core\DynamicResolver.cs" />
+    <Compile Include="Core\ILItemFunctionDispatcherBase.cs" />
+    <Compile Include="Core\ILItemFunctionDispatcherContract.cs" />
+    <Compile Include="Core\InstructionOperandFunctionDispatcherBase.cs" />
+    <Compile Include="Core\InstructionOperandFunctionDispatcherContract.cs" />
+    <Compile Include="Graph\EdgeEqualityComperer.cs" />
+    <Compile Include="Graph\GraphExtensions.cs" />
+    <Compile Include="Graph\IILEdge.cs" />
+    <Compile Include="Graph\DependencyILEdge.cs" />
+    <Compile Include="Graph\SiblingILEdge.cs" />
+    <Compile Include="Graph\ParentChildILEdge.cs" />
+    <Compile Include="Graph\IILGraph.cs" />
+    <Compile Include="Graph\ILGraphContracts.cs" />
+    <Compile Include="Graph\ILOrderedChildrenGetDispatcher.cs" />
+    <Compile Include="Graph\ILDependencyGetDispatcher.cs" />
+    <Compile Include="Graph\OperandDependenciesGetDispatcher.cs" />
+    <Compile Include="Graph\ILGraphGetter.cs" />
     <Compile Include="Core\LazyAccessor.cs" />
     <Compile Include="Core\ClonerBase.cs" />
     <Compile Include="Core\ClonerBaseContract.cs" />
+    <Compile Include="ILCloning\ClonersGetDispatcher.cs" />
+    <Compile Include="ILCloning\CloneToMethodBodyContract.cs" />
     <Compile Include="ILCloning\ConstructorInitializationCloner.cs" />
     <Compile Include="ILCloning\ConstructorLogicBodyCloner.cs" />
     <Compile Include="ILCloning\ConstructorLogicSignatureCloner.cs" />
     <Compile Include="ILCloning\ICloneToMethodBody.cs" />
-    <Compile Include="ILCloning\ILCloningContextContract.cs" />
+    <Compile Include="Core\ILCloningContextContract.cs" />
+    <Compile Include="Graph\ILGraph.cs" />
+    <Compile Include="ILCloning\ILProjection.cs" />
     <Compile Include="ILCloning\MethodReturnTypeCloner.cs" />
-    <Compile Include="ILCloning\ClonerGatheringVisitor.cs" />
-    <Compile Include="ILCloning\Cloners.cs" />
     <Compile Include="ILCloning\MultiplexedConstructor.cs" />
     <Compile Include="ILCloning\CustomAttributeCloner.cs" />
     <Compile Include="ILCloning\EventCloner.cs" />
@@ -163,12 +185,13 @@
     <Compile Include="ILCloning\GenericParameterCloner.cs" />
     <Compile Include="Core\ICloner.cs" />
     <Compile Include="Core\ClonerContract.cs" />
-    <Compile Include="ILCloning\IILCloningContext.cs" />
+    <Compile Include="Core\IILCloningContext.cs" />
     <Compile Include="ILCloning\ILCloningContext.cs" />
     <Compile Include="ILCloning\ILCloningExtensions.cs" />
     <Compile Include="ILCloning\InstructionCloner.cs" />
     <Compile Include="ILCloning\MethodBodyCloner.cs" />
     <Compile Include="ILCloning\MethodSignatureCloner.cs" />
+    <Compile Include="ILCloning\NoOpCloner.cs" />
     <Compile Include="ILCloning\ParameterCloner.cs" />
     <Compile Include="ILCloning\PropertyCloner.cs" />
     <Compile Include="ILCloning\RootTypeCloner.cs" />

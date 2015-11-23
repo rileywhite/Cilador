@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Core;
 using Mono.Cecil;
 using System;
 using System.Diagnostics.Contracts;
@@ -27,7 +28,7 @@ namespace Cilador.ILCloning
         /// </summary>
         /// <param name="parent">Cloner for the method signature containing the method return type to be cloned.</param>
         /// <param name="source">Cloning source.</param>
-        public MethodReturnTypeCloner(MethodSignatureCloner parent, MethodReturnType source)
+        public MethodReturnTypeCloner(ICloner<object, MethodDefinition> parent, MethodReturnType source)
             : base(parent.ILCloningContext, source)
         {
             Contract.Requires(parent != null);
@@ -41,7 +42,7 @@ namespace Cilador.ILCloning
         /// <summary>
         /// Gets or sets the cloner for the method signature containing the method return type to be cloned.
         /// </summary>
-        public MethodSignatureCloner Parent { get; set; }
+        public ICloner<object, MethodDefinition> Parent { get; set; }
 
         /// <summary>
         /// Creates the target method return type.

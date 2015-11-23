@@ -17,7 +17,7 @@
 using System;
 using System.Diagnostics.Contracts;
 
-namespace Cilador.ILCloning
+namespace Cilador.Core
 {
     /// <summary>
     /// Contracts for <see cref="ClonerBase{TSource, TTarget}"/>.

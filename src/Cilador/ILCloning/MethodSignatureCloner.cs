@@ -14,12 +14,13 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Core;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 
 namespace Cilador.ILCloning
 {
@@ -55,7 +56,7 @@ namespace Cilador.ILCloning
         /// </summary>
         /// <remarks>
         /// This will be <c>true</c> when a root source and root target both have static constructors.
-        /// To deal with the case, the source static constructor is cloned into a different target static
+        /// DependsOn deal with the case, the source static constructor is cloned into a different target static
         /// method, and an operation to call that new method is inserted at the beginning of the
         /// target's existing static constructor.
         /// </remarks>

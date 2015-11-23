@@ -15,27 +15,15 @@
 /***************************************************************************/
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
+using TopologicalSort;
 
-namespace Cilador.Core
+namespace Cilador.Graph
 {
     /// <summary>
-    /// Extension methods used through Cilador
+    /// Reprents a directional IL edge to be used in IL graphs.
     /// </summary>
-    public static class CoreExtensions
+    public interface IILEdge : IEdge<object>
     {
-        /// <summary>
-        /// Checks whether an enumeration contains any null items.
-        /// </summary>
-        /// <param name="items">Items to check. Items may be traversed.</param>
-        /// <returns><c>true</c> if any null items are found, else <c>false</c>.</returns>
-        [Pure]
-        public static bool AreAnyNull<T>(this IEnumerable<T> items)
-            where T: class
-        {
-            return items.Any(item => item == null);
-        }
     }
 }

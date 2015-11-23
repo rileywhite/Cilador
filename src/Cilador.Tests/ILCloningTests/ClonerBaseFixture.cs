@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Core;
 using Cilador.ILCloning;
 using NUnit.Framework;
 using System;

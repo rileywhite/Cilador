@@ -14,11 +14,12 @@
 // limitations under the License.
 /***************************************************************************/
 
-using System;
-using System.Diagnostics.Contracts;
+using Cilador.Core;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 // ReSharper disable UnusedParameter.Local
 
@@ -58,12 +59,19 @@ namespace Cilador.ILCloning
             Contract.Ensures(this.Parent != null);
             Contract.Ensures(this.PossiblyReferencedVariables != null);
             Contract.Ensures(this.InstructionInsertAction != null);
+            Contract.Ensures(this.TargetInstructionCreator != null);
+            Contract.Ensures(this.OperandImporter != null);
 
             this.Parent = parent;
             this.Previous = previous;
             this.PossiblyReferencedVariables = possiblyReferencedVariables ?? new VariableDefinition[0];
             this.ReferencedVariableIndexTranslation = referencedVariableIndexTranslation;
             this.InstructionInsertAction = instructionInsertAction ?? InstructionCloner.DefaultInstructionInsertAction;
+            this.TargetInstructionCreator = new InstructionCreateDispatcher(parent.ILCloningContext);
+            this.OperandImporter = new OperandImportDispatcher(
+                parent.ILCloningContext,
+                this.Parent.SourceThisParameter,
+                this.Parent.Target.ThisParameter);
         }
 
         /// <summary>
@@ -115,10 +123,7 @@ namespace Cilador.ILCloning
 
             // now create the target
             var ilProcessor = this.Parent.Target.GetILProcessor();
-            Instruction target = CreateCloningTargetFor(
-                this.ILCloningContext,
-                ilProcessor,
-                source);
+            var target = this.TargetInstructionCreator.InvokeFor(source, ilProcessor);
 
             // run the insert action
             this.InstructionInsertAction(ilProcessor, this.Parent, this.Previous, this.Source, target);
@@ -133,7 +138,7 @@ namespace Cilador.ILCloning
         {
             if (this.Source.Operand != null)
             {
-                this.Target.Operand = this.ImportOperand((dynamic)this.Source.Operand);
+                this.Target.Operand = this.OperandImporter.InvokeFor(this.Source);
             }
 
             this.Target.Offset = this.Source.Offset;
@@ -158,423 +163,442 @@ namespace Cilador.ILCloning
             else { ilProcessor.InsertAfter(previous.Target, target); }
         }
 
-        #region Methods for creating instructions that may not have the correct operand
-
         /// <summary>
-        /// Creates a wireframe instruction (i.e. operand not set) to be used as a cloning target for the given source instruction.
+        /// Action for inserting the target instruction in such a way that cloned instructions appear before any existing
+        /// instructions in the target method body.
         /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the target method body.</param>
-        /// <param name="sourceInstruction">Source instruction.</param>
-        /// <returns>Wireframe target instruction. The operand will be invalid so that it can be set by instruction cloning later.</returns>
-        public static Instruction CreateCloningTargetFor(
-            IILCloningContext ilCloningContext,
+        /// <param name="ilProcessor">IL processor to use in inserting the instruction.</param>
+        /// <param name="parent">Cloner for the method body containing the instruction being cloned.</param>
+        /// <param name="previous">Cloner for the previous instruction being cloned, if any.</param>
+        /// <param name="source">Source instruction.</param>
+        /// <param name="target">Target instruction</param>
+        public static void InsertBeforeExistingInstructionInsertAction(
             ILProcessor ilProcessor,
-            Instruction sourceInstruction)
+            ICloneToMethodBody<object> parent,
+            InstructionCloner previous,
+            Instruction source,
+            Instruction target)
         {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
-            Contract.Requires(sourceInstruction != null);
-
-            return sourceInstruction.Operand == null ?
-                ilProcessor.Create(sourceInstruction.OpCode) :
-                CreateInstructionWithOperand(ilCloningContext, ilProcessor, sourceInstruction.OpCode, (dynamic)sourceInstruction.Operand);
+            if (previous == null)
+            {
+                if (parent.Target.Instructions.Count == 0)
+                {
+                    ilProcessor.Append(target);
+                }
+                else
+                {
+                    ilProcessor.InsertBefore(parent.Target.Instructions[0], target);
+                }
+            }
+            else { ilProcessor.InsertAfter(previous.Target, target); }
         }
 
-        /// <summary>
-        /// Catch-all method for dynamically dispatched instruction creation calls where the operand type is unrecognized
-        /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="unsupportedOperand">Operand for instruction</param>
-        /// <returns>Nothing. This method always raises an exception.</returns>
-        /// <exception cref="NotSupportedException">
-        /// Always raised. This method is only invoked via dynamic dispatch when the operand is not recognized as a supported
-        /// operand type. If the operand was recognized as a supported type, a different method would have been invoked.
-        /// </exception>
-        private static Instruction CreateInstructionWithOperand(IILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, object unsupportedOperand)
-        {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
-
-            if (unsupportedOperand == null) { return ilProcessor.Create(opCode); }
-
-            throw new NotSupportedException(
-                string.Format("Unsupported operand of type in instruction to be cloned: {0}", unsupportedOperand.GetType().FullName));
-        }
+        #region Creating instructions that may not have the correct operand
 
         /// <summary>
-        /// Creates a new method with the given operand
+        /// Gets or sets the dispatcher for creating target instructions.
         /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="value">Operand for instruction</param>
-        /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(IILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, byte value)
-        {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
-
-            return ilProcessor.Create(opCode, value);
-        }
+        private InstructionCreateDispatcher TargetInstructionCreator { get; set; }
 
         /// <summary>
-        /// Creates an instruction for invoking Calling <c>extern</c> methods using a <see cref="CallSite"/> operand.
-        /// (Currently this is not supported.)
+        /// Used to create cloning target instructions with possibly dummy operands.
         /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="callSite">Operand for instruction</param>
-        /// <returns>Nothing. This method always raises an exception.</returns>
-        /// <exception cref="NotSupportedException">
-        /// Always raised. Calling <c>extern</c> methods is not currently supported.
-        /// </exception>
-        private static Instruction CreateInstructionWithOperand(IILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, CallSite callSite)
+        private sealed class InstructionCreateDispatcher : InstructionOperandFunctionDispatcherBase<Instruction, ILProcessor>
         {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
+            /// <summary>
+            /// Creates a new <see cref="InstructionCreateDispatcher"/>.
+            /// </summary>
+            /// <param name="ilCloningContext">Context for the cloning operation.</param>
+            public InstructionCreateDispatcher(IILCloningContext ilCloningContext)
+            {
+                Contract.Requires(ilCloningContext != null);
+                Contract.Ensures(this.ILCloningContext != null);
 
-            // TODO support extern methods and get coverage for this
-            // see https://github.com/jbevain/cecil/blob/master/Mono.Cecil.Cil/OpCodes.cs for opcodes
-            throw new NotSupportedException(
-                "Callsite instruction operands are used with the calli op code to make unmanaged method calls. This is not supported.");
-        }
+                this.ILCloningContext = ilCloningContext;
+            }
 
-        /// <summary>
-        /// Creates a new method with the given operand
-        /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="value">Operand for instruction</param>
-        /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(IILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, double value)
-        {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
+            /// <summary>
+            /// Context for the cloning operation.
+            /// </summary>
+            private IILCloningContext ILCloningContext { get; set; }
 
-            return ilProcessor.Create(opCode, value);
-        }
+            /// <summary>
+            /// Gets an instruction target for a source with a <c>null</c> operand.
+            /// </summary>
+            /// <param name="opCode">Op code of the instruction.</param>
+            /// <param name="ilProcessor">IL processor for instruction creation.</param>
+            /// <returns>New target instruction</returns>
+            protected override Instruction GetReturnValueForNull(OpCode opCode, ILProcessor ilProcessor)
+            {
+                return ilProcessor.Create(opCode);
+            }
 
-        /// <summary>
-        /// Creates a new method with the given operand
-        /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="field">Operand for instruction</param>
-        /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(IILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, FieldReference field)
-        {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
+            /// <summary>
+            /// Creates a new target instruction for the given source op code and operand.
+            /// </summary>
+            /// <param name="operand">Source instruction operand.</param>
+            /// <param name="opCode">Source instruction op code.</param>
+            /// <param name="ilProcessor">IL processor to use for instruction creation.</param>
+            /// <returns>New target instruction.</returns>
+            protected override Instruction InvokeForOperand(byte operand, OpCode opCode, ILProcessor ilProcessor)
+            {
+                return ilProcessor.Create(opCode, operand);
+            }
 
-            return ilProcessor.Create(opCode, new FieldReference("", ilCloningContext.RootTarget.Module.Import(typeof(void))));
-        }
+            /// <summary>
+            /// Creates a new target instruction for the given source op code and operand.
+            /// </summary>
+            /// <param name="operand">Source instruction operand.</param>
+            /// <param name="opCode">Source instruction op code.</param>
+            /// <param name="ilProcessor">IL processor to use for instruction creation.</param>
+            /// <returns>New target instruction.</returns>
+            protected override Instruction InvokeForOperand(double operand, OpCode opCode, ILProcessor ilProcessor)
+            {
+                return ilProcessor.Create(opCode, operand);
+            }
 
-        /// <summary>
-        /// Creates a new method with the given operand
-        /// Gets or sets the collection of instruction cloners for the method body.
-        /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="value">Operand for instruction</param>
-        /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(IILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, float value)
-        {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
+            /// <summary>
+            /// Creates a new target instruction for the given source op code and operand.
+            /// </summary>
+            /// <param name="operand">Source instruction operand.</param>
+            /// <param name="opCode">Source instruction op code.</param>
+            /// <param name="ilProcessor">IL processor to use for instruction creation.</param>
+            /// <returns>New target instruction.</returns>
+            protected override Instruction InvokeForOperand(FieldReference operand, OpCode opCode, ILProcessor ilProcessor)
+            {
+                return ilProcessor.Create(opCode, new FieldReference("", this.ILCloningContext.RootTarget.Module.Import(typeof(void))));
+            }
 
-            return ilProcessor.Create(opCode, value);
-        }
+            /// <summary>
+            /// Creates a new target instruction for the given source op code and operand.
+            /// </summary>
+            /// <param name="operand">Source instruction operand.</param>
+            /// <param name="opCode">Source instruction op code.</param>
+            /// <param name="ilProcessor">IL processor to use for instruction creation.</param>
+            /// <returns>New target instruction.</returns>
+            protected override Instruction InvokeForOperand(float operand, OpCode opCode, ILProcessor ilProcessor)
+            {
+                return ilProcessor.Create(opCode, operand);
+            }
 
-        /// <summary>
-        /// Creates a new method with the given operand
-        /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="instruction">Operand for instruction</param>
-        /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(IILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, Instruction instruction)
-        {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
+            /// <summary>
+            /// Creates a new target instruction for the given source op code and operand.
+            /// </summary>
+            /// <param name="operand">Source instruction operand.</param>
+            /// <param name="opCode">Source instruction op code.</param>
+            /// <param name="ilProcessor">IL processor to use for instruction creation.</param>
+            /// <returns>New target instruction.</returns>
+            protected override Instruction InvokeForOperand(Instruction operand, OpCode opCode, ILProcessor ilProcessor)
+            {
+                return ilProcessor.Create(opCode, Instruction.Create(OpCodes.Nop));
+            }
 
-            return ilProcessor.Create(opCode, Instruction.Create(OpCodes.Nop));
-        }
+            /// <summary>
+            /// Creates a new target instruction for the given source op code and operand.
+            /// </summary>
+            /// <param name="operand">Source instruction operand.</param>
+            /// <param name="opCode">Source instruction op code.</param>
+            /// <param name="ilProcessor">IL processor to use for instruction creation.</param>
+            /// <returns>New target instruction.</returns>
+            protected override Instruction InvokeForOperand(Instruction[] operand, OpCode opCode, ILProcessor ilProcessor)
+            {
+                // TODO get coverage on this line with an inline switch
+                // https://github.com/jbevain/cecil/blob/master/Mono.Cecil.Cil/OpCodes.cs
+                return ilProcessor.Create(opCode, new Instruction[0]);
+            }
 
-        /// <summary>
-        /// Creates a new method with the given operand
-        /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="instructions">Operand for instruction</param>
-        /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(IILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, Instruction[] instructions)
-        {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
+            /// <summary>
+            /// Creates a new target instruction for the given source op code and operand.
+            /// </summary>
+            /// <param name="operand">Source instruction operand.</param>
+            /// <param name="opCode">Source instruction op code.</param>
+            /// <param name="ilProcessor">IL processor to use for instruction creation.</param>
+            /// <returns>New target instruction.</returns>
+            protected override Instruction InvokeForOperand(int operand, OpCode opCode, ILProcessor ilProcessor)
+            {
+                return ilProcessor.Create(opCode, operand);
+            }
 
-            // TODO get coverage on this line with an inline switch
-            // https://github.com/jbevain/cecil/blob/master/Mono.Cecil.Cil/OpCodes.cs
-            return ilProcessor.Create(opCode, new Instruction[0]);
-        }
+            /// <summary>
+            /// Creates a new target instruction for the given source op code and operand.
+            /// </summary>
+            /// <param name="operand">Source instruction operand.</param>
+            /// <param name="opCode">Source instruction op code.</param>
+            /// <param name="ilProcessor">IL processor to use for instruction creation.</param>
+            /// <returns>New target instruction.</returns>
+            protected override Instruction InvokeForOperand(long operand, OpCode opCode, ILProcessor ilProcessor)
+            {
+                return ilProcessor.Create(opCode, operand);
+            }
 
-        /// <summary>
-        /// Creates a new method with the given operand
-        /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="value">Operand for instruction</param>
-        /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(IILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, int value)
-        {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
+            /// <summary>
+            /// Creates a new target instruction for the given source op code and operand.
+            /// </summary>
+            /// <param name="operand">Source instruction operand.</param>
+            /// <param name="opCode">Source instruction op code.</param>
+            /// <param name="ilProcessor">IL processor to use for instruction creation.</param>
+            /// <returns>New target instruction.</returns>
+            protected override Instruction InvokeForOperand(MethodReference operand, OpCode opCode, ILProcessor ilProcessor)
+            {
+                return ilProcessor.Create(
+                    opCode,
+                    new MethodReference("", this.ILCloningContext.RootTarget.Module.Import(typeof(void))));
+            }
 
-            return ilProcessor.Create(opCode, value);
-        }
+            /// <summary>
+            /// Creates a new target instruction for the given source op code and operand.
+            /// </summary>
+            /// <param name="operand">Source instruction operand.</param>
+            /// <param name="opCode">Source instruction op code.</param>
+            /// <param name="ilProcessor">IL processor to use for instruction creation.</param>
+            /// <returns>New target instruction.</returns>
+            protected override Instruction InvokeForOperand(ParameterDefinition operand, OpCode opCode, ILProcessor ilProcessor)
+            {
+                return ilProcessor.Create(opCode, new ParameterDefinition(this.ILCloningContext.RootTarget.Module.Import(typeof(void))));
+            }
 
-        /// <summary>
-        /// Creates a new method with the given operand
-        /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="value">Operand for instruction</param>
-        /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(IILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, long value)
-        {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
+            /// <summary>
+            /// Creates a new target instruction for the given source op code and operand.
+            /// </summary>
+            /// <param name="operand">Source instruction operand.</param>
+            /// <param name="opCode">Source instruction op code.</param>
+            /// <param name="ilProcessor">IL processor to use for instruction creation.</param>
+            /// <returns>New target instruction.</returns>
+            protected override Instruction InvokeForOperand(sbyte operand, OpCode opCode, ILProcessor ilProcessor)
+            {
+                return ilProcessor.Create(opCode, operand);
+            }
 
-            return ilProcessor.Create(opCode, value);
-        }
+            /// <summary>
+            /// Creates a new target instruction for the given source op code and operand.
+            /// </summary>
+            /// <param name="operand">Source instruction operand.</param>
+            /// <param name="opCode">Source instruction op code.</param>
+            /// <param name="ilProcessor">IL processor to use for instruction creation.</param>
+            /// <returns>New target instruction.</returns>
+            protected override Instruction InvokeForOperand(string operand, OpCode opCode, ILProcessor ilProcessor)
+            {
+                return ilProcessor.Create(opCode, operand);
+            }
 
-        /// <summary>
-        /// Creates a new method with the given operand
-        /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="method">Operand for instruction</param>
-        /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(IILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, MethodReference method)
-        {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
+            /// <summary>
+            /// Creates a new target instruction for the given source op code and operand.
+            /// </summary>
+            /// <param name="operand">Source instruction operand.</param>
+            /// <param name="opCode">Source instruction op code.</param>
+            /// <param name="ilProcessor">IL processor to use for instruction creation.</param>
+            /// <returns>New target instruction.</returns>
+            protected override Instruction InvokeForOperand(TypeReference operand, OpCode opCode, ILProcessor ilProcessor)
+            {
+                return ilProcessor.Create(opCode, this.ILCloningContext.RootTarget.Module.Import(typeof(void)));
+            }
 
-            return ilProcessor.Create(
-                opCode,
-                new MethodReference("", ilCloningContext.RootTarget.Module.Import(typeof(void))));
-        }
-
-        /// <summary>
-        /// Creates a new method with the given operand
-        /// Clones the method body from the source to the target.
-        /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="parameter">Operand for instruction</param>
-        /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(IILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, ParameterDefinition parameter)
-        {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
-
-            return ilProcessor.Create(opCode, new ParameterDefinition(ilCloningContext.RootTarget.Module.Import(typeof(void))));
-        }
-
-        /// <summary>
-        /// Creates a new method with the given operand
-        /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="value">Operand for instruction</param>
-        /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(IILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, sbyte value)
-        {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
-
-            return ilProcessor.Create(opCode, value);
-        }
-
-        /// <summary>
-        /// Creates a new method with the given operand
-        /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="value">Operand for instruction</param>
-        /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(IILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, string value)
-        {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
-
-            return ilProcessor.Create(opCode, value);
-        }
-
-        /// <summary>
-        /// Creates a new method with the given operand
-        /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="type">Operand for instruction</param>
-        /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(IILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, TypeReference type)
-        {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
-
-            return ilProcessor.Create(opCode, ilCloningContext.RootTarget.Module.Import(typeof(void)));
-        }
-
-        /// <summary>
-        /// Creates a new method with the given operand
-        /// </summary>
-        /// <param name="ilCloningContext">Cloning context.</param>
-        /// <param name="ilProcessor">IL processor for the method body being cloned</param>
-        /// <param name="opCode">MSIL op code of an instruction that should be created.</param>
-        /// <param name="variable">Operand for instruction</param>
-        /// <returns>New instruction.</returns>
-        private static Instruction CreateInstructionWithOperand(IILCloningContext ilCloningContext, ILProcessor ilProcessor, OpCode opCode, VariableDefinition variable)
-        {
-            Contract.Requires(ilCloningContext != null);
-            Contract.Requires(ilProcessor != null);
-
-            return ilProcessor.Create(opCode, new VariableDefinition(ilCloningContext.RootTarget.Module.Import(typeof(void))));
+            /// <summary>
+            /// Creates a new target instruction for the given source op code and operand.
+            /// </summary>
+            /// <param name="operand">Source instruction operand.</param>
+            /// <param name="opCode">Source instruction op code.</param>
+            /// <param name="ilProcessor">IL processor to use for instruction creation.</param>
+            /// <returns>New target instruction.</returns>
+            protected override Instruction InvokeForOperand(VariableDefinition operand, OpCode opCode, ILProcessor ilProcessor)
+            {
+                return ilProcessor.Create(opCode, new VariableDefinition(this.ILCloningContext.RootTarget.Module.Import(typeof(void))));
+            }
         }
 
         #endregion
 
-        #region Operand cloning
+        #region Operand importing
 
         /// <summary>
-        /// Catch-all method for dynamically dispatched instruction creation calls where the operand type does not need
-        /// special handling.
+        /// Gets or sets the dispatcher for importing instruction operands.
         /// </summary>
-        /// <param name="otherOperand">Operand for instruction</param>
-        /// <returns>Returns the operand that was passed in.</returns>
-        private object ImportOperand(object otherOperand)
-        {
-            return otherOperand;
-        }
+        private OperandImportDispatcher OperandImporter { get; set; }
 
         /// <summary>
-        /// Creates an instruction for invoking Calling <c>extern</c> methods using a <see cref="CallSite"/> operand.
-        /// (Currently this is not supported.)
+        /// Type for performing root imports of instruction operands.
         /// </summary>
-        /// <param name="callSite">Operand for instruction</param>
-        /// <returns>Nothing. This method always raises an exception.</returns>
-        /// <exception cref="NotSupportedException">
-        /// Always raised. Calling <c>extern</c> methods is not currently supported.
-        /// </exception>
-        private CallSite ImportOperand(CallSite callSite)
+        private class OperandImportDispatcher : InstructionOperandFunctionDispatcherBase<object>
         {
-            Contract.Requires(callSite != null);
-
-            // TODO support extern methods
-            throw new NotSupportedException(
-                "Callsite instruction operands are used with the calli op code to make unmanaged method calls. This is not supported.");
-        }
-
-        /// <summary>
-        /// Imports the operand
-        /// </summary>
-        /// <param name="type">Operand for instruction</param>
-        /// <returns>Imported operand for target instruction.</returns>
-        private TypeReference ImportOperand(TypeReference type)
-        {
-            Contract.Requires(type != null);
-            return this.ILCloningContext.RootImport(type);
-        }
-
-        /// <summary>
-        /// Imports the operand
-        /// </summary>
-        /// <param name="field">Operand for instruction</param>
-        /// <returns>Imported operand for target instruction.</returns>
-        private FieldReference ImportOperand(FieldReference field)
-        {
-            Contract.Requires(field != null);
-            return this.ILCloningContext.RootImport(field);
-        }
-
-        /// <summary>
-        /// Imports the operand
-        /// </summary>
-        /// <param name="instruction">Operand for instruction</param>
-        /// <returns>Imported operand for target instruction.</returns>
-        private Instruction ImportOperand(Instruction instruction)
-        {
-            Contract.Requires(instruction != null);
-
-            return this.ILCloningContext.RootImport(instruction);
-        }
-
-        /// <summary>
-        /// Imports the operand
-        /// </summary>
-        /// <param name="instructions">Operand for instruction</param>
-        /// <returns>Imported operand for target instruction.</returns>
-        private Instruction[] ImportOperand(Instruction[] instructions)
-        {
-            Contract.Requires(instructions != null);
-
-            var importedTargets = new Instruction[instructions.Length];
-            for (int i = 0; i < instructions.Length; i++)
+            /// <summary>
+            /// Creates a new <see cref="OperandImportDispatcher"/>.
+            /// </summary>
+            /// <param name="ilCloningContext">IL cloning context</param>
+            /// <param name="sourceThisParameter">This parameter for the source method.</param>
+            /// <param name="targetThisParameter">This parameter for the target method.</param>
+            public OperandImportDispatcher(
+                IILCloningContext ilCloningContext,
+                ParameterDefinition sourceThisParameter,
+                ParameterDefinition targetThisParameter)
             {
-                importedTargets[i] = this.ImportOperand(instructions[i]);
+                Contract.Requires(ilCloningContext != null);
+                Contract.Ensures(this.ILCloningContext != null);
+
+                this.ILCloningContext = ilCloningContext;
+                this.SourceThisParameter = sourceThisParameter;
+                this.TargetThisParameter = targetThisParameter;
             }
-            return importedTargets;
-        }
 
-        /// <summary>
-        /// Imports the operand
-        /// </summary>
-        /// <param name="method">Operand for instruction</param>
-        /// <returns>Imported operand for target instruction.</returns>
-        private MethodReference ImportOperand(MethodReference method)
-        {
-            Contract.Requires(method != null);
-            return this.ILCloningContext.RootImport(method);
-        }
+            /// <summary>
+            /// Cloning context for this object.
+            /// </summary>
+            private IILCloningContext ILCloningContext { get; set; }
 
-        /// <summary>
-        /// Imports the operand
-        /// </summary>
-        /// <param name="parameter">Operand for instruction</param>
-        /// <returns>Imported operand for target instruction.</returns>
-        private ParameterDefinition ImportOperand(ParameterDefinition parameter)
-        {
-            Contract.Requires(parameter != null);
+            /// <summary>
+            /// Source "this" parameter of the method body containing the instructions.
+            /// </summary>
+            private ParameterDefinition SourceThisParameter { get; set; }
 
-            if (parameter == this.Parent.SourceThisParameter) { return this.Parent.Target.ThisParameter; }
-            return this.ILCloningContext.RootImport(parameter);
-        }
+            /// <summary>
+            /// Target "this" parameter of the method body containing the instructions.
+            /// </summary>
+            private ParameterDefinition TargetThisParameter { get; set; }
 
-        /// <summary>
-        /// Imports the operand
-        /// </summary>
-        /// <param name="variable">Operand for instruction</param>
-        /// <returns>Imported operand for target instruction.</returns>
-        private VariableDefinition ImportOperand(VariableDefinition variable)
-        {
-            Contract.Requires(variable != null);
+            /// <summary>
+            /// Imports the operand.
+            /// </summary>
+            /// <param name="operand">Operand for instruction</param>
+            /// <returns>Imported operand for target instruction.</returns>
+            protected override object InvokeForOperand(TypeReference operand)
+            {
+                return this.ILCloningContext.RootImport(operand);
+            }
 
-            return this.ILCloningContext.RootImport(variable);
+            /// <summary>
+            /// Imports the operand.
+            /// </summary>
+            /// <param name="operand">Operand for instruction</param>
+            /// <returns>Imported operand for target instruction.</returns>
+            protected override object InvokeForOperand(FieldReference operand)
+            {
+                return this.ILCloningContext.RootImport(operand);
+            }
+
+            /// <summary>
+            /// Imports the operand.
+            /// </summary>
+            /// <param name="operand">Operand for instruction</param>
+            /// <returns>Imported operand for target instruction.</returns>
+            protected override object InvokeForOperand(Instruction operand)
+            {
+                return this.ILCloningContext.RootImport(operand);
+            }
+
+            /// <summary>
+            /// Imports the operand.
+            /// </summary>
+            /// <param name="operand">Operand for instruction</param>
+            /// <returns>Imported operand for target instruction.</returns>
+            protected override object InvokeForOperand(Instruction[] operand)
+            {
+                var importedTargets = new Instruction[operand.Length];
+                for (int i = 0; i < operand.Length; i++)
+                {
+                    importedTargets[i] = (Instruction)this.InvokeForOperand(operand[i]);
+                }
+                return importedTargets;
+            }
+
+            /// <summary>
+            /// Imports the operand.
+            /// </summary>
+            /// <param name="operand">Operand for instruction</param>
+            /// <returns>Imported operand for target instruction.</returns>
+            protected override object InvokeForOperand(MethodReference operand)
+            {
+                return this.ILCloningContext.RootImport(operand);
+            }
+
+            /// <summary>
+            /// Imports the operand.
+            /// </summary>
+            /// <param name="operand">Operand for instruction</param>
+            /// <returns>Imported operand for target instruction.</returns>
+            protected override object InvokeForOperand(ParameterDefinition operand)
+            {
+                if (operand == this.SourceThisParameter) { return this.TargetThisParameter; }
+                return this.ILCloningContext.RootImport(operand);
+            }
+
+            /// <summary>
+            /// Imports the operand.
+            /// </summary>
+            /// <param name="operand">Operand for instruction</param>
+            /// <returns>Imported operand for target instruction.</returns>
+            protected override object InvokeForOperand(VariableDefinition operand)
+            {
+                return this.ILCloningContext.RootImport(operand);
+            }
+
+            /// <summary>
+            /// Imports the operand.
+            /// </summary>
+            /// <param name="operand">Operand for instruction</param>
+            /// <returns>Imported operand for target instruction.</returns>
+            protected override object InvokeForOperand(byte operand)
+            {
+                return operand;
+            }
+
+            /// <summary>
+            /// Imports the operand.
+            /// </summary>
+            /// <param name="operand">Operand for instruction</param>
+            /// <returns>Imported operand for target instruction.</returns>
+            protected override object InvokeForOperand(sbyte operand)
+            {
+                return operand;
+            }
+
+            /// <summary>
+            /// Imports the operand.
+            /// </summary>
+            /// <param name="operand">Operand for instruction</param>
+            /// <returns>Imported operand for target instruction.</returns>
+            protected override object InvokeForOperand(float operand)
+            {
+                return operand;
+            }
+
+            /// <summary>
+            /// Imports the operand.
+            /// </summary>
+            /// <param name="operand">Operand for instruction</param>
+            /// <returns>Imported operand for target instruction.</returns>
+            protected override object InvokeForOperand(double operand)
+            {
+                return operand;
+            }
+
+            /// <summary>
+            /// Imports the operand.
+            /// </summary>
+            /// <param name="operand">Operand for instruction</param>
+            /// <returns>Imported operand for target instruction.</returns>
+            protected override object InvokeForOperand(int operand)
+            {
+                return operand;
+            }
+
+            /// <summary>
+            /// Imports the operand.
+            /// </summary>
+            /// <param name="operand">Operand for instruction</param>
+            /// <returns>Imported operand for target instruction.</returns>
+            protected override object InvokeForOperand(long operand)
+            {
+                return operand;
+            }
+
+            /// <summary>
+            /// Imports the operand.
+            /// </summary>
+            /// <param name="operand">Operand for instruction</param>
+            /// <returns>Imported operand for target instruction.</returns>
+            protected override object InvokeForOperand(string operand)
+            {
+                return operand;
+            }
         }
 
         #endregion
