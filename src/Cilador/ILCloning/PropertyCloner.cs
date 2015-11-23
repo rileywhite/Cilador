@@ -53,7 +53,7 @@ namespace Cilador.ILCloning
         /// <returns>Created target.</returns>
         protected override PropertyDefinition GetTarget()
         {
-            var voidReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));  // TODO get rid of void ref
+            var voidReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
             var targetProperty = new PropertyDefinition(this.Source.Name, 0, voidReference);
             this.Parent.Target.Properties.Add(targetProperty);
             return targetProperty;

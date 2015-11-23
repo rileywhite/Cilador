@@ -53,7 +53,7 @@ namespace Cilador.ILCloning
         /// <returns>Created target.</returns>
         protected override EventDefinition GetTarget()
         {
-            var voidReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));  // TODO get rid of void ref
+            var voidReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
             var targetEvent = new EventDefinition(this.Source.Name, 0, voidReference);
             this.Parent.Target.Events.Add(targetEvent);
             return targetEvent;

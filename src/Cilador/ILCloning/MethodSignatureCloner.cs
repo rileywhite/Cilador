@@ -69,7 +69,7 @@ namespace Cilador.ILCloning
         protected override MethodDefinition GetTarget()
         {
             MethodDefinition targetMethod = null;
-            var voidReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));  // TODO get rid of void ref
+            var voidReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
 
             if (this.Source.IsConstructor &&
                 this.Source.IsStatic &&

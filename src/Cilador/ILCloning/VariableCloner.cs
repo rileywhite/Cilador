@@ -64,7 +64,7 @@ namespace Cilador.ILCloning
             if (this.Previous != null) { this.Previous.EnsureTargetIsSet(); }
 
             // now create the new variable
-            var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void)); // TODO get rid of void ref
+            var voidTypeReference = this.ILCloningContext.RootTarget.Module.Import(typeof(void));
             var target = new VariableDefinition(this.Source.Name, voidTypeReference);
             this.Parent.Target.Variables.Add(target);
             return target;

@@ -57,7 +57,6 @@ namespace Cilador.ILCloning
             this.ILGraph = ilGraph;
             this.RootSource = rootSource;
             this.RootTarget = rootTarget;
-            this.GenericParameterCache = new Dictionary<string, GenericParameter>();
             this.TypeCache = new Dictionary<string, TypeReference>();
             this.FieldCache = new Dictionary<string, FieldReference>();
             this.MethodCache = new Dictionary<string, MethodReference>();
@@ -210,11 +209,6 @@ namespace Cilador.ILCloning
         }
 
         /// <summary>
-        /// Cache of root-imported generic parameters so that any given generic parameter is only looked up once
-        /// </summary>
-        private Dictionary<string, GenericParameter> GenericParameterCache { get; set; }
-
-        /// <summary>
         /// Root imports a generic parameter. That is, it finds the type with respect to the <see cref="RootTarget"/> type.
         /// If necessary, this handles mixin redirection, meaning that a member within the <see cref="RootTarget"/>
         /// will be returned in place of a member within the <see cref="RootSource"/>
@@ -224,16 +218,6 @@ namespace Cilador.ILCloning
         public TypeReference RootImport(GenericParameter genericParameter)
         {
             if (genericParameter == null) { return null; }
-
-            // TODO still cache?
-            //var cacheKey = Cloners.GetUniqueKeyFor(genericParameter);
-
-            // if root import has already occurred, then return the previous result
-            //if (this.GenericParameterCache.TryGetValue(cacheKey, out importedGenericParameter))
-            //{
-            //    Contract.Assert(importedGenericParameter != null);
-            //    return importedGenericParameter;
-            //}
 
             IReadOnlyCollection<ICloner<object, object>> cloners;
             if (!this.ClonersBySource.TryGetValue(genericParameter, out cloners))
@@ -248,7 +232,6 @@ namespace Cilador.ILCloning
             Contract.Assert(importedGenericParameter != null);
             Contract.Assert(importedGenericParameter.Module == this.RootTarget.Module);
             Contract.Assert(importedGenericParameter.Owner.Module == this.RootTarget.Module);
-            //this.GenericParameterCache[cacheKey] = importedGenericParameter;
 
             return importedGenericParameter;
         }

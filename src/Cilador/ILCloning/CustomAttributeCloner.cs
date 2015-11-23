@@ -71,7 +71,7 @@ namespace Cilador.ILCloning
             // TODO what is the blob argument for custom attributes?
             if (source.HasConstructorArguments)
             {
-                // TODO consider making new cloner types for these to make dependencies nicer
+                // Arguments are structs rather than classes which makes cloners 
                 foreach (var sourceArgument in source.ConstructorArguments)
                 {
                     target.ConstructorArguments.Add(
@@ -83,7 +83,7 @@ namespace Cilador.ILCloning
 
             if (source.HasProperties)
             {
-                // TODO consider making new cloner types for these to make dependencies nicer
+                // Arguments are structs rather than classes which makes cloners 
                 foreach (var sourceProperty in source.Properties)
                 {
                     target.Properties.Add(
@@ -97,7 +97,7 @@ namespace Cilador.ILCloning
 
             if (source.HasFields)
             {
-                // TODO consider making new cloner types for these to make dependencies nicer
+                // Arguments are structs rather than classes which makes cloners 
                 foreach (var sourceField in source.Fields)
                 {
                     target.Fields.Add(
