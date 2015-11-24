@@ -23,7 +23,7 @@ namespace Cilador.Graph
     /// <summary>
     /// Used to ensure unique edges are collected in hash sets.
     /// </summary>
-    internal class EdgeEqualityComparer : IEqualityComparer<IILEdge>
+    internal class EdgeEqualityComparer : IEqualityComparer<ICilEdge>
     {
         /// <summary>
         /// Checks equality between two edges.
@@ -31,7 +31,7 @@ namespace Cilador.Graph
         /// <param name="x">One edge.</param>
         /// <param name="y">Another edge.</param>
         /// <returns><c>true</c> if the two edges connect the same vertices in the same direction, else <c>false</c>.</returns>
-        public bool Equals(IILEdge x, IILEdge y)
+        public bool Equals(ICilEdge x, ICilEdge y)
         {
             if (x.GetType() != y.GetType()) { return false; }
 
@@ -49,7 +49,7 @@ namespace Cilador.Graph
         /// </summary>
         /// <param name="obj">Edge to get hash code for.</param>
         /// <returns>Hash code for edge.</returns>
-        public int GetHashCode(IILEdge obj)
+        public int GetHashCode(ICilEdge obj)
         {
             if (obj.From == null || obj.To == null)
             {

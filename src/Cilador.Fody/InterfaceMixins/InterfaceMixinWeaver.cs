@@ -15,7 +15,7 @@
 /***************************************************************************/
 
 using Cilador.Fody.Core;
-using Cilador.ILCloning;
+using Cilador.Clone;
 using Mono.Cecil;
 using System;
 using System.Diagnostics.Contracts;
@@ -112,8 +112,8 @@ namespace Cilador.Fody.InterfaceMixins
             this.Target.Interfaces.Add(this.Target.Module.Import(this.InterfaceType));
             try
             {
-                var ilGraph = new ILGraphGetter().Traverse(this.Source);
-                new ILCloningContext(ilGraph, this.Source, this.Target).Execute();
+                var graph = new CilGraphGetter().Traverse(this.Source);
+                new CloningContext(graph, this.Source, this.Target).Execute();
             }
             catch(InvalidOperationException e)
             {

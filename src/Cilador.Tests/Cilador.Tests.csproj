@@ -66,10 +66,9 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="CoreTests\LazyAccessorFixture.cs" />
-    <Compile Include="ILCloningTests\FakeILCloningConext.cs" />
-    <Compile Include="ILCloningTests\ILCloningExtensionsFixture.cs" />
-    <Compile Include="ILCloningTests\ClonerBaseFixture.cs" />
+    <Compile Include="CloneTests\FakeCloningConext.cs" />
+    <Compile Include="CloneTests\CloningExtensionsFixture.cs" />
+    <Compile Include="CloneTests\ClonerBaseFixture.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

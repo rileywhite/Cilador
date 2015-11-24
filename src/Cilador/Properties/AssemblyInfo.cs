@@ -34,7 +34,7 @@ using System.Runtime.InteropServices;
 [assembly: Guid("44275dee-e9c5-4cf2-9d83-4bd44ed6e7b0")]
 
 [assembly: AssemblyDescription(
-@"High level IL manipulation tools built on top of mono.cecil.
+@"High level CIL manipulation tools built on top of mono.cecil.
 
 Currently only a very small surface of functionality is exposed which
 is used by Cilador.Fody to create mixins. As the project evolves, more
