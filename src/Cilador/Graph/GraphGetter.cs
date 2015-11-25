@@ -46,10 +46,10 @@ namespace Cilador.Graph
         /// </summary>
         /// <param name="type">Type ot get graph of items and dependencies.</param>
         /// <returns>
-        /// <see cref="Cgraph"/> repesenting the items and dependencies of the given
+        /// <see cref="CilGraph"/> repesenting the items and dependencies of the given
         /// root type.
         /// </returns>
-        public ICgraph Traverse(TypeDefinition type)
+        public ICilGraph Traverse(TypeDefinition type)
         {
             Contract.Requires(type != null);
 
@@ -60,7 +60,7 @@ namespace Cilador.Graph
             // in theory, this could be called for multiple roots before collecting edges
             this.CollectVerticesAndFamilyEdgesFrom(type, vertices, parentChildEdges, siblingEdges);
 
-            return new Cgraph(vertices, parentChildEdges, siblingEdges, this.GetDependencyEdges(vertices));
+            return new CilGraph(vertices, parentChildEdges, siblingEdges, this.GetDependencyEdges(vertices));
         }
 
         /// <summary>

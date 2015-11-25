@@ -23,8 +23,8 @@ namespace Cilador.Graph
     /// <summary>
     /// Represents CIL as a directed acyclic graph.
     /// </summary>
-    [ContractClass(typeof(CgraphContracts))]
-    public interface ICgraph
+    [ContractClass(typeof(CilGraphContracts))]
+    public interface ICilGraph
     {
         /// <summary>
         /// Represents the vertices of the graph.

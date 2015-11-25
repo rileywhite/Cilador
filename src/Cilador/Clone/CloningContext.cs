@@ -40,32 +40,32 @@ namespace Cilador.Clone
         /// <summary>
         /// Creates a new <see cref="CloningContext"/>
         /// </summary>
-        /// <param name="cgraph">CIL graph for the cloning operation</param>
+        /// <param name="cilGraph">CIL graph for the cloning operation</param>
         /// <param name="rootSource">Top level source type for the cloning operation</param>
         /// <param name="rootTarget">Top level target type for the cloning operation</param>
-        public CloningContext(ICgraph cgraph, TypeDefinition rootSource, TypeDefinition rootTarget)
+        public CloningContext(ICilGraph cilGraph, TypeDefinition rootSource, TypeDefinition rootTarget)
         {
-            Contract.Requires(cgraph != null);
+            Contract.Requires(cilGraph != null);
             Contract.Requires(rootSource != null);
             Contract.Requires(rootTarget != null);
-            Contract.Ensures(this.Cgraph != null);
+            Contract.Ensures(this.CilGraph != null);
             Contract.Ensures(this.ClonersBySource != null);
             Contract.Ensures(this.RootSource != null);
             Contract.Ensures(this.RootTarget != null);
 
-            this.Cgraph = cgraph;
+            this.CilGraph = cilGraph;
             this.RootSource = rootSource;
             this.RootTarget = rootTarget;
             this.TypeCache = new Dictionary<string, TypeReference>();
             this.FieldCache = new Dictionary<string, FieldReference>();
             this.MethodCache = new Dictionary<string, MethodReference>();
-            this.ClonersBySource = new Dictionary<object, IReadOnlyCollection<ICloner<object, object>>>(this.Cgraph.VertexCount);
+            this.ClonersBySource = new Dictionary<object, IReadOnlyCollection<ICloner<object, object>>>(this.CilGraph.VertexCount);
         }
 
         /// <summary>
-        /// Gets or sets the Cgraph of items for the cloning operation.
+        /// Gets or sets the CilGraph of items for the cloning operation.
         /// </summary>
-        public ICgraph Cgraph { get; private set; }
+        public ICilGraph CilGraph { get; private set; }
 
         /// <summary>
         /// Gets or sets the collection of cloners for a given source.
@@ -88,16 +88,16 @@ namespace Cilador.Clone
             var clonersGetter = new ClonersGetDispatcher(this, targetsByRoot, this.ClonersBySource);
 
             var verticesSortedForCreation = TopologicalSorter.TopologicalSort(
-                this.Cgraph.Vertices,
-                ((IEnumerable<ICilEdge>)this.Cgraph.ParentChildEdges).Union(this.Cgraph.SiblingEdges));
+                this.CilGraph.Vertices,
+                ((IEnumerable<ICilEdge>)this.CilGraph.ParentChildEdges).Union(this.CilGraph.SiblingEdges));
             foreach (var source in verticesSortedForCreation)
             {
                 this.ClonersBySource.Add(source, clonersGetter.InvokeFor(source));
             }
 
             var verticesSortedForCloning = TopologicalSorter.TopologicalSort(
-                this.Cgraph.Vertices,
-                this.Cgraph.DependencyEdges);
+                this.CilGraph.Vertices,
+                this.CilGraph.DependencyEdges);
 
             foreach (var source in verticesSortedForCloning)
             {

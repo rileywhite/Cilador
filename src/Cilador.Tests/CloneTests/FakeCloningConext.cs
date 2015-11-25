@@ -32,7 +32,7 @@ namespace Cilador.Tests.CloneTests
             this.RootImportObjectDelegate = item => item;
         }
 
-        public ICgraph Cgraph { get; set; }
+        public ICilGraph CilGraph { get; set; }
         public TypeDefinition RootSource { get; set; }
         public TypeDefinition RootTarget { get; set; }
 

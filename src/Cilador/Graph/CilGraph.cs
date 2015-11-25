@@ -24,16 +24,16 @@ namespace Cilador.Graph
     /// <summary>
     /// Represents CIL as a directed acyclic graph.
     /// </summary>
-    internal class Cgraph : ICgraph
+    internal class CilGraph : ICilGraph
     {
         /// <summary>
-        /// Creates a new <see cref="Cgraph"/> with the given vertices and edges.
+        /// Creates a new <see cref="CilGraph"/> with the given vertices and edges.
         /// </summary>
         /// <param name="vertices">Vertices of the graph.</param>
         /// <param name="parentChildEdges">Edges representing parent/child dependencies of the graph.</param>
         /// <param name="siblingEdges">Edges representing ordered sibling dependencies of the graph.</param>
         /// <param name="dependencyEdges">Edges repesenting dependencies of the graph.</param>
-        public Cgraph(
+        public CilGraph(
             IEnumerable<object> vertices,
             IEnumerable<ParentChildCilEdge> parentChildEdges,
             IEnumerable<SiblingCilEdge> siblingEdges,

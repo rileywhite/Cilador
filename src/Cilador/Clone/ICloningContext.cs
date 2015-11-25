@@ -29,9 +29,9 @@ namespace Cilador.Clone
     public interface ICloningContext
     {
         /// <summary>
-        /// Gets the Cgraph of items for the cloning operation.
+        /// Gets the CilGraph of items for the cloning operation.
         /// </summary>
-        ICgraph Cgraph { get; }
+        ICilGraph CilGraph { get; }
 
         /// <summary>
         /// Gets the top level source type for the cloning operation.

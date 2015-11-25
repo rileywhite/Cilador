@@ -21,10 +21,10 @@ using System.Diagnostics.Contracts;
 namespace Cilador.Graph
 {
     /// <summary>
-    /// Contracts for <see cref="ICgraph"/>.
+    /// Contracts for <see cref="ICilGraph"/>.
     /// </summary>
-    [ContractClassFor(typeof(ICgraph))]
-    public abstract class CgraphContracts : ICgraph
+    [ContractClassFor(typeof(ICilGraph))]
+    public abstract class CilGraphContracts : ICilGraph
     {
         public IEnumerable<object> Vertices
         {

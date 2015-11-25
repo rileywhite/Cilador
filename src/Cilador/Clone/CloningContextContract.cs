@@ -28,11 +28,11 @@ namespace Cilador.Clone
     [ContractClassFor(typeof(ICloningContext))]
     internal abstract class CloningContextContract : ICloningContext
     {
-        public ICgraph Cgraph
+        public ICilGraph CilGraph
         {
             get
             {
-                Contract.Ensures(Contract.Result<ICgraph>() != null);
+                Contract.Ensures(Contract.Result<ICilGraph>() != null);
                 throw new NotSupportedException();
             }
         }
