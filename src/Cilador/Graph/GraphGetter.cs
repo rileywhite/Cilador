@@ -14,7 +14,6 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -23,7 +22,7 @@ using System.Linq;
 namespace Cilador.Graph
 {
     /// <summary>
-    /// Traverses a tree of CIL objects within a given root type
+    /// Traverses a tree of CIL objects within a given root item
     /// collecting vertices and edges for a graph that represents CIL objects
     /// and object dependencies.
     /// </summary>
@@ -42,23 +41,23 @@ namespace Cilador.Graph
         }
 
         /// <summary>
-        /// Traverses a root type to get a graph of CIL objects and their dependencies.
+        /// Traverses a root item to get a graph of CIL objects and their dependencies.
         /// </summary>
-        /// <param name="type">Type ot get graph of items and dependencies.</param>
+        /// <param name="items">CIL items to build CIL graph from.</param>
         /// <returns>
         /// <see cref="CilGraph"/> repesenting the items and dependencies of the given
-        /// root type.
+        /// item.
         /// </returns>
-        public ICilGraph Traverse(TypeDefinition type)
+        public ICilGraph Traverse(params object[] items)
         {
-            Contract.Requires(type != null);
-
             var vertices = new HashSet<object>();
             var parentChildEdges = new HashSet<ParentChildCilEdge>(new EdgeEqualityComparer());
             var siblingEdges = new HashSet<SiblingCilEdge>(new EdgeEqualityComparer());
 
-            // in theory, this could be called for multiple roots before collecting edges
-            this.CollectVerticesAndFamilyEdgesFrom(type, vertices, parentChildEdges, siblingEdges);
+            foreach (var item in items ?? new object[0])
+            {
+                this.CollectVerticesAndFamilyEdgesFrom(item, vertices, parentChildEdges, siblingEdges);
+            }
 
             return new CilGraph(vertices, parentChildEdges, siblingEdges, this.GetDependencyEdges(vertices));
         }
@@ -66,12 +65,12 @@ namespace Cilador.Graph
         /// <summary>
         /// Gets or sets the dispatcher for getting CIL item children.
         /// </summary>
-        private CilOrderedChildrenGetDispatcher ChildrenGetter { get; set; }
+        private CilOrderedChildrenGetDispatcher ChildrenGetter { get; }
 
         /// <summary>
         /// Gets or sets the dispatcher for getting CIL item dependencies.
         /// </summary>
-        private CilDependencyGetDispatcher DependenciesGetter { get; set; }
+        private CilDependencyGetDispatcher DependenciesGetter { get; }
 
         /// <summary>
         /// Collects an item and its children as graph vertices.
