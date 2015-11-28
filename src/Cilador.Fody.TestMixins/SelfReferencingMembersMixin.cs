@@ -25,22 +25,25 @@ namespace Cilador.Fody.TestMixins
     {
         private int field;
         public int Property { get; set; }
-        public void Method() { }
+        public void Method() { Console.WriteLine(this.field); }
         public event EventHandler<InnerEventArgs> EventHappened;
         protected virtual void OnEventHappened(InnerEventArgs e)
         {
             var eventHandler = this.EventHappened;
-            if (eventHandler != null) { eventHandler(this, e); }
+            eventHandler?.Invoke(this, e);
         }
 
         private static int staticField;
         public static int StaticProperty { get; set; }
-        public static void StaticMethod() { }
+        public static void StaticMethod()
+        {
+            Console.WriteLine(SelfReferencingMembersMixin.staticField);
+        }
         public static event EventHandler<InnerEventArgs> StaticEventHappened;
         protected static void OnStaticEventHappened(InnerEventArgs e)
         {
-            var eventHandler = StaticEventHappened;
-            if (eventHandler != null) { eventHandler(typeof(SelfReferencingMembersMixin), e); }
+            var eventHandler = SelfReferencingMembersMixin.StaticEventHappened;
+            eventHandler?.Invoke(typeof(SelfReferencingMembersMixin), e);
         }
 
         public enum InnerEnum { One, Two }
@@ -65,7 +68,7 @@ namespace Cilador.Fody.TestMixins
             private void OnInnerStructEventHappened(InnerEventArgs e)
             {
                 var eventHandler = this.InnerStructEventHappened;
-                if (eventHandler != null) { eventHandler(this, e); }
+                eventHandler?.Invoke(this, e);
             }
 
             private static int staticInnerStructField;
@@ -74,8 +77,8 @@ namespace Cilador.Fody.TestMixins
             public static event EventHandler<InnerEventArgs> StaticInnerStructEventHappened;
             private static void OnStaticInnerStructEventHappened(InnerEventArgs e)
             {
-                var eventHandler = StaticInnerStructEventHappened;
-                if (eventHandler != null) { eventHandler(typeof(InnerStruct), e); }
+                var eventHandler = InnerStruct.StaticInnerStructEventHappened;
+                eventHandler?.Invoke(typeof(InnerStruct), e);
             }
 
             public enum InnerStructInnerEnum { One, Two }
@@ -94,8 +97,10 @@ namespace Cilador.Fody.TestMixins
                 EventHandler<InnerEventArgs> eventDelegate = (object sender, InnerEventArgs e) => { ++events; };
                 int i;
 
-                SelfReferencingMembersMixin selfReferencingMembersMixin = new SelfReferencingMembersMixin();
-                selfReferencingMembersMixin.Property = 4;
+                var selfReferencingMembersMixin = new SelfReferencingMembersMixin
+                {
+                    Property = 4
+                };
                 selfReferencingMembersMixin.field = selfReferencingMembersMixin.Property;
                 selfReferencingMembersMixin.Method();
                 selfReferencingMembersMixin.EventHappened += eventDelegate;
@@ -103,7 +108,7 @@ namespace Cilador.Fody.TestMixins
                 selfReferencingMembersMixin.EventHappened -= eventDelegate;
 
                 SelfReferencingMembersMixin.StaticProperty = 9;
-                SelfReferencingMembersMixin.staticField = StaticProperty;
+                SelfReferencingMembersMixin.staticField = SelfReferencingMembersMixin.StaticProperty;
                 SelfReferencingMembersMixin.StaticMethod();
                 SelfReferencingMembersMixin.StaticEventHappened += eventDelegate;
                 SelfReferencingMembersMixin.OnStaticEventHappened(new InnerEventArgs());
@@ -128,9 +133,11 @@ namespace Cilador.Fody.TestMixins
                 InnerAbstractClass.StaticInnerAbstractClassEventHappened += eventDelegate;
                 InnerAbstractClass.StaticInnerAbstractClassEventHappened -= eventDelegate;
 
-                InnerImplementingClass innerImplementingClass = new InnerImplementingClass();
+                var innerImplementingClass = new InnerImplementingClass
+                {
+                    InnerAbstractClassProperty = 85
+                };
 
-                innerImplementingClass.InnerAbstractClassProperty = 85;
                 i = innerImplementingClass.InnerAbstractClassProperty;
                 innerImplementingClass.InnerAbstractClassMethod();
                 innerImplementingClass.InnerAbstractClassEventHappened += eventDelegate;
@@ -187,7 +194,7 @@ namespace Cilador.Fody.TestMixins
             protected virtual void OnInnerAbstractClassEventHappened(InnerEventArgs e)
             {
                 var eventHandler = this.InnerAbstractClassEventHappened;
-                if (eventHandler != null) { eventHandler(this, e); }
+                eventHandler?.Invoke(this, e);
             }
 
             private static int staticInnerAbstractClassField;
@@ -215,8 +222,10 @@ namespace Cilador.Fody.TestMixins
                 EventHandler<InnerEventArgs> eventDelegate = (object sender, InnerEventArgs e) => { ++events; };
                 int i;
 
-                SelfReferencingMembersMixin selfReferencingMembersMixin = new SelfReferencingMembersMixin();
-                selfReferencingMembersMixin.Property = 4;
+                var selfReferencingMembersMixin = new SelfReferencingMembersMixin
+                {
+                    Property = 4
+                };
                 selfReferencingMembersMixin.field = selfReferencingMembersMixin.Property;
                 selfReferencingMembersMixin.Method();
                 selfReferencingMembersMixin.EventHappened += eventDelegate;
@@ -256,9 +265,11 @@ namespace Cilador.Fody.TestMixins
                 InnerAbstractClass.OnStaticInnerAbstractClassEventHappened(new InnerEventArgs());
                 InnerAbstractClass.StaticInnerAbstractClassEventHappened -= eventDelegate;
 
-                InnerImplementingClass innerImplementingClass = new InnerImplementingClass();
+                var innerImplementingClass = new InnerImplementingClass
+                {
+                    InnerAbstractClassProperty = 85
+                };
 
-                innerImplementingClass.InnerAbstractClassProperty = 85;
                 innerImplementingClass.innerAbstractClassField = innerImplementingClass.InnerAbstractClassProperty;
                 innerImplementingClass.InnerAbstractClassMethod();
                 innerImplementingClass.InnerAbstractClassEventHappened += eventDelegate;
@@ -317,19 +328,19 @@ namespace Cilador.Fody.TestMixins
             protected virtual void OnInnerAbstractClassAbstractEventHappened(InnerEventArgs e)
             {
                 var eventHandler = this.InnerAbstractClassAbstractEventHappened;
-                if (eventHandler != null) { eventHandler(this, e); }
+                eventHandler?.Invoke(this, e);
             }
             public event EventHandler<InnerEventArgs> InnerInterfaceEventHappened;
             protected virtual void OnInnerInterfaceEventHappened(InnerEventArgs e)
             {
                 var eventHandler = this.InnerInterfaceEventHappened;
-                if (eventHandler != null) { eventHandler(this, e); }
+                eventHandler?.Invoke(this, e);
             }
             public event EventHandler<InnerEventArgs> InnerStructInnerInterfaceEventHappened;
             protected virtual void OnInnerStructInnerInterfaceEventHappened(InnerEventArgs e)
             {
                 var eventHandler = this.InnerStructInnerInterfaceEventHappened;
-                if (eventHandler != null) { eventHandler(this, e); }
+                eventHandler?.Invoke(this, e);
             }
             public event EventHandler<InnerEventArgs> InnerAbstractClassInnerInterfaceEventHappened;
             protected virtual void OnInnerAbstractClassInnerInterfaceEventHappened(InnerEventArgs e)
@@ -345,7 +356,7 @@ namespace Cilador.Fody.TestMixins
             protected virtual void OnInnerImplementingClassEventHappened(InnerEventArgs e)
             {
                 var eventHandler = this.InnerImplementingClassEventHappened;
-                if (eventHandler != null) { eventHandler(this, e); }
+                eventHandler?.Invoke(this, e);
             }
 
             private static int staticInnerImplementingClassField;

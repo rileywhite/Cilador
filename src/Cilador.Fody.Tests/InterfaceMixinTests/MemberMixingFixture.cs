@@ -296,7 +296,7 @@ namespace Cilador.Fody.Tests.InterfaceMixinTests
             var assembly = ModuleWeaverHelper.WeaveAndLoadTestTarget("Cilador.Fody.TestMixinTargets", config);
             var targetType = assembly.GetType(typeof(EmptyInterfaceTarget).FullName);
             Assert.That(typeof(IEmptyInterface).IsAssignableFrom(targetType));
-            targetType.ValidateMemberCountsAre(1, 27, 10, 2, 2, 8);  // lambda expressions cause methods and fields to be added by the compiler
+            targetType.ValidateMemberCountsAre(1, 23, 6, 2, 2, 9);
             Assert.That(targetType.GetConstructor(new Type[0]) != null, "Lost existing default constructor");
 
             targetType.ValidateMemberSources(typeof(SelfReferencingMembersMixin));

@@ -16,13 +16,10 @@
 
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
@@ -70,7 +67,7 @@ namespace Cilador.Fody.Tests.Common
             var actualCount = type.GetFields(TestContent.BindingFlagsForWeavedMembers).Length;
             Assert.That(
                 expectedCount == actualCount,
-                string.Format("Expected {0} fields but found {1} in type [{2}]", expectedCount, actualCount, type.FullName));
+                $"Expected {expectedCount} fields but found {actualCount} in type [{type.FullName}]");
         }
 
         public static void ValidatePropertyCountIs(this Type type, int expectedCount)
@@ -79,7 +76,7 @@ namespace Cilador.Fody.Tests.Common
             var actualCount = type.GetProperties(TestContent.BindingFlagsForWeavedMembers).Length;
             Assert.That(
                 expectedCount == actualCount,
-                string.Format("Expected {0} properties but found {1} in type [{2}]", expectedCount, actualCount, type.FullName));
+                $"Expected {expectedCount} properties but found {actualCount} in type [{type.FullName}]");
         }
 
         public static void ValidateConstructorCountIs(this Type type, int expectedCount)
@@ -88,7 +85,7 @@ namespace Cilador.Fody.Tests.Common
             var actualCount = type.GetConstructors(TestContent.BindingFlagsForWeavedMembers).Length;
             Assert.That(
                 expectedCount == actualCount,
-                string.Format("Expected {0} constructors but found {1} in type [{2}]", expectedCount, actualCount, type.FullName));
+                $"Expected {expectedCount} constructors but found {actualCount} in type [{type.FullName}]");
         }
 
         public static void ValidateMethodCountIs(this Type type, int expectedCount)
@@ -97,7 +94,7 @@ namespace Cilador.Fody.Tests.Common
             var actualCount = type.GetMethods(TestContent.BindingFlagsForWeavedMembers).Length;
             Assert.That(
                 expectedCount == actualCount,
-                string.Format("Expected {0} non-constructor methods but found {1} in type [{2}]", expectedCount, actualCount, type.FullName));
+                $"Expected {expectedCount} non-constructor methods but found {actualCount} in type [{type.FullName}]");
         }
 
         public static void ValidateEventCountIs(this Type type, int expectedCount)
@@ -106,7 +103,7 @@ namespace Cilador.Fody.Tests.Common
             var actualCount = type.GetEvents(TestContent.BindingFlagsForWeavedMembers).Length;
             Assert.That(
                 expectedCount == actualCount,
-                string.Format("Expected {0} events but found {1} in type [{2}]", expectedCount, actualCount, type.FullName));
+                $"Expected {expectedCount} events but found {actualCount} in type [{type.FullName}]");
         }
 
         public static void ValidateNestedTypeCountIs(this Type type, int expectedCount)
@@ -115,13 +112,13 @@ namespace Cilador.Fody.Tests.Common
             var actualCount = type.GetNestedTypes(TestContent.BindingFlagsForWeavedMembers).Length;
             Assert.That(
                 expectedCount == actualCount,
-                string.Format("Expected {0} nested types but found {1} in type [{2}]", expectedCount, actualCount, type.FullName));
+                $"Expected {expectedCount} nested types but found {actualCount} in type [{type.FullName}]");
         }
 
         public static string GetShortAssemblyQualifiedName(this Type type)
         {
             Contract.Requires(type != null);
-            return string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().Name);
+            return $"{type.FullName}, {type.Assembly.GetName().Name}";
         }
 
         public static void ValidateMemberSources(this Type targetType, Type sourceType)
@@ -130,7 +127,7 @@ namespace Cilador.Fody.Tests.Common
             Contract.Requires(sourceType != null);
             Contract.Requires(targetType != sourceType);
 
-            Tuple<string, string> rootTargetAndSourceFullNames = Tuple.Create(targetType.FullName, sourceType.FullName);
+            var rootTargetAndSourceFullNames = Tuple.Create(targetType.FullName, sourceType.FullName);
 
             foreach (var targetField in targetType.GetFields(TestContent.BindingFlagsForWeavedMembers))
             {
@@ -376,7 +373,6 @@ namespace Cilador.Fody.Tests.Common
             Assert.That(sourceType.IsVisible == targetType.IsVisible);
             Assert.That(sourceType.MemberType == targetType.MemberType);
             Assert.That(sourceType.Name == targetType.Name);
-            Assert.That(sourceType.TypeInitializer == targetType.TypeInitializer);
             Assert.That(sourceType.UnderlyingSystemType != targetType.UnderlyingSystemType);
 
             if (sourceType.BaseType == null) { Assert.That(targetType.BaseType == null); }
@@ -482,7 +478,7 @@ namespace Cilador.Fody.Tests.Common
 
                     // same type, and non-matching instances
                     // don't really care what "less than" means, just picking something consistent
-                    return left.ToXElement().ToString().CompareTo(right.ToXElement().ToString());
+                    return string.Compare(left.ToXElement().ToString(), right.ToXElement().ToString(), StringComparison.Ordinal);
                 });
 
             sourceAttributeList.Sort(attributeSorter);
@@ -532,12 +528,8 @@ namespace Cilador.Fody.Tests.Common
             {
                 if (!target.GetGenericTypeDefinition().IsSourceNameEqual(source.GetGenericTypeDefinition(), rootTargetAndSourceFullNames)) { return false; }
 
-                for (int i = 0; i < source.GenericTypeArguments.Length; i++)
-                {
-                    if (!target.GenericTypeArguments[i].IsSourceNameEqual(source.GenericTypeArguments[i], rootTargetAndSourceFullNames)) { return false; }
-                }
-
-                return true;
+                return !source.GenericTypeArguments.Where(
+                    (t, i) => !target.GenericTypeArguments[i].IsSourceNameEqual(t, rootTargetAndSourceFullNames)).Any();
             }
         }
 
@@ -579,12 +571,8 @@ namespace Cilador.Fody.Tests.Common
 
                 if (!target.GetGenericMethodDefinition().IsSourceNameEqual(source.GetGenericMethodDefinition(), rootTargetAndSourceFullNames)) { return false; }
 
-                for (int i = 0; i < sourceGenericArguments.Length; i++)
-                {
-                    if (!targetGenericArguments[i].IsSourceNameEqual(sourceGenericArguments[i], rootTargetAndSourceFullNames)) { return false; }
-                }
-
-                return true;
+                return !sourceGenericArguments.Where(
+                    (t, i) => !targetGenericArguments[i].IsSourceNameEqual(t, rootTargetAndSourceFullNames)).Any();
             }
         }
     }

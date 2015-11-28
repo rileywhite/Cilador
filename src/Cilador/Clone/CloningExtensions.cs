@@ -171,9 +171,8 @@ namespace Cilador.Clone
                     variableIndex = ((VariableDefinition)instruction.Operand).Index;
                     if (variableIndex < 0)
                     {
-                        throw new InvalidOperationException(string.Format(
-                            "Did not expect a negative variable index for {0}",
-                            ((VariableDefinition)instruction.Operand).Name));
+                        throw new InvalidOperationException(
+                            $"Did not expect a negative variable index for {((VariableDefinition)instruction.Operand).Name}");
                     }
                     return true;
 
@@ -216,7 +215,7 @@ namespace Cilador.Clone
             }
             if (newIndex > ushort.MaxValue)
             {
-                throw new InvalidOperationException(string.Format("A variable index greater than {0} cannot be used.", ushort.MaxValue));
+                throw new InvalidOperationException($"A variable index greater than {ushort.MaxValue} cannot be used.");
             }
 
             var indexedVariable = new Lazy<VariableDefinition>(

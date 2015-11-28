@@ -66,7 +66,7 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets or sets the cloning context.
         /// </summary>
-        private ICloningContext CloningContext { get; set; }
+        private ICloningContext CloningContext { get; }
 
         /// <summary>
         /// Gets whether the constructor is initializing, i.e. whether it runs compiler generated code
@@ -126,12 +126,12 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets the constructor that will be multiplexed.
         /// </summary>
-        public MethodDefinition Constructor { get; private set; }
+        public MethodDefinition Constructor { get; }
 
         /// <summary>
         /// Gets or sets the collection of all variables.
         /// </summary>
-        public IReadOnlyList<VariableDefinition> Variables { get; private set; }
+        public IReadOnlyList<VariableDefinition> Variables { get; }
 
         /// <summary>
         /// Gets or sets variables used in compiler-generated initialization code.
@@ -141,12 +141,12 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets variables used in compiler-generated initialization code.
         /// </summary>
-        public IReadOnlyList<VariableDefinition> InitializationVariables
+        public IEnumerable<VariableDefinition> InitializationVariables
         {
             get
             {
                 Contract.Requires(this.InnerInitializationVariables != null);
-                return this.InnerInitializationVariables;
+                return this.InnerInitializationVariables.Union(this.InnerSharedVariables);
             }
         }
 
@@ -205,17 +205,22 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets or sets variables used in developer-written constructor code.
         /// </summary>
+        private List<VariableDefinition> InnerSharedVariables { get; set; }
+
+        /// <summary>
+        /// Gets or sets variables used in developer-written constructor code.
+        /// </summary>
         private List<VariableDefinition> InnerConstructionVariables { get; set; }
 
         /// <summary>
         /// Gets variables used in developer-written constructor code.
         /// </summary>
-        public IReadOnlyList<VariableDefinition> ConstructionVariables
+        public IEnumerable<VariableDefinition> ConstructionVariables
         {
             get
             {
                 Contract.Requires(this.InnerConstructionVariables != null);
-                return this.InnerConstructionVariables;
+                return this.InnerConstructionVariables.Union(this.InnerSharedVariables);
             }
         }
 
@@ -313,6 +318,7 @@ namespace Cilador.Clone
             Contract.Ensures(this.ConstructionVariables != null);
             Contract.Ensures(this.ConstructionInstructions != null);
 
+            this.InnerSharedVariables = new List<VariableDefinition>();
             this.InnerInitializationVariables = new List<VariableDefinition>();
             this.InnerInitializationInstructions = new List<Instruction>();
             this.InnerConstructionVariables = new List<VariableDefinition>(this.Constructor.Body.Variables); // start with the assumption that all variables are construction variables
@@ -402,33 +408,27 @@ namespace Cilador.Clone
             /// <summary>
             /// Gets the collection of instructions that have been grouped together.
             /// </summary>
-            public List<Instruction> Instructions { get; private set; }
+            public List<Instruction> Instructions { get; }
 
             /// <summary>
             /// Gets the index in the source instructions of the first instruction in this group.
             /// </summary>
-            public int FirstIndex { get; private set; }
+            public int FirstIndex { get; }
 
             /// <summary>
             /// Gets the index in the source instructions of the last instruction in this group.
             /// </summary>
-            public int LastIndex { get; private set; }
+            public int LastIndex { get; }
 
             /// <summary>
             /// Gets the last instruction in the group.
             /// </summary>
-            public Instruction LastInstruction
-            {
-                get { return this.Instructions[this.Instructions.Count - 1]; }
-            }
+            public Instruction LastInstruction => this.Instructions[this.Instructions.Count - 1];
 
             /// <summary>
             /// Gets whether this method group ends in a Call instruction.
             /// </summary>
-            public bool IsCall
-            {
-                get { return this.LastInstruction.OpCode.Code == Code.Call; }
-            }
+            public bool IsCall => this.LastInstruction.OpCode.Code == Code.Call;
         }
 
         /// <summary>
@@ -441,7 +441,7 @@ namespace Cilador.Clone
             var isConstructorCallFound = false;
             while (!isConstructorCallFound && InstructionGroup.TryGetNext(
                 this.Constructor.Body.Instructions,
-                instructionGroup == null ? 0 : instructionGroup.LastIndex + 1,
+                instructionGroup?.LastIndex + 1 ?? 0,
                 out instructionGroup))
             {
                 var instructionOperandAsMethodReference = instructionGroup.LastInstruction.Operand as MethodReference;
@@ -486,9 +486,8 @@ namespace Cilador.Clone
 
             if (!isConstructorCallFound)
             {
-                throw new InvalidOperationException(string.Format(
-                    "Cannot find base or chained constructor call while multiplexing a constructor: {0}",
-                    this.Constructor.FullName));
+                throw new InvalidOperationException(
+                    $"Cannot find base or chained constructor call while multiplexing a constructor: {this.Constructor.FullName}");
             }
         }
 
@@ -499,7 +498,7 @@ namespace Cilador.Clone
         {
             Contract.Assert(this.InnerBoundaryLastInstructionIndex.HasValue);
 
-            for (int i = this.InnerBoundaryLastInstructionIndex.Value + 1; i < this.Constructor.Body.Instructions.Count; i++)
+            for (var i = this.InnerBoundaryLastInstructionIndex.Value + 1; i < this.Constructor.Body.Instructions.Count; i++)
             {
                 var instruction = this.Constructor.Body.Instructions[i];
                 this.InnerConstructionInstructions.Add(instruction);
@@ -507,7 +506,8 @@ namespace Cilador.Clone
                 // if the instruction references a variable, then ensure that the variable exists in the collection of construction variables
                 VariableDefinition variable;
                 if (!this.TryGetReferencedVariable(instruction, out variable) ||
-                    this.InnerConstructionVariables.Contains(variable))
+                    this.InnerConstructionVariables.Contains(variable) ||
+                    this.InnerSharedVariables.Contains(variable))
                 {
                     continue;
                 }
@@ -516,9 +516,8 @@ namespace Cilador.Clone
                 if (this.InnerInitializationVariables.Contains(variable))
                 {
                     // looks like a variable was shared
-                    // this indicates that the code was written with an incorrect assumption that variables are not shared
-                    throw new InvalidOperationException(
-                        "An instruction in the construction part of a multiplexed constructor references a variable that is also referenced by initialization instructions.");
+                    this.InnerInitializationVariables.Remove(variable);
+                    this.InnerSharedVariables.Add(variable);
                 }
                 else
                 {
