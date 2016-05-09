@@ -1,5 +1,5 @@
 ﻿/***************************************************************************/
-// Copyright 2013-2015 Riley White
+// Copyright 2013-2016 Riley White
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,6 +35,13 @@ namespace Cilador.Graph
         /// Gets or sets the number of vertices in the graph.
         /// </summary>
         int VertexCount { get; }
+
+        /// <summary>
+        /// Determines whether a given vertex is contained within the graph.
+        /// </summary>
+        /// <param name="vertex">Vertex to check for.</param>
+        /// <returns><c>true</c> if the graph contains the given vertex, else <c>false</c>.</returns>
+        bool ContainsVertex(object vertex);
 
         /// <summary>
         /// Represents the vertices of the graph that are root nodes. I.e., those with no parent.

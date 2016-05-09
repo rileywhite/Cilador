@@ -1,5 +1,5 @@
 ﻿/***************************************************************************/
-// Copyright 2013-2015 Riley White
+// Copyright 2013-2016 Riley White
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,6 +39,24 @@ namespace Cilador.Dispatch
         /// Contracts for method implementers.
         /// </summary>
         protected override TReturn InvokeForNonILItem(object item)
+        {
+            Contract.Requires(item != null);
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Contracts for method implementers.
+        /// </summary>
+        protected override TReturn InvokeForItem(AssemblyDefinition item)
+        {
+            Contract.Requires(item != null);
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Contracts for method implementers.
+        /// </summary>
+        protected override TReturn InvokeForItem(ModuleDefinition item)
         {
             Contract.Requires(item != null);
             throw new NotSupportedException();

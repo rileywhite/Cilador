@@ -1,5 +1,5 @@
 ﻿/***************************************************************************/
-// Copyright 2013-2015 Riley White
+// Copyright 2013-2016 Riley White
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -58,6 +58,66 @@ namespace Cilador.Graph
         protected override IEnumerable<object> InvokeForNonILItem(object item)
         {
             throw new NotSupportedException("Cannot get dependencies of a non-CIL item.");
+        }
+
+        /// <summary>
+        /// Gets the dependencies of the given item.
+        /// </summary>
+        /// <param name="item">Item to get dependencies of.</param>
+        /// <returns>Dependencies of <paramref name="item"/>.</returns>
+        protected override IEnumerable<object> InvokeForItem(AssemblyDefinition item)
+        {
+            return new object[0];
+        }
+
+        /// <summary>
+        /// Gets the dependencies of the given item.
+        /// </summary>
+        /// <param name="item">Item to get dependencies of.</param>
+        /// <returns>Dependencies of <paramref name="item"/>.</returns>
+        protected override IEnumerable<object> InvokeForItem(ModuleDefinition item)
+        {
+            return new object[0];
+        }
+
+        /// <summary>
+        /// Gets the dependencies of the given item.
+        /// </summary>
+        /// <param name="item">Item to get dependencies of.</param>
+        /// <returns>Dependencies of <paramref name="item"/>.</returns>
+        protected override IEnumerable<object> InvokeForItem(ExportedType item)
+        {
+            if (item.DeclaringType != null) { yield return item.DeclaringType; }
+        }
+
+        /// <summary>
+        /// Gets the dependencies of the given item.
+        /// </summary>
+        /// <param name="item">Item to get dependencies of.</param>
+        /// <returns>Dependencies of <paramref name="item"/>.</returns>
+        protected override IEnumerable<object> InvokeForItem(Resource item)
+        {
+            return new object[0];
+        }
+
+        /// <summary>
+        /// Gets the dependencies of the given item.
+        /// </summary>
+        /// <param name="item">Item to get dependencies of.</param>
+        /// <returns>Dependencies of <paramref name="item"/>.</returns>
+        protected override IEnumerable<object> InvokeForItem(SecurityDeclaration item)
+        {
+            return new object[0];
+        }
+
+        /// <summary>
+        /// Gets the dependencies of the given item.
+        /// </summary>
+        /// <param name="item">Item to get dependencies of.</param>
+        /// <returns>Dependencies of <paramref name="item"/>.</returns>
+        protected override IEnumerable<object> InvokeForItem(SecurityAttribute item)
+        {
+            return new object[0];
         }
 
         /// <summary>

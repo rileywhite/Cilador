@@ -1,5 +1,5 @@
 ﻿/***************************************************************************/
-// Copyright 2013-2015 Riley White
+// Copyright 2013-2016 Riley White
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
 /***************************************************************************/
 
 using Cilador.Graph;
+using Cilador.Graph.TopologicalSort;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using TopologicalSort;
 
 namespace Cilador.Clone
 {

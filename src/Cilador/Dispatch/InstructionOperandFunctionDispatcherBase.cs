@@ -1,5 +1,5 @@
 ﻿/***************************************************************************/
-// Copyright 2013-2015 Riley White
+// Copyright 2013-2016 Riley White
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ namespace Cilador.Dispatch
             Contract.Requires(operand != null);
 
             throw new NotSupportedException(
-                string.Format("Unsupported operand type for instruction operand dispatching: {0}", operand.GetType().FullName));
+                $"Unsupported operand type for instruction operand dispatching: {operand.GetType().FullName}");
         }
 
         /// <summary>
@@ -255,7 +255,7 @@ namespace Cilador.Dispatch
         /// Gets the return value for a null operand. Unless overridden, this is
         /// <c>default(TReturn)</c>.
         /// </summary>
-        protected virtual TReturn ReturnValueForNull { get { return default(TReturn); } }
+        protected virtual TReturn ReturnValueForNull => default(TReturn);
 
         /// <summary>
         /// Catch-all method to catch invalid operands.
@@ -267,7 +267,7 @@ namespace Cilador.Dispatch
             Contract.Requires(operand != null);
 
             throw new NotSupportedException(
-                string.Format("Unsupported operand type for instruction operand dispatching: {0}", operand.GetType().FullName));
+                $"Unsupported operand type for instruction operand dispatching: {operand.GetType().FullName}");
         }
 
         /// <summary>

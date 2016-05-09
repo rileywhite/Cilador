@@ -1,5 +1,5 @@
 ﻿/***************************************************************************/
-// Copyright 2013-2015 Riley White
+// Copyright 2013-2016 Riley White
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -56,17 +56,17 @@ namespace Cilador.Clone
         /// <summary>
         /// cloning context for the cloning operation.
         /// </summary>
-        private ICloningContext CloningContext { get; set; }
+        private ICloningContext CloningContext { get; }
 
         /// <summary>
         /// Gets or sets the collection of target object for each root in the graph of items.
         /// </summary>
-        private IReadOnlyDictionary<object, IReadOnlyCollection<object>> TargetsByRoot { get; set; }
+        private IReadOnlyDictionary<object, IReadOnlyCollection<object>> TargetsByRoot { get; }
 
         /// <summary>
         /// Gets or sets the dictionary by which cloners can be looked up by the cloning source.
         /// </summary>
-        private IReadOnlyDictionary<object, IReadOnlyCollection<ICloner<object, object>>> ClonersBySource { get; set; }
+        private IReadOnlyDictionary<object, IReadOnlyCollection<ICloner<object, object>>> ClonersBySource { get; }
 
         /// <summary>
         /// Handles null items.
@@ -91,6 +91,66 @@ namespace Cilador.Clone
         protected override IReadOnlyCollection<ICloner<object, object>> InvokeForNonILItem(object item)
         {
             throw new NotSupportedException("Cannot get cloners for a non-CIL item.");
+        }
+
+        /// <summary>
+        /// Gets cloners for the given source item.
+        /// </summary>
+        /// <param name="item">Item to get cloners for.</param>
+        /// <returns>Cloners for the <paramref name="item"/>.</returns>
+        protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(AssemblyDefinition item)
+        {
+            return new ICloner<object, object>[0];
+        }
+
+        /// <summary>
+        /// Gets cloners for the given source item.
+        /// </summary>
+        /// <param name="item">Item to get cloners for.</param>
+        /// <returns>Cloners for the <paramref name="item"/>.</returns>
+        protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(ModuleDefinition item)
+        {
+            return new ICloner<object, object>[0];
+        }
+
+        /// <summary>
+        /// Gets cloners for the given source item.
+        /// </summary>
+        /// <param name="item">Item to get cloners for.</param>
+        /// <returns>Cloners for the <paramref name="item"/>.</returns>
+        protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(ExportedType item)
+        {
+            return new ICloner<object, object>[0];
+        }
+
+        /// <summary>
+        /// Gets cloners for the given source item.
+        /// </summary>
+        /// <param name="item">Item to get cloners for.</param>
+        /// <returns>Cloners for the <paramref name="item"/>.</returns>
+        protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(Resource item)
+        {
+            return new ICloner<object, object>[0];
+        }
+
+        /// <summary>
+        /// Gets cloners for the given source item.
+        /// </summary>
+        /// <param name="item">Item to get cloners for.</param>
+        /// <returns>Cloners for the <paramref name="item"/>.</returns>
+        protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(SecurityDeclaration item)
+        {
+            return new ICloner<object, object>[0];
+        }
+
+        /// <summary>
+        /// Gets cloners for the given source item.
+        /// </summary>
+        /// <param name="item">Item to get cloners for.</param>
+        /// <returns>Cloners for the <paramref name="item"/>.</returns>
+        protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(SecurityAttribute item)
+        {
+            return new ICloner<object, object>[0];
         }
 
         /// <summary>
@@ -125,9 +185,7 @@ namespace Cilador.Clone
                 // but that's a complex and time-consuming task with unknown payoff
                 // so for now we don't support mixin implementations that have constructors with parameters
                 throw new InvalidOperationException(
-                    string.Format(
-                        "Cloning root source type cannot have constructors with parameters: [{0}]",
-                        item.FullName));
+                    $"Cloning root source type cannot have constructors with parameters: [{item.FullName}]");
             }
 
             var targets = this.TargetsByRoot[item];

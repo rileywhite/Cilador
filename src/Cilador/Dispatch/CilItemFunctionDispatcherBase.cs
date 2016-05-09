@@ -1,5 +1,5 @@
 ﻿/***************************************************************************/
-// Copyright 2013-2015 Riley White
+// Copyright 2013-2016 Riley White
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -74,6 +74,48 @@ namespace Cilador.Dispatch
         /// <param name="item">Item on which to invoke the behavior.</param>
         /// <returns>Result of the invocation.</returns>
         protected abstract TReturn InvokeForNonILItem(object item);
+
+        /// <summary>
+        /// Invokes the behavior.
+        /// </summary>
+        /// <param name="item">Item on which to invoke the behavior.</param>
+        /// <returns>Result of the invocation.</returns>
+        protected abstract TReturn InvokeForItem(AssemblyDefinition item);
+
+        /// <summary>
+        /// Invokes the behavior.
+        /// </summary>
+        /// <param name="item">Item on which to invoke the behavior.</param>
+        /// <returns>Result of the invocation.</returns>
+        protected abstract TReturn InvokeForItem(ModuleDefinition item);
+
+        /// <summary>
+        /// Invokes the behavior.
+        /// </summary>
+        /// <param name="item">Item on which to invoke the behavior.</param>
+        /// <returns>Result of the invocation.</returns>
+        protected abstract TReturn InvokeForItem(ExportedType item);
+
+        /// <summary>
+        /// Invokes the behavior.
+        /// </summary>
+        /// <param name="item">Item on which to invoke the behavior.</param>
+        /// <returns>Result of the invocation.</returns>
+        protected abstract TReturn InvokeForItem(Resource item);
+
+        /// <summary>
+        /// Invokes the behavior.
+        /// </summary>
+        /// <param name="item">Item on which to invoke the behavior.</param>
+        /// <returns>Result of the invocation.</returns>
+        protected abstract TReturn InvokeForItem(SecurityDeclaration item);
+
+        /// <summary>
+        /// Invokes the behavior.
+        /// </summary>
+        /// <param name="item">Item on which to invoke the behavior.</param>
+        /// <returns>Result of the invocation.</returns>
+        protected abstract TReturn InvokeForItem(SecurityAttribute item);
 
         /// <summary>
         /// Invokes the behavior.

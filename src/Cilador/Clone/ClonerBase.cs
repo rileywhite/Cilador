@@ -1,5 +1,5 @@
 ﻿/***************************************************************************/
-// Copyright 2013-2015 Riley White
+// Copyright 2013-2016 Riley White
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ namespace Cilador.Clone
             catch (Exception e)
             {
                 throw new InvalidOperationException(
-                    string.Format("Failed to retrieve a cloning target for source of type [{0}].", typeof(TSource).FullName),
+                    $"Failed to retrieve a cloning target for source of type [{typeof (TSource).FullName}].",
                     e);
             }
 
@@ -107,6 +107,7 @@ namespace Cilador.Clone
         {
             get
             {
+                Contract.Ensures(Contract.Result<TTarget>() != null);
                 this.EnsureTargetIsSet();
                 return this.target;
             }

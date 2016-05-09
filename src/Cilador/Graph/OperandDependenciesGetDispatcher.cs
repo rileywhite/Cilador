@@ -1,5 +1,5 @@
 ﻿/***************************************************************************/
-// Copyright 2013-2015 Riley White
+// Copyright 2013-2016 Riley White
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,10 +31,7 @@ namespace Cilador.Graph
         /// <summary>
         /// Gets an empty array for null operands.
         /// </summary>
-        protected override IEnumerable<object> ReturnValueForNull
-        {
-            get { return new object[0]; }
-        }
+        protected override IEnumerable<object> ReturnValueForNull => new object[0];
 
         /// <summary>
         /// Finds dependencies based on an operand.

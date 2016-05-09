@@ -1,5 +1,5 @@
 ﻿/***************************************************************************/
-// Copyright 2013-2015 Riley White
+// Copyright 2013-2016 Riley White
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ namespace Cilador.Graph
         /// <see cref="CilGraph"/> repesenting the items and dependencies of the given
         /// item.
         /// </returns>
-        public ICilGraph Traverse(params object[] items)
+        public ICilGraph Get(params object[] items)
         {
             var vertices = new HashSet<object>();
             var parentChildEdges = new HashSet<ParentChildCilEdge>(new EdgeEqualityComparer());

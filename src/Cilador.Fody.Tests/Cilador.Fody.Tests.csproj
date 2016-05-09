@@ -122,26 +122,26 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.dll</HintPath>
+      <HintPath>..\..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Mdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
+      <HintPath>..\..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Pdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
+      <HintPath>..\..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Rocks, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
+      <HintPath>..\..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="nunit-console-runner">
-      <HintPath>..\packages\NUnit.Runners.2.6.4\tools\lib\nunit-console-runner.dll</HintPath>
+      <HintPath>..\..\packages\NUnit.Runners.2.6.4\tools\lib\nunit-console-runner.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+      <HintPath>..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -167,7 +167,6 @@
     <Compile Include="Common\ModuleWeaverHelper.cs" />
     <Compile Include="Common\CommonExtensions.cs" />
     <Compile Include="Common\AssemblyVerifier.cs" />
-    <Compile Include="DtoProjectorTests\DtoProjectorFixture.cs" />
     <Compile Include="InterfaceMixinTests\ArrayFixture.cs" />
     <Compile Include="InterfaceMixinTests\ConstructorsFixture.cs" />
     <Compile Include="InterfaceMixinTests\DynamicFixture.cs" />
@@ -188,10 +187,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Cilador.Fody.TestDtoProjectorTargets\Cilador.Fody.TestDtoProjectorTargets.csproj">
-      <Project>{1083cf20-d2f5-4d89-b0d0-b9fb9138ac0f}</Project>
-      <Name>Cilador.Fody.TestDtoProjectorTargets</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Cilador.Fody.TestMixinInterfaces\Cilador.Fody.TestMixinInterfaces.csproj">
       <Project>{bf49324e-601f-4d8d-b520-0cd561d11bb4}</Project>
       <Name>Cilador.Fody.TestMixinInterfaces</Name>

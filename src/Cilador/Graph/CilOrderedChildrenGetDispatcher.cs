@@ -1,5 +1,5 @@
 ﻿/***************************************************************************/
-// Copyright 2013-2015 Riley White
+// Copyright 2013-2016 Riley White
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -59,6 +59,99 @@ namespace Cilador.Graph
         /// </summary>
         /// <param name="item">Item to get children of.</param>
         /// <returns>Children of <paramref name="item"/>.</returns>
+        protected override IEnumerable<object> InvokeForItem(AssemblyDefinition item)
+        {
+            foreach (var module in item.Modules)
+            {
+                yield return module;
+            }
+
+            if (item.HasCustomAttributes) foreach (var customAttribute in item.CustomAttributes)
+            {
+                yield return customAttribute;
+            }
+
+            if (item.HasSecurityDeclarations) foreach (var securityDeclaration in item.SecurityDeclarations)
+            {
+                yield return securityDeclaration;
+            }
+        }
+
+        /// <summary>
+        /// Gets the children of the given item.
+        /// </summary>
+        /// <param name="item">Item to get children of.</param>
+        /// <returns>Children of <paramref name="item"/>.</returns>
+        protected override IEnumerable<object> InvokeForItem(ModuleDefinition item)
+        {
+            if (item.HasTypes) foreach (var type in item.Types)
+            {
+                yield return type;
+            }
+
+            if (item.HasExportedTypes) foreach (var exportedType in item.ExportedTypes)
+            {
+                yield return exportedType;
+            }
+
+            if (item.HasCustomAttributes) foreach (var customAttribute in item.CustomAttributes)
+            {
+                yield return customAttribute;
+            }
+
+            if (item.HasResources) foreach (var resource in item.Resources)
+            {
+                yield return resource;
+            }
+        }
+
+        /// <summary>
+        /// Gets the children of the given item.
+        /// </summary>
+        /// <param name="item">Item to get children of.</param>
+        /// <returns>Children of <paramref name="item"/>.</returns>
+        protected override IEnumerable<object> InvokeForItem(ExportedType item)
+        {
+            return new object[0];
+        }
+
+        /// <summary>
+        /// Gets the children of the given item.
+        /// </summary>
+        /// <param name="item">Item to get children of.</param>
+        /// <returns>Children of <paramref name="item"/>.</returns>
+        protected override IEnumerable<object> InvokeForItem(Resource item)
+        {
+            return new object[0];
+        }
+
+        /// <summary>
+        /// Gets the children of the given item.
+        /// </summary>
+        /// <param name="item">Item to get children of.</param>
+        /// <returns>Children of <paramref name="item"/>.</returns>
+        protected override IEnumerable<object> InvokeForItem(SecurityDeclaration item)
+        {
+            return item.HasSecurityAttributes ?
+                (IEnumerable<object>)item.SecurityAttributes :
+                new object[0];
+        }
+
+        /// <summary>
+        /// Gets the children of the given item.
+        /// </summary>
+        /// <param name="item">Item to get children of.</param>
+        /// <returns>Children of <paramref name="item"/>.</returns>
+        protected override IEnumerable<object> InvokeForItem(SecurityAttribute item)
+        {
+            return new object[0];
+        }
+
+        /// <summary>
+        /// Gets the children of the given item.
+        /// </summary>
+        /// <param name="item">Item to get children of.</param>
+        /// <returns>Children of <paramref name="item"/>.</returns>
         protected override IEnumerable<object> InvokeForItem(TypeDefinition item)
         {
             if (item.HasNestedTypes) foreach (var nestedType in item.NestedTypes)
@@ -94,6 +187,11 @@ namespace Cilador.Graph
             if (item.HasCustomAttributes) foreach (var customAttribute in item.CustomAttributes)
             {
                 yield return customAttribute;
+            }
+
+            if (item.HasSecurityDeclarations) foreach (var securityDeclaration in item.SecurityDeclarations)
+            {
+                yield return securityDeclaration;
             }
         }
 
@@ -134,6 +232,11 @@ namespace Cilador.Graph
             if (item.HasCustomAttributes) foreach (var customAttribute in item.CustomAttributes)
             {
                 yield return customAttribute;
+            }
+
+            if (item.HasSecurityDeclarations) foreach (var securityDeclaration in item.SecurityDeclarations)
+            {
+                yield return securityDeclaration;
             }
         }
 

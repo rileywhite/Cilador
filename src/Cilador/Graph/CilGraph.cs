@@ -1,5 +1,5 @@
 ﻿/***************************************************************************/
-// Copyright 2013-2015 Riley White
+// Copyright 2013-2016 Riley White
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ namespace Cilador.Graph
             Contract.Ensures(this.Roots != null);
 
             var roots = new HashSet<object>(this.Vertices);
-            var parentByChild = new Dictionary<object, object>(this.Vertices.Count());
+            var parentByChild = new Dictionary<object, object>(this.Vertices.Count);
             foreach (var edge in this.ParentChildEdges)
             {
                 if (edge.Parent == null || edge.Child == null)
@@ -113,10 +113,8 @@ namespace Cilador.Graph
                 }
                 if (edge.First.GetType() != edge.Second.GetType())
                 {
-                    throw new InvalidOperationException(string.Format(
-                        "Sibling edges must connect vertices of the same type, but a sibling edge was found connecting {0} and {1}.",
-                        edge.First.GetType(),
-                        edge.Second.GetType()));
+                    throw new InvalidOperationException(
+                        $"Sibling edges must connect vertices of the same type, but a sibling edge was found connecting {edge.First.GetType()} and {edge.Second.GetType()}.");
                 }
                 previousSiblingBySibling.Add(edge.Second, edge.First);
             }
@@ -143,12 +141,27 @@ namespace Cilador.Graph
         /// <summary>
         /// Represents the vertices of the graph.
         /// </summary>
-        public IEnumerable<object> Vertices { get; private set; }
+        IEnumerable<object> ICilGraph.Vertices => this.Vertices;
+
+        /// <summary>
+        /// Represents the vertices of the graph.
+        /// </summary>
+        private HashSet<object> Vertices { get; }
 
         /// <summary>
         /// Gets or sets the number of vertices in the graph.
         /// </summary>
-        public int VertexCount { get; private set; }
+        public int VertexCount { get; }
+
+        /// <summary>
+        /// Determines whether a given vertex is contained within the graph.
+        /// </summary>
+        /// <param name="vertex">Vertex to check for.</param>
+        /// <returns><c>true</c> if the graph contains the given vertex, else <c>false</c>.</returns>
+        public bool ContainsVertex(object vertex)
+        {
+            return this.Vertices.Contains(vertex);
+        }
 
         /// <summary>
         /// Represents the vertices of the graph that are root nodes. I.e., those with no parent.
@@ -165,7 +178,7 @@ namespace Cilador.Graph
         /// E.g. a field F is a child of a type T, so there will be an edge
         /// from T to F to represent that relationship.
         /// </summary>
-        public IEnumerable<ParentChildCilEdge> ParentChildEdges { get; private set; }
+        public IEnumerable<ParentChildCilEdge> ParentChildEdges { get; }
 
         /// <summary>
         /// Gets or sets the lookup for finding parent items of child items.
@@ -190,8 +203,8 @@ namespace Cilador.Graph
             if (!this.TryGetParentOf(child, out parent))
             {
                 throw new ArgumentException(
-                    string.Format("Given child {0} is a root node with no parent.", child),
-                    "child");
+                    $"Given child {child} is a root node with no parent.",
+                    nameof(child));
             }
 
             Contract.Assert(parent != null);
@@ -226,7 +239,7 @@ namespace Cilador.Graph
         /// Gets or sets the dictinary storing depth on the parent/child aspect of the graph
         /// (which is actually a tree) keyed by the vertex.
         /// </summary>
-        private IDictionary<object, int> DepthByVertex { get; set; }
+        private IDictionary<object, int> DepthByVertex { get; }
 
         /// <summary>
         /// Gets the depth of an item with respect to the parent/child aspect of the graph
@@ -282,7 +295,7 @@ namespace Cilador.Graph
         /// doesn't matter between fields, but the implicit order in which they are
         /// generated will be enshrined in an edge, anyway.
         /// </remarks>
-        public IEnumerable<SiblingCilEdge> SiblingEdges { get; private set; }
+        public IEnumerable<SiblingCilEdge> SiblingEdges { get; }
 
         /// <summary>
         /// Gets or sets the lookup for finding previous sibling of sibling items.
@@ -304,8 +317,8 @@ namespace Cilador.Graph
             if (!this.TryGetPreviousSiblingOf(sibling, out previousSibling))
             {
                 throw new ArgumentException(
-                    string.Format("Given sibling {0} has no previous sibling.", sibling),
-                    "sibling");
+                    $"Given sibling {sibling} has no previous sibling.",
+                    nameof(sibling));
             }
 
             Contract.Assert(previousSibling != null);
@@ -338,6 +351,6 @@ namespace Cilador.Graph
         /// E.g. a generic type T depends on a generic parameter G, so there will
         /// be an edge from T to G.
         /// </summary>
-        public IEnumerable<DependencyCilEdge> DependencyEdges { get; private set; }
+        public IEnumerable<DependencyCilEdge> DependencyEdges { get; }
     }
 }

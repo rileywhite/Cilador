@@ -1,5 +1,5 @@
 ﻿/***************************************************************************/
-// Copyright 2013-2015 Riley White
+// Copyright 2013-2016 Riley White
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -112,7 +112,7 @@ namespace Cilador.Fody.InterfaceMixins
             this.Target.Interfaces.Add(this.Target.Module.Import(this.InterfaceType));
             try
             {
-                var graph = new CilGraphGetter().Traverse(this.Source);
+                var graph = new CilGraphGetter().Get(this.Source);
                 new CloningContext(graph, this.Source, this.Target).Execute();
             }
             catch(InvalidOperationException e)
