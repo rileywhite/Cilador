@@ -164,38 +164,6 @@ definition assembly can now call mixed in code.
         }
     }
 
-## DTO Projector
-
-### Usage
-The DTO projector is still a work in progress. As such, please expect it to
-change.
-
-At this point, the basic steps are:
-
-1. Configure
-2. Mark a `class` with the `DtoProjector` attribute.
-3. Mark some properties with the 'DtoMember` attribute.
-4. Compile in Visual Studio.
-
-Any projects referencing your assembly will now have access to a new nested
-type called `Dto`. It will have one public field for each property marked
-with a `DtoMember` attribute.
-
-### Configuration
-
-For now, all you need is to include a basic WeaveConfig in the FodyWeavers.xml
-file.
-
-    <?xml version="1.0" encoding="utf-8"?>
-    <Weavers>
-      <Cilador>
-      <cfc:CiladorConfig xmlns:cfc="urn:Cilador:Fody:Config">
-         <WeaveConfig xsi:type="cfc:DtoProjectorConfigType" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" />
-        </cfc:CiladorConfig>
-      </Cilador>
-    </Weavers>
-
-
 #Additional Information
 
 I may [blog](http://statisticsandlies.com/tags/cilador) about Cilador time to
