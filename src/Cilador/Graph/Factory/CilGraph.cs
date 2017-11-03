@@ -14,12 +14,13 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Graph.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
-namespace Cilador.Graph
+namespace Cilador.Graph.Factory
 {
     /// <summary>
     /// Represents CIL as a directed acyclic graph.

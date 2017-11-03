@@ -120,20 +120,20 @@
     <CodeContractsAnalysisWarningLevel>0</CodeContractsAnalysisWarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Mono.Cecil">
-      <HintPath>..\..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.dll</HintPath>
+    <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Mono.Cecil.0.9.6.3\lib\net45\Mono.Cecil.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
+    <Reference Include="Mono.Cecil.Mdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Mono.Cecil.0.9.6.3\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
+    <Reference Include="Mono.Cecil.Pdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Mono.Cecil.0.9.6.3\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
+    <Reference Include="Mono.Cecil.Rocks, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Mono.Cecil.0.9.6.3\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -148,24 +148,30 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Core\MethodAdviceBase.cs" />
+    <Compile Include="Core\AspectBase.cs" />
+    <Compile Include="Core\IntroductionBase.cs" />
+    <Compile Include="Core\MethodJoinPoint.cs" />
+    <Compile Include="Core\PointCut.cs" />
     <Compile Include="Dispatch\DynamicResolver.cs" />
     <Compile Include="Dispatch\CilItemFunctionDispatcherBase.cs" />
     <Compile Include="Dispatch\CilItemFunctionDispatcherContract.cs" />
     <Compile Include="Dispatch\InstructionOperandFunctionDispatcherBase.cs" />
     <Compile Include="Dispatch\InstructionOperandFunctionDispatcherContract.cs" />
-    <Compile Include="Graph\EdgeEqualityComperer.cs" />
-    <Compile Include="Graph\GraphCropper.cs" />
-    <Compile Include="Graph\GraphExtensions.cs" />
-    <Compile Include="Graph\ICilEdge.cs" />
-    <Compile Include="Graph\DependencyCilEdge.cs" />
-    <Compile Include="Graph\SiblingCilEdge.cs" />
-    <Compile Include="Graph\ParentChildCilEdge.cs" />
-    <Compile Include="Graph\ICilGraph.cs" />
-    <Compile Include="Graph\CilGraphContracts.cs" />
-    <Compile Include="Graph\CilOrderedChildrenGetDispatcher.cs" />
-    <Compile Include="Graph\CilDependencyGetDispatcher.cs" />
-    <Compile Include="Graph\OperandDependenciesGetDispatcher.cs" />
-    <Compile Include="Graph\GraphGetter.cs" />
+    <Compile Include="Graph\Core\EdgeEqualityComperer.cs" />
+    <Compile Include="Graph\Operations\TrimExtension.cs" />
+    <Compile Include="Graph\Factory\CecilHelperExtensions.cs" />
+    <Compile Include="Graph\Core\ICilEdge.cs" />
+    <Compile Include="Graph\Core\DependencyCilEdge.cs" />
+    <Compile Include="Graph\Operations\MergeExtension.cs" />
+    <Compile Include="Graph\Core\SiblingCilEdge.cs" />
+    <Compile Include="Graph\Core\ParentChildCilEdge.cs" />
+    <Compile Include="Graph\Core\ICilGraph.cs" />
+    <Compile Include="Graph\Core\CilGraphContracts.cs" />
+    <Compile Include="Graph\Factory\CilOrderedChildrenGetDispatcher.cs" />
+    <Compile Include="Graph\Factory\CilDependencyGetDispatcher.cs" />
+    <Compile Include="Graph\Factory\OperandDependenciesGetDispatcher.cs" />
+    <Compile Include="Graph\Factory\GraphGetter.cs" />
     <Compile Include="Clone\ClonerBase.cs" />
     <Compile Include="Clone\ClonerBaseContract.cs" />
     <Compile Include="Clone\ClonersGetDispatcher.cs" />
@@ -175,7 +181,7 @@
     <Compile Include="Clone\ConstructorLogicSignatureCloner.cs" />
     <Compile Include="Clone\ICloneToMethodBody.cs" />
     <Compile Include="Clone\CloningContextContract.cs" />
-    <Compile Include="Graph\CilGraph.cs" />
+    <Compile Include="Graph\Factory\CilGraph.cs" />
     <Compile Include="Clone\MethodReturnTypeCloner.cs" />
     <Compile Include="Clone\MultiplexedConstructor.cs" />
     <Compile Include="Clone\CustomAttributeCloner.cs" />

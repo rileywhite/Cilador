@@ -19,8 +19,9 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
-namespace Cilador.Graph
+namespace Cilador.Graph.Factory
 {
     /// <summary>
     /// Gets child items for CIL items in a way that preserves groupings of child types (e.g. types are together,
@@ -162,11 +163,6 @@ namespace Cilador.Graph
             if (item.HasFields) foreach (var field in item.Fields)
             {
                 yield return field;
-            }
-
-            if (item.HasMethods) foreach (var method in item.Methods)
-            {
-                yield return method;
             }
 
             if (item.HasProperties) foreach (var property in item.Properties)

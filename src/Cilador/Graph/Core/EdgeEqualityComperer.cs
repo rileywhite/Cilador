@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Cilador.Graph
+namespace Cilador.Graph.Core
 {
     /// <summary>
     /// Used to ensure unique edges are collected in hash sets.
