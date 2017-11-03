@@ -14,13 +14,13 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Clone;
 using Cilador.Fody.Core;
-using Cilador.Graph.Factory;
+using Cilador.Clone;
 using Mono.Cecil;
 using System;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using Cilador.Graph;
 
 namespace Cilador.Fody.InterfaceMixins
 {

@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 
-namespace Cilador.Graph.Core
+namespace Cilador.Graph
 {
     /// <summary>
     /// Contracts for <see cref="ICilGraph"/>.

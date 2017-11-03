@@ -14,14 +14,12 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Graph.Core;
-using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
-namespace Cilador.Graph.Factory
+namespace Cilador.Graph
 {
     /// <summary>
     /// Traverses a tree of CIL objects within a given root item
@@ -43,21 +41,7 @@ namespace Cilador.Graph.Factory
         }
 
         /// <summary>
-        /// Traverses the assemblies at the given paths to get a graph of CIL
-        /// objects contained in the assemblies
-        /// </summary>
-        /// <param name="assemblyPaths">Paths to assembly DLL files.</param>
-        /// <returns>
-        /// <see cref="CilGraph"/> repesenting the items and dependencies of the assemblies
-        /// at the given locations.
-        /// </returns>
-        public ICilGraph Get(params string[] assemblyPaths)
-        {
-            return this.Get(assemblyPaths.Select(ModuleDefinition.ReadModule).Cast<object>().ToArray());
-        }
-
-        /// <summary>
-        /// Traverses a set of root items to get a graph of CIL objects and their dependencies.
+        /// Traverses a root item to get a graph of CIL objects and their dependencies.
         /// </summary>
         /// <param name="items">CIL items to build CIL graph from.</param>
         /// <returns>

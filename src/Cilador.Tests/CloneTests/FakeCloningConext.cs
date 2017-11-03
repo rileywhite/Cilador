@@ -15,7 +15,7 @@
 /***************************************************************************/
 
 using Cilador.Clone;
-using Cilador.Graph.Core;
+using Cilador.Graph;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;

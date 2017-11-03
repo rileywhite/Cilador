@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
 
-namespace Cilador.Graph.Factory
+namespace Cilador.Graph
 {
     internal static class GraphExtensions
     {

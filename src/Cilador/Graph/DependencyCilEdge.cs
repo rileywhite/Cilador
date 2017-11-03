@@ -18,7 +18,7 @@ using Cilador.Graph.TopologicalSort;
 using System;
 using System.Diagnostics.Contracts;
 
-namespace Cilador.Graph.Core
+namespace Cilador.Graph
 {
     /// <summary>
     /// Reprents a simple directional CIL edge dependsOn be used in CIL graphs.

@@ -21,7 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 
-namespace Cilador.Graph.Factory
+namespace Cilador.Graph
 {
     internal sealed class CilDependencyGetDispatcher : CilItemFunctionDispatcherBase<IEnumerable<object>>
     {

@@ -14,21 +14,19 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Graph.Core;
-using Cilador.Graph.Factory;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
-namespace Cilador.Graph.Operations
+namespace Cilador.Graph
 {
     /// <summary>
     /// Given a set of vertices and an <see cref="ICilGraph"/>, produces a new
     /// <see cref="ICilGraph"/> composed solely of vertices and edges traversable from
     /// the given vertices.
     /// </summary>
-    public static class TrimExtension
+    public class GraphCropper
     {
         /// <summary>
         /// Given a source graph and a set of start items, returns a minimal subset of the source
@@ -37,7 +35,7 @@ namespace Cilador.Graph.Operations
         /// <param name="sourceGraph">Source graph for the crop operation</param>
         /// <param name="startItems">Vertices of <paramref name="sourceGraph"/> which form the basis of the crop operation</param>
         /// <returns></returns>
-        public static ICilGraph Crop(this ICilGraph sourceGraph, params object[] startItems)
+        public ICilGraph Crop(ICilGraph sourceGraph, params object[] startItems)
         {
             Contract.Requires(sourceGraph != null);
             Contract.Ensures(Contract.Result<ICilGraph>() != null);
@@ -53,7 +51,7 @@ namespace Cilador.Graph.Operations
             }
 
             // perform a search for all vertices that will be included in the 
-            var vertices = sourceGraph.FindMinimalVerticesSubset(startItems);
+            var vertices = GraphCropper.FindMinimalVerticesSubset(sourceGraph, startItems);
 
             // dependencies are maintained, and all member dependencies are included
             var depedencyEdges =
@@ -85,7 +83,7 @@ namespace Cilador.Graph.Operations
         /// <param name="startItems">Items which form the starting set of the subset</param>
         /// <returns></returns>
         private static HashSet<object> FindMinimalVerticesSubset(
-            this ICilGraph sourceGraph,
+            ICilGraph sourceGraph,
             IEnumerable<object> startItems)
         {
             Contract.Requires(sourceGraph != null);

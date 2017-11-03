@@ -14,19 +14,16 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Graph.Factory;
+using Cilador.Graph.TopologicalSort;
 using System;
-using System.IO;
+using System.Diagnostics.Contracts;
 
-namespace Cilador.TestAopAspects
+namespace Cilador.Graph
 {
-    internal class Program
+    /// <summary>
+    /// Reprents a directional CIL edge to be used in CIL graphs.
+    /// </summary>
+    public interface ICilEdge : IEdge<object>
     {
-        private static void Main(string[] args)
-        {
-            var path = Path.GetFullPath(@"..\..\..\Cilador.TestAopTarget\bin\Debug\Cilador.TestAopTarget.exe");
-            var aspect = new Aspect();
-            var result = aspect.ApplyTo(new CilGraphGetter().Get(path));
-        }
     }
 }

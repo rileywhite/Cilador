@@ -27,10 +27,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador", "src\Cilador\Cila
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.Tests", "src\Cilador.Tests\Cilador.Tests.csproj", "{53B19EF9-C5D1-4A23-97D8-FF12F3185997}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.TestAopTarget", "src\Cilador.TestAopTarget\Cilador.TestAopTarget.csproj", "{361DD0E9-A608-48CD-BEFA-6F5E66728D95}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.TestAopAspects", "src\Cilador.TestAopAspects\Cilador.TestAopAspects.csproj", "{D2EE8E6B-E951-4B5B-9858-CB1E171BD685}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -65,14 +61,6 @@ Global
 		{53B19EF9-C5D1-4A23-97D8-FF12F3185997}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53B19EF9-C5D1-4A23-97D8-FF12F3185997}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53B19EF9-C5D1-4A23-97D8-FF12F3185997}.Release|Any CPU.Build.0 = Release|Any CPU
-		{361DD0E9-A608-48CD-BEFA-6F5E66728D95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{361DD0E9-A608-48CD-BEFA-6F5E66728D95}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{361DD0E9-A608-48CD-BEFA-6F5E66728D95}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{361DD0E9-A608-48CD-BEFA-6F5E66728D95}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D2EE8E6B-E951-4B5B-9858-CB1E171BD685}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D2EE8E6B-E951-4B5B-9858-CB1E171BD685}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D2EE8E6B-E951-4B5B-9858-CB1E171BD685}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D2EE8E6B-E951-4B5B-9858-CB1E171BD685}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
