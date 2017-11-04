@@ -14,7 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Graph;
+using Cilador.Graph.Core;
 using Cilador.Graph.TopologicalSort;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
