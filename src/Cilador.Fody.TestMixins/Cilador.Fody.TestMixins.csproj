@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{CC1F40B0-9E5A-42B9-8C67-5F95D4AB2763}</ProjectGuid>
+    <ProjectGuid>{9666E3BC-3CDA-4CED-A499-F02D44412E1F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Cilador.Fody.TestMixins</RootNamespace>
     <AssemblyName>Cilador.Fody.TestMixins</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <CodeContractsReferenceAssembly>DoNotBuild</CodeContractsReferenceAssembly>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -37,68 +37,57 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="ArraysOfMixedTypeMixin.cs" />
+    <Compile Include="AbstractMixin.cs" />
     <Compile Include="ArraysMixin.cs" />
+    <Compile Include="ArraysOfMixedTypeMixin.cs" />
     <Compile Include="ConstructorWithParametersMixin.cs" />
     <Compile Include="DynamicMixin.cs" />
+    <Compile Include="EmptyInterfaceWithContentMixin.cs" />
+    <Compile Include="EmptyMixin.cs" />
+    <Compile Include="EventsMixin.cs" />
     <Compile Include="ExtraInterfaceMixin.cs" />
+    <Compile Include="FieldsMixin.cs" />
     <Compile Include="GenericMethodMixin.cs" />
+    <Compile Include="GenericMixinImplementation.cs" />
+    <Compile Include="GenericNestedTypeMixin.cs" />
+    <Compile Include="ImplicitExplicitTestingExplicitOnlyMixin.cs" />
+    <Compile Include="ImplicitExplicitTestingImplicitOnlyMixin.cs" />
+    <Compile Include="ImplicitExplicitTestingMixedMixin.cs" />
     <Compile Include="IncorrectMixinSpecifyingClassInsteadOfInterface.cs" />
     <Compile Include="InheritingMixin.cs" />
     <Compile Include="InstanceInitializationMixin.cs" />
     <Compile Include="InterfaceIsAlreadyImplementedMixin.cs" />
     <Compile Include="InterfacelessMixin.cs" />
+    <Compile Include="InterfaceTypeMixin.cs" />
+    <Compile Include="MethodsMixin.cs" />
     <Compile Include="NestedTypeConstructorsMixin.cs" />
-    <Compile Include="GenericNestedTypeMixin.cs" />
+    <Compile Include="NestedTypesMixin.cs" />
+    <Compile Include="PropertiesAndMethodsWithPrimitiveTypesMixin.cs" />
+    <Compile Include="PropertiesMixin.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SecurityDeclarationMixin.cs" />
     <Compile Include="SecurityDeclarationOnMethodMixin.cs" />
     <Compile Include="SecurityDeclarationOnNestedTypeMixin.cs" />
-    <Compile Include="SecurityDeclarationMixin.cs" />
     <Compile Include="SelfReferencingMembersMixin.cs" />
+    <Compile Include="StaticInitializationMixin.cs" />
     <Compile Include="StaticInitializationMixinForTargetWithStaticConstructor.cs" />
     <Compile Include="ThisPameterMixin.cs" />
     <Compile Include="TryCatchFinallyMixin.cs" />
-    <Compile Include="StaticInitializationMixin.cs" />
     <Compile Include="UnmanagedCallMixin.cs" />
     <Compile Include="ValueTypeMixin.cs" />
-    <Compile Include="InterfaceTypeMixin.cs" />
-    <Compile Include="GenericMixinImplementation.cs" />
-    <Compile Include="AbstractMixin.cs" />
-    <Compile Include="EmptyInterfaceWithContentMixin.cs" />
-    <Compile Include="EmptyMixin.cs" />
-    <Compile Include="EventsMixin.cs" />
-    <Compile Include="NestedTypesMixin.cs" />
-    <Compile Include="PropertiesMixin.cs" />
-    <Compile Include="MethodsMixin.cs" />
-    <Compile Include="FieldsMixin.cs" />
-    <Compile Include="ImplicitExplicitTestingExplicitOnlyMixin.cs" />
-    <Compile Include="ImplicitExplicitTestingMixedMixin.cs" />
-    <Compile Include="ImplicitExplicitTestingImplicitOnlyMixin.cs" />
-    <Compile Include="PropertiesAndMethodsWithPrimitiveTypesMixin.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Cilador.Fody.TestMixinInterfaces\Cilador.Fody.TestMixinInterfaces.csproj">
-      <Project>{bf49324e-601f-4d8d-b520-0cd561d11bb4}</Project>
+      <Project>{60191b94-6446-4eb5-86f2-d12d83009f9e}</Project>
       <Name>Cilador.Fody.TestMixinInterfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Cilador.Fody\Cilador.Fody.csproj">
-      <Project>{29bb979d-4d47-4e74-9edc-5f3586f1d591}</Project>
-      <Name>Cilador.Fody</Name>
-    </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
