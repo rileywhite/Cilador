@@ -95,7 +95,7 @@ namespace Cilador.Clone
                     e);
             }
 
-            this.Target = retrievedTarget;
+            this.Target = retrievedTarget ?? throw new InvalidOperationException("Retrieved target was null");
             this.IsTargetSet = true;
         }
 
