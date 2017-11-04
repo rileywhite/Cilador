@@ -1,5 +1,5 @@
 ﻿/***************************************************************************/
-// Copyright 2013-2016 Riley White
+// Copyright 2013-2017 Riley White
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ using System.Reflection;
 
 [assembly: AssemblyCompany("Riley White")]
 [assembly: AssemblyProduct("Cilador")]
-[assembly: AssemblyCopyright("Copyright © Riley White 2013-2016")]
+[assembly: AssemblyCopyright("Copyright © Riley White 2013-2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyVersion(CommonAssemblyInfo.Version)]
 [assembly: AssemblyFileVersion(CommonAssemblyInfo.Version)]
