@@ -160,6 +160,11 @@ namespace Cilador.Graph.Factory
                 yield return nestedType;
             }
 
+            if (item.HasMethods) foreach(var method in item.Methods)
+            {
+                yield return method;
+            }
+
             if (item.HasFields) foreach (var field in item.Fields)
             {
                 yield return field;

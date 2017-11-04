@@ -118,19 +118,12 @@ namespace Cilador.Fody.Tests.Common
 
             var moduleWeaver = ModuleWeaverHelper.GetModuleWeaver(targetAssemblyFilename, config);
 
-            bool isVerified;
-            string verificationOutput;
-            AssemblyVerifier.RunVerifyProcessAndCollectOutput(moduleWeaver.AssemblyFilePath, out isVerified, out verificationOutput);
-            Assert.That(isVerified, string.Format("Unprocessed assembly could not be verified: \n{0}", verificationOutput));
-
             moduleWeaver.Execute();
 
             var tempProcessedAssemblyPath = Path.Combine(Path.GetDirectoryName(moduleWeaver.AssemblyFilePath), string.Format("{0}.dll", Path.GetRandomFileName()));
             try
             {
                 moduleWeaver.ModuleDefinition.Write(tempProcessedAssemblyPath);
-                AssemblyVerifier.RunVerifyProcessAndCollectOutput(tempProcessedAssemblyPath, out isVerified, out verificationOutput);
-                Assert.That(isVerified, string.Format("Processed assembly could not be verified: \n{0}", verificationOutput));
             }
             finally
             {
