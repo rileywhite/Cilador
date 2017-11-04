@@ -74,9 +74,6 @@
     <Compile Include="Core\WeaveMetaContract.cs" />
     <Compile Include="Core\WeavingContextAssemblyResolver.cs" />
     <Compile Include="Core\WeavingException.cs" />
-    <Compile Include="DtoProjector\DtoMemberAttribute.cs" />
-    <Compile Include="DtoProjector\DtoProjectorAttribute.cs" />
-    <Compile Include="DtoProjector\DtoProjectorWeave.cs" />
     <Compile Include="InterfaceMixins\InterfaceMixinAttribute.cs" />
     <Compile Include="InterfaceMixins\InterfaceMixinWeave.cs" />
     <Compile Include="InterfaceMixins\InterfaceMixinWeaver.cs" />
