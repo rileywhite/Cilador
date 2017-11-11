@@ -18,9 +18,14 @@ using System;
 
 namespace Cilador.TestAopTarget
 {
-    internal class Program
+    public class Program
     {
-        private static void Main(string[] args)
+        public static void Main(string[] args)
+        {
+            new Program().Run(args);
+        }
+
+        public void Run(string[] args)
         {
             Console.WriteLine("Hello World!");
         }

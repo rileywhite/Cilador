@@ -86,11 +86,12 @@
     <Compile Include="Clone\PropertyCloner.cs" />
     <Compile Include="Clone\RootTypeCloner.cs" />
     <Compile Include="Clone\VariableCloner.cs" />
+    <Compile Include="Core\AdviceExecutor.cs" />
     <Compile Include="Core\AspectBase.cs" />
+    <Compile Include="Core\AdviceDelegates.cs" />
     <Compile Include="Core\IntroductionBase.cs" />
-    <Compile Include="Core\MethodAdviceBase.cs" />
     <Compile Include="Core\MethodJoinPoint.cs" />
-    <Compile Include="Core\PointCut.cs" />
+    <Compile Include="Core\Pointcut.cs" />
     <Compile Include="Dispatch\CilItemFunctionDispatcherBase.cs" />
     <Compile Include="Dispatch\CilItemFunctionDispatcherContract.cs" />
     <Compile Include="Dispatch\DynamicResolver.cs" />
@@ -106,11 +107,13 @@
     <Compile Include="Graph\Factory\CecilHelperExtensions.cs" />
     <Compile Include="Graph\Factory\CilDependencyGetDispatcher.cs" />
     <Compile Include="Graph\Factory\CilGraph.cs" />
+    <Compile Include="Graph\Factory\CilParentGetDispatcher.cs" />
     <Compile Include="Graph\Factory\CilOrderedChildrenGetDispatcher.cs" />
     <Compile Include="Graph\Factory\GraphGetter.cs" />
     <Compile Include="Graph\Factory\OperandDependenciesGetDispatcher.cs" />
     <Compile Include="Graph\Operations\MergeExtension.cs" />
-    <Compile Include="Graph\Operations\TrimExtension.cs" />
+    <Compile Include="Graph\Operations\GetClosedSetForExtension.cs" />
+    <Compile Include="Graph\Operations\ReplaceVertexExtension.cs" />
     <Compile Include="Graph\TopologicalSort\Edge.cs" />
     <Compile Include="Graph\TopologicalSort\IEdge.cs" />
     <Compile Include="Graph\TopologicalSort\NamespaceDoc.cs" />
@@ -118,7 +121,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Clone\ILProjection.cs~RF6c4a989e.TMP" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

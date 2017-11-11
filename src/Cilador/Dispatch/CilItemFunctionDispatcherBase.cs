@@ -48,8 +48,7 @@ namespace Cilador.Dispatch
         {
             Contract.Requires(item != null);
 
-            object resolvedItem;
-            if (DynamicResolver.DynamicTryResolve(item, out resolvedItem))
+            if (DynamicResolver.DynamicTryResolve(item, out object resolvedItem))
             {
                 // if a resolvable reference was passed in, that would be considered an
                 // error because it means that the source graph may contain a reference where

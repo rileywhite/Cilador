@@ -28,8 +28,13 @@ namespace Cilador.Graph.Operations
     /// <see cref="ICilGraph"/> composed solely of vertices and edges traversable from
     /// the given vertices.
     /// </summary>
-    public static class TrimExtension
+    public static class GetClosedSetForExtension
     {
+        public static ICilGraph GetClosedSetForRoots(this ICilGraph sourceGraph)
+        {
+            return sourceGraph.GetClosedSetFor(sourceGraph.Roots);
+        }
+
         /// <summary>
         /// Given a source graph and a set of start items, returns a minimal subset of the source
         /// graph that contains all start items
@@ -37,12 +42,12 @@ namespace Cilador.Graph.Operations
         /// <param name="sourceGraph">Source graph for the crop operation</param>
         /// <param name="startItems">Vertices of <paramref name="sourceGraph"/> which form the basis of the crop operation</param>
         /// <returns></returns>
-        public static ICilGraph Crop(this ICilGraph sourceGraph, params object[] startItems)
+        public static ICilGraph GetClosedSetFor(this ICilGraph sourceGraph, IEnumerable<object> startItems)
         {
             Contract.Requires(sourceGraph != null);
             Contract.Ensures(Contract.Result<ICilGraph>() != null);
 
-            if (startItems == null || startItems.Length == 0)
+            if (startItems == null || !startItems.Any())
             {
                 return new CilGraph(new object[0], new ParentChildCilEdge[0], new SiblingCilEdge[0], new DependencyCilEdge[0]);
             }
@@ -64,7 +69,7 @@ namespace Cilador.Graph.Operations
             // parent/child relationships are maintained, and all member children are included
             var parentChildEdges =
                 from edge in sourceGraph.ParentChildEdges
-                where vertices.Contains(edge)
+                where vertices.Contains(edge.Parent)
                 select new ParentChildCilEdge(edge.Parent, edge.Child);
 
             // sibling edges maintain order
@@ -122,5 +127,52 @@ namespace Cilador.Graph.Operations
             }
             return vertices;
         }
+
+        ///// <summary>
+        ///// Determines whether a given vertex is a root item or a parent-child relationship descendant
+        ///// of a root item
+        ///// </summary>
+        ///// <param name="vertex">Vertex to examine</param>
+        ///// <returns><c>true</c> if the given vertex is a graph root or a child/grandchild/etc of the graph roots</returns>
+        //public bool IsRootOrDescendant(object vertex)
+        //{
+        //    var searchSet = new Stack<object>(this.Roots);
+
+        //    while (searchSet.Any())
+        //    {
+        //        var currentItem = searchSet.Pop();
+        //        if (currentItem == vertex) { return true; }
+        //        foreach (var child in this.ParentChildEdges.Where(e => e.Parent == currentItem).Select(e => e.Child))
+        //        {
+        //            searchSet.Push(child);
+        //        }
+        //    }
+
+        //    return false;
+        //}
+
+        ///// <summary>
+        ///// Determines whether a given vertex is a root item or a dependent relationship descendant
+        ///// of a root item
+        ///// </summary>
+        ///// <param name="vertex">Vertex to examine</param>
+        ///// <returns><c>true</c> if the given vertex is a graph root or a dependant of the graph roots</returns>
+        //public bool IsRootOrDependent(object vertex)
+        //{
+        //    var searchSet = new Stack<object>(this.Roots);
+
+        //    while (searchSet.Any())
+        //    {
+        //        var currentItem = searchSet.Pop();
+        //        if (currentItem == vertex) { return true; }
+        //        foreach (var dependent in this.DependencyEdges.Where(e => e.DependsOn == currentItem).Select(e => e.Dependent))
+        //        {
+        //            searchSet.Push(dependent);
+        //        }
+        //    }
+
+        //    return false;
+        //}
+
     }
 }

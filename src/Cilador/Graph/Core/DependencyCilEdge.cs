@@ -64,7 +64,7 @@ namespace Cilador.Graph.Core
         }
 
         /// <summary>
-        /// Gets the vertex that comes dependsOn in sibling order.
+        /// Gets the vertex that the dependent depends on in sibling order.
         /// </summary>
         public object DependsOn
         {

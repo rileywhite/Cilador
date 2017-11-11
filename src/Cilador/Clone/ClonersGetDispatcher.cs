@@ -160,7 +160,7 @@ namespace Cilador.Clone
         /// <returns>Cloners for the <paramref name="item"/>.</returns>
         protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(TypeDefinition item)
         {
-            return this.CloningContext.CilGraph.Roots.Contains(item) ?
+            return this.TargetsByRoot.ContainsKey(item) ?
                 this.InvokeForRootType(item) :
                 this.InvokeForNestedType(item);
         }
@@ -173,7 +173,7 @@ namespace Cilador.Clone
         private IReadOnlyCollection<ICloner<object, object>> InvokeForRootType(TypeDefinition item)
         {
             Contract.Requires(item != null);
-            Contract.Requires(this.CloningContext.CilGraph.Roots.Contains(item));
+            Contract.Requires(this.TargetsByRoot.ContainsKey(item));
             Contract.Ensures(Contract.Result<IReadOnlyCollection<ICloner<object, object>>>() != null);
 
             if (item.Methods.Any(
@@ -203,7 +203,6 @@ namespace Cilador.Clone
         private IReadOnlyCollection<ICloner<object, object>> InvokeForNestedType(TypeDefinition item)
         {
             Contract.Requires(item != null);
-            Contract.Requires(!this.CloningContext.CilGraph.Roots.Contains(item));
             Contract.Ensures(Contract.Result<IReadOnlyCollection<ICloner<object, object>>>() != null);
 
             var parent = this.CloningContext.CilGraph.GetParentOf<TypeDefinition>(item);
@@ -279,7 +278,7 @@ namespace Cilador.Clone
         protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(MethodDefinition item)
         {
             // check whether this is the constructor for a root type
-            if (item.IsConstructor && !item.IsStatic && !item.HasParameters && this.CloningContext.CilGraph.GetDepth(item) == 1)
+            if (item.IsConstructor && !item.IsStatic && !item.HasParameters && this.TargetsByRoot.ContainsKey(item.DeclaringType))
             {
                 return this.InvokeForRootTypeConstructor(item);
             }
@@ -422,8 +421,7 @@ namespace Cilador.Clone
 
             IEnumerable<Tuple<ICloner<object, object>, ICloner<object, object>>> parentAndSiblingCloners;
 
-            ParameterDefinition previousSibling;
-            if (this.CloningContext.CilGraph.TryGetPreviousSiblingOf(item, out previousSibling))
+            if (this.CloningContext.CilGraph.TryGetPreviousSiblingOf(item, out ParameterDefinition previousSibling))
             {
                 parentAndSiblingCloners = parentCloners.Zip(this.ClonersBySource[previousSibling], Tuple.Create);
             }
@@ -472,8 +470,7 @@ namespace Cilador.Clone
 
             IEnumerable<Tuple<ICloner<object, object>, ICloner<object, object>>> parentAndSiblingCloners;
 
-            VariableDefinition previousSibling;
-            if (this.CloningContext.CilGraph.TryGetPreviousSiblingOf(item, out previousSibling))
+            if (this.CloningContext.CilGraph.TryGetPreviousSiblingOf(item, out VariableDefinition previousSibling))
             {
                 parentAndSiblingCloners = parentCloners.Zip(this.ClonersBySource[previousSibling], Tuple.Create);
             }
@@ -501,8 +498,7 @@ namespace Cilador.Clone
             var parentCloners = this.ClonersBySource[parent];
             Contract.Assume(parentCloners != null);
 
-            Instruction previousSibling;
-            if (!this.CloningContext.CilGraph.TryGetPreviousSiblingOf(item, out previousSibling)) { previousSibling = null; }
+            if (!this.CloningContext.CilGraph.TryGetPreviousSiblingOf(item, out Instruction previousSibling)) { previousSibling = null; }
 
             var cloners = new List<ICloner<object, object>>();
 
@@ -550,8 +546,7 @@ namespace Cilador.Clone
 
             IEnumerable<Tuple<ICloner<object, object>, ICloner<object, object>>> parentAndSiblingCloners;
 
-            ExceptionHandler previousSibling;
-            if (this.CloningContext.CilGraph.TryGetPreviousSiblingOf(item, out previousSibling))
+            if (this.CloningContext.CilGraph.TryGetPreviousSiblingOf(item, out ExceptionHandler previousSibling))
             {
                 parentAndSiblingCloners = parentCloners.Zip(this.ClonersBySource[previousSibling], Tuple.Create);
             }
@@ -583,8 +578,7 @@ namespace Cilador.Clone
 
             IEnumerable<Tuple<ICloner<object, object>, ICloner<object, object>>> parentAndSiblingCloners;
 
-            GenericParameter previousSibling;
-            if (this.CloningContext.CilGraph.TryGetPreviousSiblingOf(item, out previousSibling))
+            if (this.CloningContext.CilGraph.TryGetPreviousSiblingOf(item, out GenericParameter previousSibling))
             {
                 parentAndSiblingCloners = parentCloners.Zip(this.ClonersBySource[previousSibling], Tuple.Create);
             }

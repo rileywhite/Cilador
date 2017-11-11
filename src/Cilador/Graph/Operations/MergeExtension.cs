@@ -15,21 +15,21 @@
 /***************************************************************************/
 
 using Cilador.Graph.Core;
+using Cilador.Graph.Factory;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Cilador.Graph.Operations
 {
     public static class MergeExtension
     {
-        public static ICilGraph Merge(this ICilGraph original, ICilGraph addition, IDictionary<object, object> replacementMap)
+        public static ICilGraph Merge(this ICilGraph original, ICilGraph addition)
         {
-            throw new NotImplementedException();
-            //var vertices = original.Vertices.Concat(addition);
-            // problem here is that the operation makes sense on the Cecil module rather than on the graph
-            // you can do the replacement on the graph, but how would you round-trip it back to the module?
-            // maybe do it as a modified clone operation on the module, and then generate a new graph...but then why do you need the graph?
+            return new CilGraph(
+                original.Vertices.Concat(addition.Vertices),
+                original.ParentChildEdges.Concat(addition.ParentChildEdges),
+                original.SiblingEdges.Concat(addition.SiblingEdges),
+                original.DependencyEdges.Concat(addition.DependencyEdges));
         }
     }
 }

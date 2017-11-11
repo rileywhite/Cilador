@@ -22,7 +22,10 @@ using System.Linq;
 
 namespace Cilador.Core
 {
-    public class PointCut
+    /// <summary>
+    /// Represents an AOP Pointcut (https://en.wikipedia.org/wiki/Pointcut).
+    /// </summary>
+    public class Pointcut
     {
         public IEnumerable<MethodJoinPoint> GetJoinPoints(ICilGraph cilGraph)
         {

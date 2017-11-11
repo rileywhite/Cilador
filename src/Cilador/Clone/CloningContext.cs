@@ -15,6 +15,7 @@
 /***************************************************************************/
 
 using Cilador.Graph.Core;
+using Cilador.Graph.Operations;
 using Cilador.Graph.TopologicalSort;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -87,16 +88,18 @@ namespace Cilador.Clone
 
             var clonersGetter = new ClonersGetDispatcher(this, targetsByRoot, this.ClonersBySource);
 
+            var closedSetGraph = this.CilGraph.GetClosedSetFor(targetsByRoot.Keys);
+
             var verticesSortedForCreation = TopologicalSorter.TopologicalSort(
-                this.CilGraph.Vertices,
-                ((IEnumerable<ICilEdge>)this.CilGraph.ParentChildEdges).Union(this.CilGraph.SiblingEdges));
+                closedSetGraph.Vertices,
+                ((IEnumerable<ICilEdge>)closedSetGraph.ParentChildEdges).Union(closedSetGraph.SiblingEdges));
             foreach (var source in verticesSortedForCreation)
             {
                 this.ClonersBySource.Add(source, clonersGetter.InvokeFor(source));
             }
 
             var verticesSortedForCloning = TopologicalSorter.TopologicalSort(
-                this.CilGraph.Vertices,
+                closedSetGraph.Vertices,
                 this.CilGraph.DependencyEdges);
 
             foreach (var source in verticesSortedForCloning)
@@ -161,8 +164,7 @@ namespace Cilador.Clone
             }
 
             // if root import has already occurred, then return the previous result
-            TypeReference importedType;
-            if (this.TypeCache.TryGetValue(type.FullName, out importedType))
+            if (this.TypeCache.TryGetValue(type.FullName, out TypeReference importedType))
             {
                 Contract.Assert(importedType != null);
                 return importedType;
@@ -190,8 +192,7 @@ namespace Cilador.Clone
             else
             {
                 // either return the found mixed target (for mixed types) or do a straight import of the type (for non-mixed types)
-                IReadOnlyCollection<ICloner<object, object>> foundTargetType;
-                if (this.ClonersBySource.TryGetValue(type, out foundTargetType))
+                if (this.ClonersBySource.TryGetValue(type, out IReadOnlyCollection<ICloner<object, object>> foundTargetType))
                 {
                     importedType = (TypeDefinition)foundTargetType.First().Target;
                 }
@@ -218,8 +219,7 @@ namespace Cilador.Clone
         {
             if (genericParameter == null) { return null; }
 
-            IReadOnlyCollection<ICloner<object, object>> cloners;
-            if (!this.ClonersBySource.TryGetValue(genericParameter, out cloners))
+            if (!this.ClonersBySource.TryGetValue(genericParameter, out IReadOnlyCollection<ICloner<object, object>> cloners))
             {
                 throw new InvalidOperationException(string.Format(
                     "Could not find the target generic parameter for source named [{0}] with owner [{1}].",
@@ -251,21 +251,19 @@ namespace Cilador.Clone
         {
             if (field == null) { return null; }
 
-            FieldReference importedField;
 
             // look for cached import
-            if (this.FieldCache.TryGetValue(field.FullName, out importedField))
+            if (this.FieldCache.TryGetValue(field.FullName, out FieldReference importedField))
             {
                 Contract.Assert(importedField != null);
                 return importedField;
             }
-            
+
             // do a root import of the declaring type
             var importedDeclaringType = this.RootImport(field.DeclaringType);
 
             // try to get the field from within the clone targets that would correspond with a field within the clone source
-            IReadOnlyCollection<ICloner<object, object>> cloners;
-            if (!this.ClonersBySource.TryGetValue(field.Resolve(), out cloners))
+            if (!this.ClonersBySource.TryGetValue(field.Resolve(), out IReadOnlyCollection<ICloner<object, object>> cloners))
             {
                 // not a mixed type field, so do a simple import
                 importedField = this.RootTarget.Module.Import(field);
@@ -311,8 +309,7 @@ namespace Cilador.Clone
         {
             if (method == null) { return null; }
 
-            MethodReference importedMethod;
-            if (this.MethodCache.TryGetValue(method.FullName, out importedMethod))
+            if (this.MethodCache.TryGetValue(method.FullName, out MethodReference importedMethod))
             {
                 Contract.Assert(importedMethod != null);
                 return importedMethod;
@@ -369,8 +366,7 @@ namespace Cilador.Clone
             else
             {
                 // try to get the method from within the clone targets that would correspond with a method within the clone source
-                IReadOnlyCollection<ICloner<object, object>> cloners;
-                if (this.ClonersBySource.TryGetValue(method.Resolve(), out cloners))
+                if (this.ClonersBySource.TryGetValue(method.Resolve(), out IReadOnlyCollection<ICloner<object, object>> cloners))
                 {
                     var importedMethodDefinition = (MethodDefinition)cloners.First().Target;
                     if (!importedDeclaringType.IsGenericInstance)
@@ -448,8 +444,7 @@ namespace Cilador.Clone
         {
             if (parameter == null) { return null; }
 
-            IReadOnlyCollection<ICloner<object, object>> cloners;
-            if (this.ClonersBySource.TryGetValue(parameter, out cloners))
+            if (this.ClonersBySource.TryGetValue(parameter, out IReadOnlyCollection<ICloner<object, object>> cloners))
             {
                 return (ParameterDefinition)cloners.First().Target;
             }
@@ -469,8 +464,7 @@ namespace Cilador.Clone
         {
             if (variable == null) { return null; }
 
-            IReadOnlyCollection<ICloner<object, object>> cloners;
-            if (this.ClonersBySource.TryGetValue(variable, out cloners))
+            if (this.ClonersBySource.TryGetValue(variable, out IReadOnlyCollection<ICloner<object, object>> cloners))
             {
                 return (VariableDefinition)cloners.First().Target;
             }
@@ -490,8 +484,7 @@ namespace Cilador.Clone
         {
             if (instruction == null) { return null; }
 
-            IReadOnlyCollection<ICloner<object, object>> cloners;
-            if (this.ClonersBySource.TryGetValue(instruction, out cloners))
+            if (this.ClonersBySource.TryGetValue(instruction, out IReadOnlyCollection<ICloner<object, object>> cloners))
             {
                 return (Instruction)cloners.First().Target;
             }

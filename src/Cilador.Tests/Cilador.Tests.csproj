@@ -65,6 +65,7 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Core\AddAdviceToMethod.cs" />
     <Compile Include="CloneTests\ClonerBaseFixture.cs" />
     <Compile Include="CloneTests\CloningExtensionsFixture.cs" />
     <Compile Include="CloneTests\FakeCloningConext.cs" />
@@ -77,6 +78,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Cilador.TestAopTarget\Cilador.TestAopTarget.csproj">
+      <Project>{0be1acd4-b82b-453b-a793-7415ac1fc3e6}</Project>
+      <Name>Cilador.TestAopTarget</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Cilador\Cilador.csproj">
       <Project>{da13736d-dcf1-4364-bc97-0201e2aa052b}</Project>
       <Name>Cilador</Name>

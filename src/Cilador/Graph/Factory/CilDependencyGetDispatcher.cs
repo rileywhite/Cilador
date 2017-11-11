@@ -87,7 +87,7 @@ namespace Cilador.Graph.Factory
         /// <returns>Dependencies of <paramref name="item"/>.</returns>
         protected override IEnumerable<object> InvokeForItem(ExportedType item)
         {
-            if (item.DeclaringType != null) { yield return item.DeclaringType; }
+            return new object[0];
         }
 
         /// <summary>
@@ -133,9 +133,6 @@ namespace Cilador.Graph.Factory
                 yield return dependency;
             }
 
-            // a type depends on its containing type, if any
-            if (item.DeclaringType != null) { yield return item.DeclaringType; }
-
             // a type depends on its interface types, if any
             if (item.HasInterfaces) foreach (var interfaceType in item.Interfaces)
             {
@@ -168,7 +165,6 @@ namespace Cilador.Graph.Factory
         /// <returns>Dependencies of <paramref name="item"/>.</returns>
         protected override IEnumerable<object> InvokeForItem(FieldDefinition item)
         {
-            yield return item.DeclaringType;
             foreach (var dependency in item.FieldType.GetDependencies())
             {
                 yield return dependency;
@@ -182,8 +178,6 @@ namespace Cilador.Graph.Factory
         /// <returns>Dependencies of <paramref name="item"/>.</returns>
         protected override IEnumerable<object> InvokeForItem(MethodDefinition item)
         {
-            yield return item.DeclaringType;
-
             yield return item.MethodReturnType;
 
             if (item.HasParameters) foreach (var parameter in item.Parameters)
@@ -214,7 +208,6 @@ namespace Cilador.Graph.Factory
         /// <returns>Dependencies of <paramref name="item"/>.</returns>
         protected override IEnumerable<object> InvokeForItem(PropertyDefinition item)
         {
-            yield return item.DeclaringType;
             foreach (var dependency in item.PropertyType.GetDependencies())
             {
                 yield return dependency;
@@ -241,7 +234,6 @@ namespace Cilador.Graph.Factory
         /// <returns>Dependencies of <paramref name="item"/>.</returns>
         protected override IEnumerable<object> InvokeForItem(EventDefinition item)
         {
-            yield return item.DeclaringType;
             foreach (var dependency in item.EventType.GetDependencies())
             {
                 yield return dependency;

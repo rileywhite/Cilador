@@ -20,6 +20,9 @@ using System.Diagnostics.Contracts;
 
 namespace Cilador.Core
 {
+    /// <summary>
+    /// Represents an AOP join point (see https://en.wikipedia.org/wiki/Join_point) for a method.
+    /// </summary>
     public class MethodJoinPoint
     {
         public MethodJoinPoint(MethodDefinition target)

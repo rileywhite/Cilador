@@ -39,7 +39,7 @@ namespace Cilador.Dispatch
         /// <returns><c>true</c> if the item was resolved, else <c>false</c>.</returns>
         public static bool DynamicTryResolve(dynamic item, out object resolvedItem)
         {
-            if (item != null) { return (bool)TryResolve(item, out resolvedItem); }
+            if (item != null) { return TryResolve(item, out resolvedItem); }
 
             resolvedItem = null;
             return false;

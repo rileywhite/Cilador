@@ -171,6 +171,10 @@ namespace Cilador.Graph.Factory
         /// Even though roots have no parents, it's important to note that they may have siblings,
         /// and they may have dependents. The idea of a root node only applies to the parent/child
         /// relationship.
+        /// 
+        /// Some roots may have parents. Vertices on the descendent (child) side of roots are fully
+        /// populated, while vertices on the parent side are sparsely populated (i.e. the graph is
+        /// not fully fleshed out with all children/siblings/etc).
         /// </remarks>
         public IEnumerable<object> Roots { get; private set; }
 
@@ -200,8 +204,7 @@ namespace Cilador.Graph.Factory
         /// </exception>
         public TParent GetParentOf<TParent>(object child) where TParent : class
         {
-            TParent parent;
-            if (!this.TryGetParentOf(child, out parent))
+            if (!this.TryGetParentOf(child, out TParent parent))
             {
                 throw new ArgumentException(
                     $"Given child {child} is a root node with no parent.",
@@ -224,8 +227,7 @@ namespace Cilador.Graph.Factory
         public bool TryGetParentOf<TParent>(object child, out TParent parent)
             where TParent : class
         {
-            object parentObject;
-            if(!this.ParentByChild.TryGetValue(child, out parentObject))
+            if (!this.ParentByChild.TryGetValue(child, out object parentObject))
             {
                 parent = null;
                 return false;
@@ -251,8 +253,7 @@ namespace Cilador.Graph.Factory
         public int GetDepth(object item)
         {
             // we'll calculate and populate depths on-demand
-            int depth;
-            if (this.DepthByVertex.TryGetValue(item, out depth)) { return depth; }
+            if (this.DepthByVertex.TryGetValue(item, out int depth)) { return depth; }
 
             var items = new Stack<object>();
             var currentItem = item;
@@ -269,8 +270,7 @@ namespace Cilador.Graph.Factory
 
             // at this point, the current item is either cached or a root item, and the stack
             // contains items with increasing depths
-            int currentDepth;
-            if (!this.DepthByVertex.TryGetValue(currentItem, out currentDepth))
+            if (!this.DepthByVertex.TryGetValue(currentItem, out int currentDepth))
             {
                 currentDepth = 0;
                 this.DepthByVertex[currentItem] = 0;
@@ -314,8 +314,7 @@ namespace Cilador.Graph.Factory
         /// </exception>
         public TSibling GetPreviousSiblingOf<TSibling>(TSibling sibling) where TSibling : class
         {
-            TSibling previousSibling;
-            if (!this.TryGetPreviousSiblingOf(sibling, out previousSibling))
+            if (!this.TryGetPreviousSiblingOf(sibling, out TSibling previousSibling))
             {
                 throw new ArgumentException(
                     $"Given sibling {sibling} has no previous sibling.",
@@ -335,8 +334,7 @@ namespace Cilador.Graph.Factory
         /// <returns><c>true</c> if the previous sibling was found, else <c>false</c>.</returns>
         public bool TryGetPreviousSiblingOf<TSibling>(TSibling sibling, out TSibling previousSibling) where TSibling : class
         {
-            object previousSiblingObject;
-            if (!this.PreviousSiblingBySibling.TryGetValue(sibling, out previousSiblingObject))
+            if (!this.PreviousSiblingBySibling.TryGetValue(sibling, out object previousSiblingObject))
             {
                 previousSibling = null;
                 return false;

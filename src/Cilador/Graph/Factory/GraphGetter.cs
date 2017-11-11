@@ -31,18 +31,6 @@ namespace Cilador.Graph.Factory
     public class CilGraphGetter
     {
         /// <summary>
-        /// Creates a new <see cref="CilGraphGetter"/>.
-        /// </summary>
-        public CilGraphGetter()
-        {
-            Contract.Ensures(this.ChildrenGetter != null);
-            Contract.Ensures(this.DependenciesGetter != null);
-
-            this.ChildrenGetter = new CilOrderedChildrenGetDispatcher();
-            this.DependenciesGetter = new CilDependencyGetDispatcher();
-        }
-
-        /// <summary>
         /// Traverses the assemblies at the given paths to get a graph of CIL
         /// objects contained in the assemblies
         /// </summary>
@@ -81,12 +69,17 @@ namespace Cilador.Graph.Factory
         /// <summary>
         /// Gets or sets the dispatcher for getting CIL item children.
         /// </summary>
-        private CilOrderedChildrenGetDispatcher ChildrenGetter { get; }
+        private CilOrderedChildrenGetDispatcher ChildrenGetter { get; } = new CilOrderedChildrenGetDispatcher();
+
+        /// <summary>
+        /// Gets or sets the dispatcher for getting CIL item parents.
+        /// </summary>
+        private CilParentGetDispatcher ParentGetter { get; } = new CilParentGetDispatcher();
 
         /// <summary>
         /// Gets or sets the dispatcher for getting CIL item dependencies.
         /// </summary>
-        private CilDependencyGetDispatcher DependenciesGetter { get; }
+        private CilDependencyGetDispatcher DependenciesGetter { get; } = new CilDependencyGetDispatcher();
 
         /// <summary>
         /// Collects an item and its children as graph vertices.
@@ -108,7 +101,7 @@ namespace Cilador.Graph.Factory
             var items = new Stack<object>();
             items.Push(item);
 
-            // use a depth-first-search to collect all items
+            // use a depth-first-search to collect all items in the child tree
             do
             {
                 var currentItem = items.Pop();
@@ -127,6 +120,23 @@ namespace Cilador.Graph.Factory
                     previousChild = child;
                 }
             } while(items.Count > 0);
+
+            // use a similar, but simplified strategy to collect the parent lineage
+            items.Push(item);
+            do
+            {
+                var currentItem = items.Pop();
+
+                // always continue even if the item is already added as this is a relatively straight
+                // shot up the parent line which should self-terminate after adding the assembly
+                vertices.Add(currentItem);
+
+                foreach (var parent in this.ParentGetter.InvokeFor(currentItem))
+                {
+                    items.Push(parent);
+                    parentChildEdges.Add(new ParentChildCilEdge(parent, currentItem));
+                }
+            } while (items.Count > 0);
         }
 
         /// <summary>
