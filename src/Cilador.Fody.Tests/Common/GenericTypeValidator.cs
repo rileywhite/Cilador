@@ -55,12 +55,12 @@ namespace Cilador.Fody.Tests.Common
         /// <summary>
         /// Gets or sets the generic type definition that is expected.
         /// </summary>
-        public Type GenericParameterType { get; private set; }
+        public Type GenericParameterType { get; }
 
         /// <summary>
         /// Gets or sets the collection of validators for the generic arguments.
         /// </summary>
-        public TypeValidatorBase[] GenericArgumentTypeValidators { get; private set; }
+        public TypeValidatorBase[] GenericArgumentTypeValidators { get; }
 
         /// <summary>
         /// Validates the type.

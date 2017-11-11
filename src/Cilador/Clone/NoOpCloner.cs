@@ -66,7 +66,7 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets the context for cloning.
         /// </summary>
-        public ICloningContext CloningContext { get; private set; }
+        public ICloningContext CloningContext { get; }
 
         /// <summary>
         /// Gets whether the item has been cloned.
@@ -84,11 +84,16 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets the cloning source.
         /// </summary>
-        public TSource Source { get; private set; }
+        public TSource Source { get; }
 
         /// <summary>
         /// Gets the cloning target.
         /// </summary>
-        public TTarget Target { get; private set; }
+        public TTarget Target { get; }
+
+        /// <summary>
+        /// Gets or sets the transform to apply to the target after creation
+        /// </summary>
+        public Action<object> TargetTransform { get; set; }
     }
 }

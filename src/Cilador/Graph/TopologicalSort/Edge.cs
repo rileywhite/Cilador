@@ -18,8 +18,8 @@ namespace Cilador.Graph.TopologicalSort
 {
     public struct Edge<TVertex> : IEdge<TVertex>
     {
-        public TVertex From { get; private set; }
-        public TVertex To { get; private set; }
+        public TVertex From { get; }
+        public TVertex To { get; }
 
         public Edge(TVertex from, TVertex to) : this()
         {

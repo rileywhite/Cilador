@@ -46,12 +46,12 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets or sets the cloner for the method body containing the exception handler being cloned.
         /// </summary>
-        public ICloneToMethodBody<object> Parent { get; private set; }
+        public ICloneToMethodBody<object> Parent { get; }
 
         /// <summary>
         /// Gets or sets the cloner for the previous exception handler, if any.
         /// </summary>
-        public ExceptionHandlerCloner Previous { get; private set; }
+        public ExceptionHandlerCloner Previous { get; }
 
         /// <summary>
         /// Creates the target exception handler.

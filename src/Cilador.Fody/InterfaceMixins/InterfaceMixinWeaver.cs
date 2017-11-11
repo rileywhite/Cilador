@@ -92,7 +92,7 @@ namespace Cilador.Fody.InterfaceMixins
         /// <summary>
         /// Gets or sets the interface which will be added to the <see cref="Target"/>.
         /// </summary>
-        public TypeDefinition InterfaceType { get; private set; }
+        public TypeDefinition InterfaceType { get; }
 
         /// <summary>
         /// Gets or sets the mixin type which is the source of mixin code that will be added to the <see cref="Target"/>
@@ -102,7 +102,7 @@ namespace Cilador.Fody.InterfaceMixins
         /// <summary>
         /// Gets or sets the target type which will be modified by the command execution.
         /// </summary>
-        public TypeDefinition Target { get; private set; }
+        public TypeDefinition Target { get; }
 
         /// <summary>
         /// Executes the interface mixin command using the arguments passed into the constuctor.

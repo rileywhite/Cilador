@@ -64,7 +64,7 @@ namespace Cilador.Fody.Tests.Common
         /// <summary>
         /// Gets or sets the expected parameter type.
         /// </summary>
-        public Type ParameterType { get; private set; }
+        public Type ParameterType { get; }
 
         /// <summary>
         /// Validates the type.

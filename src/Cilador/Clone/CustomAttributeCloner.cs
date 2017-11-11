@@ -46,7 +46,7 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets or sets the cloner for the class/method/etc that the custom attribute is attached to.
         /// </summary>
-        public ICloner<ICustomAttributeProvider> Parent { get; private set; }
+        public ICloner<ICustomAttributeProvider> Parent { get; }
 
         /// <summary>
         /// Creates the target custom attribute.

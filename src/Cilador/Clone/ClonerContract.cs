@@ -90,5 +90,14 @@ namespace Cilador.Clone
                 throw new NotImplementedException();
             }
         }
+
+        /// <summary>
+        /// No contracts for target transform.
+        /// </summary>
+        public Action<object> TargetTransform
+        {
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
+        }
     }
 }

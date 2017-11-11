@@ -36,8 +36,8 @@
 //            this.Advice = methodAdvice;
 //        }
 
-//        public MethodAdviceBase Advice { get; private set; }
-//        public Pointcut PointCut { get; private set; }
+//        public MethodAdviceBase Advice { get; }
+//        public Pointcut PointCut { get; }
 
 //        public ICilGraph ApplyTo(ICilGraph target)
 //        {

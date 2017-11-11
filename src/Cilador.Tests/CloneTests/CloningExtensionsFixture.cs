@@ -47,7 +47,7 @@ namespace Cilador.Tests.CloneTests
         {
             public ICloningContext CloningContext { get; set; }
 
-            public bool IsCloned { get; private set; }
+            public bool IsCloned { get; set; }
 
             public void Clone()
             {
@@ -63,6 +63,8 @@ namespace Cilador.Tests.CloneTests
             {
                 get { return new object(); }
             }
+
+            public Action<object> TargetTransform { get; set; }
         }
 
         [Test]

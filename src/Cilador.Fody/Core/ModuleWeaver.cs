@@ -263,7 +263,7 @@ namespace Cilador.Fody.Core
         /// <summary>
         /// Gets or sets the strongly typed Cilador configuration object.
         /// </summary>
-        public CiladorConfigType CiladorConfig { get; private set; }
+        public CiladorConfigType CiladorConfig { get; set; }
 
         #endregion
 
@@ -334,7 +334,7 @@ namespace Cilador.Fody.Core
         /// <summary>
         /// Gets or sets the object that can resolve type members.
         /// </summary>
-        public IMetadataResolver MetadataResolver { get; private set; }
+        public IMetadataResolver MetadataResolver { get; }
 
         /// <summary>
         /// Gets or sets the <see cref="ModuleDefinition"/> for the target assembly.

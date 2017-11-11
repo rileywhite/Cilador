@@ -72,7 +72,7 @@ namespace Cilador.Clone
         /// Gets whether the constructor is initializing, i.e. whether it runs compiler generated code
         /// such as initializing instance fields. The indicator in the CIL is that it call the base constructor.
         /// </summary>
-        public bool IsInitializingConstructor { get; private set; }
+        public bool IsInitializingConstructor { get; set; }
 
         /// <summary>
         /// Gets or sets the first index of the set of instructions for the base or chained constructor call
@@ -84,7 +84,7 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets or sets the "this" parameter within the constructor.
         /// </summary>
-        public ParameterDefinition ThisParameter { get; private set; }
+        public ParameterDefinition ThisParameter { get; }
 
         /// <summary>
         /// Gets the first index of the set of instructions for the base or chained constructor call

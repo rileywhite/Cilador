@@ -86,12 +86,12 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets or sets the context for the method associated with this cloner.
         /// </summary>
-        public ICloneToMethodBody<object> Parent { get; private set; }
+        public ICloneToMethodBody<object> Parent { get; }
 
         /// <summary>
         /// Gets or sets the cloner for the previous instruction, if any.
         /// </summary>
-        public InstructionCloner Previous { get; private set; }
+        public InstructionCloner Previous { get; }
 
         /// <summary>
         /// Gets or sets the translation, if any, that should be applied to the variable reference

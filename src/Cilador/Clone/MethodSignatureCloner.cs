@@ -103,7 +103,7 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets or sets the collection of parameter cloners for contained parameters
         /// </summary>
-        public List<ParameterCloner> ParameterCloners { get; private set; }
+        public List<ParameterCloner> ParameterCloners { get; }
 
         /// <summary>
         /// Clones the method with the exception of the method body

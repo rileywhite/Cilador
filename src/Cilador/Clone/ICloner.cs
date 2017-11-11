@@ -35,6 +35,11 @@ namespace Cilador.Clone
         ICloningContext CloningContext { get; }
 
         /// <summary>
+        /// Gets or sets the transform to apply to the target after creation
+        /// </summary>
+        Action<object> TargetTransform { get; set; }
+
+        /// <summary>
         /// Gets whether the item has been cloned.
         /// </summary>
         bool IsCloned { get; }

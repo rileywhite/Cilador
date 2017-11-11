@@ -56,7 +56,7 @@ namespace Cilador.Fody.Tests.Common
         /// <summary>
         /// Gets or sets the name of the expected generic parameter
         /// </summary>
-        public string ParameterName { get; private set; }
+        public string ParameterName { get; }
 
         /// <summary>
         /// Validates the type.

@@ -51,12 +51,17 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets or sets the context for cloning.
         /// </summary>
-        public ICloningContext CloningContext { get; private set; }
+        public ICloningContext CloningContext { get; }
+
+        /// <summary>
+        /// Gets or sets the transform to apply to the target after creation
+        /// </summary>
+        public Action<object> TargetTransform { get; set; }
 
         /// <summary>
         /// Whether the target has be set from its accessor.
         /// </summary>
-        public bool IsTargetSet { get; private set; }
+        public bool IsTargetSet { get; set; }
 
         /// <summary>
         /// When overridden in a subclass, this method should create or retrieve the cloning target.
@@ -96,6 +101,7 @@ namespace Cilador.Clone
             }
 
             this.Target = retrievedTarget ?? throw new InvalidOperationException("Retrieved target was null");
+            this.TargetTransform?.Invoke(retrievedTarget);
             this.IsTargetSet = true;
         }
 

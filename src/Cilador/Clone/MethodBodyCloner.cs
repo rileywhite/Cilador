@@ -46,7 +46,7 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets or sets the method signature cloner with which this method body cloner is associated
         /// </summary>
-        public MethodSignatureCloner Parent { get; private set; }
+        public MethodSignatureCloner Parent { get; }
 
         /// <summary>
         /// Gets the This parameter of the source.

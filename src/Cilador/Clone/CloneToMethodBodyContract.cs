@@ -103,5 +103,14 @@ namespace Cilador.Clone
         /// No contracts for inherited interface items.
         /// </summary>
         public abstract MethodBody Target { get; }
+
+        /// <summary>
+        /// No contracts for target transform.
+        /// </summary>
+        public Action<object> TargetTransform
+        {
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
+        }
     }
 }

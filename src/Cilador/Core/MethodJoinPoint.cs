@@ -33,6 +33,6 @@ namespace Cilador.Core
             this.Target = target;
         }
 
-        internal MethodDefinition Target { get; private set; }
+        internal MethodDefinition Target { get; }
     }
 }

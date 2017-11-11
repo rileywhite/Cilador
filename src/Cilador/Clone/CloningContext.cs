@@ -63,10 +63,12 @@ namespace Cilador.Clone
             this.ClonersBySource = new Dictionary<object, IReadOnlyCollection<ICloner<object, object>>>(this.CilGraph.VertexCount);
         }
 
+        public Dictionary<object, Action<object>> TargetTransforms { get; } = new Dictionary<object, Action<object>>();
+
         /// <summary>
         /// Gets or sets the CilGraph of items for the cloning operation.
         /// </summary>
-        public ICilGraph CilGraph { get; private set; }
+        public ICilGraph CilGraph { get; }
 
         /// <summary>
         /// Gets or sets the collection of cloners for a given source.
@@ -95,7 +97,15 @@ namespace Cilador.Clone
                 ((IEnumerable<ICilEdge>)closedSetGraph.ParentChildEdges).Union(closedSetGraph.SiblingEdges));
             foreach (var source in verticesSortedForCreation)
             {
-                this.ClonersBySource.Add(source, clonersGetter.InvokeFor(source));
+                var cloners = clonersGetter.InvokeFor(source).ToArray();
+                if (this.TargetTransforms.TryGetValue(source, out Action<object> transform))
+                {
+                    foreach(var cloner in cloners)
+                    {
+                        cloner.TargetTransform = transform;
+                    }
+                }
+                this.ClonersBySource.Add(source, cloners);
             }
 
             var verticesSortedForCloning = TopologicalSorter.TopologicalSort(
@@ -111,12 +121,12 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets or sets the top level source type for the cloning operation.
         /// </summary>
-        public TypeDefinition RootSource { get; private set; }
+        public TypeDefinition RootSource { get; }
 
         /// <summary>
         /// Gets or sets the top level source type for the cloning operation.
         /// </summary>
-        public TypeDefinition RootTarget { get; private set; }
+        public TypeDefinition RootTarget { get; }
 
         /// <summary>
         /// Root import an item when the exact item type may not be known.

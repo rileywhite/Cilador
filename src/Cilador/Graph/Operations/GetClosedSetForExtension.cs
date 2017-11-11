@@ -127,52 +127,5 @@ namespace Cilador.Graph.Operations
             }
             return vertices;
         }
-
-        ///// <summary>
-        ///// Determines whether a given vertex is a root item or a parent-child relationship descendant
-        ///// of a root item
-        ///// </summary>
-        ///// <param name="vertex">Vertex to examine</param>
-        ///// <returns><c>true</c> if the given vertex is a graph root or a child/grandchild/etc of the graph roots</returns>
-        //public bool IsRootOrDescendant(object vertex)
-        //{
-        //    var searchSet = new Stack<object>(this.Roots);
-
-        //    while (searchSet.Any())
-        //    {
-        //        var currentItem = searchSet.Pop();
-        //        if (currentItem == vertex) { return true; }
-        //        foreach (var child in this.ParentChildEdges.Where(e => e.Parent == currentItem).Select(e => e.Child))
-        //        {
-        //            searchSet.Push(child);
-        //        }
-        //    }
-
-        //    return false;
-        //}
-
-        ///// <summary>
-        ///// Determines whether a given vertex is a root item or a dependent relationship descendant
-        ///// of a root item
-        ///// </summary>
-        ///// <param name="vertex">Vertex to examine</param>
-        ///// <returns><c>true</c> if the given vertex is a graph root or a dependant of the graph roots</returns>
-        //public bool IsRootOrDependent(object vertex)
-        //{
-        //    var searchSet = new Stack<object>(this.Roots);
-
-        //    while (searchSet.Any())
-        //    {
-        //        var currentItem = searchSet.Pop();
-        //        if (currentItem == vertex) { return true; }
-        //        foreach (var dependent in this.DependencyEdges.Where(e => e.DependsOn == currentItem).Select(e => e.Dependent))
-        //        {
-        //            searchSet.Push(dependent);
-        //        }
-        //    }
-
-        //    return false;
-        //}
-
     }
 }

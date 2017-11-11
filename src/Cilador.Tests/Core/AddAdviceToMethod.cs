@@ -51,11 +51,11 @@ namespace Cilador.Core
             var graphGetter = new CilGraphGetter();
 
             targetMethod.Name = $"cilador_{Guid.NewGuid().ToString("N")}";
-            adviceMethod.Name = "Run";
 
             var adviceGraph = graphGetter.Get(adviceMethod);
 
             var cloningContext = new CloningContext(adviceGraph, adviceMethod.DeclaringType, targetType);
+            cloningContext.TargetTransforms.Add(adviceMethod, t => { ((MethodDefinition)t).Name = "Run"; });
             cloningContext.Execute();
 
             targetType.CustomAttributes.Clear();

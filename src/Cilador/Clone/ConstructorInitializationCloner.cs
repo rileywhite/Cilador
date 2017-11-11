@@ -69,12 +69,12 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets or sets the cloner for the signature of the logic portion of the constructor, if any.
         /// </summary>
-        public ConstructorLogicSignatureCloner LogicSignatureCloner { get; private set; }
+        public ConstructorLogicSignatureCloner LogicSignatureCloner { get; }
 
         /// <summary>
         /// Gets or sets the This parameter of the source constructor.
         /// </summary>
-        public ParameterDefinition SourceThisParameter { get; private set; }
+        public ParameterDefinition SourceThisParameter { get; }
 
         /// <summary>
         /// Gets the offset for  use in instruction cloning so that referenced variables can
@@ -133,7 +133,7 @@ namespace Cilador.Clone
         /// the cloning operation begins.
         /// </summary>
         /// <returns>Target constructor method body.</returns>
-        public int CountOfTargetVariablesBeforeCloning { get; private set; }
+        public int CountOfTargetVariablesBeforeCloning { get; }
 
         /// <summary>
         /// Retrieves the existing constructor into which the source's data will be added.
