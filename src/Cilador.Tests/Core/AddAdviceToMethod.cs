@@ -16,7 +16,6 @@
 
 using Cilador.Clone;
 using Cilador.Graph.Factory;
-using Cilador.Graph.Operations;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using NUnit.Framework;
@@ -31,74 +30,20 @@ namespace Cilador.Core
         [Test]
         public void Test()
         {
-            ActionAdvice<string[]> advice = (arg) =>
-            {
-                Console.WriteLine("Before...");
-                AdviceForwarder.ForwardToOriginalAction(arg);
-                Console.WriteLine("...After");
-            };
-
             var resolver = new DefaultAssemblyResolver();
-
             var targetAssembly = resolver.Resolve("Cilador.TestAopTarget");
-            var targetType = targetAssembly.MainModule.GetType("Cilador.TestAopTarget.Program");
-            var targetMethod = targetType.Methods.Single(m => m.Name == "Run");
+            var loom = new Loom();
 
-            var adviceAssembly = resolver.Resolve("Cilador.Tests");
-            var adviceParentType = adviceAssembly.MainModule.GetType(this.GetType().FullName);
-            var adviceMethod = adviceParentType.NestedTypes.SelectMany(t => t.Methods).Single(m => m.Name == advice.Method.Name);
-            var adviceType = adviceMethod.DeclaringType;
-
-            var graphGetter = new CilGraphGetter();
-
-            targetMethod.Name = $"cilador_{Guid.NewGuid().ToString("N")}";
-
-            var adviceGraph = graphGetter.Get(adviceMethod);
-            var cloningContext = new CloningContext(adviceGraph, adviceMethod.DeclaringType, targetType);
-
-            MethodDefinition adviceMethodTarget = null;
-            cloningContext.SourcePredicatesAndTargetTransforms.Add(Tuple.Create<Func<object, bool>, Action<object>>(
-                s => s == adviceMethod,
-                t =>
+            loom.Aspects.Add(Tuple.Create<Func<MethodDefinition, bool>, ActionAdvice<string[]>>(
+                m => $"{m.DeclaringType.FullName}.{m.Name}" == "Cilador.TestAopTarget.Program.Run",
+                arg =>
                 {
-                    adviceMethodTarget = (MethodDefinition)t;
-                    adviceMethodTarget.Name = "Run";
+                    Console.WriteLine("Before...");
+                    AdviceForwarder.ForwardToOriginalAction(arg);
+                    Console.WriteLine("...After");
                 }));
 
-            cloningContext.Execute();
-
-            targetType.CustomAttributes.Clear();
-
-            var methodCallInstructions =
-                targetAssembly
-                    .MainModule
-                    .Types
-                    .SelectMany(t => t.Methods)
-                    .Where(m => m.HasBody)
-                    .SelectMany(m => m.Body.Instructions)
-                    .Where(i => i.OpCode == OpCodes.Call && i.Operand is MethodReference).ToArray();
-
-            foreach(var method in targetAssembly.MainModule.Types.SelectMany(t => t.Methods).Where(m => m.HasBody))
-            {
-                foreach (var instruction in method.Body.Instructions.Where(i => i.OpCode == OpCodes.Call && i.Operand is MethodReference && ((MethodReference)i.Operand).Name == targetMethod.Name))
-                {
-                    instruction.Operand = adviceMethodTarget;
-                }
-
-                foreach (var instruction in method.Body.Instructions.Where(i => i.OpCode == OpCodes.Call && i.Operand is MethodReference && ((MethodReference)i.Operand).Name == "ForwardToOriginalAction").ToArray())
-                {
-                    instruction.Operand = targetMethod;
-
-                    var firstArgInstruction = instruction.Previous;
-                    while(firstArgInstruction.Previous != null && firstArgInstruction.Previous.OpCode.Name.StartsWith("Ld"))
-                    {
-                        firstArgInstruction = firstArgInstruction.Previous;
-                    }
-                    var ilProcessor = method.Body.GetILProcessor();
-                    var newInstruction = ilProcessor.Create(OpCodes.Ldarg_0);
-                    ilProcessor.InsertBefore(firstArgInstruction, newInstruction);
-                }
-            }
+            loom.Weave(targetAssembly);
 
             targetAssembly.Write("Cilador.TestAopTarget.Modified.exe", new WriterParameters { WriteSymbols = true });
         }

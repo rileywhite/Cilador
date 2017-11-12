@@ -90,6 +90,7 @@
     <Compile Include="Core\AspectBase.cs" />
     <Compile Include="Core\AdviceForwarder.cs" />
     <Compile Include="Core\IntroductionBase.cs" />
+    <Compile Include="Core\Loom.cs" />
     <Compile Include="Core\MethodJoinPoint.cs" />
     <Compile Include="Core\Pointcut.cs" />
     <Compile Include="Dispatch\CilItemFunctionDispatcherBase.cs" />
