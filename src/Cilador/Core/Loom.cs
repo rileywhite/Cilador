@@ -23,12 +23,14 @@ namespace Cilador.Core
                 var allMethods = targetAssembly.Modules.SelectMany(mod => mod.Types).SelectMany(t => t.Methods).ToArray();
                 foreach (var targetMethod in targetAssembly.Modules.SelectMany(mod => mod.Types).SelectMany(t => t.Methods).Where(m => aspect.Item1(m)).ToArray())
                 {
-                    var adviceAssembly = resolver.Resolve("Cilador.Tests");
-                    var adviceParentType = adviceAssembly.MainModule.GetType("Cilador.Core.AddAdviceToMethod");
-                    var adviceMethod = adviceParentType.NestedTypes.SelectMany(t => t.Methods).Single(m => m.Name == aspect.Item2.Method.Name);
-                    var adviceType = adviceMethod.DeclaringType;
+                    var advice = aspect.Item2;
+                    var adviceAssembly =  resolver.Resolve(advice.Target.GetType().Assembly.FullName);
+                    var adviceType = adviceAssembly.MainModule.GetType(advice.Target.GetType().FullName.ToCecilTypeName());
+                    var adviceMethod = adviceType.Methods.Single(m => m.Name == aspect.Item2.Method.Name);
 
+                    var originalTargetMethodName = targetMethod.Name;
                     targetMethod.Name = $"cilador_{Guid.NewGuid().ToString("N")}";
+
                     var adviceGraph = graphGetter.Get(adviceMethod);
                     var cloningContext = new CloningContext(adviceGraph, adviceMethod.DeclaringType, targetMethod.DeclaringType);
 
@@ -38,7 +40,7 @@ namespace Cilador.Core
                         t =>
                         {
                             adviceMethodTarget = (MethodDefinition)t;
-                            adviceMethodTarget.Name = "Run";
+                            adviceMethodTarget.Name = originalTargetMethodName;
                         }));
 
                     cloningContext.Execute();
@@ -65,14 +67,17 @@ namespace Cilador.Core
                         {
                             instruction.Operand = targetMethod;
 
-                            var firstArgInstruction = instruction.Previous;
-                            while (firstArgInstruction.Previous != null && firstArgInstruction.Previous.OpCode.Name.StartsWith("Ld"))
+                            if (!targetMethod.IsStatic)
                             {
-                                firstArgInstruction = firstArgInstruction.Previous;
+                                var firstArgInstruction = instruction.Previous;
+                                while (firstArgInstruction.Previous != null && firstArgInstruction.Previous.OpCode.Name.StartsWith("Ld"))
+                                {
+                                    firstArgInstruction = firstArgInstruction.Previous;
+                                }
+                                var ilProcessor = method.Body.GetILProcessor();
+                                var newInstruction = ilProcessor.Create(OpCodes.Ldarg_0);
+                                ilProcessor.InsertBefore(firstArgInstruction, newInstruction);
                             }
-                            var ilProcessor = method.Body.GetILProcessor();
-                            var newInstruction = ilProcessor.Create(OpCodes.Ldarg_0);
-                            ilProcessor.InsertBefore(firstArgInstruction, newInstruction);
                         }
                     }
                 }
