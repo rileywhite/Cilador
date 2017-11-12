@@ -63,7 +63,14 @@ namespace Cilador.Clone
             this.ClonersBySource = new Dictionary<object, IReadOnlyCollection<ICloner<object, object>>>(this.CilGraph.VertexCount);
         }
 
-        public Dictionary<object, Action<object>> TargetTransforms { get; } = new Dictionary<object, Action<object>>();
+        /// <summary>
+        /// Gets a collection of pairs with the first item being a source predicate match and the second a transforms applied to cloning
+        /// targets for matching sources.
+        /// </summary>
+        /// <remarks>
+        /// Only the first matched predicate will apply, so order matters.
+        /// </remarks>
+        public List<Tuple<Func<object, bool>, Action<object>>> SourcePredicatesAndTargetTransforms { get; } = new List<Tuple<Func<object, bool>, Action<object>>>();
 
         /// <summary>
         /// Gets or sets the CilGraph of items for the cloning operation.
@@ -98,11 +105,15 @@ namespace Cilador.Clone
             foreach (var source in verticesSortedForCreation)
             {
                 var cloners = clonersGetter.InvokeFor(source).ToArray();
-                if (this.TargetTransforms.TryGetValue(source, out Action<object> transform))
+                foreach(var predicateAndTransform in this.SourcePredicatesAndTargetTransforms)
                 {
-                    foreach(var cloner in cloners)
+                    if (predicateAndTransform.Item1(source))
                     {
-                        cloner.TargetTransform = transform;
+                        foreach (var cloner in cloners)
+                        {
+                            cloner.TargetTransform = predicateAndTransform.Item2;
+                        }
+                        break;
                     }
                 }
                 this.ClonersBySource.Add(source, cloners);

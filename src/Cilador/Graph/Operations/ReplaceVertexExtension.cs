@@ -13,28 +13,26 @@ namespace Cilador.Graph.Operations
             return source.ReplaceVertices(v => v == originalVertex, newVertexGraph, newVertex);
         }
 
-        public static ICilGraph ReplaceVertex(this ICilGraph source, object originalVertex, object newVertex, IEnumerable<object> originalRoots = null)
+        public static ICilGraph ReplaceVertex(this ICilGraph source, object originalVertex, object newVertex)
         {
-            return source.ReplaceVertices(v => v == originalVertex, newVertex, source.Roots);
+            return source.ReplaceVertices(v => v == originalVertex, newVertex);
         }
 
         public static ICilGraph ReplaceVertices(this ICilGraph source, Func<object, bool> predicate, ICilGraph newVertexGraph, object newVertex)
         {
             var newSource = source == newVertexGraph ? source : source.Merge(newVertexGraph);
-            return newSource.ReplaceVertices(predicate, newVertex, source.Roots);
+            return newSource.ReplaceVertices(predicate, newVertex);
         }
 
-        public static ICilGraph ReplaceVertices(this ICilGraph source, Func<object, bool> predicate, object newVertex, IEnumerable<object> originalRoots = null)
+        public static ICilGraph ReplaceVertices(this ICilGraph source, Func<object, bool> predicate, object newVertex)
         {
-            originalRoots = (originalRoots ?? source.Roots).Select(v => predicate(v) ? newVertex : v);
-
             var fullGraph = new CilGraph(
                 source.Vertices.Select(v => predicate(v) ? newVertex : v),
                 source.ParentChildEdges.Select(e => e.ReplaceVertices(predicate, newVertex, (from, to) => new ParentChildCilEdge(to, from))),
                 source.SiblingEdges.Select(e => e.ReplaceVertices(predicate, newVertex, (from, to) => new SiblingCilEdge(to, from))),
                 source.DependencyEdges.Select(e => e.ReplaceVertices(predicate, newVertex, (from, to) => new DependencyCilEdge(from, to))));
 
-            return fullGraph.GetClosedSetFor(originalRoots);
+            return fullGraph;
         }
 
         private static TCilEdge ReplaceVertices<TCilEdge>(

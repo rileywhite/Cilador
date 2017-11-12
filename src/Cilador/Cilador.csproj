@@ -86,9 +86,9 @@
     <Compile Include="Clone\PropertyCloner.cs" />
     <Compile Include="Clone\RootTypeCloner.cs" />
     <Compile Include="Clone\VariableCloner.cs" />
-    <Compile Include="Core\AdviceExecutor.cs" />
-    <Compile Include="Core\AspectBase.cs" />
     <Compile Include="Core\AdviceDelegates.cs" />
+    <Compile Include="Core\AspectBase.cs" />
+    <Compile Include="Core\AdviceForwarder.cs" />
     <Compile Include="Core\IntroductionBase.cs" />
     <Compile Include="Core\MethodJoinPoint.cs" />
     <Compile Include="Core\Pointcut.cs" />

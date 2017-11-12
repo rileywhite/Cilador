@@ -18,6 +18,7 @@ using Cilador.Clone;
 using Cilador.Graph.Factory;
 using Cilador.Graph.Operations;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using NUnit.Framework;
 using System;
 using System.Linq;
@@ -30,10 +31,10 @@ namespace Cilador.Core
         [Test]
         public void Test()
         {
-            ActionAdvice<string[]> advice = (action, arg) =>
+            ActionAdvice<string[]> advice = (arg) =>
             {
                 Console.WriteLine("Before...");
-                action(arg);
+                AdviceForwarder.ForwardToOriginalAction(arg);
                 Console.WriteLine("...After");
             };
 
@@ -53,12 +54,51 @@ namespace Cilador.Core
             targetMethod.Name = $"cilador_{Guid.NewGuid().ToString("N")}";
 
             var adviceGraph = graphGetter.Get(adviceMethod);
-
             var cloningContext = new CloningContext(adviceGraph, adviceMethod.DeclaringType, targetType);
-            cloningContext.TargetTransforms.Add(adviceMethod, t => { ((MethodDefinition)t).Name = "Run"; });
+
+            MethodDefinition adviceMethodTarget = null;
+            cloningContext.SourcePredicatesAndTargetTransforms.Add(Tuple.Create<Func<object, bool>, Action<object>>(
+                s => s == adviceMethod,
+                t =>
+                {
+                    adviceMethodTarget = (MethodDefinition)t;
+                    adviceMethodTarget.Name = "Run";
+                }));
+
             cloningContext.Execute();
 
             targetType.CustomAttributes.Clear();
+
+            var methodCallInstructions =
+                targetAssembly
+                    .MainModule
+                    .Types
+                    .SelectMany(t => t.Methods)
+                    .Where(m => m.HasBody)
+                    .SelectMany(m => m.Body.Instructions)
+                    .Where(i => i.OpCode == OpCodes.Call && i.Operand is MethodReference).ToArray();
+
+            foreach(var method in targetAssembly.MainModule.Types.SelectMany(t => t.Methods).Where(m => m.HasBody))
+            {
+                foreach (var instruction in method.Body.Instructions.Where(i => i.OpCode == OpCodes.Call && i.Operand is MethodReference && ((MethodReference)i.Operand).Name == targetMethod.Name))
+                {
+                    instruction.Operand = adviceMethodTarget;
+                }
+
+                foreach (var instruction in method.Body.Instructions.Where(i => i.OpCode == OpCodes.Call && i.Operand is MethodReference && ((MethodReference)i.Operand).Name == "ForwardToOriginalAction").ToArray())
+                {
+                    instruction.Operand = targetMethod;
+
+                    var firstArgInstruction = instruction.Previous;
+                    while(firstArgInstruction.Previous != null && firstArgInstruction.Previous.OpCode.Name.StartsWith("Ld"))
+                    {
+                        firstArgInstruction = firstArgInstruction.Previous;
+                    }
+                    var ilProcessor = method.Body.GetILProcessor();
+                    var newInstruction = ilProcessor.Create(OpCodes.Ldarg_0);
+                    ilProcessor.InsertBefore(firstArgInstruction, newInstruction);
+                }
+            }
 
             targetAssembly.Write("Cilador.TestAopTarget.Modified.exe", new WriterParameters { WriteSymbols = true });
         }
