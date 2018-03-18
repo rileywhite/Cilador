@@ -16,7 +16,7 @@
 
 using System;
 
-namespace Cilador.Core
+namespace Cilador.Aop
 {
     public delegate void ActionAdvice();
     public delegate void ActionAdvice<T>(T arg);

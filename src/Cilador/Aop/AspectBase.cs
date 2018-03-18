@@ -1,5 +1,5 @@
 ﻿///***************************************************************************/
-//// Copyright 2013-2017 Riley White
+//// Copyright 2013-2018 Riley White
 //// 
 //// Licensed under the Apache License, Version 2.0 (the "License");
 //// you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 //using Mono.Cecil;
 //using System.Collections.Generic;
 
-//namespace Cilador.Core
+//namespace Cilador.Aop
 //{
 //    public abstract class AspectBase
 //    {

@@ -15,21 +15,37 @@
 /***************************************************************************/
 
 using Cilador.Graph.Core;
+using Cilador.Graph.Factory;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 
-namespace Cilador.Core
+namespace Cilador.Aop
 {
     /// <summary>
     /// Represents an AOP Pointcut (https://en.wikipedia.org/wiki/Pointcut).
     /// </summary>
-    public class Pointcut
+    public class MethodPointcut
     {
-        public IEnumerable<MethodJoinPoint> GetJoinPoints(ICilGraph cilGraph)
+        public MethodPointcut(Func<MethodDefinition, bool> selector)
         {
-            return cilGraph.Vertices.OfType<MethodDefinition>().Select(methodDefinition => new MethodJoinPoint(methodDefinition));
+            Contract.Requires(selector != null);
+            Contract.Ensures(this.Selector != null);
+
+            this.Selector = selector;
+        }
+
+        public Func<MethodDefinition, bool> Selector { get; }
+
+        public IEnumerable<MethodJoinPoint> GetJoinPoints(ICilGraph sourceCilGraph, CilGraphGetter graphGetter)
+        {
+            return sourceCilGraph
+                .Vertices
+                .OfType<MethodDefinition>()
+                .Where(m => this.Selector(m))
+                .Select(m => new MethodJoinPoint(m.Module.AssemblyResolver, graphGetter, m));
         }
     }
 }

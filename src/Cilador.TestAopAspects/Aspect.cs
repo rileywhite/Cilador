@@ -14,7 +14,7 @@
 //// limitations under the License.
 ///***************************************************************************/
 
-//using Cilador.Core;
+//using Cilador.Aop;
 //using System;
 
 //namespace Cilador.TestAopAspects

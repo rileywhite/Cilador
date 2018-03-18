@@ -16,7 +16,7 @@
 
 using System;
 
-namespace Cilador.Core
+namespace Cilador.Aop
 {
     public static class AdviceForwarder
     {

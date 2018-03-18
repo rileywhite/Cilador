@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Cilador.Core
+namespace Cilador.Aop
 {
     internal static class Extensions
     {

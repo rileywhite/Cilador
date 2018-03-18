@@ -57,9 +57,6 @@ namespace Cilador.Clone
             this.CilGraph = cilGraph;
             this.RootSource = rootSource;
             this.RootTarget = rootTarget;
-            this.TypeCache = new Dictionary<string, TypeReference>();
-            this.FieldCache = new Dictionary<string, FieldReference>();
-            this.MethodCache = new Dictionary<string, MethodReference>();
             this.ClonersBySource = new Dictionary<object, IReadOnlyCollection<ICloner<object, object>>>(this.CilGraph.VertexCount);
         }
 
@@ -80,7 +77,7 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets or sets the collection of cloners for a given source.
         /// </summary>
-        private Dictionary<object, IReadOnlyCollection<ICloner<object, object>>> ClonersBySource { get; set; }
+        private Dictionary<object, IReadOnlyCollection<ICloner<object, object>>> ClonersBySource { get; }
 
         /// <summary>
         /// Executes the cloning actions specified by the context.
@@ -165,7 +162,7 @@ namespace Cilador.Clone
         /// <summary>
         /// Cache of root-imported types so that any given type is only looked up once
         /// </summary>
-        private Dictionary<string, TypeReference> TypeCache { get; set; }
+        private Dictionary<string, TypeReference> TypeCache { get; } = new Dictionary<string, TypeReference>();
 
         /// <summary>
         /// Root imports a type. That is, it finds the type with respect to the <see cref="RootTarget"/> type.
@@ -259,7 +256,7 @@ namespace Cilador.Clone
         /// <summary>
         /// Cache of root-imported fields so that any given type is only looked up once
         /// </summary>
-        private Dictionary<string, FieldReference> FieldCache { get; set; }
+        private Dictionary<string, FieldReference> FieldCache { get; } = new Dictionary<string, FieldReference>();
 
         /// <summary>
         /// Root imports a field. That is, it finds the field with respect to the <see cref="RootTarget"/> type.
@@ -317,7 +314,7 @@ namespace Cilador.Clone
         /// <summary>
         /// Cache of root-imported fields so that any given type is only looked up once
         /// </summary>
-        private Dictionary<string, MethodReference> MethodCache { get; set; }
+        private Dictionary<string, MethodReference> MethodCache { get; } = new Dictionary<string, MethodReference>();
 
         /// <summary>
         /// Root imports a method. That is, it finds the method with respect to the <see cref="RootTarget"/> type.

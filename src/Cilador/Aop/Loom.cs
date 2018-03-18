@@ -14,34 +14,32 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Graph.Factory;
 using Mono.Cecil;
-using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 
 namespace Cilador.Aop
 {
-    [TestFixture]
-    public class AddAdviceToMethod
+    public class Loom
     {
-        [Test]
-        public void Test()
+        public List<Tuple<Func<MethodDefinition, bool>, ActionAdvice<string[]>>> Aspects { get; }
+            = new List<Tuple<Func<MethodDefinition, bool>, ActionAdvice<string[]>>>();
+
+        public void Weave(AssemblyDefinition targetAssembly)
         {
             var resolver = new DefaultAssemblyResolver();
-            var targetAssembly = resolver.Resolve("Cilador.TestAopTarget");
-            var loom = new Loom();
+            var graphGetter = new CilGraphGetter();
 
-            loom.Aspects.Add(Tuple.Create<Func<MethodDefinition, bool>, ActionAdvice<string[]>>(
-                m => $"{m.DeclaringType.FullName}.{m.Name}" == "Cilador.TestAopTarget.Program.Run",
-                arg =>
+            var sourceGraph = graphGetter.Get(targetAssembly);
+            foreach(var aspect in this.Aspects)
+            {
+                var pointCut = new MethodPointcut(aspect.Item1);
+                foreach (var joinPoint in pointCut.GetJoinPoints(sourceGraph, graphGetter))
                 {
-                    Console.WriteLine("Before...");
-                    AdviceForwarder.ForwardToOriginalAction(arg);
-                    Console.WriteLine("...After");
-                }));
-
-            loom.Weave(targetAssembly);
-
-            targetAssembly.Write("Cilador.TestAopTarget.Modified.exe", new WriterParameters { WriteSymbols = true });
+                    joinPoint.ApplyAdvice(aspect.Item2);
+                }
+            }
         }
     }
 }
