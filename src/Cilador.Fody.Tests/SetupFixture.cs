@@ -14,17 +14,22 @@
 // limitations under the License.
 /***************************************************************************/
 
-using NUnit.ConsoleRunner;
+using NUnit.Framework;
 using System;
+using System.IO;
 using System.Reflection;
 
-namespace Cilador.Tests
+[SetUpFixture]
+public class SetupFixture
 {
-    internal class Program
+    [OneTimeSetUp]
+    public void SetUp()
     {
-        static void Main(string[] args)
-        {
-            Runner.Main(new[] { Assembly.GetExecutingAssembly().Location });
-        }
+        Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+    }
+
+    [OneTimeTearDown]
+    public void TearDown()
+    {
     }
 }

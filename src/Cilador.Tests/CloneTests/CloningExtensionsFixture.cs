@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.IO;
 
 namespace Cilador.Tests.CloneTests
 {
@@ -33,11 +34,11 @@ namespace Cilador.Tests.CloneTests
         private AssemblyDefinition CurrentAssembly { get; set; }
         private ModuleDefinition CurrentModule { get; set; }
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             this.Resolver = new DefaultAssemblyResolver();
-            this.CurrentAssembly = this.Resolver.Resolve(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
+            this.CurrentAssembly = this.Resolver.Resolve(Assembly.GetExecutingAssembly().GetName().Name);
             Assert.That(this.CurrentAssembly, Is.Not.Null);
             this.CurrentModule = this.CurrentAssembly.MainModule;
             Assert.That(this.CurrentModule, Is.Not.Null);
@@ -262,9 +263,36 @@ namespace Cilador.Tests.CloneTests
         [TestCase(Code.Stloc_3, 3)]
         [TestCase(Code.Ldloc_3, 3)]
         [TestCase(Code.Nop, null)]
-        [TestCase(Code.Stloc, -5, ExpectedException = typeof(InvalidOperationException))]
         public void TryGetVariableIndexTest(Code code, int? expectedVariableIndex)
         {
+            var opCodeField = typeof(OpCodes).GetField(
+                code.ToString(),
+                BindingFlags.Public | BindingFlags.Static);
+            Assert.IsNotNull(opCodeField);
+
+            OpCode opCode = (OpCode)opCodeField.GetValue(null);
+
+            Instruction instruction;
+            if ((opCode.OperandType == OperandType.InlineVar || opCode.OperandType == OperandType.ShortInlineVar) && expectedVariableIndex.HasValue)
+            {
+                VariableDefinition operand = this.CreateTestVariableDefinition(expectedVariableIndex.Value);
+                instruction = Instruction.Create(opCode, operand);
+            }
+            else
+            {
+                instruction = Instruction.Create(opCode);
+            }
+
+            int? variableIndex;
+            Assert.AreEqual(expectedVariableIndex.HasValue, instruction.TryGetVariableIndex(out variableIndex));
+            Assert.AreEqual(expectedVariableIndex, variableIndex);
+        }
+
+        public void TryGetVariableIndexTest()
+        {
+            var code = Code.Stloc;
+            var expectedVariableIndex = (int?)-5;
+
             var opCodeField = typeof(OpCodes).GetField(
                 code.ToString(),
                 BindingFlags.Public | BindingFlags.Static);

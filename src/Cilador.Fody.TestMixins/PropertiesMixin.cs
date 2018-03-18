@@ -24,7 +24,7 @@ namespace Cilador.Fody.TestMixins
     public class PropertiesMixin : IEmptyInterface
     {
         public int AutoPublicGetPublicSet { get; set; }
-        public int AutoPublicGetPrivateSet { get; }
+        public int AutoPublicGetPrivateSet { get; private set; }
         public int AutoPublicGetInternalSet { get; internal set; }
         public int AutoPublicGetProtectedSet { get; protected set; }
         public int AutoPublicGetProtectedInternalSet { get; protected internal set; }
@@ -36,17 +36,17 @@ namespace Cilador.Fody.TestMixins
         protected internal int AutoPrivateGetProtectedInternalSet { private get; set; }
 
         public int AutoInternalGetPublicSet { internal get; set; }
-        internal int AutoInternalGetPrivateSet { get; }
+        internal int AutoInternalGetPrivateSet { get; private set; }
         internal int AutoInternalGetInternalSet { get; set; }
         protected internal int AutoInternalGetProtectedInternalSet { internal get; set; }
 
         public int AutoProtectedGetPublicSet { protected get; set; }
-        protected int AutoProtectedGetPrivateSet { get; }
+        protected int AutoProtectedGetPrivateSet { get; private set; }
         protected int AutoProtectedGetProtectedSet { get; set; }
         protected internal int AutoProtectedGetProtectedInternalSet { protected get; set; }
 
         public int AutoProtectedInternalGetPublicSet { protected internal get; set; }
-        protected internal int AutoProtectedInternalGetPrivateSet { get; }
+        protected internal int AutoProtectedInternalGetPrivateSet { get; private set; }
         protected internal int AutoProtectedInternalGetInternalSet { get; internal set; }
         protected internal int AutoProtectedInternalGetProtectedSet { get; protected set; }
         protected internal int AutoProtectedInternalGetProtectedInternalSet { get; set; }
@@ -91,7 +91,7 @@ namespace Cilador.Fody.TestMixins
         protected internal int ProtectedInternalSet { set { } }
 
         public static int StaticAutoPublicGetPublicSet { get; set; }
-        public static int StaticAutoPublicGetPrivateSet { get; }
+        public static int StaticAutoPublicGetPrivateSet { get; private set; }
         public static int StaticAutoPublicGetInternalSet { get; internal set; }
         public static int StaticAutoPublicGetProtectedSet { get; protected set; }
         public static int StaticAutoPublicGetProtectedInternalSet { get; protected internal set; }
@@ -103,17 +103,17 @@ namespace Cilador.Fody.TestMixins
         protected internal static int StaticAutoPrivateGetProtectedInternalSet { private get; set; }
 
         public static int StaticAutoInternalGetPublicSet { internal get; set; }
-        internal static int StaticAutoInternalGetPrivateSet { get; }
+        internal static int StaticAutoInternalGetPrivateSet { get; private set; }
         internal static int StaticAutoInternalGetInternalSet { get; set; }
         protected internal static int StaticAutoInternalGetProtectedInternalSet { internal get; set; }
 
         public static int StaticAutoProtectedGetPublicSet { protected get; set; }
-        protected static int StaticAutoProtectedGetPrivateSet { get; }
+        protected static int StaticAutoProtectedGetPrivateSet { get; private set; }
         protected static int StaticAutoProtectedGetProtectedSet { get; set; }
         protected internal static int StaticAutoProtectedGetProtectedInternalSet { protected get; set; }
 
         public static int StaticAutoProtectedInternalGetPublicSet { protected internal get; set; }
-        protected internal static int StaticAutoProtectedInternalGetPrivateSet { get; }
+        protected internal static int StaticAutoProtectedInternalGetPrivateSet { get; private set; }
         protected internal static int StaticAutoProtectedInternalGetInternalSet { get; internal set; }
         protected internal static int StaticAutoProtectedInternalGetProtectedSet { get; protected set; }
         protected internal static int StaticAutoProtectedInternalGetProtectedInternalSet { get; set; }
@@ -159,7 +159,7 @@ namespace Cilador.Fody.TestMixins
 
         public object ReferenceTypeProperty { get { return null; } set { } }
         public DictionaryEntry ValueTypeProperty { get { return default(DictionaryEntry); } set { } }
-        public TypeCode EnumProperty { get { return default(TypeCode); } set { } }
+        public StringSplitOptions EnumProperty { get { return default(StringSplitOptions); } set { } }
         public EventHandler DelegateProperty { get { return null; } set { } }
         public List<int> ClosedGenericTypeProperty { get { return null; } set { } }
 
