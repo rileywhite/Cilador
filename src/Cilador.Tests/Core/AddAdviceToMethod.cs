@@ -14,13 +14,9 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Clone;
-using Cilador.Graph.Factory;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 using NUnit.Framework;
 using System;
-using System.Linq;
 
 namespace Cilador.Core
 {
