@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Aop;
 using Cilador.Graph.Core;
 using Cilador.Graph.Operations;
 using Cilador.Graph.TopologicalSort;
@@ -67,7 +68,7 @@ namespace Cilador.Clone
         /// <remarks>
         /// Only the first matched predicate will apply, so order matters.
         /// </remarks>
-        public List<Tuple<Func<object, bool>, Action<object>>> SourcePredicatesAndTargetTransforms { get; } = new List<Tuple<Func<object, bool>, Action<object>>>();
+        public List<Aspect<object>> InlineAspects { get; } = new List<Aspect<object>>();
 
         /// <summary>
         /// Gets or sets the CilGraph of items for the cloning operation.
@@ -102,13 +103,13 @@ namespace Cilador.Clone
             foreach (var source in verticesSortedForCreation)
             {
                 var cloners = clonersGetter.InvokeFor(source).ToArray();
-                foreach(var predicateAndTransform in this.SourcePredicatesAndTargetTransforms)
+                foreach(var aspect in this.InlineAspects)
                 {
-                    if (predicateAndTransform.Item1(source))
+                    if (aspect.PointCut.Selector(source))
                     {
                         foreach (var cloner in cloners)
                         {
-                            cloner.TargetTransform = predicateAndTransform.Item2;
+                            cloner.TargetTransform = aspect.Advisor.Advise;
                         }
                         break;
                     }

@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Graph.Factory;
 using Mono.Cecil;
 using NUnit.Framework;
 using System;
@@ -29,15 +30,19 @@ namespace Cilador.Aop
             var resolver = new DefaultAssemblyResolver();
             var targetAssembly = resolver.Resolve("Cilador.TestAopTarget");
             var loom = new Loom();
+            var graphGetter = new CilGraphGetter();
 
-            loom.Aspects.Add(Tuple.Create<Func<MethodDefinition, bool>, ActionAdvice<string[]>>(
-                m => $"{m.DeclaringType.FullName}.{m.Name}" == "Cilador.TestAopTarget.Program.Run",
-                arg =>
-                {
-                    Console.WriteLine("Before...");
-                    AdviceForwarder.ForwardToOriginalAction(arg);
-                    Console.WriteLine("...After");
-                }));
+            loom.Aspects.Add(new Aspect<MethodDefinition>(
+                new PointCut<MethodDefinition>(m => $"{m.DeclaringType.FullName}.{m.Name}" == "Cilador.TestAopTarget.Program.Run"),
+                new WrapMethodAdvisor<string>(
+                    resolver,
+                    graphGetter,
+                    arg =>
+                    {
+                        Console.WriteLine("Before...");
+                        AdviceForwarder.ForwardToOriginalAction(arg);
+                        Console.WriteLine("...After");
+                    })));
 
             loom.Weave(targetAssembly);
 

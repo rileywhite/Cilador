@@ -56,6 +56,10 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Aop\IAdvisor.cs" />
+    <Compile Include="Aop\Aspect.cs" />
+    <Compile Include="Aop\TransformAdvisor.cs" />
+    <Compile Include="Aop\WrapMethodAdvisor.cs" />
     <Compile Include="Clone\ClonerBase.cs" />
     <Compile Include="Clone\ClonerBaseContract.cs" />
     <Compile Include="Clone\ClonerContract.cs" />
@@ -92,8 +96,8 @@
     <Compile Include="Aop\Extensions.cs" />
     <Compile Include="Aop\IntroductionBase.cs" />
     <Compile Include="Aop\Loom.cs" />
-    <Compile Include="Aop\MethodJoinPoint.cs" />
-    <Compile Include="Aop\MethodPointcut.cs" />
+    <Compile Include="Aop\JoinPoint.cs" />
+    <Compile Include="Aop\PointCut.cs" />
     <Compile Include="Dispatch\CilItemFunctionDispatcherBase.cs" />
     <Compile Include="Dispatch\CilItemFunctionDispatcherContract.cs" />
     <Compile Include="Dispatch\DynamicResolver.cs" />

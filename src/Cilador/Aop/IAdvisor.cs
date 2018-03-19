@@ -14,27 +14,12 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Graph.Factory;
-using Mono.Cecil;
 using System;
-using System.Collections.Generic;
 
 namespace Cilador.Aop
 {
-    public class Loom
+    public interface IAdvisor<in TTarget>
     {
-        public List<Aspect<MethodDefinition>> Aspects { get; } = new List<Aspect<MethodDefinition>>();
-
-        public void Weave(AssemblyDefinition targetAssembly, IAssemblyResolver resolver = null, CilGraphGetter graphGetter = null)
-        {
-            resolver = resolver ?? targetAssembly.MainModule.AssemblyResolver;
-            graphGetter = graphGetter ?? new CilGraphGetter();
-
-            var sourceGraph = graphGetter.Get(targetAssembly);
-            foreach(var aspect in this.Aspects)
-            {
-                aspect.Apply(sourceGraph);
-            }
-        }
+        void Advise(TTarget target);
     }
 }

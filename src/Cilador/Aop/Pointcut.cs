@@ -24,12 +24,14 @@ using System.Linq;
 
 namespace Cilador.Aop
 {
+
+
     /// <summary>
     /// Represents an AOP Pointcut (https://en.wikipedia.org/wiki/Pointcut).
     /// </summary>
-    public class MethodPointcut
+    public class PointCut<TTarget>
     {
-        public MethodPointcut(Func<MethodDefinition, bool> selector)
+        public PointCut(Func<TTarget, bool> selector)
         {
             Contract.Requires(selector != null);
             Contract.Ensures(this.Selector != null);
@@ -37,15 +39,15 @@ namespace Cilador.Aop
             this.Selector = selector;
         }
 
-        public Func<MethodDefinition, bool> Selector { get; }
+        public Func<TTarget, bool> Selector { get; }
 
-        public IEnumerable<MethodJoinPoint> GetJoinPoints(ICilGraph sourceCilGraph, CilGraphGetter graphGetter)
+        public IEnumerable<JoinPoint<TTarget>> GetJoinPoints(ICilGraph sourceCilGraph)
         {
             return sourceCilGraph
                 .Vertices
-                .OfType<MethodDefinition>()
+                .OfType<TTarget>()
                 .Where(m => this.Selector(m))
-                .Select(m => new MethodJoinPoint(m.Module.AssemblyResolver, graphGetter, m));
+                .Select(m => new JoinPoint<TTarget>(m));
         }
     }
 }

@@ -14,27 +14,31 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Graph.Factory;
-using Mono.Cecil;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace Cilador.Aop
 {
-    public class Loom
+    /// <summary>
+    /// Represents an AOP join point (see https://en.wikipedia.org/wiki/Join_point).
+    /// </summary>
+    public class JoinPoint<TTarget>
     {
-        public List<Aspect<MethodDefinition>> Aspects { get; } = new List<Aspect<MethodDefinition>>();
-
-        public void Weave(AssemblyDefinition targetAssembly, IAssemblyResolver resolver = null, CilGraphGetter graphGetter = null)
+        public JoinPoint(TTarget target)
         {
-            resolver = resolver ?? targetAssembly.MainModule.AssemblyResolver;
-            graphGetter = graphGetter ?? new CilGraphGetter();
+            Contract.Requires(target != null);
+            Contract.Ensures(this.Target != null);
 
-            var sourceGraph = graphGetter.Get(targetAssembly);
-            foreach(var aspect in this.Aspects)
-            {
-                aspect.Apply(sourceGraph);
-            }
+            this.Target = target;
+        }
+
+        internal TTarget Target { get; }
+
+        public void ApplyAdvice(IAdvisor<TTarget> advisor)
+        {
+            Contract.Requires(advisor != null);
+
+            advisor.Advise(this.Target);
         }
     }
 }
