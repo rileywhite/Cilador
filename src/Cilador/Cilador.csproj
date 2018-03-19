@@ -56,8 +56,9 @@
     <Compile Include="..\CommonAssemblyInfo.cs">
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Aop\IAdvisor.cs" />
-    <Compile Include="Aop\Aspect.cs" />
+    <Compile Include="Aop\Core\AspectContracts.cs" />
+    <Compile Include="Aop\Core\IAdvisor.cs" />
+    <Compile Include="Aop\Core\Aspect.cs" />
     <Compile Include="Aop\TransformAdvisor.cs" />
     <Compile Include="Aop\WrapMethodAdvisor.cs" />
     <Compile Include="Clone\ClonerBase.cs" />
@@ -91,13 +92,12 @@
     <Compile Include="Clone\RootTypeCloner.cs" />
     <Compile Include="Clone\VariableCloner.cs" />
     <Compile Include="Aop\AdviceDelegates.cs" />
-    <Compile Include="Aop\AspectBase.cs" />
     <Compile Include="Aop\AdviceForwarder.cs" />
     <Compile Include="Aop\Extensions.cs" />
-    <Compile Include="Aop\IntroductionBase.cs" />
-    <Compile Include="Aop\Loom.cs" />
-    <Compile Include="Aop\JoinPoint.cs" />
-    <Compile Include="Aop\PointCut.cs" />
+    <Compile Include="Aop\Core\IntroductionBase.cs" />
+    <Compile Include="Aop\Core\Loom.cs" />
+    <Compile Include="Aop\Core\JoinPoint.cs" />
+    <Compile Include="Aop\Core\PointCut.cs" />
     <Compile Include="Dispatch\CilItemFunctionDispatcherBase.cs" />
     <Compile Include="Dispatch\CilItemFunctionDispatcherContract.cs" />
     <Compile Include="Dispatch\DynamicResolver.cs" />

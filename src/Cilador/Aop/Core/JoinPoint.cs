@@ -17,7 +17,7 @@
 using System;
 using System.Diagnostics.Contracts;
 
-namespace Cilador.Aop
+namespace Cilador.Aop.Core
 {
     /// <summary>
     /// Represents an AOP join point (see https://en.wikipedia.org/wiki/Join_point).

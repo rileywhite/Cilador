@@ -15,33 +15,39 @@
 /***************************************************************************/
 
 using Cilador.Graph.Core;
+using Cilador.Graph.Factory;
+using Mono.Cecil;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Linq;
 
-namespace Cilador.Aop
+namespace Cilador.Aop.Core
 {
-    public class Aspect<TTarget>
-    {
-        public Aspect(PointCut<TTarget> pointCut, IAdvisor<TTarget> advisor)
-        {
-            Contract.Requires(pointCut != null);
-            Contract.Requires(advisor != null);
-            Contract.Ensures(this.PointCut != null);
-            Contract.Ensures(this.Advisor != null);
 
-            this.PointCut = pointCut;
-            this.Advisor = advisor;
+
+    /// <summary>
+    /// Represents an AOP Pointcut (https://en.wikipedia.org/wiki/Pointcut).
+    /// </summary>
+    public class PointCut<TTarget>
+    {
+        public PointCut(Func<TTarget, bool> selector)
+        {
+            Contract.Requires(selector != null);
+            Contract.Ensures(this.Selector != null);
+
+            this.Selector = selector;
         }
 
-        public PointCut<TTarget> PointCut { get; }
-        public IAdvisor<TTarget> Advisor { get; }
+        public Func<TTarget, bool> Selector { get; }
 
-        public void Apply(ICilGraph sourceGraph)
+        public IEnumerable<JoinPoint<TTarget>> GetJoinPoints(ICilGraph sourceCilGraph)
         {
-            foreach (var joinPoint in this.PointCut.GetJoinPoints(sourceGraph))
-            {
-                joinPoint.ApplyAdvice(this.Advisor);
-            }
+            return sourceCilGraph
+                .Vertices
+                .OfType<TTarget>()
+                .Where(m => this.Selector(m))
+                .Select(m => new JoinPoint<TTarget>(m));
         }
     }
 }

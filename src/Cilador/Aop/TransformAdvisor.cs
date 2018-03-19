@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Aop.Core;
 using System;
 
 namespace Cilador.Aop

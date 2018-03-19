@@ -16,12 +16,10 @@
 
 using System;
 
-namespace Cilador.Aop
+namespace Cilador.Aop.Core
 {
-    /// <summary>
-    /// Represents an AOP introduction, or a data/behavior added to an exsiting types (similar to a mixin or trait)
-    /// </summary>
-    public abstract class IntroductionBase
+    public interface IAdvisor<in TTarget>
     {
+        void Advise(TTarget target);
     }
 }

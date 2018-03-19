@@ -14,40 +14,27 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Graph.Core;
 using Cilador.Graph.Factory;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Linq;
 
-namespace Cilador.Aop
+namespace Cilador.Aop.Core
 {
-
-
-    /// <summary>
-    /// Represents an AOP Pointcut (https://en.wikipedia.org/wiki/Pointcut).
-    /// </summary>
-    public class PointCut<TTarget>
+    public class Loom
     {
-        public PointCut(Func<TTarget, bool> selector)
+        public List<Aspect> Aspects { get; } = new List<Aspect>();
+
+        public void Weave(AssemblyDefinition targetAssembly, IAssemblyResolver resolver = null, CilGraphGetter graphGetter = null)
         {
-            Contract.Requires(selector != null);
-            Contract.Ensures(this.Selector != null);
+            resolver = resolver ?? targetAssembly.MainModule.AssemblyResolver;
+            graphGetter = graphGetter ?? new CilGraphGetter();
 
-            this.Selector = selector;
-        }
-
-        public Func<TTarget, bool> Selector { get; }
-
-        public IEnumerable<JoinPoint<TTarget>> GetJoinPoints(ICilGraph sourceCilGraph)
-        {
-            return sourceCilGraph
-                .Vertices
-                .OfType<TTarget>()
-                .Where(m => this.Selector(m))
-                .Select(m => new JoinPoint<TTarget>(m));
+            var sourceGraph = graphGetter.Get(targetAssembly);
+            foreach(var aspect in this.Aspects)
+            {
+                aspect.Apply(sourceGraph);
+            }
         }
     }
 }

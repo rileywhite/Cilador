@@ -14,7 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Aop;
+using Cilador.Aop.Core;
 using Cilador.Graph.Core;
 using Cilador.Graph.Operations;
 using Cilador.Graph.TopologicalSort;

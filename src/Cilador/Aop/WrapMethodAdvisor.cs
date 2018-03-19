@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Aop.Core;
 using Cilador.Clone;
 using Cilador.Graph.Factory;
 using Mono.Cecil;

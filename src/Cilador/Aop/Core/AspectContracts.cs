@@ -14,12 +14,20 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Graph.Core;
 using System;
+using System.Diagnostics.Contracts;
 
-namespace Cilador.Aop
+namespace Cilador.Aop.Core
 {
-    public interface IAdvisor<in TTarget>
+    [ContractClassFor(typeof(Aspect))]
+    public class AspectContracts : Aspect
     {
-        void Advise(TTarget target);
+        public override void Apply(ICilGraph sourceGraph)
+        {
+            Contract.Requires(sourceGraph != null);
+
+            throw new NotSupportedException();
+        }
     }
 }
