@@ -14,7 +14,6 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Aop.Core;
 using Cilador.Graph.Core;
 using System;
 using System.Diagnostics.Contracts;

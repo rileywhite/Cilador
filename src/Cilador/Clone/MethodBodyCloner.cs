@@ -123,13 +123,6 @@ namespace Cilador.Clone
             this.Target.InitLocals = this.Source.InitLocals;
 
             this.Target.MaxStackSize = this.Source.MaxStackSize;
-
-            if (this.Source.Scope != null)
-            {
-                // TODO method body scope may be tough to get right
-                // for now raise an exception
-                throw new NotSupportedException("An unsupported configuration was detected. Please consider filing a bug report on the project's github page.");
-            }
         }
     }
 }

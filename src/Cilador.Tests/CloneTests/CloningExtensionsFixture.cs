@@ -38,7 +38,7 @@ namespace Cilador.Tests.CloneTests
         public void TestFixtureSetUp()
         {
             this.Resolver = new DefaultAssemblyResolver();
-            this.CurrentAssembly = this.Resolver.Resolve(Assembly.GetExecutingAssembly().GetName().Name);
+            this.CurrentAssembly = this.Resolver.Resolve(AssemblyNameReference.Parse(Assembly.GetExecutingAssembly().GetName().Name));
             Assert.That(this.CurrentAssembly, Is.Not.Null);
             this.CurrentModule = this.CurrentAssembly.MainModule;
             Assert.That(this.CurrentModule, Is.Not.Null);
@@ -117,18 +117,18 @@ namespace Cilador.Tests.CloneTests
         [Test]
         public void IsNestedWithinTest()
         {
-            var nestedType = this.CurrentModule.Import(typeof(Nested)).Resolve();
-            var level1_1Type = this.CurrentModule.Import(typeof(Nested.Level1_1)).Resolve();
-            var level1_1_1Type = this.CurrentModule.Import(typeof(Nested.Level1_1.Level1_1_1)).Resolve();
-            var level1_1_1_1Type = this.CurrentModule.Import(typeof(Nested.Level1_1.Level1_1_1.Level1_1_1_1)).Resolve();
-            var level1_2Type = this.CurrentModule.Import(typeof(Nested.Level1_2)).Resolve();
-            var level1_2_1TType = this.CurrentModule.Import(typeof(Nested.Level1_2.Level1_2_1<>)).Resolve();
-            var level1_2_1TTypeReference = this.CurrentModule.Import(typeof(Nested.Level1_2.Level1_2_1<>));
-            var level1_2_1T_1Type = this.CurrentModule.Import(typeof(Nested.Level1_2.Level1_2_1<>.Level1_2_1_1)).Resolve();
-            var level1_2_1T_1TypeReference = this.CurrentModule.Import(typeof(Nested.Level1_2.Level1_2_1<>.Level1_2_1_1));
+            var nestedType = this.CurrentModule.ImportReference(typeof(Nested)).Resolve();
+            var level1_1Type = this.CurrentModule.ImportReference(typeof(Nested.Level1_1)).Resolve();
+            var level1_1_1Type = this.CurrentModule.ImportReference(typeof(Nested.Level1_1.Level1_1_1)).Resolve();
+            var level1_1_1_1Type = this.CurrentModule.ImportReference(typeof(Nested.Level1_1.Level1_1_1.Level1_1_1_1)).Resolve();
+            var level1_2Type = this.CurrentModule.ImportReference(typeof(Nested.Level1_2)).Resolve();
+            var level1_2_1TType = this.CurrentModule.ImportReference(typeof(Nested.Level1_2.Level1_2_1<>)).Resolve();
+            var level1_2_1TTypeReference = this.CurrentModule.ImportReference(typeof(Nested.Level1_2.Level1_2_1<>));
+            var level1_2_1T_1Type = this.CurrentModule.ImportReference(typeof(Nested.Level1_2.Level1_2_1<>.Level1_2_1_1)).Resolve();
+            var level1_2_1T_1TypeReference = this.CurrentModule.ImportReference(typeof(Nested.Level1_2.Level1_2_1<>.Level1_2_1_1));
 
-            var level1_2_1IntTypeReference = this.CurrentModule.Import(typeof(Nested.Level1_2.Level1_2_1<int>));
-            var level1_2_1Int_1TypeReference = this.CurrentModule.Import(typeof(Nested.Level1_2.Level1_2_1<int>.Level1_2_1_1));
+            var level1_2_1IntTypeReference = this.CurrentModule.ImportReference(typeof(Nested.Level1_2.Level1_2_1<int>));
+            var level1_2_1Int_1TypeReference = this.CurrentModule.ImportReference(typeof(Nested.Level1_2.Level1_2_1<int>.Level1_2_1_1));
 
             // not nested within self
             Assert.That(nestedType.IsNestedWithin(nestedType), Is.False);
@@ -179,14 +179,14 @@ namespace Cilador.Tests.CloneTests
             // just check some existing methods that match and fail expectations
             var cloningContext = new FakeCloningConext
             {
-                RootSource = this.CurrentModule.Import(typeof(int)).Resolve(),
-                RootTarget = this.CurrentModule.Import(typeof(double)).Resolve(),
+                RootSource = this.CurrentModule.ImportReference(typeof(int)).Resolve(),
+                RootTarget = this.CurrentModule.ImportReference(typeof(double)).Resolve(),
             };
 
-            var intTryParseMethod = this.CurrentModule.Import(typeof(int).GetMethod("Parse", new Type[] { typeof(string) }));
-            var intTryParseWithExtraParametersMethod = this.CurrentModule.Import(typeof(double).GetMethod("Parse", new Type[] { typeof(string), typeof(IFormatProvider) }));
-            var doubleTryParseMethod = this.CurrentModule.Import(typeof(double).GetMethod("Parse", new Type[] { typeof(string) }));
-            var decimalTryParseMethod = this.CurrentModule.Import(typeof(decimal).GetMethod("Parse", new Type[] { typeof(string) }));
+            var intTryParseMethod = this.CurrentModule.ImportReference(typeof(int).GetMethod("Parse", new Type[] { typeof(string) }));
+            var intTryParseWithExtraParametersMethod = this.CurrentModule.ImportReference(typeof(double).GetMethod("Parse", new Type[] { typeof(string), typeof(IFormatProvider) }));
+            var doubleTryParseMethod = this.CurrentModule.ImportReference(typeof(double).GetMethod("Parse", new Type[] { typeof(string) }));
+            var decimalTryParseMethod = this.CurrentModule.ImportReference(typeof(decimal).GetMethod("Parse", new Type[] { typeof(string) }));
 
             Assert.IsTrue(doubleTryParseMethod.SignatureEquals(intTryParseMethod, cloningContext));
             Assert.IsFalse(doubleTryParseMethod.SignatureEquals(intTryParseWithExtraParametersMethod, cloningContext));
@@ -196,13 +196,13 @@ namespace Cilador.Tests.CloneTests
             // now use a generic method
             cloningContext = new FakeCloningConext
             {
-                RootSource = this.CurrentModule.Import(typeof(List<>)).Resolve(),
-                RootTarget = this.CurrentModule.Import(typeof(Queue<>)).Resolve(),
+                RootSource = this.CurrentModule.ImportReference(typeof(List<>)).Resolve(),
+                RootTarget = this.CurrentModule.ImportReference(typeof(Queue<>)).Resolve(),
             };
 
-            var listMethod = this.CurrentModule.Import(typeof(List<>).GetMethods().First(method => method.Name == "GetEnumerator" && method.ContainsGenericParameters));
-            var queueMethod = this.CurrentModule.Import(typeof(Queue<>).GetMethods().First(method => method.Name == "GetEnumerator" && method.ContainsGenericParameters));
-            var queueClosedMethod = this.CurrentModule.Import(typeof(Queue<int>).GetMethod("GetEnumerator"));
+            var listMethod = this.CurrentModule.ImportReference(typeof(List<>).GetMethods().First(method => method.Name == "GetEnumerator" && method.ContainsGenericParameters));
+            var queueMethod = this.CurrentModule.ImportReference(typeof(Queue<>).GetMethods().First(method => method.Name == "GetEnumerator" && method.ContainsGenericParameters));
+            var queueClosedMethod = this.CurrentModule.ImportReference(typeof(Queue<int>).GetMethod("GetEnumerator"));
 
             Assert.IsTrue(queueMethod.SignatureEquals(listMethod, cloningContext));
             Assert.IsFalse(listMethod.SignatureEquals(queueMethod, cloningContext));
@@ -243,7 +243,7 @@ namespace Cilador.Tests.CloneTests
 
         private VariableDefinition CreateTestVariableDefinition(int index)
         {
-            VariableDefinition variable = new VariableDefinition(this.CurrentModule.Import(typeof(object)));
+            VariableDefinition variable = new VariableDefinition(this.CurrentModule.ImportReference(typeof(object)));
             VariableDefinitionIndexField.SetValue(variable, index);
             return variable;
         }

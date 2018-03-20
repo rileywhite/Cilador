@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Aop.Advisors.Transform;
 using Cilador.Aop.Core;
 using Cilador.Clone;
 using Cilador.Graph.Factory;
@@ -23,7 +24,7 @@ using System;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
-namespace Cilador.Aop
+namespace Cilador.Aop.Advisors.WrapMethod
 {
     public class WrapMethodAdvisor<TArg> : IAdvisor<MethodDefinition>
     {
@@ -49,7 +50,7 @@ namespace Cilador.Aop
         {
             var targetMethod = target;
             var targetAssembly = targetMethod.Module.Assembly;
-            var adviceAssembly = this.Resolver.Resolve(this.Advice.Target.GetType().Assembly.FullName);
+            var adviceAssembly = this.Resolver.Resolve(AssemblyNameReference.Parse(this.Advice.Target.GetType().Assembly.FullName));
             var adviceType = adviceAssembly.MainModule.GetType(this.Advice.Target.GetType().FullName.ToCecilTypeName());
             var adviceMethod = adviceType.Methods.Single(m => m.Name == this.Advice.Method.Name);
 

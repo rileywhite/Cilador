@@ -14,6 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Aop.Advisors.WrapMethod;
 using Cilador.Aop.Core;
 using Cilador.Graph.Factory;
 using Mono.Cecil;
@@ -29,7 +30,7 @@ namespace Cilador.Aop
         public void Test()
         {
             var resolver = new DefaultAssemblyResolver();
-            var targetAssembly = resolver.Resolve("Cilador.TestAopTarget");
+            var targetAssembly = resolver.Resolve(AssemblyNameReference.Parse("Cilador.TestAopTarget"), new ReaderParameters { ReadWrite = true });
             var loom = new Loom();
             var graphGetter = new CilGraphGetter();
 
@@ -47,7 +48,7 @@ namespace Cilador.Aop
 
             loom.Weave(targetAssembly);
 
-            targetAssembly.Write("Cilador.TestAopTarget.Modified.exe", new WriterParameters { WriteSymbols = true });
+            targetAssembly.Write();
         }
     }
 }

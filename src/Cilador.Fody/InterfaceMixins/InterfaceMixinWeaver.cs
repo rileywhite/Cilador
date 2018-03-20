@@ -24,7 +24,6 @@ using System.Linq;
 
 namespace Cilador.Fody.InterfaceMixins
 {
-
     /// <summary>
     /// This is a method object for a single execution of <see cref="InterfaceMixinWeave"/>.
     /// </summary>
@@ -60,7 +59,7 @@ namespace Cilador.Fody.InterfaceMixins
                 throw new WeavingException(string.Format("Configured mixin definition interface type is not an interface: [{0}]", interfaceType.FullName));
             }
 
-            if (mixinType.Interfaces.All(@interface => @interface.FullName != interfaceType.FullName))
+            if (mixinType.Interfaces.All(@interface => @interface.InterfaceType.FullName != interfaceType.FullName))
             {
                 throw new WeavingException(string.Format(
                     "Configured mixin implementation type [{0}] must implement the interface specified mixin interface definition [{1}]",
@@ -76,7 +75,7 @@ namespace Cilador.Fody.InterfaceMixins
                     interfaceType.FullName));
             }
 
-            if (target.Interfaces.Any(@interface => @interface.Resolve().FullName == interfaceType.FullName))
+            if (target.Interfaces.Any(@interface => @interface.InterfaceType.Resolve().FullName == interfaceType.FullName))
             {
                 throw new WeavingException(string.Format(
                     "Target type [{0}] already implements interface to be mixed [{1}]",
@@ -109,7 +108,7 @@ namespace Cilador.Fody.InterfaceMixins
         /// </summary>
         public void Execute()
         {
-            this.Target.Interfaces.Add(this.Target.Module.Import(this.InterfaceType));
+            this.Target.Interfaces.Add(new InterfaceImplementation(this.Target.Module.ImportReference(this.InterfaceType)));
             try
             {
                 var graph = new CilGraphGetter().Get(this.Source);

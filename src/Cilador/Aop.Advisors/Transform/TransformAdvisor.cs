@@ -17,7 +17,7 @@
 using Cilador.Aop.Core;
 using System;
 
-namespace Cilador.Aop
+namespace Cilador.Aop.Advisors.Transform
 {
     public class TransformAdvisor<TTarget> : IAdvisor<TTarget>
     {

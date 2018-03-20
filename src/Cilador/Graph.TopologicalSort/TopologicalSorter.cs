@@ -23,68 +23,68 @@ namespace Cilador.Graph.TopologicalSort
         // Tarjan's algorithm: http://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
         private class Algorithm<T>
         {
-            private readonly ILookup<T, T> _edges;
-            private readonly IEqualityComparer<T> _comparer;
+            private ILookup<T, T> Edges { get; }
+            private IEqualityComparer<T> Comparer { get; }
 
-            private Dictionary<T, int> _indices;
-            private Dictionary<T, int> _lowlink;
-            private List<IList<T>> _result;
-            private Stack<T> _s;
-            private int _index;
+            private Dictionary<T, int> Indices { get; set; }
+            private Dictionary<T, int> LowLink { get; set; }
+            private List<IList<T>> Result { get; set; }
+            private Stack<T> Stack { get; set; }
+            private int Index { get; set; }
 
             public Algorithm(ILookup<T, T> edges, IEqualityComparer<T> comparer)
             {
-                _edges = edges;
-                _comparer = comparer ?? EqualityComparer<T>.Default;
+                this.Edges = edges;
+                this.Comparer = comparer ?? EqualityComparer<T>.Default;
             }
 
             public List<IList<T>> MainLoop(IEnumerable<T> vertices)
             {
-                _result = new List<IList<T>>();
-                _indices = new Dictionary<T, int>(_comparer);
-                _lowlink = new Dictionary<T, int>(_comparer);
-                _s = new Stack<T>();
-                _index = 0;
+                this.Result = new List<IList<T>>();
+                this.Indices = new Dictionary<T, int>(Comparer);
+                this.LowLink = new Dictionary<T, int>(Comparer);
+                this.Stack = new Stack<T>();
+                this.Index = 0;
                 foreach (var v in vertices)
                 {
-                    if (!_indices.ContainsKey(v))
+                    if (!Indices.ContainsKey(v))
                     {
                         StrongConnect(v);
                     }
                 }
-                return _result;
+                return Result;
             }
 
             private void StrongConnect(T v)
             {
-                _indices[v] = _index;
-                _lowlink[v] = _index;
-                _index++;
-                _s.Push(v);
+                this.Indices[v] = Index;
+                this.LowLink[v] = Index;
+                this.Index++;
+                this.Stack.Push(v);
 
-                foreach (var w in _edges[v])
+                foreach (var w in this.Edges[v])
                 {
-                    if (!_indices.ContainsKey(w))
+                    if (!this.Indices.ContainsKey(w))
                     {
-                        StrongConnect(w);
-                        _lowlink[v] = Math.Min(_lowlink[v], _lowlink[w]);
+                        this.StrongConnect(w);
+                        this.LowLink[v] = Math.Min(this.LowLink[v], this.LowLink[w]);
                     }
-                    else if (_s.Contains(w))
+                    else if (this.Stack.Contains(w))
                     {
-                        _lowlink[v] = Math.Min(_lowlink[v], _indices[w]);
+                        this.LowLink[v] = Math.Min(this.LowLink[v], this.Indices[w]);
                     }
                 }
 
-                if (_lowlink[v] == _indices[v])
+                if (this.LowLink[v] == this.Indices[v])
                 {
                     var scc = new List<T>();
                     T w;
                     do
                     {
-                        w = _s.Pop();
+                        w = this.Stack.Pop();
                         scc.Add(w);
-                    } while (!_comparer.Equals(v, w));
-                    _result.Add(scc);
+                    } while (!Comparer.Equals(v, w));
+                    this.Result.Add(scc);
                 }
             }
         }

@@ -25,7 +25,7 @@ namespace Cilador.Graph.Factory
     /// <summary>
     /// Represents CIL as a directed acyclic graph.
     /// </summary>
-    internal class CilGraph : ICilGraph
+    public class CilGraph : ICilGraph
     {
         /// <summary>
         /// Creates a new <see cref="CilGraph"/> with the given vertices and edges.

@@ -16,7 +16,7 @@
 
 using System;
 
-namespace Cilador.Aop
+namespace Cilador.Aop.Advisors.WrapMethod
 {
     public static class AdviceForwarder
     {

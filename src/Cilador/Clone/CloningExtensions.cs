@@ -172,7 +172,7 @@ namespace Cilador.Clone
                     if (variableIndex < 0)
                     {
                         throw new InvalidOperationException(
-                            $"Did not expect a negative variable index for {((VariableDefinition)instruction.Operand).Name}");
+                            $"Did not expect a negative variable index {((VariableDefinition)instruction.Operand).Index}");
                     }
                     return true;
 

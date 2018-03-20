@@ -67,7 +67,7 @@ namespace Cilador.Fody.Core
             Contract.Requires(type != null);
             Contract.Ensures(Contract.Result<TypeDefinition>() != null);
 
-            var assemblyDefinition = weavingContext.AssemblyResolver.Resolve(type.Assembly.FullName);
+            var assemblyDefinition = weavingContext.AssemblyResolver.Resolve(AssemblyNameReference.Parse(type.Assembly.FullName));
             if (assemblyDefinition == null)
             {
                 throw new ArgumentException("Cannot resolve assembly for type: " + type.AssemblyQualifiedName, "type");
@@ -100,7 +100,7 @@ namespace Cilador.Fody.Core
                 throw new ArgumentException("Expected type name and assembly name separated by a comma: " + assemblyQualifiedTypeName, "assemblyQualifiedTypeName");
             }
 
-            var assemblyDefinition = weavingContext.AssemblyResolver.Resolve(nameParts[1]);
+            var assemblyDefinition = weavingContext.AssemblyResolver.Resolve(AssemblyNameReference.Parse(nameParts[1]));
             if (assemblyDefinition == null)
             {
                 throw new ArgumentException("Cannot resolve assembly for type: " + assemblyQualifiedTypeName, "assemblyQualifiedTypeName");

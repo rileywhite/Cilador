@@ -48,11 +48,5 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Cilador\Cilador.csproj">
-      <Project>{da13736d-dcf1-4364-bc97-0201e2aa052b}</Project>
-      <Name>Cilador</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

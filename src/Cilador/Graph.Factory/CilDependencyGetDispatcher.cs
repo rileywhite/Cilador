@@ -15,6 +15,7 @@
 /***************************************************************************/
 
 using Cilador.Dispatch;
+using Cilador.Graph.Factory;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
@@ -134,11 +135,12 @@ namespace Cilador.Graph.Factory
             }
 
             // a type depends on its interface types, if any
-            if (item.HasInterfaces) foreach (var interfaceType in item.Interfaces)
+            if (item.HasInterfaces) foreach (var interfaceImplementation in item.Interfaces)
             {
-                foreach (var dependency in interfaceType.GetDependencies())
+                yield return interfaceImplementation.InterfaceType;
+                if (interfaceImplementation.HasCustomAttributes) foreach (var customAttribute in interfaceImplementation.CustomAttributes)
                 {
-                    yield return dependency;
+                    yield return customAttribute;
                 }
             }
 

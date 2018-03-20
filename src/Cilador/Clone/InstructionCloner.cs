@@ -266,7 +266,7 @@ namespace Cilador.Clone
             /// <returns>New target instruction.</returns>
             protected override Instruction InvokeForOperand(FieldReference operand, OpCode opCode, ILProcessor ilProcessor)
             {
-                return ilProcessor.Create(opCode, new FieldReference("", this.CloningContext.RootTarget.Module.Import(typeof(void))));
+                return ilProcessor.Create(opCode, new FieldReference("", this.CloningContext.RootTarget.Module.ImportReference(typeof(void))));
             }
 
             /// <summary>
@@ -342,7 +342,7 @@ namespace Cilador.Clone
             {
                 return ilProcessor.Create(
                     opCode,
-                    new MethodReference("", this.CloningContext.RootTarget.Module.Import(typeof(void))));
+                    new MethodReference("", this.CloningContext.RootTarget.Module.ImportReference(typeof(void))));
             }
 
             /// <summary>
@@ -354,7 +354,7 @@ namespace Cilador.Clone
             /// <returns>New target instruction.</returns>
             protected override Instruction InvokeForOperand(ParameterDefinition operand, OpCode opCode, ILProcessor ilProcessor)
             {
-                return ilProcessor.Create(opCode, new ParameterDefinition(this.CloningContext.RootTarget.Module.Import(typeof(void))));
+                return ilProcessor.Create(opCode, new ParameterDefinition(this.CloningContext.RootTarget.Module.ImportReference(typeof(void))));
             }
 
             /// <summary>
@@ -390,7 +390,7 @@ namespace Cilador.Clone
             /// <returns>New target instruction.</returns>
             protected override Instruction InvokeForOperand(TypeReference operand, OpCode opCode, ILProcessor ilProcessor)
             {
-                return ilProcessor.Create(opCode, this.CloningContext.RootTarget.Module.Import(typeof(void)));
+                return ilProcessor.Create(opCode, this.CloningContext.RootTarget.Module.ImportReference(typeof(void)));
             }
 
             /// <summary>
@@ -402,7 +402,7 @@ namespace Cilador.Clone
             /// <returns>New target instruction.</returns>
             protected override Instruction InvokeForOperand(VariableDefinition operand, OpCode opCode, ILProcessor ilProcessor)
             {
-                return ilProcessor.Create(opCode, new VariableDefinition(this.CloningContext.RootTarget.Module.Import(typeof(void))));
+                return ilProcessor.Create(opCode, new VariableDefinition(this.CloningContext.RootTarget.Module.ImportReference(typeof(void))));
             }
         }
 

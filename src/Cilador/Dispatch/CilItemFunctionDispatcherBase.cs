@@ -27,7 +27,7 @@ namespace Cilador.Dispatch
     /// </summary>
     /// <typeparam name="TReturn">Type of the return value for the behavior.</typeparam>
     [ContractClass(typeof(CilItemFunctionDispatcherContract<>))]
-    internal abstract class CilItemFunctionDispatcherBase<TReturn>
+    public abstract class CilItemFunctionDispatcherBase<TReturn>
     {
         /// <summary>
         /// Invokes the behavior.

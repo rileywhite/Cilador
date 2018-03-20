@@ -83,9 +83,16 @@ namespace Cilador.Clone
             this.Target.DeclaringType = this.CloningContext.RootImport(this.Source.DeclaringType).Resolve();
             this.Target.BaseType = this.CloningContext.RootImport(this.Source.BaseType);
 
-            foreach (var interfaceType in this.Source.Interfaces)
+            foreach (var interfaceImplementation in this.Source.Interfaces)
             {
-                this.Target.Interfaces.Add(this.CloningContext.RootImport(interfaceType));
+                var iIClone = new InterfaceImplementation(this.CloningContext.RootImport(interfaceImplementation.InterfaceType));
+                if (iIClone.HasCustomAttributes)
+                {
+                    // TODO support custom attributes on an interface implementation (new in Mono.Cecil 0.10.0)
+                    // (should fit nicely with cloning operations, but it will take a bit of time)
+                    throw new NotSupportedException("Cannont clone an interface implementation with custom attributes");
+                }
+                this.Target.Interfaces.Add(iIClone);
             }
 
             // TODO look more closely at type packing size

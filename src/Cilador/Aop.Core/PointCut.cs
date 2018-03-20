@@ -24,8 +24,6 @@ using System.Linq;
 
 namespace Cilador.Aop.Core
 {
-
-
     /// <summary>
     /// Represents an AOP Pointcut (https://en.wikipedia.org/wiki/Pointcut).
     /// </summary>

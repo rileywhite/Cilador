@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dispatch\Cilador.Dispatch.csproj" />
+    <ProjectReference Include="..\Graph.Core\Cilador.Graph.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Cilador.Aop
+namespace Cilador.Aop.Advisors.WrapMethod
 {
     internal static class Extensions
     {

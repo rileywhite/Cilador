@@ -61,7 +61,7 @@ namespace Cilador.Clone
             var target = new MethodDefinition(
                 string.Format("ctor_{0:N}", Guid.NewGuid()),
                 MethodAttributes.Private | MethodAttributes.HideBySig,
-                this.CloningContext.RootTarget.Module.Import(typeof(void)));
+                this.CloningContext.RootTarget.Module.ImportReference(typeof(void)));
             this.RootTypeCloner.Target.Methods.Add(target);
             return target;
         }

@@ -375,7 +375,7 @@ namespace Cilador.Fody.Core
             Contract.Ensures(!Contract.Result<Dictionary<TypeDefinition, List<CustomAttribute>>>().Values.Any(
                 customAttributes => customAttributes == null || customAttributes.Any(customAttribute => customAttribute == null)));
 
-            var weaveAttributeInterfaceType = this.ModuleDefinition.Import(typeof(IWeaveAttribute)).Resolve();
+            var weaveAttributeInterfaceType = this.ModuleDefinition.ImportReference(typeof(IWeaveAttribute)).Resolve();
 
             var weaveAttributesByTargetTypes = new Dictionary<TypeDefinition, List<CustomAttribute>>();
             foreach (var type in this.ModuleDefinition.Types)
@@ -390,9 +390,10 @@ namespace Cilador.Fody.Core
                     var attributeTypeDefinition = attribute.AttributeType.Resolve();
                     Contract.Assert(attributeTypeDefinition != null);
 
-                    foreach (var attributeInterfaceType in attributeTypeDefinition.Interfaces)
+                    foreach (var attributeInterfaceImplementation in attributeTypeDefinition.Interfaces)
                     {
-                        if (attributeInterfaceType.Resolve() == weaveAttributeInterfaceType)
+                        if (attributeInterfaceImplementation.InterfaceType.Resolve() == weaveAttributeInterfaceType)
+                            // TODO custom attributes matter here?
                         {
                             List<CustomAttribute> weaveAttributesForType;
                             if (!weaveAttributesByTargetTypes.TryGetValue(type.Resolve(), out weaveAttributesForType))
@@ -447,7 +448,7 @@ namespace Cilador.Fody.Core
             try
             {
                 return this.Weaves.First(command =>
-                    this.ModuleDefinition.Import(command.Metadata.AttributeType).Resolve() == weaveAttributeType &&
+                    this.ModuleDefinition.ImportReference(command.Metadata.AttributeType).Resolve() == weaveAttributeType &&
                     command.Value.IsInitialized).Value;
             }
             catch(Exception e)

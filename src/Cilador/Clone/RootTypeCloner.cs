@@ -84,7 +84,7 @@ namespace Cilador.Clone
                     this.Source.FullName));
             }
 
-            if (this.Source.BaseType.Resolve().FullName != this.Source.Module.Import(typeof(object)).Resolve().FullName)
+            if (this.Source.BaseType.Resolve().FullName != this.Source.Module.ImportReference(typeof(object)).Resolve().FullName)
             {
                 throw new InvalidOperationException(string.Format(
                     "Cloning root source type cannot have a base type other than System.Object: [{0}]",

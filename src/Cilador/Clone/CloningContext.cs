@@ -217,7 +217,7 @@ namespace Cilador.Clone
                 }
                 else
                 {
-                    importedType = this.RootTarget.Module.Import(type);
+                    importedType = this.RootTarget.Module.ImportReference(type);
                 }
             }
 
@@ -285,7 +285,7 @@ namespace Cilador.Clone
             if (!this.ClonersBySource.TryGetValue(field.Resolve(), out IReadOnlyCollection<ICloner<object, object>> cloners))
             {
                 // not a mixed type field, so do a simple import
-                importedField = this.RootTarget.Module.Import(field);
+                importedField = this.RootTarget.Module.ImportReference(field);
             }
             else
             {
@@ -366,7 +366,7 @@ namespace Cilador.Clone
                 // is constructed from a completely cloned open generic method
                 var genericInstanceMethod = (GenericInstanceMethod)method;
 
-                var importedLocalMethod = this.RootTarget.Module.Import(localMethod);
+                var importedLocalMethod = this.RootTarget.Module.ImportReference(localMethod);
                 if (method.DeclaringType.IsGenericInstance)
                 {
                     Contract.Assert(importedDeclaringType.IsGenericInstance);
@@ -435,7 +435,7 @@ namespace Cilador.Clone
 
                     var localMethod = importedDeclaringType.Resolve().Methods.FirstOrDefault(possibleMethod => possibleMethod.SignatureEquals(resolvedMethod, this));
 
-                    importedMethod = this.RootTarget.Module.Import(localMethod);
+                    importedMethod = this.RootTarget.Module.ImportReference(localMethod);
                     Contract.Assume(importedMethod != null);
 
                     if (method.DeclaringType.IsGenericInstance)

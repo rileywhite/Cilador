@@ -28,7 +28,7 @@ namespace Cilador.Dispatch
     /// <typeparam name="TReturn">Type of the return value for each operation.</typeparam>
     /// <typeparam name="TState">Type of the ptional state to use within dispatching functionality.</typeparam>
     [ContractClass(typeof(InstructionOperandFunctionDispatcherContract<,>))]
-    internal abstract class InstructionOperandFunctionDispatcherBase<TReturn, TState>
+    public abstract class InstructionOperandFunctionDispatcherBase<TReturn, TState>
     {
         /// <summary>
         /// Invokes the bahvior for an instruction's operand.
@@ -223,7 +223,7 @@ namespace Cilador.Dispatch
     /// for operations that care only about the operand itself.
     /// </summary>
     /// <typeparam name="TReturn"></typeparam>
-    internal abstract class InstructionOperandFunctionDispatcherBase<TReturn>
+    public abstract class InstructionOperandFunctionDispatcherBase<TReturn>
         : InstructionOperandFunctionDispatcherBase<TReturn, object>
     {
         /// <summary>

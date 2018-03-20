@@ -22,7 +22,7 @@ namespace Cilador.Graph.Core
     /// <summary>
     /// Used to ensure unique edges are collected in hash sets.
     /// </summary>
-    internal class EdgeEqualityComparer : IEqualityComparer<ICilEdge>
+    public class EdgeEqualityComparer : IEqualityComparer<ICilEdge>
     {
         /// <summary>
         /// Checks equality between two edges.

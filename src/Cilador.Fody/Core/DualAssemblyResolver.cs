@@ -66,7 +66,7 @@ namespace Cilador.Fody.Core
                 {
                     try
                     {
-                        var assembly = resolver.Resolve(fullName, parameters);
+                        var assembly = resolver.Resolve(AssemblyNameReference.Parse(fullName), parameters);
                         if (assembly != null) { return assembly; }
                     }
                     catch { /* Fail silently */ }
@@ -119,5 +119,28 @@ namespace Cilador.Fody.Core
         {
             return this.Resolve(name, new ReaderParameters { AssemblyResolver = this, MetadataResolver = this.WeavingContext.MetadataResolver });
         }
+
+        #region IDisposable Support
+
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        #endregion
     }
 }
