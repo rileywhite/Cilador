@@ -29,7 +29,8 @@ namespace Cilador.Fody.InterfaceMixins
     /// of mixin implementations into those target types.
     /// </summary>
     [Export(nameof(IWeave), typeof(IWeave))]
-    [WeaveMeta(typeof(InterfaceMixinAttribute), typeof(InterfaceMixinConfigType))]
+    [ExportMetadata("AttributeType", typeof(InterfaceMixinAttribute))]
+    [ExportMetadata("ConfigType", typeof(InterfaceMixinConfigType))]
     internal class InterfaceMixinWeave : IWeave
     {
         /// <summary>

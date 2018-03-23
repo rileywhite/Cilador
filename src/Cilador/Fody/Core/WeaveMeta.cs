@@ -16,6 +16,7 @@
 
 using Cilador.Fody.Config;
 using System;
+using System.Collections.Generic;
 using System.Composition;
 using System.Diagnostics.Contracts;
 
@@ -28,17 +29,18 @@ namespace Cilador.Fody.Core
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class WeaveMeta : ExportAttribute, IWeaveMeta
     {
-        /// <summary>
-        /// Creates a new <see cref="WeaveMeta"/>
-        /// </summary>
-        /// <param name="attributeType">Attribute that identifies a target for the weave.</param>
-        /// <param name="configType">Configuration type, if any, needed by the weave.</param>
-        public WeaveMeta(Type attributeType, Type configType = null)
+        public WeaveMeta(IDictionary<string, object> properties)
         {
-            Contract.Requires(attributeType != null);
-            Contract.Ensures(this.AttributeType != null);
-            this.AttributeType = attributeType;
-            this.ConfigType = configType;
+            if (!properties.TryGetValue(nameof(AttributeType), out var attributeType))
+            {
+                throw new ArgumentException($"No value with key {nameof(AttributeType)} was supplied.", nameof(properties));
+            }
+            this.AttributeType = (Type)attributeType;
+
+            if(properties.TryGetValue(nameof(ConfigType), out var configType))
+            {
+                this.ConfigType = (Type)configType;
+            }
         }
 
         /// <summary>
