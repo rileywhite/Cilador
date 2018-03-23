@@ -38,17 +38,17 @@ namespace Cilador.Fody.Tests.Common
         private static readonly string TestProjectDirectoryRelativeToExecutingAssemblyFormat = @"..\..\..\{0}";
 
         private static readonly string TestAssemblyPathRelativeToExecutingAssemblyFormat =
-            TestProjectDirectoryRelativeToExecutingAssemblyFormat + @"\bin\{1}\{0}.dll";
+            TestProjectDirectoryRelativeToExecutingAssemblyFormat + @"\bin\{1}\Cilador.{0}.dll";
 
         public static string GetTestPath(string assemblyFilename)
         {
             var targetPathFormat = Path.GetFullPath(Path.Combine(
                 Path.GetDirectoryName(new Uri(typeof(TestContent).Assembly.CodeBase).LocalPath),
-                string.Format(TestAssemblyPathRelativeToExecutingAssemblyFormat, assemblyFilename, "{0}")));
+                string.Format(TestAssemblyPathRelativeToExecutingAssemblyFormat, assemblyFilename.Substring(8), "{0}")));
 #if (DEBUG)
-            return string.Format(targetPathFormat, "Debug");
+            return string.Format(targetPathFormat, @"Debug\netstandard2.0");
 #else
-            return string.Format(targetPathFormat, "Release");
+            return string.Format(targetPathFormat, @"Release\netstandard2.0");
 #endif
         }
 
