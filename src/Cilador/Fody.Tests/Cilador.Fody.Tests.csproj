@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\NUnit.3.10.1\build\NUnit.props" Condition="Exists('..\..\packages\NUnit.3.10.1\build\NUnit.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{AD396828-38A7-4C36-ADA3-C7058A600879}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Cilador.Fody.Tests</RootNamespace>
+    <AssemblyName>Cilador.Fody.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Mono.Cecil, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Mono.Cecil.0.10.0\lib\net40\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Mono.Cecil.0.10.0\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Mono.Cecil.0.10.0\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks, Version=0.10.0.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Mono.Cecil.0.10.0\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework, Version=3.10.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NUnit.3.10.1\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\CommonAssemblyInfo.cs">
+      <Link>CommonAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="Common\CommonExtensions.cs" />
+    <Compile Include="Common\GenericParameterTypeValidator.cs" />
+    <Compile Include="Common\GenericTypeValidator.cs" />
+    <Compile Include="Common\MethodValidator.cs" />
+    <Compile Include="Common\ModuleWeaverHelper.cs" />
+    <Compile Include="Common\NonGenericTypeValidator.cs" />
+    <Compile Include="Common\TestContent.cs" />
+    <Compile Include="Common\TypeValidatorBase.cs" />
+    <Compile Include="Common\TypeValidatorBaseContract.cs" />
+    <Compile Include="InterfaceMixinTests\ArrayFixture.cs" />
+    <Compile Include="InterfaceMixinTests\BasicInterfaceAndContentFixture.cs" />
+    <Compile Include="InterfaceMixinTests\ConstructorsFixture.cs" />
+    <Compile Include="InterfaceMixinTests\DynamicFixture.cs" />
+    <Compile Include="InterfaceMixinTests\GenericsFixture.cs" />
+    <Compile Include="InterfaceMixinTests\ImplicitAndExplicitImplementationFixture.cs" />
+    <Compile Include="InterfaceMixinTests\InstanceInitializationFixture.cs" />
+    <Compile Include="InterfaceMixinTests\InterfaceWithOnlyPrimitiveTypesFixture.cs" />
+    <Compile Include="InterfaceMixinTests\MemberMixingFixture.cs" />
+    <Compile Include="InterfaceMixinTests\StaticInitializationFixture.cs" />
+    <Compile Include="InterfaceMixinTests\TryCatchFinallyFixture.cs" />
+    <Compile Include="InterfaceMixinTests\UnsupportedFunctionalityFixture.cs" />
+    <Compile Include="ModuleWeaverGeneralTests\ConfigSerializationTests.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SetupFixture.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Fody.TestMixinInterfaces\Cilador.Fody.TestMixinInterfaces.csproj">
+      <Project>{26a0a76b-5d54-49fa-a8aa-dbd145df5dc0}</Project>
+      <Name>Cilador.Fody.TestMixinInterfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Fody.TestMixins\Cilador.Fody.TestMixins.csproj">
+      <Project>{3ac027f5-a70e-4244-996f-4ebd2f00d56f}</Project>
+      <Name>Cilador.Fody.TestMixins</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Fody.TestMixinTargets\Cilador.Fody.TestMixinTargets.csproj">
+      <Project>{e2d56796-27ab-4e0e-87f4-e490454483f5}</Project>
+      <Name>Cilador.Fody.TestMixinTargets</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Fody\Cilador.Fody.csproj">
+      <Project>{3499a09b-e490-40f8-9c39-b780a5e5f61a}</Project>
+      <Name>Cilador.Fody</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\NUnit.3.10.1\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\NUnit.3.10.1\build\NUnit.props'))" />
+  </Target>
+</Project>

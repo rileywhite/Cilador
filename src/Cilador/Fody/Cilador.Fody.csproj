@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Composition" Version="1.0.31" />
+    <PackageReference Include="Mono.Cecil" Version="0.10.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Clone\Cilador.Clone.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Config\WeaveConfig.cs">
+      <DependentUpon>WeaveConfig.xsd</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="call &quot;$(DevEnvDir)..\Tools\VsDevCmd.bat&quot;&#xD;&#xA;&quot;$(TargetFrameworkSDKToolsDirectory)xsd.exe&quot; /c /l:cs /n:Cilador.Fody.Config /o:&quot;$(ProjectDir)Config&quot; &quot;$(ProjectDir)Config\WeaveConfig.xsd&quot;&#xD;&#xA;" />
+  </Target>
+
+</Project>
