@@ -16,7 +16,7 @@
 
 using Cilador.Aop.Core;
 using Cilador.Aop.IntroduceType;
-using Cilador.Aop.WrapMethod;
+using Cilador.Aop.Decorate;
 using Cilador.Graph.Factory;
 using Mono.Cecil;
 using NUnit.Framework;
@@ -25,10 +25,10 @@ using System;
 namespace Cilador.Tests
 {
     [TestFixture]
-    public class AddAdviceToMethod
+    public class AopTests
     {
         [Test]
-        public void CanAddAdviceToMethod()
+        public void CanDecorateActionMethodWithReplacement()
         {
             using (var resolver = new DefaultAssemblyResolver())
             using (var targetAssembly = resolver.Resolve(AssemblyNameReference.Parse("Cilador.TestAopTarget"), new ReaderParameters { ReadWrite = true }))
@@ -38,15 +38,42 @@ namespace Cilador.Tests
 
                 loom.Aspects.Add(new WeavableConcept<MethodDefinition>(
                     new PointCut<MethodDefinition>(m => $"{m.DeclaringType.FullName}.{m.Name}" == "Cilador.TestAopTarget.Program.Run"),
-                    new WrapMethodAdvisor<string>(
+                    new ActionDecorator<string>(
                         resolver,
                         graphGetter,
                         arg =>
                         {
                             Console.WriteLine("Before...");
-                            AdviceForwarder.ForwardToOriginalAction(arg);
+                            Forwarders.ForwardToOriginalAction(arg);
                             Console.WriteLine("...After");
                         })));
+
+                loom.Weave(targetAssembly);
+
+                targetAssembly.Write();
+            }
+        }
+        [Test]
+        public void CanDecorateActionMethodWithoutReplacement()
+        {
+            using (var resolver = new DefaultAssemblyResolver())
+            using (var targetAssembly = resolver.Resolve(AssemblyNameReference.Parse("Cilador.TestAopTarget"), new ReaderParameters { ReadWrite = true }))
+            {
+                var loom = new Loom();
+                var graphGetter = new CilGraphGetter();
+
+                loom.Aspects.Add(new WeavableConcept<MethodDefinition>(
+                    new PointCut<MethodDefinition>(m => $"{m.DeclaringType.FullName}.{m.Name}" == "Cilador.TestAopTarget.Program.RunAgain"),
+                    new ActionDecorator<string>(
+                        resolver,
+                        graphGetter,
+                        arg =>
+                        {
+                            Console.WriteLine("Before...");
+                            Forwarders.ForwardToOriginalAction(arg);
+                            Console.WriteLine("...After");
+                        },
+                        name => $"{name}_Wrapper")));
 
                 loom.Weave(targetAssembly);
 

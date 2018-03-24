@@ -16,25 +16,14 @@
 
 using System;
 
-namespace Cilador.TestAopTarget
+namespace Cilador.Aop.Decorate
 {
-    public class Program
+    internal static class Extensions
     {
-        public static void Main(string[] args)
+        public static string ToCecilTypeName(this string source)
         {
-            var p = new Program();
-            p.Run(args);
-            p.RunAgain(args);
-        }
-
-        public void Run(string[] args)
-        {
-            Console.WriteLine("Hello World!");
-        }
-
-        public void RunAgain(string[] args)
-        {
-            Console.WriteLine("Hello Again World!");
+            if(source == null) { return source; }
+            return source.Replace('+', '/');
         }
     }
 }

@@ -60,7 +60,11 @@ namespace Cilador.Aop.IntroduceType
             Contract.Requires(!string.IsNullOrWhiteSpace(this.TargetTypeName));
 
             var sourceGraph = this.GraphGetter.Get(this.SourceType);
+
+            // TODO root types do not clone all contents, so the enum values (cecil FieldDefinition items) are not copied
             var targetType = new TypeDefinition(this.TargetTypeNamespace, this.TargetTypeName, this.SourceType.Attributes);
+            targetType.BaseType = target.ImportReference(this.SourceType.BaseType);
+            targetType.Attributes = this.SourceType.Attributes;
             target.Types.Add(targetType);
             var cloningContext = new CloningContext(sourceGraph, this.SourceType, targetType);
         }

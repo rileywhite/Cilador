@@ -14,16 +14,17 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Aop.Core;
+using Mono.Cecil;
 using System;
 
-namespace Cilador.Aop.WrapMethod
+namespace Cilador.Aop.Decorate
 {
-    internal static class Extensions
+    public class PropertyDecorator : IConceptWeaver<PropertyDefinition>
     {
-        public static string ToCecilTypeName(this string source)
+        public void Weave(PropertyDefinition target)
         {
-            if(source == null) { return source; }
-            return source.Replace('+', '/');
+            throw new NotImplementedException();
         }
     }
 }

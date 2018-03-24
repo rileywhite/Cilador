@@ -16,9 +16,9 @@
 
 using System;
 
-namespace Cilador.Aop.WrapMethod
+namespace Cilador.Aop.Decorate
 {
-    public static class AdviceForwarder
+    public static class Forwarders
     {
         public static void ForwardToOriginalAction() { throw new NotSupportedException(); }
         public static void ForwardToOriginalAction<T>(T arg) { throw new NotSupportedException(); }

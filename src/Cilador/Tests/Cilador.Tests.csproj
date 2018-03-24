@@ -85,13 +85,13 @@
       <Project>{34c87ee0-3b08-40fa-a593-85dfe1588bba}</Project>
       <Name>Cilador.Aop.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Aop.Decorate\Cilador.Aop.Decorate.csproj">
+      <Project>{16131d6b-a6f3-4f7d-82f8-b231d6e32ee8}</Project>
+      <Name>Cilador.Aop.Decorate</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Aop.IntroduceType\Cilador.Aop.IntroduceType.csproj">
       <Project>{7223638d-fd68-404d-92b5-636f0f59fc4e}</Project>
       <Name>Cilador.Aop.IntroduceType</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Aop.WrapMethod\Cilador.Aop.WrapMethod.csproj">
-      <Project>{1da95477-6b85-46b8-9557-349f761b0d1b}</Project>
-      <Name>Cilador.Aop.WrapMethod</Name>
     </ProjectReference>
     <ProjectReference Include="..\Clone\Cilador.Clone.csproj">
       <Project>{f30e7b7e-68af-4125-8a0e-8bc993e7cbd8}</Project>

@@ -33,9 +33,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.Fody.Tests", "Cilad
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.Aop.Transform", "Cilador\Aop.Transform\Cilador.Aop.Transform.csproj", "{9CA9D33E-BE96-40AB-92C3-E14FDF53A2AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.Aop.WrapMethod", "Cilador\Aop.WrapMethod\Cilador.Aop.WrapMethod.csproj", "{1DA95477-6B85-46B8-9557-349F761B0D1B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.Aop.IntroduceType", "Cilador\Aop.IntroduceType\Cilador.Aop.IntroduceType.csproj", "{7223638D-FD68-404D-92B5-636F0F59FC4E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cilador.Aop.Decorate", "Cilador\Aop.Decorate\Cilador.Aop.Decorate.csproj", "{16131D6B-A6F3-4F7D-82F8-B231D6E32EE8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -103,14 +103,14 @@ Global
 		{9CA9D33E-BE96-40AB-92C3-E14FDF53A2AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CA9D33E-BE96-40AB-92C3-E14FDF53A2AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9CA9D33E-BE96-40AB-92C3-E14FDF53A2AD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1DA95477-6B85-46B8-9557-349F761B0D1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1DA95477-6B85-46B8-9557-349F761B0D1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1DA95477-6B85-46B8-9557-349F761B0D1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1DA95477-6B85-46B8-9557-349F761B0D1B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7223638D-FD68-404D-92B5-636F0F59FC4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7223638D-FD68-404D-92B5-636F0F59FC4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7223638D-FD68-404D-92B5-636F0F59FC4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7223638D-FD68-404D-92B5-636F0F59FC4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16131D6B-A6F3-4F7D-82F8-B231D6E32EE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16131D6B-A6F3-4F7D-82F8-B231D6E32EE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16131D6B-A6F3-4F7D-82F8-B231D6E32EE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16131D6B-A6F3-4F7D-82F8-B231D6E32EE8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
