@@ -14,23 +14,16 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Aop.Core;
 using System;
 
-namespace Cilador.Aop.Advisors.Transform
+namespace Cilador.Aop.WrapMethod
 {
-    public class TransformAdvisor<TTarget> : IAdvisor<TTarget>
+    internal static class Extensions
     {
-        public TransformAdvisor(Action<TTarget> transform)
+        public static string ToCecilTypeName(this string source)
         {
-            this.Transform = transform;
-        }
-
-        public Action<TTarget> Transform { get; }
-
-        public void Advise(TTarget target)
-        {
-            this.Transform?.Invoke(target);
+            if(source == null) { return source; }
+            return source.Replace('+', '/');
         }
     }
 }

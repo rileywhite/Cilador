@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mono.Cecil" Version="0.10.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Aop.Core\Cilador.Aop.Core.csproj" />
+    <ProjectReference Include="..\Clone\Cilador.Clone.csproj" />
+    <ProjectReference Include="..\Graph.Factory\Cilador.Graph.Factory.csproj" />
+  </ItemGroup>
+
+</Project>

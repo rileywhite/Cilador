@@ -16,7 +16,7 @@
 
 using System;
 
-namespace Cilador.Aop.Advisors.WrapMethod
+namespace Cilador.Aop.WrapMethod
 {
     public delegate void ActionAdvice();
     public delegate void ActionAdvice<T>(T arg);

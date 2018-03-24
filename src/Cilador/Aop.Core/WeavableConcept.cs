@@ -20,14 +20,28 @@ using System.Diagnostics.Contracts;
 
 namespace Cilador.Aop.Core
 {
-    [ContractClassFor(typeof(Aspect))]
-    public class AspectContracts : Aspect
+    public class WeavableConcept<TTarget> : IAopWeavableConcept
     {
-        public override void Apply(ICilGraph sourceGraph)
+        public WeavableConcept(PointCut<TTarget> pointCut, IConceptWeaver<TTarget> conceptWeaver)
         {
-            Contract.Requires(sourceGraph != null);
+            Contract.Requires(pointCut != null);
+            Contract.Requires(conceptWeaver != null);
+            Contract.Ensures(this.PointCut != null);
+            Contract.Ensures(this.ConceptWeaver != null);
 
-            throw new NotSupportedException();
+            this.PointCut = pointCut;
+            this.ConceptWeaver = conceptWeaver;
+        }
+
+        public PointCut<TTarget> PointCut { get; }
+        public IConceptWeaver<TTarget> ConceptWeaver { get; }
+
+        public void Weave(ICilGraph sourceGraph)
+        {
+            foreach (var joinPoint in this.PointCut.GetJoinPoints(sourceGraph))
+            {
+                joinPoint.Weave(this.ConceptWeaver);
+            }
         }
     }
 }

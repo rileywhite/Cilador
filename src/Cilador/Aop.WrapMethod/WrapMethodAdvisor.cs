@@ -14,7 +14,7 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Aop.Advisors.Transform;
+using Cilador.Aop.Transform;
 using Cilador.Aop.Core;
 using Cilador.Clone;
 using Cilador.Graph.Factory;
@@ -24,9 +24,9 @@ using System;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
-namespace Cilador.Aop.Advisors.WrapMethod
+namespace Cilador.Aop.WrapMethod
 {
-    public class WrapMethodAdvisor<TArg> : IAdvisor<MethodDefinition>
+    public class WrapMethodAdvisor<TArg> : IConceptWeaver<MethodDefinition>
     {
         public WrapMethodAdvisor(IAssemblyResolver resolver, CilGraphGetter graphGetter, ActionAdvice<TArg> advice)
         {
@@ -46,7 +46,7 @@ namespace Cilador.Aop.Advisors.WrapMethod
         public CilGraphGetter GraphGetter { get; }
         public ActionAdvice<TArg> Advice { get; }
 
-        public void Advise(MethodDefinition target)
+        public void Weave(MethodDefinition target)
         {
             var targetMethod = target;
             var targetAssembly = targetMethod.Module.Assembly;
@@ -61,7 +61,7 @@ namespace Cilador.Aop.Advisors.WrapMethod
             var cloningContext = new CloningContext(adviceGraph, adviceMethod.DeclaringType, targetMethod.DeclaringType);
 
             MethodDefinition adviceMethodTarget = null;
-            cloningContext.InlineAspects.Add(new Aspect<object>(
+            cloningContext.InlineWeaves.Add(new WeavableConcept<object>(
                 new PointCut<object>(s => s == adviceMethod),
                 new TransformAdvisor<object>(
                 t =>
@@ -75,7 +75,7 @@ namespace Cilador.Aop.Advisors.WrapMethod
             targetMethod.DeclaringType.CustomAttributes.Clear();
 
             var redirectMethodCallsLoom = new Loom();
-            redirectMethodCallsLoom.Aspects.Add(new Aspect<MethodDefinition>(
+            redirectMethodCallsLoom.Aspects.Add(new WeavableConcept<MethodDefinition>(
                 new PointCut<MethodDefinition>(m => m.HasBody),
                 new TransformAdvisor<MethodDefinition>(
                     method =>

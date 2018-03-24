@@ -68,7 +68,7 @@ namespace Cilador.Clone
         /// <remarks>
         /// Only the first matched predicate will apply, so order matters.
         /// </remarks>
-        public List<Aspect<object>> InlineAspects { get; } = new List<Aspect<object>>();
+        public List<WeavableConcept<object>> InlineWeaves { get; } = new List<WeavableConcept<object>>();
 
         /// <summary>
         /// Gets or sets the CilGraph of items for the cloning operation.
@@ -103,13 +103,13 @@ namespace Cilador.Clone
             foreach (var source in verticesSortedForCreation)
             {
                 var cloners = clonersGetter.InvokeFor(source).ToArray();
-                foreach(var aspect in this.InlineAspects)
+                foreach(var inlineWeave in this.InlineWeaves)
                 {
-                    if (aspect.PointCut.Selector(source))
+                    if (inlineWeave.PointCut.Selector(source))
                     {
                         foreach (var cloner in cloners)
                         {
-                            cloner.TargetTransform = aspect.Advisor.Advise;
+                            cloner.TargetTransform = inlineWeave.ConceptWeaver.Weave;
                         }
                         break;
                     }

@@ -16,10 +16,12 @@
 
 using System;
 
-namespace Cilador.Aop.Core
+namespace Cilador.Tests
 {
-    public interface IAdvisor<in TTarget>
+    public enum Status
     {
-        void Advise(TTarget target);
+        Unknown,
+        Good,
+        Error
     }
 }

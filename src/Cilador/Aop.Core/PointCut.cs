@@ -15,8 +15,6 @@
 /***************************************************************************/
 
 using Cilador.Graph.Core;
-using Cilador.Graph.Factory;
-using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;

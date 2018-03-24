@@ -17,8 +17,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cilador.Graph.Operations", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cilador.Clone", "Cilador\Clone\Cilador.Clone.csproj", "{F30E7B7E-68AF-4125-8A0E-8BC993E7CBD8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cilador.Aop.Advisors", "Cilador\Aop.Advisors\Cilador.Aop.Advisors.csproj", "{B4714C90-3A81-400B-8037-3477642C7110}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cilador.Fody", "Cilador\Fody\Cilador.Fody.csproj", "{3499A09B-E490-40F8-9C39-B780A5E5F61A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cilador.Fody.TestMixinInterfaces", "Cilador\Fody.TestMixinInterfaces\Cilador.Fody.TestMixinInterfaces.csproj", "{26A0A76B-5D54-49FA-A8AA-DBD145DF5DC0}"
@@ -32,6 +30,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.Tests", "Cilador\Tests\Cilador.Tests.csproj", "{BC913E9C-6528-490C-AE5E-152A5D0A22F3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.Fody.Tests", "Cilador\Fody.Tests\Cilador.Fody.Tests.csproj", "{AD396828-38A7-4C36-ADA3-C7058A600879}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.Aop.Transform", "Cilador\Aop.Transform\Cilador.Aop.Transform.csproj", "{9CA9D33E-BE96-40AB-92C3-E14FDF53A2AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.Aop.WrapMethod", "Cilador\Aop.WrapMethod\Cilador.Aop.WrapMethod.csproj", "{1DA95477-6B85-46B8-9557-349F761B0D1B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cilador.Aop.IntroduceType", "Cilador\Aop.IntroduceType\Cilador.Aop.IntroduceType.csproj", "{7223638D-FD68-404D-92B5-636F0F59FC4E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -67,10 +71,6 @@ Global
 		{F30E7B7E-68AF-4125-8A0E-8BC993E7CBD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F30E7B7E-68AF-4125-8A0E-8BC993E7CBD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F30E7B7E-68AF-4125-8A0E-8BC993E7CBD8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B4714C90-3A81-400B-8037-3477642C7110}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B4714C90-3A81-400B-8037-3477642C7110}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B4714C90-3A81-400B-8037-3477642C7110}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B4714C90-3A81-400B-8037-3477642C7110}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3499A09B-E490-40F8-9C39-B780A5E5F61A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3499A09B-E490-40F8-9C39-B780A5E5F61A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3499A09B-E490-40F8-9C39-B780A5E5F61A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -99,6 +99,18 @@ Global
 		{AD396828-38A7-4C36-ADA3-C7058A600879}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD396828-38A7-4C36-ADA3-C7058A600879}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD396828-38A7-4C36-ADA3-C7058A600879}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CA9D33E-BE96-40AB-92C3-E14FDF53A2AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CA9D33E-BE96-40AB-92C3-E14FDF53A2AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CA9D33E-BE96-40AB-92C3-E14FDF53A2AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CA9D33E-BE96-40AB-92C3-E14FDF53A2AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DA95477-6B85-46B8-9557-349F761B0D1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DA95477-6B85-46B8-9557-349F761B0D1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DA95477-6B85-46B8-9557-349F761B0D1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DA95477-6B85-46B8-9557-349F761B0D1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7223638D-FD68-404D-92B5-636F0F59FC4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7223638D-FD68-404D-92B5-636F0F59FC4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7223638D-FD68-404D-92B5-636F0F59FC4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7223638D-FD68-404D-92B5-636F0F59FC4E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

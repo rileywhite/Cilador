@@ -14,31 +14,15 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Graph.Core;
 using System;
 using System.Diagnostics.Contracts;
 
 namespace Cilador.Aop.Core
 {
-    /// <summary>
-    /// Represents an AOP join point (see https://en.wikipedia.org/wiki/Join_point).
-    /// </summary>
-    public class JoinPoint<TTarget>
+    [ContractClass(typeof(AopWeavableConceptContracts))]
+    public interface IAopWeavableConcept
     {
-        public JoinPoint(TTarget target)
-        {
-            Contract.Requires(target != null);
-            Contract.Ensures(this.Target != null);
-
-            this.Target = target;
-        }
-
-        internal TTarget Target { get; }
-
-        public void Weave(IConceptWeaver<TTarget> advisor)
-        {
-            Contract.Requires(advisor != null);
-
-            advisor.Weave(this.Target);
-        }
+        void Weave(ICilGraph sourceGraph);
     }
 }

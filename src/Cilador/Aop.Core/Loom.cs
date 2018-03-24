@@ -23,7 +23,7 @@ namespace Cilador.Aop.Core
 {
     public class Loom
     {
-        public List<Aspect> Aspects { get; } = new List<Aspect>();
+        public List<IAopWeavableConcept> Aspects { get; } = new List<IAopWeavableConcept>();
 
         public void Weave(AssemblyDefinition targetAssembly, IAssemblyResolver resolver = null, CilGraphGetter graphGetter = null)
         {
@@ -33,7 +33,7 @@ namespace Cilador.Aop.Core
             var sourceGraph = graphGetter.Get(targetAssembly);
             foreach(var aspect in this.Aspects)
             {
-                aspect.Apply(sourceGraph);
+                aspect.Weave(sourceGraph);
             }
         }
     }

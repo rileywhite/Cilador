@@ -69,24 +69,29 @@
     <Compile Include="CloneTests\ClonerBaseFixture.cs" />
     <Compile Include="CloneTests\CloningExtensionsFixture.cs" />
     <Compile Include="CloneTests\FakeCloningConext.cs" />
-    <Compile Include="Core\AddAdviceToMethod.cs" />
+    <Compile Include="AopTests\AopTests.cs" />
     <Compile Include="Graph\TopologicalSort\NamespaceDoc.cs" />
     <Compile Include="Graph\TopologicalSort\TopologicalSorterTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SetupFixture.cs" />
+    <Compile Include="Status.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Aop.Advisors\Cilador.Aop.Advisors.csproj">
-      <Project>{b4714c90-3a81-400b-8037-3477642c7110}</Project>
-      <Name>Cilador.Aop.Advisors</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Aop.Core\Cilador.Aop.Core.csproj">
       <Project>{34c87ee0-3b08-40fa-a593-85dfe1588bba}</Project>
       <Name>Cilador.Aop.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Aop.IntroduceType\Cilador.Aop.IntroduceType.csproj">
+      <Project>{7223638d-fd68-404d-92b5-636f0f59fc4e}</Project>
+      <Name>Cilador.Aop.IntroduceType</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Aop.WrapMethod\Cilador.Aop.WrapMethod.csproj">
+      <Project>{1da95477-6b85-46b8-9557-349f761b0d1b}</Project>
+      <Name>Cilador.Aop.WrapMethod</Name>
     </ProjectReference>
     <ProjectReference Include="..\Clone\Cilador.Clone.csproj">
       <Project>{f30e7b7e-68af-4125-8a0e-8bc993e7cbd8}</Project>

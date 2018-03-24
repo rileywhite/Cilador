@@ -14,31 +14,23 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Aop.Core;
 using System;
-using System.Diagnostics.Contracts;
 
-namespace Cilador.Aop.Core
+namespace Cilador.Aop.Transform
 {
-    /// <summary>
-    /// Represents an AOP join point (see https://en.wikipedia.org/wiki/Join_point).
-    /// </summary>
-    public class JoinPoint<TTarget>
+    public class TransformAdvisor<TTarget> : IConceptWeaver<TTarget>
     {
-        public JoinPoint(TTarget target)
+        public TransformAdvisor(Action<TTarget> transform)
         {
-            Contract.Requires(target != null);
-            Contract.Ensures(this.Target != null);
-
-            this.Target = target;
+            this.Transform = transform;
         }
 
-        internal TTarget Target { get; }
+        public Action<TTarget> Transform { get; }
 
-        public void Weave(IConceptWeaver<TTarget> advisor)
+        public void Weave(TTarget target)
         {
-            Contract.Requires(advisor != null);
-
-            advisor.Weave(this.Target);
+            this.Transform?.Invoke(target);
         }
     }
 }

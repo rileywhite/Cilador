@@ -14,14 +14,20 @@
 // limitations under the License.
 /***************************************************************************/
 
+using Cilador.Graph.Core;
 using System;
+using System.Diagnostics.Contracts;
 
 namespace Cilador.Aop.Core
 {
-    /// <summary>
-    /// Represents an AOP introduction, or a data/behavior added to an exsiting types (similar to a mixin or trait)
-    /// </summary>
-    public abstract class IntroductionBase
+    [ContractClassFor(typeof(IAopWeavableConcept))]
+    public class AopWeavableConceptContracts : IAopWeavableConcept
     {
+        public void Weave(ICilGraph sourceGraph)
+        {
+            Contract.Requires(sourceGraph != null);
+
+            throw new NotSupportedException();
+        }
     }
 }
