@@ -62,8 +62,6 @@ namespace Cilador.Aop.Decorate
 
             decorationTarget = CloneDecorationIntoTargetLocation(target, decorationTarget, decorationName, isTargetReplacedByDecorator);
 
-            //target.DeclaringType.CustomAttributes.Clear();
-
             var redirectMethodCallsLoom = new Loom();
             redirectMethodCallsLoom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(
                 new PointCut<MethodDefinition>(m => m.HasBody),

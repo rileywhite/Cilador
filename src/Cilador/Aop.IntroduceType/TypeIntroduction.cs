@@ -15,6 +15,7 @@
 /***************************************************************************/
 
 using Cilador.Aop.Core;
+using Cilador.Aop.Transform;
 using Cilador.Clone;
 using Cilador.Graph.Factory;
 using Mono.Cecil;
@@ -61,6 +62,17 @@ namespace Cilador.Aop.IntroduceType
 
             var sourceGraph = this.GraphGetter.Get(this.SourceType);
             var cloningContext = new CloningContext(sourceGraph, this.SourceType, target);
+
+            cloningContext.InlineWeaves.Add(new WeavableConcept<object>(
+                new PointCut<object>(s => s == this.SourceType),
+                new TransformAdvisor<object>(
+                t =>
+                {
+                    var typeTarget = (TypeDefinition)t;
+                    typeTarget.Namespace = TargetTypeNamespace;
+                    typeTarget.Name = this.TargetTypeName;
+                })));
+
             cloningContext.Execute();
         }
     }

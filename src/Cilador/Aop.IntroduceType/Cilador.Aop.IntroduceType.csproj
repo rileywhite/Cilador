@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Aop.Core\Cilador.Aop.Core.csproj" />
+    <ProjectReference Include="..\Aop.Transform\Cilador.Aop.Transform.csproj" />
     <ProjectReference Include="..\Clone\Cilador.Clone.csproj" />
     <ProjectReference Include="..\Graph.Factory\Cilador.Graph.Factory.csproj" />
   </ItemGroup>
