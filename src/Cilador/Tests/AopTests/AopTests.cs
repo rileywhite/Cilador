@@ -41,10 +41,16 @@ namespace Cilador.Tests
                     new ActionDecorator<string[]>(
                         resolver,
                         graphGetter,
-                        arg =>
+                        args =>
                         {
                             Console.WriteLine("Before...");
-                            Forwarders.ForwardToOriginalAction(arg);
+                            Console.WriteLine("---Args---");
+                            foreach (var arg in args)
+                            {
+                                Console.WriteLine(arg);
+                            }
+                            Console.WriteLine("----------");
+                            Forwarders.ForwardToOriginalAction(args);
                             Console.WriteLine("...After");
                         })));
 

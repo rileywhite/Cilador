@@ -134,9 +134,11 @@ namespace Cilador.Aop.Decorate
 
         private static void AddThisPointerToMethodCall(MethodDefinition method, Instruction instruction)
         {
+            // TODO handling of this pointer needs more consideration since this assumes that we're decorating an instance method
             var firstArgInstruction = instruction.Previous;
             while (firstArgInstruction.Previous != null && firstArgInstruction.Previous.OpCode.Name.StartsWith("Ld"))
             {
+                if (firstArgInstruction.OpCode == OpCodes.Ldarg_0) { /* this pointer already being sent to the method */ return; }
                 firstArgInstruction = firstArgInstruction.Previous;
             }
             var ilProcessor = method.Body.GetILProcessor();
