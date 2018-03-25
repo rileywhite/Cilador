@@ -26,9 +26,9 @@ using System.Linq;
 
 namespace Cilador.Aop.Decorate
 {
-    public abstract class DecoratorBase : IConceptWeaver<MethodDefinition>
+    public abstract class MethodDecoratorBase : IConceptWeaver<MethodDefinition>
     {
-        public DecoratorBase(
+        public MethodDecoratorBase(
             IAssemblyResolver resolver,
             CilGraphGetter graphGetter,
             Delegate decoration,
@@ -147,7 +147,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator : DecoratorBase
+    public class ActionDecorator : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -166,7 +166,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator<T> : DecoratorBase
+    public class ActionDecorator<T> : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -185,7 +185,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator<T1, T2> : DecoratorBase
+    public class ActionDecorator<T1, T2> : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -204,7 +204,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator<T1, T2, T3> : DecoratorBase
+    public class ActionDecorator<T1, T2, T3> : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -223,7 +223,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator<T1, T2, T3, T4> : DecoratorBase
+    public class ActionDecorator<T1, T2, T3, T4> : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -242,7 +242,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator<T1, T2, T3, T4, T5> : DecoratorBase
+    public class ActionDecorator<T1, T2, T3, T4, T5> : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -261,7 +261,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator<T1, T2, T3, T4, T5, T6> : DecoratorBase
+    public class ActionDecorator<T1, T2, T3, T4, T5, T6> : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -280,7 +280,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7> : DecoratorBase
+    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7> : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -299,7 +299,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8> : DecoratorBase
+    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8> : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -318,7 +318,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9> : DecoratorBase
+    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9> : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -337,7 +337,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> : DecoratorBase
+    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -356,7 +356,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> : DecoratorBase
+    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -375,7 +375,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> : DecoratorBase
+    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -394,7 +394,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> : DecoratorBase
+    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -413,7 +413,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> : DecoratorBase
+    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -432,7 +432,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> : DecoratorBase
+    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -451,7 +451,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> : DecoratorBase
+    public class ActionDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> : MethodDecoratorBase
     {
         public ActionDecorator(
             IAssemblyResolver resolver,
@@ -470,7 +470,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<TResult> : DecoratorBase
+    public class FuncDecorator<TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
@@ -489,7 +489,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<T, TResult> : DecoratorBase
+    public class FuncDecorator<T, TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
@@ -508,7 +508,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<T1, T2, TResult> : DecoratorBase
+    public class FuncDecorator<T1, T2, TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
@@ -527,7 +527,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<T1, T2, T3, TResult> : DecoratorBase
+    public class FuncDecorator<T1, T2, T3, TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
@@ -546,7 +546,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<T1, T2, T3, T4, TResult> : DecoratorBase
+    public class FuncDecorator<T1, T2, T3, T4, TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
@@ -565,7 +565,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<T1, T2, T3, T4, T5, TResult> : DecoratorBase
+    public class FuncDecorator<T1, T2, T3, T4, T5, TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
@@ -584,7 +584,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<T1, T2, T3, T4, T5, T6, TResult> : DecoratorBase
+    public class FuncDecorator<T1, T2, T3, T4, T5, T6, TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
@@ -603,7 +603,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, TResult> : DecoratorBase
+    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
@@ -622,7 +622,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, TResult> : DecoratorBase
+    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
@@ -641,7 +641,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, TResult> : DecoratorBase
+    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
@@ -660,7 +660,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TResult> : DecoratorBase
+    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
@@ -679,7 +679,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TResult> : DecoratorBase
+    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
@@ -698,7 +698,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TResult> : DecoratorBase
+    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
@@ -717,7 +717,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TResult> : DecoratorBase
+    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
@@ -736,7 +736,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TResult> : DecoratorBase
+    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
@@ -755,7 +755,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TResult> : DecoratorBase
+    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
@@ -774,7 +774,7 @@ namespace Cilador.Aop.Decorate
         }
     }
 
-    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult> : DecoratorBase
+    public class FuncDecorator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult> : MethodDecoratorBase
     {
         public FuncDecorator(
             IAssemblyResolver resolver,
