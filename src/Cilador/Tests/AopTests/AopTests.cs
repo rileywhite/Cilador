@@ -38,7 +38,7 @@ namespace Cilador.Tests
 
                 loom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(
                     new PointCut<MethodDefinition>(m => $"{m.DeclaringType.FullName}.{m.Name}" == "Cilador.TestAopTarget.Program.Run"),
-                    new ActionDecorator<string>(
+                    new ActionDecorator<string[]>(
                         resolver,
                         graphGetter,
                         arg =>
@@ -64,7 +64,7 @@ namespace Cilador.Tests
 
                 loom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(
                     new PointCut<MethodDefinition>(m => $"{m.DeclaringType.FullName}.{m.Name}" == "Cilador.TestAopTarget.Program.RunAgain"),
-                    new ActionDecorator<string>(
+                    new ActionDecorator<string[]>(
                         resolver,
                         graphGetter,
                         arg =>
