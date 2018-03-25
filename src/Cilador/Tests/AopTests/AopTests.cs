@@ -36,7 +36,7 @@ namespace Cilador.Tests
                 var loom = new Loom();
                 var graphGetter = new CilGraphGetter();
 
-                loom.Aspects.Add(new WeavableConcept<MethodDefinition>(
+                loom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(
                     new PointCut<MethodDefinition>(m => $"{m.DeclaringType.FullName}.{m.Name}" == "Cilador.TestAopTarget.Program.Run"),
                     new ActionDecorator<string>(
                         resolver,
@@ -62,7 +62,7 @@ namespace Cilador.Tests
                 var loom = new Loom();
                 var graphGetter = new CilGraphGetter();
 
-                loom.Aspects.Add(new WeavableConcept<MethodDefinition>(
+                loom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(
                     new PointCut<MethodDefinition>(m => $"{m.DeclaringType.FullName}.{m.Name}" == "Cilador.TestAopTarget.Program.RunAgain"),
                     new ActionDecorator<string>(
                         resolver,
@@ -94,7 +94,7 @@ namespace Cilador.Tests
                     var loom = new Loom();
                     var graphGetter = new CilGraphGetter();
 
-                    loom.Aspects.Add(new WeavableConcept<ModuleDefinition>(
+                    loom.WeavableConcepts.Add(new WeavableConcept<ModuleDefinition>(
                         new PointCut<ModuleDefinition>(m => m.IsMain),
                         new TypeIntroduction(
                             graphGetter,

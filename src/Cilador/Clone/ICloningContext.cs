@@ -39,9 +39,14 @@ namespace Cilador.Clone
         TypeDefinition RootSource { get; }
 
         /// <summary>
-        /// Gets the top level source type for the cloning operation.
+        /// Gets the top level target type for the cloning operation.
         /// </summary>
         TypeDefinition RootTarget { get; }
+
+        /// <summary>
+        /// Gets or sets the the module where the newly cloned items will live.
+        /// </summary>
+        ModuleDefinition TargetModule { get; }
 
         /// <summary>
         /// Root import an item when the exact item type may not be known.

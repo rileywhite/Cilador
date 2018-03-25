@@ -35,6 +35,7 @@ namespace Cilador.Tests.CloneTests
         public ICilGraph CilGraph { get; set; }
         public TypeDefinition RootSource { get; set; }
         public TypeDefinition RootTarget { get; set; }
+        public ModuleDefinition TargetModule { get; set; }
 
         public TItem DynamicRootImport<TItem>(TItem item)
         {

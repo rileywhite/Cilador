@@ -14,27 +14,14 @@
 // limitations under the License.
 /***************************************************************************/
 
-using Cilador.Graph.Factory;
-using Mono.Cecil;
 using System;
-using System.Collections.Generic;
 
-namespace Cilador.Aop.Core
+namespace Cilador.Clone
 {
-    public class Loom
+    /// <summary>
+    /// A type marked with this interface can be used as the root for a <see cref="CloningContext"/>.
+    /// </summary>
+    public interface ICloningRoot<out TCloned> : ICloner<TCloned> where TCloned : class
     {
-        public List<IAopWeavableConcept> WeavableConcepts { get; } = new List<IAopWeavableConcept>();
-
-        public void Weave(AssemblyDefinition targetAssembly, IAssemblyResolver resolver = null, CilGraphGetter graphGetter = null)
-        {
-            resolver = resolver ?? targetAssembly.MainModule.AssemblyResolver;
-            graphGetter = graphGetter ?? new CilGraphGetter();
-
-            var sourceGraph = graphGetter.Get(targetAssembly);
-            foreach(var concept in this.WeavableConcepts)
-            {
-                concept.Weave(sourceGraph);
-            }
-        }
     }
 }

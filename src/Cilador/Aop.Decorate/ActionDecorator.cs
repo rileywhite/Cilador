@@ -65,7 +65,7 @@ namespace Cilador.Aop.Decorate
             //target.DeclaringType.CustomAttributes.Clear();
 
             var redirectMethodCallsLoom = new Loom();
-            redirectMethodCallsLoom.Aspects.Add(new WeavableConcept<MethodDefinition>(
+            redirectMethodCallsLoom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(
                 new PointCut<MethodDefinition>(m => m.HasBody),
                 new TransformAdvisor<MethodDefinition>(
                     method =>
@@ -116,8 +116,7 @@ namespace Cilador.Aop.Decorate
         private static void RedirectTargetCallsToDecorator(MethodDefinition target, MethodDefinition method, MethodDefinition decorationTarget)
         {
             // if replacing rather than adding a separately named decorator, then redirect all calls to the decorator
-            // TODO name check is not enough since overloads will cause a problem
-            foreach (var instruction in method.Body.Instructions.Where(i => i.OpCode == OpCodes.Call && i.Operand is MethodReference && ((MethodReference)i.Operand).Name == target.Name).ToArray())
+            foreach (var instruction in method.Body.Instructions.Where(i => (i.OpCode == OpCodes.Call || i.OpCode == OpCodes.Callvirt) && i.Operand is MethodReference && ((MethodReference)i.Operand).FullName == target.FullName).ToArray())
             {
                 instruction.Operand = decorationTarget;
             }

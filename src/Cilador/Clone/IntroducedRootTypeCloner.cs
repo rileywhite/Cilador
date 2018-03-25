@@ -21,35 +21,22 @@ using System.Diagnostics.Contracts;
 namespace Cilador.Clone
 {
     /// <summary>
-    /// Clones <see cref="TypeDefinition"/> contents from a source to a target.
+    /// Clones <see cref="TypeDefinition"/> contents from a source to a target when the type is the root of the import
+    /// and when it is being recreated in full in the target module.
     /// </summary>
-    /// <remarks>
-    /// This is used by nested types. The root cloned type should use
-    /// a <see cref="MergedRootTypeCloner"/>.
-    /// </remarks>
-    internal class NestedTypeCloner : ClonerBase<TypeDefinition>
+    internal class IntroducedRootTypeCloner : ClonerBase<TypeDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="NestedTypeCloner"/>.
         /// </summary>
-        /// <param name="parent">Cloner for the parent type of the nested type being cloned.</param>
+        /// <param name="cloningContext">cloning context.</param>
         /// <param name="source">Cloning source.</param>
-        public NestedTypeCloner(ICloner<TypeDefinition> parent, TypeDefinition source)
-            : base(parent.CloningContext, source)
+        public IntroducedRootTypeCloner(ICloningContext cloningContext, TypeDefinition source)
+            : base(cloningContext, source)
         {
-            Contract.Requires(parent != null);
-            Contract.Requires(parent.CloningContext != null);
+            Contract.Requires(cloningContext != null);
             Contract.Requires(source != null);
-            Contract.Ensures(this.Parent != null);
-
-            this.Parent = parent;
         }
-
-        /// <summary>
-        /// Gets or sets the cloner for the parent type.
-        /// All types should have parent types.
-        /// </summary>
-        private ICloner<TypeDefinition> Parent { get; set; }
 
         /// <summary>
         /// Creates the new target.
@@ -58,7 +45,7 @@ namespace Cilador.Clone
         protected override TypeDefinition GetTarget()
         {
             var target = new TypeDefinition(this.Source.Namespace, this.Source.Name, 0);
-            this.Parent.Target.NestedTypes.Add(target);
+            this.CloningContext.TargetModule.Types.Add(target);
             return target;
         }
 
@@ -67,20 +54,19 @@ namespace Cilador.Clone
         /// </summary>
         protected override void DoClone()
         {
-            Contract.Assert(this.Target != this.CloningContext.RootTarget);
-            Contract.Assert(this.Target.IsNested);
-            Contract.Assert(this.Source.IsNested);
+            Contract.Assert(this.Target != null);
+            Contract.Assert(!this.Target.IsNested);
+            Contract.Assert(!this.Source.IsNested);
 
             if (this.Source.HasSecurityDeclarations)
             {
-                // TODO Nested type security declarations
+                // TODO Introduced root type security declarations
                 throw new InvalidOperationException(string.Format(
-                    "Cloning source type may not contain nested types annotated with security attributes: [{0}]",
+                    "Cloning source type may not be annotated with security attributes: [{0}]",
                     this.CloningContext.RootSource.FullName));
             }
 
             this.Target.Attributes = this.Source.Attributes;
-            this.Target.DeclaringType = this.CloningContext.RootImport(this.Source.DeclaringType).Resolve();
             this.Target.BaseType = this.CloningContext.RootImport(this.Source.BaseType);
 
             foreach (var interfaceImplementation in this.Source.Interfaces)

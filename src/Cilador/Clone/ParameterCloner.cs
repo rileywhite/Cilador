@@ -64,7 +64,7 @@ namespace Cilador.Clone
             if (this.Previous != null) { this.Previous.EnsureTargetIsSet(); }
 
             // now create the target
-            var voidReference = this.CloningContext.RootTarget.Module.ImportReference(typeof(void));
+            var voidReference = this.CloningContext.TargetModule.ImportReference(typeof(void));
             var target = new ParameterDefinition(
                 this.Source.Name,
                 this.Source.Attributes,

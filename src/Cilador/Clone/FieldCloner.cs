@@ -52,7 +52,7 @@ namespace Cilador.Clone
         /// <returns></returns>
         protected override FieldDefinition GetTarget()
         {
-            var voidReference = this.CloningContext.RootTarget.Module.ImportReference(typeof(void));
+            var voidReference = this.CloningContext.TargetModule.ImportReference(typeof(void));
             var targetField = new FieldDefinition(this.Source.Name, 0, voidReference);
             this.Parent.Target.Fields.Add(targetField);
             return targetField;

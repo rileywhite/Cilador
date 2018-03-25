@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="IntroducedRootTypeCloner.cs~RF5a7567e.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Mono.Cecil" Version="0.10.0" />
   </ItemGroup>
 

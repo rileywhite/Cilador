@@ -33,7 +33,7 @@ namespace Cilador.Clone
         /// <summary>
         /// Creates a new <see cref="ClonersGetDispatcher"/>.
         /// </summary>
-        /// <param name="cloningContext">cloning context for the cloning operation.</param>
+        /// <param name="cloningContext">Cloning context for the cloning operation.</param>
         /// <param name="targetsByRoot">Dictionary containing a collection of targets for each root in the CIL graph of <paramref name="cloningContext"/>.</param>
         /// <param name="clonersBySource">Dictionary containing a collection of cloners for each possible source.</param>
         public ClonersGetDispatcher(
@@ -62,6 +62,30 @@ namespace Cilador.Clone
         /// Gets or sets the collection of target object for each root in the graph of items.
         /// </summary>
         private IReadOnlyDictionary<object, IReadOnlyCollection<object>> TargetsByRoot { get; }
+
+        /// <summary>
+        /// Determines whether an object is a root item in a cloning operation.
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns><c>true</c> if the item is a root for the cloning operation, else <c>false</c></returns>
+        [Pure]
+        public bool IsRootItem(object item) => this.TargetsByRoot.ContainsKey(item);
+
+        /// <summary>
+        /// Determine whether an item is a root item whose contents are being merged into existing items.
+        /// </summary>
+        /// <param name="item">Item to check</param>
+        /// <returns><c>true</c> if the item is a root item and if its target(s) are pre-exsiting.</returns>
+        [Pure]
+        public bool IsMergedRootItem(object item) => this.IsRootItem(item) && this.TargetsByRoot[item].Any();
+
+        /// <summary>
+        /// Determine whether an item is a root item whose contents are being intruduced into a module as a new type.
+        /// </summary>
+        /// <param name="item">Item to check</param>
+        /// <returns><c>true</c> if the item is a root item and if its target(s) are not pre-exsiting.</returns>
+        [Pure]
+        public bool IsIntroducedRootItem(object item) => this.IsRootItem(item) && !this.TargetsByRoot[item].Any();
 
         /// <summary>
         /// Gets or sets the dictionary by which cloners can be looked up by the cloning source.
@@ -160,7 +184,7 @@ namespace Cilador.Clone
         /// <returns>Cloners for the <paramref name="item"/>.</returns>
         protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(TypeDefinition item)
         {
-            return this.TargetsByRoot.ContainsKey(item) ?
+            return this.IsRootItem(item) ?
                 this.InvokeForRootType(item) :
                 this.InvokeForNestedType(item);
         }
@@ -173,8 +197,14 @@ namespace Cilador.Clone
         private IReadOnlyCollection<ICloner<object, object>> InvokeForRootType(TypeDefinition item)
         {
             Contract.Requires(item != null);
-            Contract.Requires(this.TargetsByRoot.ContainsKey(item));
+            Contract.Requires(this.IsRootItem(item));
             Contract.Ensures(Contract.Result<IReadOnlyCollection<ICloner<object, object>>>() != null);
+
+            if (this.IsIntroducedRootItem(item))
+            {
+                return new List<ICloner<object, object>>(
+                    new ICloner<object, object>[] { new IntroducedRootTypeCloner(this.CloningContext, item) });
+            }
 
             if (item.Methods.Any(
                 method => method.IsConstructor && !method.IsStatic && method.HasParameters))
@@ -188,11 +218,9 @@ namespace Cilador.Clone
                     $"Cloning root source type cannot have constructors with parameters: [{item.FullName}]");
             }
 
-            var targets = this.TargetsByRoot[item];
-
             return new List<ICloner<object, object>>(
-                from TypeDefinition target in targets
-                select new RootTypeCloner(this.CloningContext, item, target));
+                from TypeDefinition target in this.TargetsByRoot[item]
+                select new MergedRootTypeCloner(this.CloningContext, item, target));
         }
 
         /// <summary>
@@ -203,6 +231,7 @@ namespace Cilador.Clone
         private IReadOnlyCollection<ICloner<object, object>> InvokeForNestedType(TypeDefinition item)
         {
             Contract.Requires(item != null);
+            Contract.Requires(!this.IsRootItem(item));
             Contract.Ensures(Contract.Result<IReadOnlyCollection<ICloner<object, object>>>() != null);
 
             var parent = this.CloningContext.CilGraph.GetParentOf<TypeDefinition>(item);
@@ -278,9 +307,12 @@ namespace Cilador.Clone
         protected override IReadOnlyCollection<ICloner<object, object>> InvokeForItem(MethodDefinition item)
         {
             // check whether this is the constructor for a root type
-            if (item.IsConstructor && !item.IsStatic && !item.HasParameters && this.TargetsByRoot.ContainsKey(item.DeclaringType))
+            if (item.IsConstructor &&
+                !item.IsStatic &&
+                !item.HasParameters &&
+                this.IsMergedRootItem(item.DeclaringType))
             {
-                return this.InvokeForRootTypeConstructor(item);
+                return this.InvokeForMergedRootTypeConstructor(item);
             }
 
             var parent = this.CloningContext.CilGraph.GetParentOf<TypeDefinition>(item);
@@ -298,10 +330,10 @@ namespace Cilador.Clone
         /// </summary>
         /// <param name="item">Item to get cloners for.</param>
         /// <returns>Cloners for the <paramref name="item"/>.</returns>
-        private IReadOnlyCollection<ICloner<object, object>> InvokeForRootTypeConstructor(MethodDefinition item)
+        private IReadOnlyCollection<ICloner<object, object>> InvokeForMergedRootTypeConstructor(MethodDefinition item)
         {
             Contract.Requires(item != null);
-            Contract.Requires(item.IsConstructor && !item.IsStatic && !item.HasParameters);
+            Contract.Requires(item.IsConstructor && !item.IsStatic && !item.HasParameters && this.IsMergedRootItem(item.DeclaringType));
             Contract.Ensures(Contract.Result<IReadOnlyCollection<ICloner<object, object>>>() != null);
 
             var parent = this.CloningContext.CilGraph.GetParentOf<TypeDefinition>(item);
@@ -310,7 +342,7 @@ namespace Cilador.Clone
 
             var cloners = new List<ICloner<object, object>>();
 
-            foreach (var parentCloner in parentCloners.Cast<RootTypeCloner>())
+            foreach (var parentCloner in parentCloners.Cast<MergedRootTypeCloner>())
             {
                 // add one no-op cloner per target constructor
                 cloners.AddRange(
@@ -343,9 +375,9 @@ namespace Cilador.Clone
             var parent = this.CloningContext.CilGraph.GetParentOf<MethodDefinition>(item);
             Contract.Assert(parent != null);
 
-            if (parent.IsConstructor && !parent.IsStatic && this.CloningContext.CilGraph.GetDepth(item) == 2)
+            if (parent.IsConstructor && !parent.IsStatic && this.IsMergedRootItem(item.Method.DeclaringType))
             {
-                return this.InvokeForRootTypeConstructorBody(item, parent);
+                return this.InvokeForMergedRootTypeConstructorBody(item, parent);
             }
 
             var parentCloners = this.ClonersBySource[parent];
@@ -356,7 +388,7 @@ namespace Cilador.Clone
                  select new MethodBodyCloner(parentCloner, item)).ToArray();
         }
 
-        private IReadOnlyCollection<ICloner<object, object>> InvokeForRootTypeConstructorBody(MethodBody item, MethodDefinition parent)
+        private IReadOnlyCollection<ICloner<object, object>> InvokeForMergedRootTypeConstructorBody(MethodBody item, MethodDefinition parent)
         {
             Contract.Requires(item != null);
             Contract.Requires(parent != null);

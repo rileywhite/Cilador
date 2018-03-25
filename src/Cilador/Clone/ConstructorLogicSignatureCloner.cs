@@ -36,7 +36,7 @@ namespace Cilador.Clone
         /// </summary>
         /// <param name="rootTypeCloner">Cloner for the root type of the cloning operation, which is the type that the cloned constructor belongs to.</param>
         /// <param name="source">Source constructor, multiplexed into the initialization and constructor logic parts.</param>
-        public ConstructorLogicSignatureCloner(RootTypeCloner rootTypeCloner, MultiplexedConstructor source)
+        public ConstructorLogicSignatureCloner(MergedRootTypeCloner rootTypeCloner, MultiplexedConstructor source)
             : base(rootTypeCloner.CloningContext, source)
         {
             Contract.Requires(rootTypeCloner != null);
@@ -48,9 +48,9 @@ namespace Cilador.Clone
         }
 
         /// <summary>
-        /// Gets or set the cloner for the root type of the cloning operation, which is the type that the cloned constructor belongs to.
+        /// Gets or sets the cloner for the root type of the cloning operation, which is the type that the cloned constructor belongs to.
         /// </summary>
-        private RootTypeCloner RootTypeCloner { get; set; }
+        private MergedRootTypeCloner RootTypeCloner { get; set; }
 
         /// <summary>
         /// Creates the target method signature.
@@ -61,7 +61,7 @@ namespace Cilador.Clone
             var target = new MethodDefinition(
                 string.Format("ctor_{0:N}", Guid.NewGuid()),
                 MethodAttributes.Private | MethodAttributes.HideBySig,
-                this.CloningContext.RootTarget.Module.ImportReference(typeof(void)));
+                this.CloningContext.TargetModule.ImportReference(typeof(void)));
             this.RootTypeCloner.Target.Methods.Add(target);
             return target;
         }

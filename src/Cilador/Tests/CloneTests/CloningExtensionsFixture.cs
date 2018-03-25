@@ -181,6 +181,7 @@ namespace Cilador.Tests.CloneTests
             {
                 RootSource = this.CurrentModule.ImportReference(typeof(int)).Resolve(),
                 RootTarget = this.CurrentModule.ImportReference(typeof(double)).Resolve(),
+                TargetModule = this.CurrentModule.ImportReference(typeof(double)).Resolve().Module,
             };
 
             var intTryParseMethod = this.CurrentModule.ImportReference(typeof(int).GetMethod("Parse", new Type[] { typeof(string) }));
@@ -198,6 +199,7 @@ namespace Cilador.Tests.CloneTests
             {
                 RootSource = this.CurrentModule.ImportReference(typeof(List<>)).Resolve(),
                 RootTarget = this.CurrentModule.ImportReference(typeof(Queue<>)).Resolve(),
+                TargetModule = this.CurrentModule.ImportReference(typeof(Queue<>)).Resolve().Module,
             };
 
             var listMethod = this.CurrentModule.ImportReference(typeof(List<>).GetMethods().First(method => method.Name == "GetEnumerator" && method.ContainsGenericParameters));

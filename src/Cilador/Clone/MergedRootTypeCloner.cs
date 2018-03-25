@@ -21,17 +21,18 @@ using System.Diagnostics.Contracts;
 namespace Cilador.Clone
 {
     /// <summary>
-    /// Clones <see cref="TypeDefinition"/> contents from a source to a target.
+    /// Clones <see cref="TypeDefinition"/> contents from a source to a target when the source is an existing type that
+    /// should have the target's contents merged in.
     /// </summary>
-    internal class RootTypeCloner : ClonerBase<TypeDefinition>
+    internal class MergedRootTypeCloner : ClonerBase<TypeDefinition>, ICloningRoot<TypeDefinition> 
     {
         /// <summary>
-        /// Creates a new <see cref="RootTypeCloner"/>.
+        /// Creates a new <see cref="MergedRootTypeCloner"/>.
         /// </summary>
         /// <param name="cloningContext">cloning context.</param>
         /// <param name="source">Cloning source.</param>
         /// <param name="target">Cloning target.</param>
-        public RootTypeCloner(ICloningContext cloningContext, TypeDefinition source, TypeDefinition target)
+        public MergedRootTypeCloner(ICloningContext cloningContext, TypeDefinition source, TypeDefinition target)
             : base(cloningContext, source)
         {
             Contract.Requires(cloningContext != null);

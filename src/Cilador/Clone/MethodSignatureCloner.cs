@@ -68,11 +68,11 @@ namespace Cilador.Clone
         protected override MethodDefinition GetTarget()
         {
             MethodDefinition targetMethod = null;
-            var voidReference = this.CloningContext.RootTarget.Module.ImportReference(typeof(void));
+            var voidReference = this.CloningContext.TargetModule.ImportReference(typeof(void));
 
             if (this.Source.IsConstructor &&
                 this.Source.IsStatic &&
-                this.Parent is RootTypeCloner)
+                this.Parent is MergedRootTypeCloner)
             {
                 var targetStaticConstructor = this.CloningContext.RootTarget.Methods.SingleOrDefault(method => method.IsConstructor && method.IsStatic);
 

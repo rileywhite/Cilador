@@ -44,7 +44,7 @@ namespace Cilador.Clone
         /// </summary>
         /// <param name="cilGraph">CIL graph for the cloning operation</param>
         /// <param name="rootSource">Top level source type for the cloning operation</param>
-        /// <param name="rootTarget">Top level target type for the cloning operation</param>
+        /// <param name="rootTarget">Top level target type for the cloning operation into which the <paramref name="rootSource"/> will be merged</param>
         public CloningContext(ICilGraph cilGraph, TypeDefinition rootSource, TypeDefinition rootTarget)
         {
             Contract.Requires(cilGraph != null);
@@ -54,10 +54,34 @@ namespace Cilador.Clone
             Contract.Ensures(this.ClonersBySource != null);
             Contract.Ensures(this.RootSource != null);
             Contract.Ensures(this.RootTarget != null);
+            Contract.Ensures(this.TargetModule != null);
 
             this.CilGraph = cilGraph;
             this.RootSource = rootSource;
             this.RootTarget = rootTarget;
+            this.TargetModule = rootTarget.Module;
+            this.ClonersBySource = new Dictionary<object, IReadOnlyCollection<ICloner<object, object>>>(this.CilGraph.VertexCount);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="CloningContext"/>
+        /// </summary>
+        /// <param name="cilGraph">CIL graph for the cloning operation</param>
+        /// <param name="rootSource">Top level source type for the cloning operation</param>
+        /// <param name="targetModule">Module into which the <paramref name="rootSource"/> will be introduced</param>
+        public CloningContext(ICilGraph cilGraph, TypeDefinition rootSource, ModuleDefinition targetModule)
+        {
+            Contract.Requires(cilGraph != null);
+            Contract.Requires(rootSource != null);
+            Contract.Ensures(this.CilGraph != null);
+            Contract.Ensures(this.ClonersBySource != null);
+            Contract.Ensures(this.RootSource != null);
+            Contract.Ensures(this.RootTarget == null);
+            Contract.Ensures(this.TargetModule != null);
+
+            this.CilGraph = cilGraph;
+            this.RootSource = rootSource;
+            this.TargetModule = targetModule;
             this.ClonersBySource = new Dictionary<object, IReadOnlyCollection<ICloner<object, object>>>(this.CilGraph.VertexCount);
         }
 
@@ -86,12 +110,19 @@ namespace Cilador.Clone
         public void Execute()
         {
             Contract.Requires(this.RootSource != null);
-            Contract.Requires(this.RootTarget != null);
+            Contract.Requires(this.TargetModule != null);
+            Contract.Requires(this.RootTarget == null || this.RootTarget.Module == this.TargetModule);
 
-            var targetsByRoot = new Dictionary<object, IReadOnlyCollection<object>>(1)
+            var targetsByRoot = new Dictionary<object, IReadOnlyCollection<object>>(1);
+
+            if (this.RootTarget == null)
             {
-                { this.RootSource, new object[] { this.RootTarget }}
-            };
+                targetsByRoot.Add(this.RootSource, new object[0]);
+            }
+            else
+            {
+                targetsByRoot.Add(this.RootSource, new object[] { this.RootTarget });
+            }
 
             var clonersGetter = new ClonersGetDispatcher(this, targetsByRoot, this.ClonersBySource);
 
@@ -114,6 +145,17 @@ namespace Cilador.Clone
                         break;
                     }
                 }
+                if (source == this.RootSource && this.RootTarget == null)
+                {
+                    Contract.Assert(cloners.Length == 1);
+                    var originalTargetTransform = cloners[0].TargetTransform;
+                    cloners[0].TargetTransform =
+                        target =>
+                        {
+                            this.RootTarget = (TypeDefinition)target;
+                            originalTargetTransform?.Invoke(target);
+                        };
+                }
                 this.ClonersBySource.Add(source, cloners);
             }
 
@@ -133,9 +175,14 @@ namespace Cilador.Clone
         public TypeDefinition RootSource { get; }
 
         /// <summary>
-        /// Gets or sets the top level source type for the cloning operation.
+        /// Gets or sets the top level target type for the cloning operation.
         /// </summary>
-        public TypeDefinition RootTarget { get; }
+        public TypeDefinition RootTarget { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the the module where the newly cloned items will live.
+        /// </summary>
+        public ModuleDefinition TargetModule { get; }
 
         /// <summary>
         /// Root import an item when the exact item type may not be known.
@@ -217,12 +264,12 @@ namespace Cilador.Clone
                 }
                 else
                 {
-                    importedType = this.RootTarget.Module.ImportReference(type);
+                    importedType = this.TargetModule.ImportReference(type);
                 }
             }
 
             Contract.Assert(importedType != null);
-            Contract.Assert(!(importedType is IMemberDefinition) || importedType.Module == this.RootTarget.Module);
+            Contract.Assert(!(importedType is IMemberDefinition) || importedType.Module == this.TargetModule);
             this.TypeCache[type.FullName] = importedType;
             return importedType;
         }
@@ -248,8 +295,8 @@ namespace Cilador.Clone
             var importedGenericParameter = (GenericParameter)cloners.First().Target;
 
             Contract.Assert(importedGenericParameter != null);
-            Contract.Assert(importedGenericParameter.Module == this.RootTarget.Module);
-            Contract.Assert(importedGenericParameter.Owner.Module == this.RootTarget.Module);
+            Contract.Assert(importedGenericParameter.Module == this.TargetModule);
+            Contract.Assert(importedGenericParameter.Owner.Module == this.TargetModule);
 
             return importedGenericParameter;
         }
@@ -285,7 +332,7 @@ namespace Cilador.Clone
             if (!this.ClonersBySource.TryGetValue(field.Resolve(), out IReadOnlyCollection<ICloner<object, object>> cloners))
             {
                 // not a mixed type field, so do a simple import
-                importedField = this.RootTarget.Module.ImportReference(field);
+                importedField = this.TargetModule.ImportReference(field);
             }
             else
             {
@@ -307,7 +354,7 @@ namespace Cilador.Clone
             }
 
             Contract.Assert(importedField != null);
-            Contract.Assert(!(importedField is IMemberDefinition) || importedField.Module == this.RootTarget.Module);
+            Contract.Assert(!(importedField is IMemberDefinition) || importedField.Module == this.TargetModule);
             this.FieldCache[field.FullName] = importedField;
             return importedField;
         }
@@ -366,7 +413,7 @@ namespace Cilador.Clone
                 // is constructed from a completely cloned open generic method
                 var genericInstanceMethod = (GenericInstanceMethod)method;
 
-                var importedLocalMethod = this.RootTarget.Module.ImportReference(localMethod);
+                var importedLocalMethod = this.TargetModule.ImportReference(localMethod);
                 if (method.DeclaringType.IsGenericInstance)
                 {
                     Contract.Assert(importedDeclaringType.IsGenericInstance);
@@ -435,7 +482,7 @@ namespace Cilador.Clone
 
                     var localMethod = importedDeclaringType.Resolve().Methods.FirstOrDefault(possibleMethod => possibleMethod.SignatureEquals(resolvedMethod, this));
 
-                    importedMethod = this.RootTarget.Module.ImportReference(localMethod);
+                    importedMethod = this.TargetModule.ImportReference(localMethod);
                     Contract.Assume(importedMethod != null);
 
                     if (method.DeclaringType.IsGenericInstance)
@@ -447,7 +494,7 @@ namespace Cilador.Clone
             }
 
             Contract.Assert(importedMethod != null);
-            Contract.Assert(!(importedMethod is IMemberDefinition) || importedMethod.Module == this.RootTarget.Module);
+            Contract.Assert(!(importedMethod is IMemberDefinition) || importedMethod.Module == this.TargetModule);
             this.MethodCache[method.FullName] = importedMethod;
             return importedMethod;
         }

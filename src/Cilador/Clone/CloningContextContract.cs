@@ -51,7 +51,16 @@ namespace Cilador.Clone
         {
             get
             {
-                Contract.Ensures(Contract.Result<TypeDefinition>() != null);
+                Contract.Ensures(Contract.Result<TypeDefinition>() == null || Contract.Result<TypeDefinition>().Module == this.TargetModule);
+                throw new NotSupportedException();
+            }
+        }
+
+        public ModuleDefinition TargetModule
+        {
+            get
+            {
+                Contract.Ensures(Contract.Result<ModuleDefinition>() != null);
                 throw new NotSupportedException();
             }
         }
