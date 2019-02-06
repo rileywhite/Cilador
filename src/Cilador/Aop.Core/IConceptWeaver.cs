@@ -18,8 +18,17 @@ using System;
 
 namespace Cilador.Aop.Core
 {
+    /// <summary>
+    /// Interface for an actual weaving operation that can be applied to a target
+    /// of type <typeparamref name="TTarget"/>.
+    /// </summary>
+    /// <typeparam name="TTarget">Type to which the weaving operation may apply.</typeparam>
     public interface IConceptWeaver<in TTarget>
     {
+        /// <summary>
+        /// Performs a weaving operation on a given target.
+        /// </summary>
+        /// <param name="target">Target to which the weave will be applied.</param>
         void Weave(TTarget target);
     }
 }

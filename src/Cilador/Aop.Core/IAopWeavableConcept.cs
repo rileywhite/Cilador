@@ -20,9 +20,17 @@ using System.Diagnostics.Contracts;
 
 namespace Cilador.Aop.Core
 {
+    /// <summary>
+    /// Interface for a weaving operation that applies some IL modification
+    /// to a given target source graph.
+    /// </summary>
     [ContractClass(typeof(AopWeavableConceptContracts))]
     public interface IAopWeavableConcept
     {
-        void Weave(ICilGraph sourceGraph);
+        /// <summary>
+        /// When implemented, applies an IL modification to the given source graph.
+        /// </summary>
+        /// <param name="targetCilGraph">Graph to which an IL modification will be applied</param>
+        void Weave(ICilGraph targetCilGraph);
     }
 }

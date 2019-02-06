@@ -20,8 +20,21 @@ using System.Diagnostics.Contracts;
 
 namespace Cilador.Aop.Core
 {
+    /// <summary>
+    /// An implementation of <see cref="IAopWeavableConcept"/> that can apply a
+    /// <see cref="WeavableConcept{TTarget}"/> to <see cref="ICilGraph"/> instances
+    /// to points identified by a <see cref="PointCut{TTarget}"/>.
+    /// </summary>
+    /// <typeparam name="TTarget"></typeparam>
     public class WeavableConcept<TTarget> : IAopWeavableConcept
     {
+        /// <summary>
+        /// Creates a new <see cref="WeavableConcept{TTarget}"/> which
+        /// can apply a given <see cref="IConceptWeaver{TTarget}"/> to target CIL
+        /// graphs as filtered by a given <see cref="PointCut{TTarget}"/>
+        /// </summary>
+        /// <param name="pointCut">Point cut that will be applied to a CIL graph to select weaving concept targets.</param>
+        /// <param name="conceptWeaver">Weaving concept that will be applied at each item selected by the <paramref name="pointCut"/>.</param>
         public WeavableConcept(PointCut<TTarget> pointCut, IConceptWeaver<TTarget> conceptWeaver)
         {
             Contract.Requires(pointCut != null);
@@ -36,9 +49,17 @@ namespace Cilador.Aop.Core
         public PointCut<TTarget> PointCut { get; }
         public IConceptWeaver<TTarget> ConceptWeaver { get; }
 
-        public void Weave(ICilGraph sourceGraph)
+        /// <summary>
+        /// Applies an IL modification to the given source graph.
+        /// </summary>
+        /// <param name="targetCilGraph">Graph to which an IL modification will be applied.</param>
+        /// <remarks>
+        /// The <see cref="PointCut"/> will be applied to the <paramref name="targetCilGraph"/>, and
+        /// each identified target will have the <see cref="ConceptWeaver"/> applied.
+        /// </remarks>
+        public void Weave(ICilGraph targetCilGraph)
         {
-            foreach (var joinPoint in this.PointCut.GetJoinPoints(sourceGraph))
+            foreach (var joinPoint in this.PointCut.GetJoinPoints(targetCilGraph))
             {
                 joinPoint.Weave(this.ConceptWeaver);
             }

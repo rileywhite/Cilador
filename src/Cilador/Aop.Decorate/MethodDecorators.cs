@@ -56,44 +56,60 @@ namespace Cilador.Aop.Decorate
         public void Weave(MethodDefinition target)
         {
             var targetAssembly = target.Module.Assembly;
-            MethodDefinition decorationTarget = null;
             var decorationName = this.DecorationNameGenerator(target.Name);
             var isTargetReplacedByDecorator = decorationName == target.Name;
 
-            decorationTarget = CloneDecorationIntoTargetLocation(target, decorationTarget, decorationName, isTargetReplacedByDecorator);
+            var decorationTarget = CloneDecorationIntoTargetLocation(target, decorationName, isTargetReplacedByDecorator);
 
             var redirectMethodCallsLoom = new Loom();
-            redirectMethodCallsLoom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(
-                new PointCut<MethodDefinition>(m => m.HasBody),
-                new TransformAdvisor<MethodDefinition>(
-                    method =>
-                    {
-                        if (isTargetReplacedByDecorator)
+            redirectMethodCallsLoom.WeavableConcepts.Add(
+                new WeavableConcept<MethodDefinition>(
+                    new PointCut<MethodDefinition>(m => m.HasBody),
+                    new TransformAdvisor<MethodDefinition>(
+                        method =>
                         {
-                            RedirectTargetCallsToDecorator(target, method, decorationTarget);
-                        }
+                            if (isTargetReplacedByDecorator)
+                            {
+                                RedirectTargetCallsToDecorator(target, method, decorationTarget);
+                            }
 
-                        RedirectForwardingCall(target, method);
-                    })));
+                            RedirectForwardingCall(target, method);
+                        })));
 
             redirectMethodCallsLoom.Weave(targetAssembly, this.Resolver, this.GraphGetter);
         }
 
-        private MethodDefinition CloneDecorationIntoTargetLocation(MethodDefinition target, MethodDefinition decorationTarget, string decorationName, bool isTargetReplacedByDecorator)
+        private MethodDefinition CloneDecorationIntoTargetLocation(
+            MethodDefinition target,
+            string decorationName,
+            bool isTargetReplacedByDecorator)
         {
-            using (var adviceAssembly = this.Resolver.Resolve(AssemblyNameReference.Parse(this.Decoration.Target.GetType().Assembly.FullName)))
+            using (var decorationAssembly = this.Resolver.Resolve(AssemblyNameReference.Parse(this.Decoration.Target.GetType().Assembly.FullName)))
             {
-                var adviceType = adviceAssembly.MainModule.GetType(this.Decoration.Target.GetType().FullName.ToCecilTypeName());
-                var decorationSource = adviceType.Methods.Single(m => m.Name == this.Decoration.Method.Name);
+                var decorationSource = decorationAssembly.MainModule.ImportReference(this.Decoration.Method).Resolve();
 
-                var adviceGraph = this.GraphGetter.Get(decorationSource);
-                var cloningContext = new CloningContext(adviceGraph, decorationSource.DeclaringType, target.DeclaringType);
+                var decorationGraph = this.GraphGetter.Get(decorationSource);
+                var cloningContext = new CloningContext(decorationGraph, decorationSource.DeclaringType, target.DeclaringType);
 
                 // if the names are the same, then we're replacing the target, so move it to a randomly named location
                 if (isTargetReplacedByDecorator)
                 {
-                    target.Name = $"cilador_{Guid.NewGuid().ToString("N")}";
+                    // these changes aren't necessary for cloning, nor are they permanent, but they allow the target signature check to work
+                    decorationSource.Name = target.Name;
+                    decorationSource.Attributes = target.Attributes;
+                    if (!target.SignatureEquals(decorationSource, cloningContext))
+                    {
+                        if (decorationSource.HasParameters)
+                        {
+                            throw new InvalidOperationException(
+                                "Decoration signature has parameters that do not match target signature, so it cannot decorate a target with the same name. You may change the decoration signature to fully match the target signature, change the decoration name to be distinct from the target name, or make the decoration parameterless to take advantage of argument forwarding.");
+                        }
+                    }
+
+                    target.Name = $"cilador_{target.Name}_{Guid.NewGuid().ToString("N")}";
                 }
+
+                MethodDefinition decorationTarget = null;
                 cloningContext.InlineWeaves.Add(new WeavableConcept<object>(
                     new PointCut<object>(s => s == decorationSource),
                     new TransformAdvisor<object>(
@@ -105,9 +121,10 @@ namespace Cilador.Aop.Decorate
                     })));
 
                 cloningContext.Execute();
-            }
 
-            return decorationTarget;
+                Contract.Assert(decorationTarget != null);
+                return decorationTarget;
+            }
         }
 
         private static void RedirectTargetCallsToDecorator(MethodDefinition target, MethodDefinition method, MethodDefinition decorationTarget)
@@ -136,10 +153,14 @@ namespace Cilador.Aop.Decorate
         {
             // TODO handling of this pointer needs more consideration since this assumes that we're decorating an instance method
             var firstArgInstruction = instruction.Previous;
-            while (firstArgInstruction.Previous != null && firstArgInstruction.Previous.OpCode.Name.StartsWith("Ld"))
+            //while (firstArgInstruction.Previous != null && firstArgInstruction.Previous.OpCode.Name.StartsWith("Ld"))
+            while (firstArgInstruction.Previous != null &&
+                firstArgInstruction.Previous.OpCode.Code != OpCodes.Call.Code &&
+                firstArgInstruction.Previous.OpCode.Code != OpCodes.Callvirt.Code &&
+                firstArgInstruction.Previous.OpCode.Code != OpCodes.Nop.Code)
             {
                 if (firstArgInstruction.OpCode == OpCodes.Ldarg_0) { /* this pointer already being sent to the method */ return; }
-                firstArgInstruction = firstArgInstruction.Previous;
+            firstArgInstruction = firstArgInstruction.Previous;
             }
             var ilProcessor = method.Body.GetILProcessor();
             var newInstruction = ilProcessor.Create(OpCodes.Ldarg_0);

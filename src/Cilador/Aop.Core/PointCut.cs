@@ -37,9 +37,9 @@ namespace Cilador.Aop.Core
 
         public Func<TTarget, bool> Selector { get; }
 
-        public IEnumerable<JoinPoint<TTarget>> GetJoinPoints(ICilGraph sourceCilGraph)
+        public IEnumerable<JoinPoint<TTarget>> GetJoinPoints(ICilGraph targetCilGraph)
         {
-            return sourceCilGraph
+            return targetCilGraph
                 .Vertices
                 .OfType<TTarget>()
                 .Where(m => this.Selector(m))
