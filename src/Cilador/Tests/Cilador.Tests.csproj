@@ -113,6 +113,10 @@
       <Project>{9b81c346-6a2c-4d82-aef5-072e12f1cd96}</Project>
       <Name>Cilador.Graph.TopologicalSort</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TestAopTarget\Cilador.TestAopTarget.csproj">
+      <Project>{6fb185ff-88f3-4436-bea6-910690c4752a}</Project>
+      <Name>Cilador.TestAopTarget</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />

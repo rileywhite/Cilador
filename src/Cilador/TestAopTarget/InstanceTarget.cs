@@ -1,7 +1,7 @@
 ﻿/***************************************************************************/
 // Copyright 2013-2019 Riley White
 // 
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Apache License, Version 2.0 (the "License") { throw new NotSupportedException(); }
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // 
@@ -15,38 +15,32 @@
 /***************************************************************************/
 
 using System;
+using System.Collections.Generic;
 
 namespace Cilador.TestAopTarget
 {
-    public class Program
+    public class InstanceTarget
     {
-        public static void Main(string[] args)
+        public static Dictionary<string, object[]> ThingsThatHaveRun { get; set; }
+
+        public void RunWithReplacement(string arg)
         {
-            var p = new Program();
-            p.Run(args);
-            p.RunAgain(args);
-            p.RunAutoForwardingWithoutArgs();
-            p.RunAutoForwardingWithMultipleArgs(new object(), "testestest", 897389, 3873.3829877832);
+            ThingsThatHaveRun.Add($"{nameof(InstanceTarget)}.{nameof(RunWithReplacement)}", new object[] { arg });
         }
 
-        public void Run(string[] args)
+        public void RunWithoutReplacement(string arg)
         {
-            Console.WriteLine("Hello World!");
-        }
-
-        public void RunAgain(string[] args)
-        {
-            Console.WriteLine("Hello Again World!");
+            ThingsThatHaveRun.Add($"{nameof(InstanceTarget)}.{nameof(RunWithoutReplacement)}", new object[] { arg });
         }
 
         public void RunAutoForwardingWithoutArgs()
         {
-            Console.WriteLine("Hello Without Args!");
+            ThingsThatHaveRun.Add($"{nameof(InstanceTarget)}.{nameof(RunAutoForwardingWithoutArgs)}", new object[0]);
         }
 
         public void RunAutoForwardingWithMultipleArgs(object obj, string str, int i, double d)
         {
-            Console.WriteLine($"Hello With Multiple Args: {obj?.ToString() ?? string.Empty}, {str ?? string.Empty}, {i}, {d}!");
+            ThingsThatHaveRun.Add($"{nameof(InstanceTarget)}.{nameof(RunAutoForwardingWithMultipleArgs)}", new object[] { obj, str, i, d });
         }
     }
 }

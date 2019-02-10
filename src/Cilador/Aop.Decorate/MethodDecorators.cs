@@ -42,6 +42,12 @@ namespace Cilador.Aop.Decorate
             Contract.Ensures(this.Decoration != null);
             Contract.Ensures(this.DecorationNameGenerator == null);
 
+            // TODO could probably allow instance decorations for instance targets without any real trouble since required state would be cloned over
+            if (!decoration.Method.IsStatic)
+            {
+                throw new ArgumentException("Decoration methods must be static.", nameof(decoration));
+            }
+
             this.Resolver = resolver;
             this.GraphGetter = graphGetter;
             this.Decoration = decoration;
@@ -65,6 +71,10 @@ namespace Cilador.Aop.Decorate
                 isTargetReplacedByDecorator,
                 out var areArgsAutoForwarded);
 
+            // TODO: need to work out the right way to increment ldarg operands for instance decoration targets since decoration sources are static
+
+            RedirectForwardingCall(target, decorationTarget, areArgsAutoForwarded);
+
             var redirectMethodCallsLoom = new Loom();
             redirectMethodCallsLoom.WeavableConcepts.Add(
                 new WeavableConcept<MethodDefinition>(
@@ -76,8 +86,6 @@ namespace Cilador.Aop.Decorate
                             {
                                 RedirectTargetCallsToDecorator(method, target, decorationTarget);
                             }
-
-                            RedirectForwardingCall(target, method, areArgsAutoForwarded);
                         })));
 
             redirectMethodCallsLoom.Weave(targetAssembly, this.Resolver, this.GraphGetter);
@@ -89,7 +97,7 @@ namespace Cilador.Aop.Decorate
             bool isTargetReplacedByDecorator,
             out bool areArgsAutoForwarded)
         {
-            using (var decorationAssembly = this.Resolver.Resolve(AssemblyNameReference.Parse(this.Decoration.Target.GetType().Assembly.FullName)))
+            using (var decorationAssembly = this.Resolver.Resolve(AssemblyNameReference.Parse(this.Decoration.Method.DeclaringType.Assembly.FullName)))
             {
                 var decorationSource = decorationAssembly.MainModule.ImportReference(this.Decoration.Method).Resolve();
 
@@ -183,20 +191,18 @@ namespace Cilador.Aop.Decorate
         }
 
         private static void RedirectForwardingCall(
-            MethodDefinition originalTargetMethod,
+            MethodDefinition decoratedMethod,
             MethodDefinition decorationMethod,
             bool areArgsAutoForwarded)
         {
-            // TODO needs rethought to consider whether each involved method is instance or static
-            // may have some details wrong, so need some tests around this concern
             foreach (var instruction in
                 decorationMethod.Body.Instructions.Where(
                     i => i.OpCode == OpCodes.Call && i.Operand is MethodReference &&
                     ((MethodReference)i.Operand).Name == nameof(Forwarders.ForwardToOriginalAction)).ToArray())
             {
-                instruction.Operand = originalTargetMethod;
+                instruction.Operand = decoratedMethod;
 
-                if (areArgsAutoForwarded && originalTargetMethod.HasParameters)
+                if (areArgsAutoForwarded && decoratedMethod.HasParameters)
                 {
                     // implies no arguments are on the forwarded version of the method call
                     // this means we simply add instructions to ldargs.1 - the count of parameters
@@ -207,8 +213,7 @@ namespace Cilador.Aop.Decorate
                     var newInstruction = ilProcessor.Create(OpCodes.Ldarg_0);
                     ilProcessor.InsertBefore(instruction, newInstruction);
 
-                    // TODO handling of this needs more consideration since this assumes that we're decorating an instance method
-                    var parameterCount = (ushort)originalTargetMethod.Parameters.Count;
+                    var parameterCount = (ushort)decoratedMethod.Parameters.Count;
 
                     if (parameterCount >= 1) { ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Ldarg_1)); }
                     if (parameterCount >= 2) { ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Ldarg_2)); }
@@ -220,7 +225,7 @@ namespace Cilador.Aop.Decorate
                     }
                 }
 
-                if (!originalTargetMethod.IsStatic)
+                if (decorationMethod.IsStatic && !decoratedMethod.IsStatic)
                 {
                     AddThisPointerToMethodCall(decorationMethod, instruction);
                 }
@@ -229,9 +234,7 @@ namespace Cilador.Aop.Decorate
 
         private static void AddThisPointerToMethodCall(MethodDefinition method, Instruction instruction)
         {
-            // TODO handling of this pointer needs more consideration since this assumes that we're decorating an instance method
             var firstArgInstruction = instruction.Previous;
-            //while (firstArgInstruction.Previous != null && firstArgInstruction.Previous.OpCode.Name.StartsWith("Ld"))
             while (
                 firstArgInstruction.Previous != null &&
                 firstArgInstruction.Previous.OpCode.Code != OpCodes.Call.Code &&
@@ -246,6 +249,8 @@ namespace Cilador.Aop.Decorate
             ilProcessor.InsertBefore(firstArgInstruction, newInstruction);
         }
     }
+
+    #region Concreate Method Decorator Types
 
     public class ActionDecorator : MethodDecoratorBase
     {
@@ -892,4 +897,6 @@ namespace Cilador.Aop.Decorate
             Contract.Ensures(this.DecorationNameGenerator == null);
         }
     }
+
+    #endregion
 }

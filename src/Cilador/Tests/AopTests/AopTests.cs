@@ -21,14 +21,16 @@ using Cilador.Graph.Factory;
 using Mono.Cecil;
 using NUnit.Framework;
 using System;
+using System.Reflection;
+using System.Collections.Generic;
 
 namespace Cilador.Tests
 {
     [TestFixture]
     public class AopTests
     {
-        [Test]
-        public void CanDecorateActionMethodWithReplacement()
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
             using (var resolver = new DefaultAssemblyResolver())
             using (var targetAssembly = resolver.Resolve(AssemblyNameReference.Parse("Cilador.TestAopTarget"), new ReaderParameters { ReadWrite = true }))
@@ -36,86 +38,161 @@ namespace Cilador.Tests
                 var loom = new Loom();
                 var graphGetter = new CilGraphGetter();
 
-                loom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(
-                    new PointCut<MethodDefinition>(m => $"{m.DeclaringType.FullName}.{m.Name}" == "Cilador.TestAopTarget.Program.Run"),
-                    new ActionDecorator<string[]>(
-                        resolver,
-                        graphGetter,
-                        args =>
-                        {
-                            Console.WriteLine("Before...");
-                            Console.WriteLine("---Args---");
-                            foreach (var arg in args)
-                            {
-                                Console.WriteLine(arg);
-                            }
-                            Console.WriteLine("----------");
-                            Forwarders.ForwardToOriginalAction(args);
-                            Console.WriteLine("...After");
-                        })));
+                loom.WeavableConcepts.Add(RunWithoutReplacementDecorationConcept(resolver, graphGetter));
 
                 loom.Weave(targetAssembly);
 
                 targetAssembly.Write();
             }
+        }
+
+        #region Concepts
+
+        private static WeavableConcept<MethodDefinition> RunWithoutReplacementDecorationConcept(DefaultAssemblyResolver resolver, CilGraphGetter graphGetter)
+        {
+            return new WeavableConcept<MethodDefinition>(
+                new PointCut<MethodDefinition>(m => m.Name == "RunWithoutReplacement"),
+                new ActionDecorator<string[]>(
+                    resolver,
+                    graphGetter,
+                    RunWithoutReplacementDecoration,
+                    name => $"{name}_Decorated"));
+        }
+
+        private static void RunWithoutReplacementDecoration(string[] args)
+        {
+            var currentType = MethodBase.GetCurrentMethod().DeclaringType;
+            var thingsThatHaveRun = (Dictionary<string, object[]>)currentType
+                .GetProperty("ThingsThatHaveRun", BindingFlags.Public | BindingFlags.Static)
+                .GetValue(null);
+
+            thingsThatHaveRun.Add($"{currentType.Name}.RunWithoutReplacement_Decorated", args);
+
+            Forwarders.ForwardToOriginalAction(string.Join(", ", args));
+        }
+
+        #endregion
+
+        [Test]
+        public void CanDecorateInstanceActionMethodWithoutReplacement()
+        {
+            var sentArgs = new string[] { "1", "2", "3" };
+
+            var thingsThatHaveRun = new Dictionary<string, object[]>();
+            try
+            {
+                TestAopTarget.InstanceTarget.ThingsThatHaveRun = thingsThatHaveRun;
+                var instanceTarget = new TestAopTarget.InstanceTarget();
+                typeof(TestAopTarget.InstanceTarget).GetMethod("RunWithoutReplacement_Decorated").Invoke(instanceTarget, new object[] { sentArgs });
+            }
+            finally
+            {
+                TestAopTarget.InstanceTarget.ThingsThatHaveRun = null;
+            }
+
+            Assert.IsTrue(thingsThatHaveRun.TryGetValue(
+                $"{nameof(TestAopTarget.InstanceTarget)}.RunWithoutReplacement_Decorated",
+                out var decoratedMethodArgs));
+            Assert.AreSame(sentArgs, decoratedMethodArgs);
+
+            Assert.IsTrue(thingsThatHaveRun.TryGetValue(
+                $"{nameof(TestAopTarget.InstanceTarget)}.RunWithoutReplacement",
+                out var forwardedArgs));
+
+            Assert.NotNull(forwardedArgs);
+            Assert.That(forwardedArgs.Length == 1);
+            Assert.AreEqual("1, 2, 3", forwardedArgs[0]);
         }
 
         [Test]
-        public void CanDecorateActionMethodWithReplacementAndArgAutoForwarding()
+        public void CanDecorateStaticActionMethodWithoutReplacement()
         {
-            using (var resolver = new DefaultAssemblyResolver())
-            using (var targetAssembly = resolver.Resolve(AssemblyNameReference.Parse("Cilador.TestAopTarget"), new ReaderParameters { ReadWrite = true }))
+            var sentArgs = new string[] { "1", "2", "3" };
+
+            var thingsThatHaveRun = new Dictionary<string, object[]>();
+            try
             {
-                var loom = new Loom();
-                var graphGetter = new CilGraphGetter();
-
-                loom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(
-                    new PointCut<MethodDefinition>(m => $"{m.DeclaringType.FullName}.{m.Name}".StartsWith("Cilador.TestAopTarget.Program.RunAutoForwarding")),
-                    new ActionDecorator(
-                        resolver,
-                        graphGetter,
-                        () =>
-                        {
-                            Console.WriteLine("Before...");
-                            Forwarders.ForwardToOriginalAction();
-                            Console.WriteLine("...After");
-                        })));
-
-                loom.Weave(targetAssembly);
-
-                targetAssembly.Write();
+                TestAopTarget.StaticTarget.ThingsThatHaveRun = thingsThatHaveRun;
+                typeof(TestAopTarget.StaticTarget).GetMethod("RunWithoutReplacement_Decorated").Invoke(null, new object[] { sentArgs });
             }
+            finally
+            {
+                TestAopTarget.StaticTarget.ThingsThatHaveRun = null;
+            }
+
+            Assert.IsTrue(thingsThatHaveRun.TryGetValue(
+                $"{nameof(TestAopTarget.StaticTarget)}.RunWithoutReplacement_Decorated",
+                out var decoratedMethodArgs));
+            Assert.AreSame(sentArgs, decoratedMethodArgs);
+
+            Assert.IsTrue(thingsThatHaveRun.TryGetValue(
+                $"{nameof(TestAopTarget.StaticTarget)}.RunWithoutReplacement",
+                out var forwardedArgs));
+
+            Assert.NotNull(forwardedArgs);
+            Assert.That(forwardedArgs.Length == 1);
+            Assert.AreEqual("1, 2, 3", forwardedArgs[0]);
         }
 
-        [Test]
-        public void CanDecorateActionMethodWithoutReplacement()
-        {
-            using (var resolver = new DefaultAssemblyResolver())
-            using (var targetAssembly = resolver.Resolve(AssemblyNameReference.Parse("Cilador.TestAopTarget"), new ReaderParameters { ReadWrite = true }))
-            {
-                var loom = new Loom();
-                var graphGetter = new CilGraphGetter();
+        //[Test]
+        //public void CanDecorateInstanceActionMethodWithReplacement()
+        //{
+        //    using (var resolver = new DefaultAssemblyResolver())
+        //    using (var targetAssembly = resolver.Resolve(AssemblyNameReference.Parse("Cilador.TestAopTarget"), new ReaderParameters { ReadWrite = true }))
+        //    {
+        //        var loom = new Loom();
+        //        var graphGetter = new CilGraphGetter();
 
-                loom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(
-                    new PointCut<MethodDefinition>(m => $"{m.DeclaringType.FullName}.{m.Name}" == "Cilador.TestAopTarget.Program.RunAgain"),
-                    new ActionDecorator<string>(
-                        resolver,
-                        graphGetter,
-                        delimitedArgs =>
-                        {
-                            Console.WriteLine("Before...");
-                            var x = 2;
-                            Forwarders.ForwardToOriginalAction(delimitedArgs.Split(new char[] {  ' ' }));
-                            Console.WriteLine("...After");
-                            Console.WriteLine(x);
-                        },
-                        name => $"{name}_Wrapper")));
+        //        loom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(
+        //            new PointCut<MethodDefinition>(m => $"{m.DeclaringType.FullName}.{m.Name}" == "Cilador.TestAopTarget.Program.Run"),
+        //            new ActionDecorator<string[]>(
+        //                resolver,
+        //                graphGetter,
+        //                args =>
+        //                {
+        //                    Console.WriteLine("Before...");
+        //                    Console.WriteLine("---Args---");
+        //                    foreach (var arg in args)
+        //                    {
+        //                        Console.WriteLine(arg);
+        //                    }
+        //                    Console.WriteLine("----------");
+        //                    Forwarders.ForwardToOriginalAction(args);
+        //                    Console.WriteLine("...After");
+        //                })));
 
-                loom.Weave(targetAssembly);
+        //        loom.Weave(targetAssembly);
 
-                targetAssembly.Write();
-            }
-        }
+        //        targetAssembly.Write();
+        //    }
+        //}
+
+        //[Test]
+        //public void CanDecorateInstanceActionMethodWithReplacementAndArgAutoForwarding()
+        //{
+        //    using (var resolver = new DefaultAssemblyResolver())
+        //    using (var targetAssembly = resolver.Resolve(AssemblyNameReference.Parse("Cilador.TestAopTarget"), new ReaderParameters { ReadWrite = true }))
+        //    {
+        //        var loom = new Loom();
+        //        var graphGetter = new CilGraphGetter();
+
+        //        loom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(
+        //            new PointCut<MethodDefinition>(m => $"{m.DeclaringType.FullName}.{m.Name}".StartsWith("Cilador.TestAopTarget.Program.RunAutoForwarding")),
+        //            new ActionDecorator(
+        //                resolver,
+        //                graphGetter,
+        //                () =>
+        //                {
+        //                    Console.WriteLine("Before...");
+        //                    Forwarders.ForwardToOriginalAction();
+        //                    Console.WriteLine("...After");
+        //                })));
+
+        //        loom.Weave(targetAssembly);
+
+        //        targetAssembly.Write();
+        //    }
+        //}
 
         [Test]
         public void CanIntroduceEnumToAssembly()

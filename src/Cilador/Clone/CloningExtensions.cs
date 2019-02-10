@@ -204,8 +204,7 @@ namespace Cilador.Clone
             Contract.Requires(instruction != null);
             Contract.Requires(variables != null);
 
-            int? initialVariableIndex;
-            if (translate == 0 || !instruction.TryGetVariableIndex(out initialVariableIndex)) { return instruction; }
+            if (translate == 0 || !instruction.TryGetVariableIndex(out int? initialVariableIndex)) { return instruction; }
             Contract.Assert(initialVariableIndex.HasValue);
 
             var newIndex = initialVariableIndex.Value + translate;
