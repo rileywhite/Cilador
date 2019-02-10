@@ -25,8 +25,8 @@ namespace Cilador.TestAopTarget
             var p = new Program();
             p.Run(args);
             p.RunAgain(args);
-            p.RunWithoutArgs();
-            p.RunWithMultipleArgs(new object(), "testestest", 897389, 3873.3829877832);
+            p.RunAutoForwardingWithoutArgs();
+            p.RunAutoForwardingWithMultipleArgs(new object(), "testestest", 897389, 3873.3829877832);
         }
 
         public void Run(string[] args)
@@ -39,14 +39,14 @@ namespace Cilador.TestAopTarget
             Console.WriteLine("Hello Again World!");
         }
 
-        public void RunWithoutArgs()
+        public void RunAutoForwardingWithoutArgs()
         {
             Console.WriteLine("Hello Without Args!");
         }
 
-        public void RunWithMultipleArgs(object obj, string str, int i, double d)
+        public void RunAutoForwardingWithMultipleArgs(object obj, string str, int i, double d)
         {
-            Console.WriteLine($"Hellow With Multiple Args: {obj?.ToString() ?? string.Empty}, {str ?? string.Empty}, {i}, {d}!");
+            Console.WriteLine($"Hello With Multiple Args: {obj?.ToString() ?? string.Empty}, {str ?? string.Empty}, {i}, {d}!");
         }
     }
 }

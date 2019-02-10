@@ -82,22 +82,7 @@ namespace Cilador.Clone
             Contract.Assert(this.Source.Name == this.Target.Name);
             Contract.Assert(this.Source.Attributes == this.Target.Attributes);
 
-            this.Target.ParameterType = this.CloningContext.RootImport(this.Source.ParameterType);
-            this.Target.Constant = this.Source.Constant;
-            this.Target.HasConstant = this.Source.HasConstant;
-            this.Target.HasDefault = this.Source.HasDefault;
-            this.Target.HasFieldMarshal = this.Source.HasFieldMarshal;
-            this.Target.IsIn = this.Source.IsIn;
-            this.Target.IsLcid = this.Source.IsLcid;
-            this.Target.IsOptional = this.Source.IsOptional;
-            this.Target.IsOut = this.Source.IsOut;
-            this.Target.IsReturnValue = this.Source.IsReturnValue;
-
-            // TODO research correct usage
-            if (this.Source.MarshalInfo != null)
-            {
-                this.Target.MarshalInfo = new MarshalInfo(this.Source.MarshalInfo.NativeType);
-            }
+            this.CloningContext.CopyDetails(this.Target, this.Source);
         }
     }
 }

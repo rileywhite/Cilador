@@ -61,7 +61,7 @@ namespace Cilador.Tests
         }
 
         [Test]
-        public void CanDecorateActionMethodWithReplacementAndArgForwarding()
+        public void CanDecorateActionMethodWithReplacementAndArgAutoForwarding()
         {
             using (var resolver = new DefaultAssemblyResolver())
             using (var targetAssembly = resolver.Resolve(AssemblyNameReference.Parse("Cilador.TestAopTarget"), new ReaderParameters { ReadWrite = true }))
@@ -70,20 +70,14 @@ namespace Cilador.Tests
                 var graphGetter = new CilGraphGetter();
 
                 loom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(
-                    new PointCut<MethodDefinition>(m => $"{m.DeclaringType.FullName}.{m.Name}".StartsWith("Cilador.TestAopTarget.Program.Run")),
-                    new ActionDecorator<string[]>(
+                    new PointCut<MethodDefinition>(m => $"{m.DeclaringType.FullName}.{m.Name}".StartsWith("Cilador.TestAopTarget.Program.RunAutoForwarding")),
+                    new ActionDecorator(
                         resolver,
                         graphGetter,
-                        args =>
+                        () =>
                         {
                             Console.WriteLine("Before...");
-                            Console.WriteLine("---Args---");
-                            foreach (var arg in args)
-                            {
-                                Console.WriteLine(arg);
-                            }
-                            Console.WriteLine("----------");
-                            Forwarders.ForwardToOriginalAction(args);
+                            Forwarders.ForwardToOriginalAction();
                             Console.WriteLine("...After");
                         })));
 

@@ -59,7 +59,11 @@ namespace Cilador.Aop.Decorate
             var decorationName = this.DecorationNameGenerator(target.Name);
             var isTargetReplacedByDecorator = decorationName == target.Name;
 
-            var decorationTarget = CloneDecorationIntoTargetLocation(target, decorationName, isTargetReplacedByDecorator);
+            var decorationTarget = CloneDecorationIntoTargetLocation(
+                target,
+                decorationName,
+                isTargetReplacedByDecorator,
+                out var areArgsAutoForwarded);
 
             var redirectMethodCallsLoom = new Loom();
             redirectMethodCallsLoom.WeavableConcepts.Add(
@@ -70,10 +74,10 @@ namespace Cilador.Aop.Decorate
                         {
                             if (isTargetReplacedByDecorator)
                             {
-                                RedirectTargetCallsToDecorator(target, method, decorationTarget);
+                                RedirectTargetCallsToDecorator(method, target, decorationTarget);
                             }
 
-                            RedirectForwardingCall(target, method);
+                            RedirectForwardingCall(target, method, areArgsAutoForwarded);
                         })));
 
             redirectMethodCallsLoom.Weave(targetAssembly, this.Resolver, this.GraphGetter);
@@ -82,7 +86,8 @@ namespace Cilador.Aop.Decorate
         private MethodDefinition CloneDecorationIntoTargetLocation(
             MethodDefinition target,
             string decorationName,
-            bool isTargetReplacedByDecorator)
+            bool isTargetReplacedByDecorator,
+            out bool areArgsAutoForwarded)
         {
             using (var decorationAssembly = this.Resolver.Resolve(AssemblyNameReference.Parse(this.Decoration.Target.GetType().Assembly.FullName)))
             {
@@ -90,22 +95,17 @@ namespace Cilador.Aop.Decorate
 
                 var decorationGraph = this.GraphGetter.Get(decorationSource);
                 var cloningContext = new CloningContext(decorationGraph, decorationSource.DeclaringType, target.DeclaringType);
+                areArgsAutoForwarded = isTargetReplacedByDecorator && CanArgsBeAutoForwarded(target, decorationSource);
+                var localAreArgsAutoForwarded = areArgsAutoForwarded;
+
+                if (isTargetReplacedByDecorator && !areArgsAutoForwarded)
+                {
+                    EnsureParametersMatch(target, decorationSource, cloningContext);
+                }
 
                 // if the names are the same, then we're replacing the target, so move it to a randomly named location
                 if (isTargetReplacedByDecorator)
                 {
-                    // these changes aren't necessary for cloning, nor are they permanent, but they allow the target signature check to work
-                    decorationSource.Name = target.Name;
-                    decorationSource.Attributes = target.Attributes;
-                    if (!target.SignatureEquals(decorationSource, cloningContext))
-                    {
-                        if (decorationSource.HasParameters)
-                        {
-                            throw new InvalidOperationException(
-                                "Decoration signature has parameters that do not match target signature, so it cannot decorate a target with the same name. You may change the decoration signature to fully match the target signature, change the decoration name to be distinct from the target name, or make the decoration parameterless to take advantage of argument forwarding.");
-                        }
-                    }
-
                     target.Name = $"cilador_{target.Name}_{Guid.NewGuid().ToString("N")}";
                 }
 
@@ -118,6 +118,24 @@ namespace Cilador.Aop.Decorate
                         decorationTarget = (MethodDefinition)t;
                         decorationTarget.Name = decorationName;
                         decorationTarget.Attributes = target.Attributes;
+
+                        if (localAreArgsAutoForwarded)
+                        {
+                            // modify target to accept args
+                            var voidReference = cloningContext.TargetModule.ImportReference(typeof(void));
+                            foreach (var parameter in target.Parameters)
+                            {
+                                var decorationParameter =
+                                    new ParameterDefinition(
+                                        parameter.Name,
+                                        parameter.Attributes,
+                                        voidReference);
+
+                                cloningContext.CopyDetails(decorationParameter, parameter);
+
+                                decorationTarget.Parameters.Add(decorationParameter);
+                            }
+                        }
                     })));
 
                 cloningContext.Execute();
@@ -127,24 +145,84 @@ namespace Cilador.Aop.Decorate
             }
         }
 
-        private static void RedirectTargetCallsToDecorator(MethodDefinition target, MethodDefinition method, MethodDefinition decorationTarget)
+        private static void EnsureParametersMatch(MethodDefinition target, MethodDefinition decorationSource, CloningContext cloningContext)
+        {
+            // capture original values so that can be replaced temporarily
+            var decorationSourceName = decorationSource.Name;
+            var decorationSourceAttributes = decorationSource.Attributes;
+
+            // update decoration values to allow the target signature check to work
+            decorationSource.Name = target.Name;
+            decorationSource.Attributes = target.Attributes;
+            if (!target.SignatureEquals(decorationSource, cloningContext))
+            {
+                throw new InvalidOperationException(
+                    "Decoration signature has parameters that do not match target signature, so it cannot decorate a target with the same name. You may change the decoration signature to fully match the target signature, change the decoration name to be distinct from the target name, or make the decoration parameterless to take advantage of argument forwarding.");
+            }
+
+            // return original values to avoid side-effects
+            decorationSource.Name = decorationSourceName;
+            decorationSource.Attributes = decorationSourceAttributes;
+        }
+
+        private static bool CanArgsBeAutoForwarded(MethodDefinition target, MethodDefinition decorationSource)
+        {
+            return target.HasParameters && !decorationSource.HasParameters;
+        }
+
+        private static void RedirectTargetCallsToDecorator(
+            MethodDefinition inMethod,
+            MethodDefinition originalTargetMethod,
+            MethodDefinition decorationMethod)
         {
             // if replacing rather than adding a separately named decorator, then redirect all calls to the decorator
-            foreach (var instruction in method.Body.Instructions.Where(i => (i.OpCode == OpCodes.Call || i.OpCode == OpCodes.Callvirt) && i.Operand is MethodReference && ((MethodReference)i.Operand).FullName == target.FullName).ToArray())
+            foreach (var instruction in inMethod.Body.Instructions.Where(i => (i.OpCode == OpCodes.Call || i.OpCode == OpCodes.Callvirt) && i.Operand is MethodReference && ((MethodReference)i.Operand).FullName == originalTargetMethod.FullName).ToArray())
             {
-                instruction.Operand = decorationTarget;
+                instruction.Operand = decorationMethod;
             }
         }
 
-        private static void RedirectForwardingCall(MethodDefinition target, MethodDefinition method)
+        private static void RedirectForwardingCall(
+            MethodDefinition originalTargetMethod,
+            MethodDefinition decorationMethod,
+            bool areArgsAutoForwarded)
         {
-            foreach (var instruction in method.Body.Instructions.Where(i => i.OpCode == OpCodes.Call && i.Operand is MethodReference && ((MethodReference)i.Operand).Name == nameof(Forwarders.ForwardToOriginalAction)).ToArray())
+            // TODO needs rethought to consider whether each involved method is instance or static
+            // may have some details wrong, so need some tests around this concern
+            foreach (var instruction in
+                decorationMethod.Body.Instructions.Where(
+                    i => i.OpCode == OpCodes.Call && i.Operand is MethodReference &&
+                    ((MethodReference)i.Operand).Name == nameof(Forwarders.ForwardToOriginalAction)).ToArray())
             {
-                instruction.Operand = target;
+                instruction.Operand = originalTargetMethod;
 
-                if (!target.IsStatic)
+                if (areArgsAutoForwarded && originalTargetMethod.HasParameters)
                 {
-                    AddThisPointerToMethodCall(method, instruction);
+                    // implies no arguments are on the forwarded version of the method call
+                    // this means we simply add instructions to ldargs.1 - the count of parameters
+                    // this pointer handling (i.e. ldarg.0) is done afterward
+
+                    var ilProcessor = decorationMethod.Body.GetILProcessor();
+
+                    var newInstruction = ilProcessor.Create(OpCodes.Ldarg_0);
+                    ilProcessor.InsertBefore(instruction, newInstruction);
+
+                    // TODO handling of this needs more consideration since this assumes that we're decorating an instance method
+                    var parameterCount = (ushort)originalTargetMethod.Parameters.Count;
+
+                    if (parameterCount >= 1) { ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Ldarg_1)); }
+                    if (parameterCount >= 2) { ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Ldarg_2)); }
+                    if (parameterCount >= 3) { ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Ldarg_3)); }
+
+                    for(ushort i = 4; i <= parameterCount; ++i)
+                    {
+                        ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Ldarg, i));
+                    }
+                }
+
+                if (!originalTargetMethod.IsStatic)
+                {
+                    AddThisPointerToMethodCall(decorationMethod, instruction);
                 }
             }
         }
@@ -154,13 +232,14 @@ namespace Cilador.Aop.Decorate
             // TODO handling of this pointer needs more consideration since this assumes that we're decorating an instance method
             var firstArgInstruction = instruction.Previous;
             //while (firstArgInstruction.Previous != null && firstArgInstruction.Previous.OpCode.Name.StartsWith("Ld"))
-            while (firstArgInstruction.Previous != null &&
+            while (
+                firstArgInstruction.Previous != null &&
                 firstArgInstruction.Previous.OpCode.Code != OpCodes.Call.Code &&
                 firstArgInstruction.Previous.OpCode.Code != OpCodes.Callvirt.Code &&
                 firstArgInstruction.Previous.OpCode.Code != OpCodes.Nop.Code)
             {
                 if (firstArgInstruction.OpCode == OpCodes.Ldarg_0) { /* this pointer already being sent to the method */ return; }
-            firstArgInstruction = firstArgInstruction.Previous;
+                firstArgInstruction = firstArgInstruction.Previous;
             }
             var ilProcessor = method.Body.GetILProcessor();
             var newInstruction = ilProcessor.Create(OpCodes.Ldarg_0);
