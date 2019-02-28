@@ -25,22 +25,22 @@ namespace Cilador.TestAopTarget
 
         public void RunWithReplacement(string arg)
         {
-            ThingsThatHaveRun.Add($"{nameof(InstanceTarget)}.{nameof(RunWithReplacement)}", new object[] { arg });
+            ThingsThatHaveRun.Add("Instance RunWithReplacement}", new object[] { arg });
         }
 
         public void RunWithoutReplacement(string arg)
         {
-            ThingsThatHaveRun.Add($"{nameof(InstanceTarget)}.{nameof(RunWithoutReplacement)}", new object[] { arg });
+            ThingsThatHaveRun.Add("Instance RunWithoutReplacement", new object[] { arg });
         }
 
         public void RunAutoForwardingWithoutArgs()
         {
-            ThingsThatHaveRun.Add($"{nameof(InstanceTarget)}.{nameof(RunAutoForwardingWithoutArgs)}", new object[0]);
+            ThingsThatHaveRun.Add("Instance RunAutoForwardingWithoutArgs", new object[0]);
         }
 
         public void RunAutoForwardingWithMultipleArgs(object obj, string str, int i, double d)
         {
-            ThingsThatHaveRun.Add($"{nameof(InstanceTarget)}.{nameof(RunAutoForwardingWithMultipleArgs)}", new object[] { obj, str, i, d });
+            ThingsThatHaveRun.Add("Instance RunAutoForwardingWithMultipleArgs", new object[] { obj, str, i, d });
         }
     }
 }

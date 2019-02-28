@@ -29,174 +29,189 @@ namespace Cilador.Aop.Decorate
     public abstract class MethodDecoratorBase : IConceptWeaver<MethodDefinition>
     {
         public MethodDecoratorBase(
-            IAssemblyResolver resolver,
-            CilGraphGetter graphGetter,
-            Delegate decoration,
-            Func<string, string> decorationNameGenerator = null)
+            IAssemblyResolver resolver, CilGraphGetter graphGetter, Delegate sourceDecorationDelegate, Func<string, string> decorationNameGenerator)
         {
             Contract.Requires(resolver != null);
             Contract.Requires(graphGetter != null);
-            Contract.Requires(decoration != null);
+            Contract.Requires(sourceDecorationDelegate != null);
             Contract.Ensures(this.Resolver != null);
+            Contract.Ensures(this.SourceDecorationAssembly != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
 
             // TODO could probably allow instance decorations for instance targets without any real trouble since required state would be cloned over
-            if (!decoration.Method.IsStatic)
+            if (!sourceDecorationDelegate.Method.IsStatic)
             {
-                throw new ArgumentException("Decoration methods must be static.", nameof(decoration));
+                throw new ArgumentException("Decoration methods must be static.", nameof(sourceDecorationDelegate));
             }
 
             this.Resolver = resolver;
+            this.SourceDecorationAssembly = resolver.Resolve(AssemblyNameReference.Parse(sourceDecorationDelegate.Method.Module.Assembly.FullName));
+            this.SourceDecoration = this.SourceDecorationAssembly.MainModule.ImportReference(sourceDecorationDelegate.Method).Resolve();
+
             this.GraphGetter = graphGetter;
-            this.Decoration = decoration;
-            this.DecorationNameGenerator = decorationNameGenerator ?? (sourceName => sourceName);
+            this.TargetDecorationNameGenerator = decorationNameGenerator ?? (name => name);
         }
 
-        public IAssemblyResolver Resolver { get; }
-        public CilGraphGetter GraphGetter { get; }
-        public Delegate Decoration { get; }
-        public Func<string, string> DecorationNameGenerator { get; }
-
-        public void Weave(MethodDefinition target)
+        ~MethodDecoratorBase()
         {
-            var targetAssembly = target.Module.Assembly;
-            var decorationName = this.DecorationNameGenerator(target.Name);
-            var isTargetReplacedByDecorator = decorationName == target.Name;
+            this.Dispose(false);
+        }
 
-            var decorationTarget = CloneDecorationIntoTargetLocation(
-                target,
-                decorationName,
-                isTargetReplacedByDecorator,
-                out var areArgsAutoForwarded);
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            // TODO: need to work out the right way to increment ldarg operands for instance decoration targets since decoration sources are static
+        protected virtual void Dispose(bool isDisposing)
+        {
+            if (isDisposing)
+            {
+                this.SourceDecorationAssembly?.Dispose();
+                this.SourceDecorationAssembly = null;
 
-            RedirectForwardingCall(target, decorationTarget, areArgsAutoForwarded);
+                this.Resolver?.Dispose();
+                this.Resolver = null;
+            }
+        }
+
+        public IAssemblyResolver Resolver { get; private set; }
+        public AssemblyDefinition SourceDecorationAssembly { get; private set; }
+
+        public CilGraphGetter GraphGetter { get; }
+        public MethodDefinition SourceDecoration { get; }
+        public Func<string, string> TargetDecorationNameGenerator { get; }
+
+        public void Weave(MethodDefinition decoratedMethod)
+        {
+            var targetDecorationName = this.TargetDecorationNameGenerator(decoratedMethod.Name);
+            var isTargetReplacedByDecorator = targetDecorationName == decoratedMethod.Name;
+
+            var (targetDecoration, areArgsAutoForwarded) = CloneDecorationIntoTargetLocation(
+                decoratedMethod,
+                targetDecorationName,
+                isTargetReplacedByDecorator);
+
+            RedirectForwardingCall(decoratedMethod, targetDecoration, areArgsAutoForwarded);
 
             var redirectMethodCallsLoom = new Loom();
-            redirectMethodCallsLoom.WeavableConcepts.Add(
-                new WeavableConcept<MethodDefinition>(
-                    new PointCut<MethodDefinition>(m => m.HasBody),
-                    new TransformAdvisor<MethodDefinition>(
+
+            using (var transform = new TransformAdvisor<MethodDefinition>(
                         method =>
                         {
                             if (isTargetReplacedByDecorator)
                             {
-                                RedirectTargetCallsToDecorator(method, target, decorationTarget);
+                                RedirectDecoratedMethodCallsToTargetDecoration(method, decoratedMethod, targetDecoration);
                             }
-                        })));
-
-            redirectMethodCallsLoom.Weave(targetAssembly, this.Resolver, this.GraphGetter);
-        }
-
-        private MethodDefinition CloneDecorationIntoTargetLocation(
-            MethodDefinition target,
-            string decorationName,
-            bool isTargetReplacedByDecorator,
-            out bool areArgsAutoForwarded)
-        {
-            using (var decorationAssembly = this.Resolver.Resolve(AssemblyNameReference.Parse(this.Decoration.Method.DeclaringType.Assembly.FullName)))
+                        }))
             {
-                var decorationSource = decorationAssembly.MainModule.ImportReference(this.Decoration.Method).Resolve();
+                redirectMethodCallsLoom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(new PointCut<MethodDefinition>(m => m.HasBody), transform));
 
-                var decorationGraph = this.GraphGetter.Get(decorationSource);
-                var cloningContext = new CloningContext(decorationGraph, decorationSource.DeclaringType, target.DeclaringType);
-                areArgsAutoForwarded = isTargetReplacedByDecorator && CanArgsBeAutoForwarded(target, decorationSource);
-                var localAreArgsAutoForwarded = areArgsAutoForwarded;
-
-                if (isTargetReplacedByDecorator && !areArgsAutoForwarded)
-                {
-                    EnsureParametersMatch(target, decorationSource, cloningContext);
-                }
-
-                // if the names are the same, then we're replacing the target, so move it to a randomly named location
-                if (isTargetReplacedByDecorator)
-                {
-                    target.Name = $"cilador_{target.Name}_{Guid.NewGuid().ToString("N")}";
-                }
-
-                MethodDefinition decorationTarget = null;
-                cloningContext.InlineWeaves.Add(new WeavableConcept<object>(
-                    new PointCut<object>(s => s == decorationSource),
-                    new TransformAdvisor<object>(
-                    t =>
-                    {
-                        decorationTarget = (MethodDefinition)t;
-                        decorationTarget.Name = decorationName;
-                        decorationTarget.Attributes = target.Attributes;
-
-                        if (localAreArgsAutoForwarded)
-                        {
-                            // modify target to accept args
-                            var voidReference = cloningContext.TargetModule.ImportReference(typeof(void));
-                            foreach (var parameter in target.Parameters)
-                            {
-                                var decorationParameter =
-                                    new ParameterDefinition(
-                                        parameter.Name,
-                                        parameter.Attributes,
-                                        voidReference);
-
-                                cloningContext.CopyDetails(decorationParameter, parameter);
-
-                                decorationTarget.Parameters.Add(decorationParameter);
-                            }
-                        }
-                    })));
-
-                cloningContext.Execute();
-
-                Contract.Assert(decorationTarget != null);
-                return decorationTarget;
+                redirectMethodCallsLoom.Weave(decoratedMethod.Module.Assembly, decoratedMethod.Module.AssemblyResolver, this.GraphGetter);
             }
         }
 
-        private static void EnsureParametersMatch(MethodDefinition target, MethodDefinition decorationSource, CloningContext cloningContext)
+        private (MethodDefinition TargetDecoration, bool AreArgsAutoForwarded) CloneDecorationIntoTargetLocation(
+            MethodDefinition decoratedMethod,
+            string targetDecorationName,
+            bool isTargetReplacedByDecorator)
+        {
+            var sourceDecorationGraph = this.GraphGetter.Get(this.SourceDecoration);
+            var cloningContext = new CloningContext(sourceDecorationGraph, this.SourceDecoration.DeclaringType, decoratedMethod.DeclaringType);
+            var areArgsAutoForwarded = isTargetReplacedByDecorator && this.CanArgsBeAutoForwarded(decoratedMethod);
+
+            if (isTargetReplacedByDecorator && !areArgsAutoForwarded)
+            {
+                this.EnsureParametersMatch(decoratedMethod, cloningContext);
+            }
+
+            // if the names are the same, then we're replacing the target, so move it to a randomly named location
+            if (isTargetReplacedByDecorator)
+            {
+                decoratedMethod.Name = $"cilador_{decoratedMethod.Name}_{Guid.NewGuid().ToString("N")}";
+            }
+
+            var targetDecoration = default(MethodDefinition);
+            using (var updateAndCaptureDecorationTargetTransform = new TransformAdvisor<object>(
+                t =>
+                {
+                    targetDecoration = (MethodDefinition)t;
+                    targetDecoration.Name = targetDecorationName;
+                    targetDecoration.Attributes = decoratedMethod.Attributes;
+
+                    if (areArgsAutoForwarded)
+                    {
+                        // modify target to accept args
+                        var voidReference = cloningContext.TargetModule.ImportReference(typeof(void));
+                        foreach (var parameter in decoratedMethod.Parameters)
+                        {
+                            var decorationParameter =
+                                new ParameterDefinition(
+                                    parameter.Name,
+                                    parameter.Attributes,
+                                    voidReference);
+
+                            cloningContext.CopyDetails(decorationParameter, parameter);
+
+                            targetDecoration.Parameters.Add(decorationParameter);
+                        }
+                    }
+                }))
+            {
+                cloningContext.InlineWeaves.Add(new WeavableConcept<object>(new PointCut<object>(s => s == this.SourceDecoration), updateAndCaptureDecorationTargetTransform));
+                cloningContext.Execute();
+            }
+
+            Contract.Assert(targetDecoration != null);
+            return (targetDecoration, areArgsAutoForwarded);
+        }
+
+        private void EnsureParametersMatch(MethodDefinition decoratedMethod, CloningContext cloningContext)
         {
             // capture original values so that can be replaced temporarily
-            var decorationSourceName = decorationSource.Name;
-            var decorationSourceAttributes = decorationSource.Attributes;
+            var sourceDecorationName = this.SourceDecoration.Name;
+            var sourceDecorationAttributes = this.SourceDecoration.Attributes;
 
-            // update decoration values to allow the target signature check to work
-            decorationSource.Name = target.Name;
-            decorationSource.Attributes = target.Attributes;
-            if (!target.SignatureEquals(decorationSource, cloningContext))
+            try
             {
-                throw new InvalidOperationException(
-                    "Decoration signature has parameters that do not match target signature, so it cannot decorate a target with the same name. You may change the decoration signature to fully match the target signature, change the decoration name to be distinct from the target name, or make the decoration parameterless to take advantage of argument forwarding.");
+                // update decoration values to allow the target signature check to work
+                this.SourceDecoration.Name = decoratedMethod.Name;
+                this.SourceDecoration.Attributes = decoratedMethod.Attributes;
+                if (!decoratedMethod.SignatureEquals(this.SourceDecoration, cloningContext))
+                {
+                    throw new InvalidOperationException(
+                        "Decoration signature has parameters that do not match target signature, so it cannot decorate a target with the same name. You may change the decoration signature to fully match the target signature, change the decoration name to be distinct from the target name, or make the decoration parameterless to take advantage of argument forwarding.");
+                }
             }
+            finally
+            {
 
-            // return original values to avoid side-effects
-            decorationSource.Name = decorationSourceName;
-            decorationSource.Attributes = decorationSourceAttributes;
+                // return original values to avoid side-effects
+                this.SourceDecoration.Name = sourceDecorationName;
+                this.SourceDecoration.Attributes = sourceDecorationAttributes;
+            }
         }
 
-        private static bool CanArgsBeAutoForwarded(MethodDefinition target, MethodDefinition decorationSource)
-        {
-            return target.HasParameters && !decorationSource.HasParameters;
-        }
+        private bool CanArgsBeAutoForwarded(MethodDefinition decoratedMethod) => decoratedMethod.HasParameters && !this.SourceDecoration.HasParameters;
 
-        private static void RedirectTargetCallsToDecorator(
+        private static void RedirectDecoratedMethodCallsToTargetDecoration(
             MethodDefinition inMethod,
-            MethodDefinition originalTargetMethod,
-            MethodDefinition decorationMethod)
+            MethodDefinition decoratedMethod,
+            MethodDefinition targetDecoration)
         {
             // if replacing rather than adding a separately named decorator, then redirect all calls to the decorator
-            foreach (var instruction in inMethod.Body.Instructions.Where(i => (i.OpCode == OpCodes.Call || i.OpCode == OpCodes.Callvirt) && i.Operand is MethodReference && ((MethodReference)i.Operand).FullName == originalTargetMethod.FullName).ToArray())
+            foreach (var instruction in inMethod.Body.Instructions.Where(i => (i.OpCode == OpCodes.Call || i.OpCode == OpCodes.Callvirt) && i.Operand is MethodReference && ((MethodReference)i.Operand).FullName == decoratedMethod.FullName).ToArray())
             {
-                instruction.Operand = decorationMethod;
+                instruction.Operand = targetDecoration;
             }
         }
 
-        private static void RedirectForwardingCall(
-            MethodDefinition decoratedMethod,
-            MethodDefinition decorationMethod,
-            bool areArgsAutoForwarded)
+        private static void RedirectForwardingCall(MethodDefinition decoratedMethod, MethodDefinition targetDecoration, bool areArgsAutoForwarded)
         {
             foreach (var instruction in
-                decorationMethod.Body.Instructions.Where(
+                targetDecoration.Body.Instructions.Where(
                     i => i.OpCode == OpCodes.Call && i.Operand is MethodReference &&
                     ((MethodReference)i.Operand).Name == nameof(Forwarders.ForwardToOriginalAction)).ToArray())
             {
@@ -205,52 +220,53 @@ namespace Cilador.Aop.Decorate
                 if (areArgsAutoForwarded && decoratedMethod.HasParameters)
                 {
                     // implies no arguments are on the forwarded version of the method call
-                    // this means we simply add instructions to ldargs.1 - the count of parameters
-                    // this pointer handling (i.e. ldarg.0) is done afterward
+                    // this means we simply add ldarg instructions
 
-                    var ilProcessor = decorationMethod.Body.GetILProcessor();
+                    // instance <--> static argument translation happens during cloning
+                    // this pointer handling (i.e. adding a new ldarg.0) is done in this later by logic in this class
+
+                    var ilProcessor = targetDecoration.Body.GetILProcessor();
 
                     var newInstruction = ilProcessor.Create(OpCodes.Ldarg_0);
                     ilProcessor.InsertBefore(instruction, newInstruction);
 
                     var parameterCount = (ushort)decoratedMethod.Parameters.Count;
 
-                    if (parameterCount >= 1) { ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Ldarg_1)); }
-                    if (parameterCount >= 2) { ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Ldarg_2)); }
-                    if (parameterCount >= 3) { ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Ldarg_3)); }
+                    if (parameterCount >= 1) { ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Ldarg_0)); }
+                    if (parameterCount >= 2) { ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Ldarg_1)); }
+                    if (parameterCount >= 3) { ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Ldarg_2)); }
+                    if (parameterCount >= 4) { ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Ldarg_3)); }
 
-                    for(ushort i = 4; i <= parameterCount; ++i)
+                    for (ushort i = 4; i < parameterCount && i <= byte.MaxValue; ++i)
+                    {
+                        ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Ldarg_S, i));
+                    }
+
+                    for (int i = byte.MaxValue + 1; i < parameterCount; ++i)
                     {
                         ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Ldarg, i));
                     }
                 }
 
-                if (decorationMethod.IsStatic && !decoratedMethod.IsStatic)
+                if (targetDecoration.IsStatic && !decoratedMethod.IsStatic)
                 {
-                    AddThisPointerToMethodCall(decorationMethod, instruction);
+                    AddThisPointerToTargetDecorationCall(targetDecoration, instruction);
                 }
             }
         }
 
-        private static void AddThisPointerToMethodCall(MethodDefinition method, Instruction instruction)
+        private static void AddThisPointerToTargetDecorationCall(MethodDefinition potentialCallingMethod, Instruction potentialCallingInstruction)
         {
-            var firstArgInstruction = instruction.Previous;
-            while (
-                firstArgInstruction.Previous != null &&
-                firstArgInstruction.Previous.OpCode.Code != OpCodes.Call.Code &&
-                firstArgInstruction.Previous.OpCode.Code != OpCodes.Callvirt.Code &&
-                firstArgInstruction.Previous.OpCode.Code != OpCodes.Nop.Code)
-            {
-                if (firstArgInstruction.OpCode == OpCodes.Ldarg_0) { /* this pointer already being sent to the method */ return; }
-                firstArgInstruction = firstArgInstruction.Previous;
-            }
-            var ilProcessor = method.Body.GetILProcessor();
+            if (potentialCallingInstruction.TryGetFirstInstructionOfMethodCall(out var firstArgInstruction)) { /* maybe needs error handling? */ return; }
+            if (firstArgInstruction.OpCode == OpCodes.Ldarg_0) { /* this pointer already being sent to the method */ return; }
+
+            var ilProcessor = potentialCallingMethod.Body.GetILProcessor();
             var newInstruction = ilProcessor.Create(OpCodes.Ldarg_0);
             ilProcessor.InsertBefore(firstArgInstruction, newInstruction);
         }
     }
 
-    #region Concreate Method Decorator Types
+    #region Concrete Method Decorator Types
 
     public class ActionDecorator : MethodDecoratorBase
     {
@@ -266,8 +282,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -285,8 +301,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -304,8 +320,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -323,8 +339,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -342,8 +358,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -361,8 +377,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -380,8 +396,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -399,8 +415,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -418,8 +434,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -437,8 +453,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -456,8 +472,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -475,8 +491,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -494,8 +510,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -513,8 +529,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -532,8 +548,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -551,8 +567,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -570,8 +586,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -589,8 +605,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -608,8 +624,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -627,8 +643,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -646,8 +662,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -665,8 +681,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -684,8 +700,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -703,8 +719,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -722,8 +738,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -741,8 +757,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -760,8 +776,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -779,8 +795,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -798,8 +814,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -817,8 +833,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -836,8 +852,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -855,8 +871,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -874,8 +890,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 
@@ -893,8 +909,8 @@ namespace Cilador.Aop.Decorate
             Contract.Requires(decoration != null);
             Contract.Ensures(this.Resolver != null);
             Contract.Ensures(this.GraphGetter != null);
-            Contract.Ensures(this.Decoration != null);
-            Contract.Ensures(this.DecorationNameGenerator == null);
+            Contract.Ensures(this.SourceDecoration != null);
+            Contract.Ensures(this.TargetDecorationNameGenerator == null);
         }
     }
 

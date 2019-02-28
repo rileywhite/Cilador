@@ -70,13 +70,24 @@ namespace Cilador.Clone
         /// </summary>
         public int GetVariableTranslation(Instruction sourceInstruction)
         {
-            int? originalIndex;
-            if (!sourceInstruction.TryGetVariableIndex(out originalIndex)) { return 0; }
+            if (!sourceInstruction.TryGetVariableIndex(out int? originalIndex)) { return 0; }
             Contract.Assert(originalIndex.HasValue);
 
-            int newIndex;
-            if (!this.Source.TryGetConstructionVariableIndex(sourceInstruction, out newIndex)) { return 0; }
+            if (!this.Source.TryGetConstructionVariableIndex(sourceInstruction, out int newIndex)) { return 0; }
             return newIndex - originalIndex.Value;
+        }
+
+        /// <summary>
+        /// Gets the offset for  use in instruction cloning so that referenced arguments can
+        /// be translated. Normally zero, but may be non-zero in cases where a method is may have arguments
+        /// added or removed, such as when cloning between <c>static</c> and instance methods.
+        /// </summary>
+        /// <remarks>
+        /// Constructor sources with arguments and constructor clones from instance to static and vice-versa are not supported, so no transalation will happen.
+        /// </remarks>
+        public int GetArgumentTranslation(Instruction sourceInstruction)
+        {
+            return 0;
         }
 
         /// <summary>

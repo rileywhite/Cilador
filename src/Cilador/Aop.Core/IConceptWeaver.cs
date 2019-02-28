@@ -23,7 +23,7 @@ namespace Cilador.Aop.Core
     /// of type <typeparamref name="TTarget"/>.
     /// </summary>
     /// <typeparam name="TTarget">Type to which the weaving operation may apply.</typeparam>
-    public interface IConceptWeaver<in TTarget>
+    public interface IConceptWeaver<in TTarget> : IDisposable
     {
         /// <summary>
         /// Performs a weaving operation on a given target.

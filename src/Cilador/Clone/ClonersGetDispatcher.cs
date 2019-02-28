@@ -545,6 +545,7 @@ namespace Cilador.Clone
                         item,
                         parentCloner.PossiblyReferencedVariables,
                         parentCloner.GetVariableTranslation(item),
+                        parentCloner.GetArgumentTranslation(item),
                         parentCloner.InstructionInsertAction));
                 }
                 else
@@ -555,6 +556,7 @@ namespace Cilador.Clone
                         item,
                         parentCloner.PossiblyReferencedVariables,
                         parentCloner.GetVariableTranslation(item),
+                        parentCloner.GetArgumentTranslation(item),
                         parentCloner.InstructionInsertAction));
                 }
             }

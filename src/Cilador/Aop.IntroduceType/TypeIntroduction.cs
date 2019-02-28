@@ -49,6 +49,8 @@ namespace Cilador.Aop.IntroduceType
             this.TargetTypeName = targetTypeName ?? sourceType.Name;
         }
 
+        public void Dispose() { /* Nothing to dispose, currently */ }
+
         public CilGraphGetter GraphGetter { get; }
         public TypeDefinition SourceType { get; }
         public string TargetTypeNamespace { get; }

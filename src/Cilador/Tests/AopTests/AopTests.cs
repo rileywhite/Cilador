@@ -38,26 +38,19 @@ namespace Cilador.Tests
                 var loom = new Loom();
                 var graphGetter = new CilGraphGetter();
 
-                loom.WeavableConcepts.Add(RunWithoutReplacementDecorationConcept(resolver, graphGetter));
+                using (var runWithoutReplacementDecoration = new ActionDecorator<string[]>(resolver, graphGetter, RunWithoutReplacementDecoration, name => $"{name}_Decorated"))
+                using (var runWithReplacementDecorator = new ActionDecorator<string>(resolver, graphGetter, RunWithReplacementDecorator))
+                {
+                    loom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(new PointCut<MethodDefinition>(m => m.Name == "RunWithoutReplacement"), runWithoutReplacementDecoration));
+                    loom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(new PointCut<MethodDefinition>(m => m.Name == "RunWithReplacement"), runWithReplacementDecorator));
 
-                loom.Weave(targetAssembly);
-
+                    loom.Weave(targetAssembly);
+                }
                 targetAssembly.Write();
             }
         }
 
-        #region Concepts
-
-        private static WeavableConcept<MethodDefinition> RunWithoutReplacementDecorationConcept(DefaultAssemblyResolver resolver, CilGraphGetter graphGetter)
-        {
-            return new WeavableConcept<MethodDefinition>(
-                new PointCut<MethodDefinition>(m => m.Name == "RunWithoutReplacement"),
-                new ActionDecorator<string[]>(
-                    resolver,
-                    graphGetter,
-                    RunWithoutReplacementDecoration,
-                    name => $"{name}_Decorated"));
-        }
+        #region Decorations
 
         private static void RunWithoutReplacementDecoration(string[] args)
         {
@@ -66,9 +59,21 @@ namespace Cilador.Tests
                 .GetProperty("ThingsThatHaveRun", BindingFlags.Public | BindingFlags.Static)
                 .GetValue(null);
 
-            thingsThatHaveRun.Add($"{currentType.Name}.RunWithoutReplacement_Decorated", args);
+            thingsThatHaveRun.Add("Decorated RunWithoutReplacement", args);
 
             Forwarders.ForwardToOriginalAction(string.Join(", ", args));
+        }
+
+        private static void RunWithReplacementDecorator(string arg)
+        {
+            var currentType = MethodBase.GetCurrentMethod().DeclaringType;
+            var thingsThatHaveRun = (Dictionary<string, object[]>)currentType
+                .GetProperty("ThingsThatHaveRun", BindingFlags.Public | BindingFlags.Static)
+                .GetValue(null);
+
+            thingsThatHaveRun.Add("Decorated RunWithReplacement", new object[] { arg });
+
+            Forwarders.ForwardToOriginalAction(arg);
         }
 
         #endregion
@@ -91,12 +96,12 @@ namespace Cilador.Tests
             }
 
             Assert.IsTrue(thingsThatHaveRun.TryGetValue(
-                $"{nameof(TestAopTarget.InstanceTarget)}.RunWithoutReplacement_Decorated",
+                $"Decorated RunWithoutReplacement",
                 out var decoratedMethodArgs));
             Assert.AreSame(sentArgs, decoratedMethodArgs);
 
             Assert.IsTrue(thingsThatHaveRun.TryGetValue(
-                $"{nameof(TestAopTarget.InstanceTarget)}.RunWithoutReplacement",
+                $"Original RunWithoutReplacement",
                 out var forwardedArgs));
 
             Assert.NotNull(forwardedArgs);
@@ -121,12 +126,12 @@ namespace Cilador.Tests
             }
 
             Assert.IsTrue(thingsThatHaveRun.TryGetValue(
-                $"{nameof(TestAopTarget.StaticTarget)}.RunWithoutReplacement_Decorated",
+                $"Decorated RunWithoutReplacement",
                 out var decoratedMethodArgs));
             Assert.AreSame(sentArgs, decoratedMethodArgs);
 
             Assert.IsTrue(thingsThatHaveRun.TryGetValue(
-                $"{nameof(TestAopTarget.StaticTarget)}.RunWithoutReplacement",
+                $"Static RunWithoutReplacement",
                 out var forwardedArgs));
 
             Assert.NotNull(forwardedArgs);
@@ -134,65 +139,63 @@ namespace Cilador.Tests
             Assert.AreEqual("1, 2, 3", forwardedArgs[0]);
         }
 
-        //[Test]
-        //public void CanDecorateInstanceActionMethodWithReplacement()
-        //{
-        //    using (var resolver = new DefaultAssemblyResolver())
-        //    using (var targetAssembly = resolver.Resolve(AssemblyNameReference.Parse("Cilador.TestAopTarget"), new ReaderParameters { ReadWrite = true }))
-        //    {
-        //        var loom = new Loom();
-        //        var graphGetter = new CilGraphGetter();
 
-        //        loom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(
-        //            new PointCut<MethodDefinition>(m => $"{m.DeclaringType.FullName}.{m.Name}" == "Cilador.TestAopTarget.Program.Run"),
-        //            new ActionDecorator<string[]>(
-        //                resolver,
-        //                graphGetter,
-        //                args =>
-        //                {
-        //                    Console.WriteLine("Before...");
-        //                    Console.WriteLine("---Args---");
-        //                    foreach (var arg in args)
-        //                    {
-        //                        Console.WriteLine(arg);
-        //                    }
-        //                    Console.WriteLine("----------");
-        //                    Forwarders.ForwardToOriginalAction(args);
-        //                    Console.WriteLine("...After");
-        //                })));
+        [Test]
+        public void CanDecorateInstanceActionMethodWithReplacement()
+        {
+            var thingsThatHaveRun = new Dictionary<string, object[]>();
+            try
+            {
+                TestAopTarget.InstanceTarget.ThingsThatHaveRun = thingsThatHaveRun;
+                var instanceTarget = new TestAopTarget.InstanceTarget();
+                instanceTarget.RunWithReplacement("iuehtoinjf98ewrhnfew");
+            }
+            finally
+            {
+                TestAopTarget.InstanceTarget.ThingsThatHaveRun = null;
+            }
 
-        //        loom.Weave(targetAssembly);
+            Assert.IsTrue(thingsThatHaveRun.TryGetValue(
+                $"Decorated RunWithReplacement",
+                out var decoratedMethodArgs));
+            Assert.AreSame("iuehtoinjf98ewrhnfew", decoratedMethodArgs);
 
-        //        targetAssembly.Write();
-        //    }
-        //}
+            Assert.IsTrue(thingsThatHaveRun.TryGetValue(
+                "Instance RunWithReplacement",
+                out var forwardedArgs));
 
-        //[Test]
-        //public void CanDecorateInstanceActionMethodWithReplacementAndArgAutoForwarding()
-        //{
-        //    using (var resolver = new DefaultAssemblyResolver())
-        //    using (var targetAssembly = resolver.Resolve(AssemblyNameReference.Parse("Cilador.TestAopTarget"), new ReaderParameters { ReadWrite = true }))
-        //    {
-        //        var loom = new Loom();
-        //        var graphGetter = new CilGraphGetter();
+            Assert.NotNull(forwardedArgs);
+            Assert.That(forwardedArgs.Length == 1);
+            Assert.AreEqual("iuehtoinjf98ewrhnfew", forwardedArgs[0]);
+        }
 
-        //        loom.WeavableConcepts.Add(new WeavableConcept<MethodDefinition>(
-        //            new PointCut<MethodDefinition>(m => $"{m.DeclaringType.FullName}.{m.Name}".StartsWith("Cilador.TestAopTarget.Program.RunAutoForwarding")),
-        //            new ActionDecorator(
-        //                resolver,
-        //                graphGetter,
-        //                () =>
-        //                {
-        //                    Console.WriteLine("Before...");
-        //                    Forwarders.ForwardToOriginalAction();
-        //                    Console.WriteLine("...After");
-        //                })));
+        [Test]
+        public void CanDecorateStaticActionMethodWithReplacement()
+        {
+            var thingsThatHaveRun = new Dictionary<string, object[]>();
+            try
+            {
+                TestAopTarget.StaticTarget.ThingsThatHaveRun = thingsThatHaveRun;
+                TestAopTarget.StaticTarget.RunWithReplacement("fkjsadhfjksdjkf");
+            }
+            finally
+            {
+                TestAopTarget.StaticTarget.ThingsThatHaveRun = null;
+            }
 
-        //        loom.Weave(targetAssembly);
+            Assert.IsTrue(thingsThatHaveRun.TryGetValue(
+                $"Decorated RunWithReplacement",
+                out var decoratedMethodArgs));
+            Assert.AreSame("fkjsadhfjksdjkf", decoratedMethodArgs);
 
-        //        targetAssembly.Write();
-        //    }
-        //}
+            Assert.IsTrue(thingsThatHaveRun.TryGetValue(
+                $"Static RunWithReplacement",
+                out var forwardedArgs));
+
+            Assert.NotNull(forwardedArgs);
+            Assert.That(forwardedArgs.Length == 1);
+            Assert.AreEqual("fkjsadhfjksdjkf", forwardedArgs[0]);
+        }
 
         [Test]
         public void CanIntroduceEnumToAssembly()
@@ -207,14 +210,11 @@ namespace Cilador.Tests
                     var loom = new Loom();
                     var graphGetter = new CilGraphGetter();
 
-                    loom.WeavableConcepts.Add(new WeavableConcept<ModuleDefinition>(
-                        new PointCut<ModuleDefinition>(m => m.IsMain),
-                        new TypeIntroduction(
-                            graphGetter,
-                            sourceType,
-                            "Cilador.TestAopTarget")));
-
-                    loom.Weave(targetAssembly);
+                    using (var introduction = new TypeIntroduction(graphGetter, sourceType, "Cilador.TestAopTarget"))
+                    {
+                        loom.WeavableConcepts.Add(new WeavableConcept<ModuleDefinition>(new PointCut<ModuleDefinition>(m => m.IsMain), introduction));
+                        loom.Weave(targetAssembly);
+                    }
                 }
 
                 targetAssembly.Write();

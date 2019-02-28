@@ -68,6 +68,18 @@ namespace Cilador.Clone
         }
 
         /// <summary>
+        /// Gets the offset for  use in instruction cloning so that referenced arguments can
+        /// be translated. Normally zero, but may be non-zero in cases where a method is may have arguments
+        /// added or removed, such as when cloning between <c>static</c> and instance methods.
+        /// </summary>
+        public int GetArgumentTranslation(Instruction sourceInstruction)
+        {
+            if (this.Parent.Source.IsStatic && !this.Parent.Target.IsStatic) { return 1; }
+            if (!this.Parent.Source.IsStatic && this.Parent.Target.IsStatic) { return -1; }
+            return 0;
+        }
+
+        /// <summary>
         /// Collection of source variables that may be referenced by source instructions
         /// that will be cloned to the target. This may or may not be all variables
         /// as method cloning may split methods into parts, as is the case for some

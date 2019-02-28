@@ -47,6 +47,15 @@ namespace Cilador.Clone
         }
 
         /// <summary>
+        /// Contracts for <see cref="ICloneToMethodBody{TSource}.GetArgumentTranslation(Instruction)"/>.
+        /// </summary>
+        public int GetArgumentTranslation(Instruction sourceInstruction)
+        {
+            Contract.Requires(sourceInstruction != null);
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
         /// Contracts for <see cref="ICloneToMethodBody{TSource}.IsValidSourceInstruction"/>.
         /// </summary>
         public bool IsValidSourceInstruction(Instruction instruction)

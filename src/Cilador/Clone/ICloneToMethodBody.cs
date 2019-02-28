@@ -48,6 +48,13 @@ namespace Cilador.Clone
         int GetVariableTranslation(Instruction sourceInstruction);
 
         /// <summary>
+        /// Gets the offset for  use in instruction cloning so that referenced arguments can
+        /// be translated. Normally zero, but may be non-zero in cases where a method is may have arguments
+        /// added or removed, such as when cloning between <c>static</c> and instance methods.
+        /// </summary>
+        int GetArgumentTranslation(Instruction sourceInstruction);
+
+        /// <summary>
         /// Gets the action that should be used for inserting instructions for cloning instructions contained in the method.
         /// </summary>
         Action<ILProcessor, ICloneToMethodBody<object>, InstructionCloner, Instruction, Instruction> InstructionInsertAction { get; }

@@ -38,6 +38,7 @@ namespace Cilador.Clone
         /// <param name="possiblyReferencedVariables">Collection of variables that may be referenced by the source instruction.</param>
         /// <param name="source">Cloning source.</param>
         /// <param name="referencedVariableIndexTranslation">Optional translation that should be applied to the possible variable reference due to added or removed variables.</param>
+        /// <param name="argumentIndexTranslation">Optional translation that should be applied to possible argment references, e.g. to add or remove <c>this</c> parameter in translation to or from <c>static</c> methods</param>
         /// <param name="instructionInsertAction">Override default instruction add behavior by sending a custom action.</param>
         /// <remarks>
         /// By default, an instruction is inserted after the previous instruction, and an instruction with no previous instruction, as
@@ -50,6 +51,7 @@ namespace Cilador.Clone
             Instruction source,
             IEnumerable<VariableDefinition> possiblyReferencedVariables = null,
             int referencedVariableIndexTranslation = 0,
+            int argumentIndexTranslation = 0,
             Action<ILProcessor, ICloneToMethodBody<object>, InstructionCloner, Instruction, Instruction> instructionInsertAction = null)
             : base(parent.CloningContext, source)
         {
@@ -66,6 +68,7 @@ namespace Cilador.Clone
             this.Previous = previous;
             this.PossiblyReferencedVariables = possiblyReferencedVariables ?? new VariableDefinition[0];
             this.ReferencedVariableIndexTranslation = referencedVariableIndexTranslation;
+            this.ArgumentIndexTranslation = argumentIndexTranslation;
             this.InstructionInsertAction = instructionInsertAction ?? InstructionCloner.DefaultInstructionInsertAction;
             this.TargetInstructionCreator = new InstructionCreateDispatcher(parent.CloningContext);
             this.OperandImporter = new OperandImportDispatcher(
@@ -94,13 +97,22 @@ namespace Cilador.Clone
         public InstructionCloner Previous { get; }
 
         /// <summary>
-        /// Gets or sets the translation, if any, that should be applied to the variable reference
+        /// Gets the translation, if any, that should be applied to the variable reference
         /// due to added or removed variables.
         /// </summary>
         /// <remarks>
         /// A negative number translates left, and a positive number translates right.
         /// </remarks>
-        private int ReferencedVariableIndexTranslation { get; set; }
+        private int ReferencedVariableIndexTranslation { get; }
+
+        /// <summary>
+        /// Gets the translation, if any, that should be applied to the argument references
+        /// due to added or removed arguments, e.g. when translating to or from <c>static</c> methods.
+        /// </summary>
+        /// <remarks>
+        /// A negative number translates left, and a positive number translates right.
+        /// </remarks>
+        private int ArgumentIndexTranslation { get; }
 
         /// <summary>
         /// Gets or sets the collection of variables that may be referenced by the source variable.
@@ -117,9 +129,15 @@ namespace Cilador.Clone
             if (previous != null) { this.Previous.EnsureTargetIsSet(); }
 
             // apply a translation to the source's referenced variable, if applicable
-            var source = this.ReferencedVariableIndexTranslation == 0
-                ? this.Source
-                : this.Source.ApplyLocalVariableTranslation(this.ReferencedVariableIndexTranslation, this.PossiblyReferencedVariables);
+            var source = this.Source;
+            if (this.ReferencedVariableIndexTranslation != 0)
+            {
+                source = source.ApplyLocalVariableTranslation(this.ReferencedVariableIndexTranslation, this.PossiblyReferencedVariables);
+            }
+            if (this.ArgumentIndexTranslation != 0)
+            {
+                source = source.ApplyArgumentTranslation(this.ArgumentIndexTranslation);
+            }
 
             // now create the target
             var ilProcessor = this.Parent.Target.GetILProcessor();

@@ -310,5 +310,197 @@ namespace Cilador.Clone
                 instruction :
                 Instruction.Create(OpCodes.Ldloca, indexedVariable.Value);
         }
+
+        /// <summary>
+        /// Determines whether in instruction opcode loads an argument.
+        /// </summary>
+        /// <param name="code">OpCode's CIL code</param>
+        /// <returns><c>true</c> if the code is an argument load code, else <c>false</c>.</returns>
+        public static bool IsLoadArgumentOpCode(this Code code)
+        {
+            return
+                code == Code.Ldarg ||
+                code == Code.Ldarg_S ||
+                code == Code.Ldarg_0 ||
+                code == Code.Ldarg_1 ||
+                code == Code.Ldarg_2 ||
+                code == Code.Ldarg_3;
+        }
+
+        /// <summary>
+        /// Determines whether in instruction opcode loads an argument address.
+        /// </summary>
+        /// <param name="code">OpCode's CIL code</param>
+        /// <returns><c>true</c> if the code is an argument address load code, else <c>false</c>.</returns>
+        public static bool IsLoadArgumentAddressOpCode(this Code code)
+        {
+            return
+                code == Code.Ldarga ||
+                code == Code.Ldarga_S;
+        }
+
+        /// <summary>
+        /// Tries to find the index of an argument referenced by an instruction, if any.
+        /// </summary>
+        /// <param name="instruction">Instruction to examine.</param>
+        /// <param name="argumentIndex">Index to populate, if found.</param>
+        /// <returns><c>true</c> if a referenced variable was found, otherwise <c>false</c>.</returns>
+        public static bool TryGetArgumentIndex(this Instruction instruction, out int? argumentIndex)
+        {
+            Contract.Requires(instruction != null);
+            Contract.Ensures(Contract.ValueAtReturn<int?>(out argumentIndex).HasValue || !Contract.Result<bool>());
+
+            switch (instruction.OpCode.Code)
+            {
+                case Code.Ldarg_0:
+                    argumentIndex = 0;
+                    return true;
+
+                case Code.Ldarg_1:
+                    argumentIndex = 1;
+                    return true;
+
+                case Code.Ldarg_2:
+                    argumentIndex = 2;
+                    return true;
+
+                case Code.Ldarg_3:
+                    argumentIndex = 3;
+                    return true;
+
+                case Code.Ldarg:
+                case Code.Ldarg_S:
+                case Code.Ldarga:
+                case Code.Ldarga_S:
+                    argumentIndex = (int)instruction.Operand;
+                    if (argumentIndex < 0)
+                    {
+                        throw new InvalidOperationException(
+                            $"Did not expect a negative argument index {argumentIndex}");
+                    }
+                    return true;
+
+                default:
+                    argumentIndex = default(int?);
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Examines the instruction and, if it accesses a passed argument, provides a new version
+        /// that translates the access by the given count.
+        /// </summary>
+        /// <remarks>
+        /// If the <paramref name="instruction"/> does not reference a passed argument or if the
+        /// translation is zero, then the original instruction will be returned.
+        /// </remarks>
+        /// <param name="instruction">Instruction to look at.</param>
+        /// <param name="translate">How to translate the referenced argument, if any is referenced. Negative is a left translation, and positive is right.</param>
+        public static Instruction ApplyArgumentTranslation(
+            this Instruction instruction,
+            int translate)
+        {
+            Contract.Requires(instruction != null);
+
+            if (translate == 0 || !instruction.TryGetArgumentIndex(out int? initialArgumentIndex)) { return instruction; }
+            Contract.Assert(initialArgumentIndex.HasValue);
+
+            var newIndex = initialArgumentIndex.Value + translate;
+            if (newIndex < 0)
+            {
+                throw new InvalidOperationException("An argument index less than 0 cannot be used.");
+            }
+            if (newIndex > ushort.MaxValue)
+            {
+                throw new InvalidOperationException($"An argument index greater than {ushort.MaxValue} cannot be used.");
+            }
+
+            if (instruction.OpCode.Code.IsLoadArgumentOpCode())
+            {
+                switch (newIndex)
+                {
+                    case 0:
+                        return Instruction.Create(OpCodes.Ldarg_0);
+
+                    case 1:
+                        return Instruction.Create(OpCodes.Ldarg_1);
+
+                    case 2:
+                        return Instruction.Create(OpCodes.Ldarg_2);
+
+                    case 3:
+                        return Instruction.Create(OpCodes.Ldarg_3);
+
+                    default:
+                        if (newIndex <= byte.MaxValue)
+                        {
+                            return Instruction.Create(OpCodes.Ldarg_S, (byte)newIndex);
+                        }
+
+                        return Instruction.Create(OpCodes.Ldarg, newIndex);
+                }
+            }
+
+            if (!instruction.OpCode.Code.IsLoadArgumentAddressOpCode())
+            {
+                throw new InvalidOperationException("Expected an argument load opcode.");
+            }
+
+            if (newIndex <= byte.MaxValue)
+            {
+                return Instruction.Create(OpCodes.Ldarga_S, (byte)newIndex);
+            }
+
+            return Instruction.Create(OpCodes.Ldarga, newIndex);
+        }
+
+        public static bool IsMethodReferenceCall(this Instruction instruction)
+        {
+            if (instruction == null) { return false; }
+
+            switch (instruction.OpCode.Code)
+            {
+                case Code.Call:
+                case Code.Callvirt:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to find the first instruction in the collection of instructions that are setting up a method call.
+        /// </summary>
+        /// <remarks>
+        /// TODO This is currently quite flawed. It should be looking for arguments recursively (e.g. if an arg is another method call),
+        /// and it should be taking calli instructions into account.
+        /// </remarks>
+        /// <param name="instruction">Method call instruction.</param>
+        /// <param name="firstInvocationInstruction">First instruction that is setting up arguments for the method call instruction.</param>
+        /// <returns><c>true</c> if <paramref name="instruction"/> is a method call and <paramref name="firstInvocationInstruction"/> is populated, else <c>false</c>.</returns>
+        public static bool TryGetFirstInstructionOfMethodCall(this Instruction instruction, out Instruction firstInvocationInstruction)
+        {
+            Contract.Ensures(Contract.Result<bool>() && Contract.ValueAtReturn(out firstInvocationInstruction) != null || !Contract.Result<bool>());
+
+            if (!instruction.IsMethodReferenceCall())
+            {
+                firstInvocationInstruction = null;
+                return false;
+            }
+
+            var currentInstruction = instruction.Previous;
+            while (
+                currentInstruction.Previous != null &&
+                currentInstruction.Previous.OpCode.Code != OpCodes.Call.Code &&
+                currentInstruction.Previous.OpCode.Code != OpCodes.Callvirt.Code &&
+                currentInstruction.Previous.OpCode.Code != OpCodes.Nop.Code)
+            {
+                currentInstruction = currentInstruction.Previous;
+            }
+
+            firstInvocationInstruction = currentInstruction;
+            return true;
+        }
     }
 }

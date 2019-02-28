@@ -26,6 +26,8 @@ namespace Cilador.Aop.Transform
             this.Transform = transform;
         }
 
+        public void Dispose() { /* Nothing to dispose currently */ }
+
         public Action<TTarget> Transform { get; }
 
         public void Weave(TTarget target)
