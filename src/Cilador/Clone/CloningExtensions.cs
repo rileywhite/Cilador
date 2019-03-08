@@ -489,6 +489,12 @@ namespace Cilador.Clone
                 return false;
             }
 
+            if (instruction.Previous == null)
+            {
+                firstInvocationInstruction = instruction;
+                return true;
+            }
+
             var currentInstruction = instruction.Previous;
             while (
                 currentInstruction.Previous != null &&

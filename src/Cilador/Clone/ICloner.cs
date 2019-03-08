@@ -15,6 +15,7 @@
 /***************************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 
 namespace Cilador.Clone
@@ -35,9 +36,15 @@ namespace Cilador.Clone
         ICloningContext CloningContext { get; }
 
         /// <summary>
-        /// Gets or sets the transform to apply to the target after creation
+        /// Gets or the transform list to apply to the target after creating and before final cloning.
         /// </summary>
-        Action<object> TargetTransform { get; set; }
+        /// <remarks>
+        /// In the cloning operation, transforms are executed in the order of item creation. A parent item
+        /// (say a <see cref="MethodSignatureCloner"/>) transform will execute before the child items have
+        /// been created. In this way, the parent can be modified in a way that may affect the parameters
+        /// used to create child items.
+        /// </remarks>
+        IList<Action<ICloner<object, object>>> TargetTransforms { get; }
 
         /// <summary>
         /// Gets whether the item has been cloned.

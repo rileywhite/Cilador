@@ -101,7 +101,7 @@ namespace Cilador.Tests
             Assert.AreSame(sentArgs, decoratedMethodArgs);
 
             Assert.IsTrue(thingsThatHaveRun.TryGetValue(
-                $"Original RunWithoutReplacement",
+                $"Instance RunWithoutReplacement",
                 out var forwardedArgs));
 
             Assert.NotNull(forwardedArgs);

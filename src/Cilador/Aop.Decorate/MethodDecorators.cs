@@ -89,12 +89,18 @@ namespace Cilador.Aop.Decorate
             var targetDecorationName = this.TargetDecorationNameGenerator(decoratedMethod.Name);
             var isTargetReplacedByDecorator = targetDecorationName == decoratedMethod.Name;
 
-            var (targetDecoration, areArgsAutoForwarded) = CloneDecorationIntoTargetLocation(
+            var (targetDecoration, areArgsAutoForwarded, isStaticToInstanceClone) = CloneDecorationIntoTargetLocation(
                 decoratedMethod,
                 targetDecorationName,
                 isTargetReplacedByDecorator);
 
-            RedirectForwardingCall(decoratedMethod, targetDecoration, areArgsAutoForwarded);
+            // if the names are the same, then we're replacing the target, so move it to a randomly named location
+            if (isTargetReplacedByDecorator)
+            {
+                decoratedMethod.Name = $"cilador_{decoratedMethod.Name}_{Guid.NewGuid().ToString("N")}";
+            }
+
+            RedirectForwardingCall(decoratedMethod, targetDecoration, areArgsAutoForwarded, isStaticToInstanceClone);
 
             var redirectMethodCallsLoom = new Loom();
 
@@ -113,7 +119,7 @@ namespace Cilador.Aop.Decorate
             }
         }
 
-        private (MethodDefinition TargetDecoration, bool AreArgsAutoForwarded) CloneDecorationIntoTargetLocation(
+        private (MethodDefinition TargetDecoration, bool AreArgsAutoForwarded, bool IsStaticToInstanceClone) CloneDecorationIntoTargetLocation(
             MethodDefinition decoratedMethod,
             string targetDecorationName,
             bool isTargetReplacedByDecorator)
@@ -127,45 +133,43 @@ namespace Cilador.Aop.Decorate
                 this.EnsureParametersMatch(decoratedMethod, cloningContext);
             }
 
-            // if the names are the same, then we're replacing the target, so move it to a randomly named location
-            if (isTargetReplacedByDecorator)
-            {
-                decoratedMethod.Name = $"cilador_{decoratedMethod.Name}_{Guid.NewGuid().ToString("N")}";
-            }
-
             var targetDecoration = default(MethodDefinition);
-            using (var updateAndCaptureDecorationTargetTransform = new TransformAdvisor<object>(
-                t =>
-                {
-                    targetDecoration = (MethodDefinition)t;
-                    targetDecoration.Name = targetDecorationName;
-                    targetDecoration.Attributes = decoratedMethod.Attributes;
+            bool isStaticToInstanceClone = false;
 
-                    if (areArgsAutoForwarded)
-                    {
-                        // modify target to accept args
-                        var voidReference = cloningContext.TargetModule.ImportReference(typeof(void));
-                        foreach (var parameter in decoratedMethod.Parameters)
-                        {
-                            var decorationParameter =
-                                new ParameterDefinition(
-                                    parameter.Name,
-                                    parameter.Attributes,
-                                    voidReference);
-
-                            cloningContext.CopyDetails(decorationParameter, parameter);
-
-                            targetDecoration.Parameters.Add(decorationParameter);
-                        }
-                    }
-                }))
+            void updateAndCaptureDecorationTargetTransform(ICloner<object, object> cloner)
             {
-                cloningContext.InlineWeaves.Add(new WeavableConcept<object>(new PointCut<object>(s => s == this.SourceDecoration), updateAndCaptureDecorationTargetTransform));
-                cloningContext.Execute();
+                targetDecoration = (MethodDefinition)cloner.Target;
+                targetDecoration.Name = targetDecorationName;
+                targetDecoration.Attributes = decoratedMethod.Attributes;
+
+                isStaticToInstanceClone = !decoratedMethod.IsStatic;
+                if (isStaticToInstanceClone) { ((MethodSignatureCloner)cloner).IsStaticToInstanceClone = true; }
+
+                if (areArgsAutoForwarded)
+                {
+                    // modify target to accept args
+                    var voidReference = cloningContext.TargetModule.ImportReference(typeof(void));
+                    foreach (var parameter in decoratedMethod.Parameters)
+                    {
+                        var decorationParameter =
+                            new ParameterDefinition(
+                                parameter.Name,
+                                parameter.Attributes,
+                                voidReference);
+
+                        cloningContext.CopyDetails(decorationParameter, parameter);
+
+                        targetDecoration.Parameters.Add(decorationParameter);
+                    }
+                }
             }
+
+            cloningContext.InlineTransforms.Add((s => s == this.SourceDecoration, updateAndCaptureDecorationTargetTransform));
+            cloningContext.Execute();
+
 
             Contract.Assert(targetDecoration != null);
-            return (targetDecoration, areArgsAutoForwarded);
+            return (targetDecoration, areArgsAutoForwarded, isStaticToInstanceClone);
         }
 
         private void EnsureParametersMatch(MethodDefinition decoratedMethod, CloningContext cloningContext)
@@ -208,24 +212,28 @@ namespace Cilador.Aop.Decorate
             }
         }
 
-        private static void RedirectForwardingCall(MethodDefinition decoratedMethod, MethodDefinition targetDecoration, bool areArgsAutoForwarded)
+        private static void RedirectForwardingCall(MethodDefinition decoratedMethod, MethodDefinition targetDecoration, bool areArgsAutoForwarded, bool isStaticToInstanceClone)
         {
             foreach (var instruction in
                 targetDecoration.Body.Instructions.Where(
                     i => i.OpCode == OpCodes.Call && i.Operand is MethodReference &&
                     ((MethodReference)i.Operand).Name == nameof(Forwarders.ForwardToOriginalAction)).ToArray())
             {
-                instruction.Operand = decoratedMethod;
+                var ilProcessor = targetDecoration.Body.GetILProcessor();
+                var decoratedMethodReference = decoratedMethod.Module.ImportReference(decoratedMethod);
+                var replacementInstruction = ilProcessor.Create(instruction.OpCode, decoratedMethodReference);
+                ilProcessor.Replace(instruction, replacementInstruction);
+
+                //instruction.Operand = decoratedMethod.Module.ImportReference(decoratedMethod);
 
                 if (areArgsAutoForwarded && decoratedMethod.HasParameters)
                 {
+                    throw new NotImplementedException("In progress...");
                     // implies no arguments are on the forwarded version of the method call
                     // this means we simply add ldarg instructions
 
                     // instance <--> static argument translation happens during cloning
-                    // this pointer handling (i.e. adding a new ldarg.0) is done in this later by logic in this class
-
-                    var ilProcessor = targetDecoration.Body.GetILProcessor();
+                    // this pointer handling (i.e. adding a new ldarg.0) is done in later by logic in this class
 
                     var newInstruction = ilProcessor.Create(OpCodes.Ldarg_0);
                     ilProcessor.InsertBefore(instruction, newInstruction);
@@ -248,16 +256,16 @@ namespace Cilador.Aop.Decorate
                     }
                 }
 
-                if (targetDecoration.IsStatic && !decoratedMethod.IsStatic)
+                if (isStaticToInstanceClone)
                 {
-                    AddThisPointerToTargetDecorationCall(targetDecoration, instruction);
+                    AddThisPointerToTargetDecorationCall(targetDecoration, replacementInstruction);
                 }
             }
         }
 
         private static void AddThisPointerToTargetDecorationCall(MethodDefinition potentialCallingMethod, Instruction potentialCallingInstruction)
         {
-            if (potentialCallingInstruction.TryGetFirstInstructionOfMethodCall(out var firstArgInstruction)) { /* maybe needs error handling? */ return; }
+            if (!potentialCallingInstruction.TryGetFirstInstructionOfMethodCall(out var firstArgInstruction)) { /* maybe needs error handling? */ return; }
             if (firstArgInstruction.OpCode == OpCodes.Ldarg_0) { /* this pointer already being sent to the method */ return; }
 
             var ilProcessor = potentialCallingMethod.Body.GetILProcessor();

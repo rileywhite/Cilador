@@ -87,12 +87,12 @@ namespace Cilador.Clone
 
         /// <summary>
         /// Gets a collection of pairs with the first item being a source predicate match and the second a transforms applied to cloning
-        /// targets for matching sources.
+        /// targets for matching sources. Weaves are applied to targets immmediately after the target is created but before cloning is applied.
         /// </summary>
         /// <remarks>
-        /// Only the first matched predicate will apply, so order matters.
+        /// Matching weaves will be applied in the order in which they appear in the list.
         /// </remarks>
-        public List<WeavableConcept<object>> InlineWeaves { get; } = new List<WeavableConcept<object>>();
+        public IList<(Func<object, bool> SourceSelector, Action<ICloner<object, object>> Transform)> InlineTransforms { get; } = new List<(Func<object, bool> SourceSelector, Action<ICloner<object, object>> Transform)>();
 
         /// <summary>
         /// Gets or sets the CilGraph of items for the cloning operation.
@@ -134,27 +134,21 @@ namespace Cilador.Clone
             foreach (var source in verticesSortedForCreation)
             {
                 var cloners = clonersGetter.InvokeFor(source).ToArray();
-                foreach(var inlineWeave in this.InlineWeaves)
+                foreach(var (sourceSelector, transform) in this.InlineTransforms)
                 {
-                    if (inlineWeave.PointCut.Selector(source))
+                    if (sourceSelector(source))
                     {
                         foreach (var cloner in cloners)
                         {
-                            cloner.TargetTransform = inlineWeave.ConceptWeaver.Weave;
+                            cloner.TargetTransforms.Add(transform);
                         }
-                        break;
                     }
                 }
                 if (source == this.RootSource && this.RootTarget == null)
                 {
                     Contract.Assert(cloners.Length == 1);
-                    var originalTargetTransform = cloners[0].TargetTransform;
-                    cloners[0].TargetTransform =
-                        target =>
-                        {
-                            this.RootTarget = (TypeDefinition)target;
-                            originalTargetTransform?.Invoke(target);
-                        };
+                    var originalTargetTransform = cloners[0].TargetTransforms;
+                    cloners[0].TargetTransforms.Insert(0, cloner => this.RootTarget = (TypeDefinition)cloner.Target);
                 }
                 this.ClonersBySource.Add(source, cloners);
             }

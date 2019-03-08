@@ -26,13 +26,14 @@ namespace Cilador.Clone
     /// <summary>
     /// Clones <see cref="MethodDefinition"/> contents from a source to a target.
     /// </summary>
-    internal class MethodSignatureCloner : ClonerBase<MethodDefinition>
+    public class MethodSignatureCloner : ClonerBase<MethodDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="MethodSignatureCloner"/>
         /// </summary>
         /// <param name="parent">Cloner for the type that contains the method to be cloned.</param>
         /// <param name="source">Cloning source.</param>
+        /// <param name="isStaticToInstanceClone">Whether the cloning operation is targeting an instance mathod from a static method source.</param>
         public MethodSignatureCloner(ICloner<TypeDefinition> parent, MethodDefinition source)
             : base(parent.CloningContext, source)
         {
@@ -62,6 +63,11 @@ namespace Cilador.Clone
         private bool IsRedirectedStaticConstructor { get; set; }
 
         /// <summary>
+        /// Gets or sets whether this cloner will clone a static method source into an instance method target.
+        /// </summary>
+        public bool IsStaticToInstanceClone { get; set; }
+
+        /// <summary>
         /// Creates the target method.
         /// </summary>
         /// <returns>Created target.</returns>
@@ -83,7 +89,7 @@ namespace Cilador.Clone
                     // if there is already a target static constructor, then redirect the clone to a different method
                     // and then add a call to the new method into the existing static constructor
                     targetMethod = new MethodDefinition(
-                        string.Format("cctor_{0:N}", Guid.NewGuid()),
+                        string.Format("cilador_cctor_{0:N}", Guid.NewGuid()),
                         MethodAttributes.Private | MethodAttributes.Static | MethodAttributes.HideBySig,
                         voidReference);
                     this.Parent.Target.Methods.Add(targetMethod);
@@ -112,6 +118,11 @@ namespace Cilador.Clone
         {
             Contract.Assert(this.Target.DeclaringType != null);
 
+            if (this.IsStaticToInstanceClone)
+            {
+                Contract.Assert(this.Source.IsStatic && !this.Source.IsConstructor);
+            }
+
             if (this.IsRedirectedStaticConstructor)
             {
                 this.AddCallToRedirectedStaticConstructor();
@@ -119,7 +130,7 @@ namespace Cilador.Clone
 
             this.Target.CallingConvention = this.Source.CallingConvention;
             this.Target.ExplicitThis = this.Source.ExplicitThis;
-            this.Target.HasThis = this.Source.HasThis;
+            this.Target.HasThis = this.IsStaticToInstanceClone ? true : this.Source.HasThis;
             this.Target.ImplAttributes = this.Source.ImplAttributes;
             this.Target.IsAddOn = this.Source.IsAddOn;
             this.Target.IsCheckAccessOnOverride = this.Source.IsCheckAccessOnOverride;
@@ -134,6 +145,7 @@ namespace Cilador.Clone
             this.Target.IsPreserveSig = this.Source.IsPreserveSig;
             this.Target.IsRemoveOn = this.Source.IsRemoveOn;
             this.Target.IsRuntime = this.Source.IsRuntime;
+            this.Target.IsStatic = this.IsStaticToInstanceClone ? false : this.Source.IsStatic;
             this.Target.IsSetter = this.Source.IsSetter;
             this.Target.IsSynchronized = this.Source.IsSynchronized;
             this.Target.IsUnmanaged = this.Source.IsUnmanaged;

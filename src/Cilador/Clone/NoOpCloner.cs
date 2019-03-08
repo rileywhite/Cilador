@@ -15,6 +15,7 @@
 /***************************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 
 namespace Cilador.Clone
@@ -94,6 +95,6 @@ namespace Cilador.Clone
         /// <summary>
         /// Gets or sets the transform to apply to the target after creation
         /// </summary>
-        public Action<object> TargetTransform { get; set; }
+        public IList<Action<ICloner<object, object>>> TargetTransforms { get; } = new List<Action<ICloner<object, object>>>();
     }
 }

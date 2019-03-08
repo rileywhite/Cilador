@@ -23,7 +23,7 @@ namespace Cilador.Clone
     /// <summary>
     /// Clones a parameter
     /// </summary>
-    internal class ParameterCloner : ClonerBase<ParameterDefinition>
+    public class ParameterCloner : ClonerBase<ParameterDefinition>
     {
         /// <summary>
         /// Creates a new <see cref="ParameterCloner"/>.

@@ -65,7 +65,7 @@ namespace Cilador.Tests.CloneTests
                 get { return new object(); }
             }
 
-            public Action<object> TargetTransform { get; set; }
+            public IList<Action<ICloner<object, object>>> TargetTransforms { get; } = new List<Action<ICloner<object, object>>>();
         }
 
         [Test]

@@ -74,9 +74,7 @@ namespace Cilador.Clone
         /// </summary>
         public int GetArgumentTranslation(Instruction sourceInstruction)
         {
-            if (this.Parent.Source.IsStatic && !this.Parent.Target.IsStatic) { return 1; }
-            if (!this.Parent.Source.IsStatic && this.Parent.Target.IsStatic) { return -1; }
-            return 0;
+            return this.Parent.IsStaticToInstanceClone ? /* make space for this arg addition */ 1 : 0;
         }
 
         /// <summary>

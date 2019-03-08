@@ -15,6 +15,7 @@
 /***************************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 
 namespace Cilador.Clone
@@ -54,9 +55,9 @@ namespace Cilador.Clone
         public ICloningContext CloningContext { get; }
 
         /// <summary>
-        /// Gets or sets the transform to apply to the target after creation
+        /// Gets the transform to apply to the target after cloning
         /// </summary>
-        public Action<object> TargetTransform { get; set; }
+        public IList<Action<ICloner<object, object>>> TargetTransforms { get; } = new List<Action<ICloner<object, object>>>();
 
         /// <summary>
         /// Whether the target has be set from its accessor.
@@ -101,8 +102,12 @@ namespace Cilador.Clone
             }
 
             this.Target = retrievedTarget ?? throw new InvalidOperationException("Retrieved target was null");
-            this.TargetTransform?.Invoke(retrievedTarget);
             this.IsTargetSet = true;
+
+            foreach (var targetTransform in this.TargetTransforms)
+            {
+                targetTransform?.Invoke(this);
+            }
         }
 
         private TTarget target;

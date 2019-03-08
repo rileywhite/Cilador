@@ -116,10 +116,9 @@ namespace Cilador.Clone
         /// <summary>
         /// No contracts for target transform.
         /// </summary>
-        public Action<object> TargetTransform
+        public IList<Action<ICloner<object, object>>> TargetTransforms
         {
             get => throw new NotImplementedException();
-            set => throw new NotImplementedException();
         }
     }
 }
